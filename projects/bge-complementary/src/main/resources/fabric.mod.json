@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "bge_complementary",
+  "version": "${version}",
+  "name": "BGE × Complementary Bridge",
+  "description": "Client-only canonical shader-material inheritance for BGE C79 and Iris 1.11.2.",
+  "environment": "client",
+  "license": "LicenseRef-Private-Workbench",
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "cnm_terrain_slabs_compat": "4.2.23-bge.canary79.cnm-family-bridge+26.2"
+  },
+  "suggests": {
+    "iris": "1.11.2+mc26.2"
+  },
+  "mixins": [
+    {
+      "config": "bge_complementary.client.mixins.json",
+      "environment": "client"
+    }
+  ]
+}

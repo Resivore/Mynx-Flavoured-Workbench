@@ -1,0 +1,126 @@
+import java.nio.charset.StandardCharsets
+import java.util.zip.ZipFile
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = 'dev.resivore'
+
+base {
+    archivesName = 'bge-complementary'
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+def bgeReference = file('../block-geometry-extensions/artifacts/BGE C79.jar')
+
+dependencies {
+    minecraft 'com.mojang:minecraft:26.2'
+    implementation 'net.fabricmc:fabric-loader:0.19.3'
+    compileOnly files(bgeReference)
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly files(bgeReference)
+}
+
+loom {
+    splitEnvironmentSourceSets()
+    mods {
+        bge_complementary {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+dependencies {
+    testImplementation sourceSets.client.output
+}
+
+sourceSets.test.compileClasspath += configurations.clientCompileClasspath
+sourceSets.test.runtimeClasspath += configurations.clientRuntimeClasspath
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.register('verifyBridge') {
+    group = 'verification'
+    description = 'Verifies the C79 BGE and Iris 1.11.2 bridge contract without loading Minecraft.'
+    dependsOn tasks.named('jar')
+    inputs.file(bgeReference)
+    inputs.dir('src')
+    inputs.file(tasks.named('jar').flatMap { it.archiveFile })
+
+    doLast {
+        if (!bgeReference.isFile()) {
+            throw new GradleException("Missing exact BGE C79 baseline: ${bgeReference}")
+        }
+        def bgeHash = java.security.MessageDigest.getInstance('SHA-256').digest(bgeReference.bytes).encodeHex().toString()
+        if (bgeHash != '7e3265c8746547465ede1a48b31c3db06370de84331b8ff9e35a2ce450650a91') {
+            throw new GradleException("BGE baseline hash differs from C79: ${bgeHash}")
+        }
+        ZipFile bge = new ZipFile(bgeReference)
+        try {
+            if (bge.getEntry('dev/aero/cnmterraincompat/BgeMaterialBindings.class') == null) {
+                throw new GradleException('BGE C79 baseline is missing BgeMaterialBindings')
+            }
+        } finally {
+            bge.close()
+        }
+
+        def packageJar = tasks.named('jar').get().archiveFile.get().asFile
+        ZipFile bridge = new ZipFile(packageJar)
+        try {
+            ['fabric.mod.json', 'bge_complementary.client.mixins.json',
+             'dev/resivore/bgecomplementary/BgeShaderMaterialBridge.class',
+             'dev/resivore/bgecomplementary/mixin/IrisBgeMaterialMappingMixin.class'].each { required ->
+                if (bridge.getEntry(required) == null) {
+                    throw new GradleException("Packaged bridge is missing ${required}")
+                }
+            }
+            bridge.entries().each { entry ->
+                def name = entry.name.toLowerCase(java.util.Locale.ROOT)
+                if (name.contains('net/irisshaders/') || name.contains('complementaryunbound') || name.endsWith('.zip')) {
+                    throw new GradleException("Packaged bridge contains forbidden external content: ${entry.name}")
+                }
+            }
+            def metadata = new String(bridge.getInputStream(bridge.getEntry('fabric.mod.json')).bytes, StandardCharsets.UTF_8)
+            if (!metadata.contains('"id": "bge_complementary"') || !metadata.contains("\"version\": \"${project.version}\"")) {
+                throw new GradleException('Packaged Fabric metadata has the wrong identity or version')
+            }
+        } finally {
+            bridge.close()
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyBridge')
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the exact packaged Canary for Workbench artifact retention.'
+    dependsOn tasks.named('verifyBridge')
+    from(tasks.named('jar').flatMap { it.archiveFile })
+    into(layout.projectDirectory.dir('artifacts'))
+}

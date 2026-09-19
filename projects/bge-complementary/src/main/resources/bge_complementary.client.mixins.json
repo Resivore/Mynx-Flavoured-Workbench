@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.resivore.bgecomplementary.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "dev.resivore.bgecomplementary.IrisBgeMixinPlugin",
+  "client": [
+    "IrisBgeMaterialMappingMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
