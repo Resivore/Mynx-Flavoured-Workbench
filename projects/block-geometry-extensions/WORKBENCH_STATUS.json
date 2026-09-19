@@ -23,7 +23,7 @@
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
       "Expose one deterministic ordered geometry catalog for Vertical Slab, Step, Corner, Quarter Column, and Layer without changing established placement, economy, or material-frame semantics.",
-      "Offer complete nine-role BGE geometry families for the exact 79 requested optional-provider sources only when Ribbits, Mynx Trees, Macaw's Paths, or Building But Better supplies the corresponding source block.",
+      "Offer complete nine-role BGE geometry families for the exact 79 requested optional-provider sources when Ribbits, Mynx Trees, Macaw's Paths, or Building But Better supplies the corresponding source block, plus a generic CNM axis-pillar bridge only when a non-Minecraft source has a unique package-owned direct `minecraft:block/cube_column` resource contract that proves its side and end textures.",
       "Treat adding a normal catalog material as full membership in the canonical block, horizontal slab, stair, wall, Vertical Slab, Step, Layer, Corner, and Quarter Column roles unless an exact technical exclusion is recorded.",
       "Keep canonical material identity separate from geometry generation so limited special forms such as Farmland Slab remain explicitly canonical-bound without implying a full generated family.",
       "Require every BGE-owned registered block to have one explicit canonical classification or a documented exemption, with bootstrap validation preventing anonymous material-semantic holes.",
@@ -32,9 +32,9 @@
     "scope": [
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
-      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, and C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces.",
+      "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.22-bge.canary78.stair-wall-surface-authority+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.23-bge.canary79.cnm-family-bridge+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, six Mynx Trees log, wood, and leaf sources, and all 12 BBB beam parents including Pale Oak. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched, but their provider state is geometry-only and cannot carry an independent material AXIS; C69 therefore gives BGE canonical AxisSlab and AxisStairs forms, retains BBB's ordinary thin WoodenWallBlock as the canonical wall, and keeps the five other BGE axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
@@ -52,7 +52,8 @@
         "C75 introduced the BGE-owned surface contract; C78 now supplies authoritative resolved-state surfaces for every ordinary Stair and Wall configuration. The contract still does not decide CTM rules, connect materials, or render overlays.",
         "C76 changes only generated Ribbits Red Toadstool, Brown Toadstool, and Toadstool Stem texture selection plus the human-facing BGE Canary filename. Provider-owned source-block rendering, every non-toadstool family, geometry, economy, behavior, canonical identity, and the C75 surface-semantics API remain unchanged.",
         "C77 changes only successful placement of the fourth matching normal-catalog Layer and the legacy four-Layer fallback model for uniform-textured HugeMushroomBlock providers. Layers one through three, failed or incompatible placement, legacy four-Layer state validity, recipes, drops, family identities, C75 surface semantics, C76 generated toadstool texture semantics, and provider-owned canonical source-block rendering remain unchanged.",
-        "C78 changes only binding-owned surface descriptions for resolved Stair and Wall state plus their validation. It adds no CTM or rendering policy, changes no block registration, state, collision, placement, economy, resource model, material identity, or consumer-specific rule, and leaves `projects/bge-ctm` untouched."
+        "C78 changes only binding-owned surface descriptions for resolved Stair and Wall state plus their validation. It adds no CTM or rendering policy, changes no block registration, state, collision, placement, economy, resource model, material identity, or consumer-specific rule, and leaves `projects/bge-ctm` untouched.",
+        "C79 adds normal BGE families for `minecraft:chiseled_resin_bricks`, `minecraft:chiseled_cinnabar`, and axis-aware `minecraft:purpur_pillar`; regular walls remain ordinary no-AXIS WallBlocks. It additionally admits a non-Minecraft axis pillar only after a unique resource-container-owned direct `minecraft:block/cube_column` contract and BlockItem prove its source side/end textures. Existing profiles and axe-strippable sources remain unowned, so C79 neither duplicates provider roles nor invents a transition it cannot type truthfully. C79 changes normal wall inventory previews to the ordinary wall template while retaining side/end-aware placed wall post and arm templates; it does not alter provider source rendering, existing optional-provider ownership, block/item semantics, economy, CTM, or any unverified resource."
       ]
     },
     "dependencies": [
@@ -60,7 +61,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C78 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C79 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -83,17 +84,17 @@
     ]
   },
   "state": {
-    "milestone": "C78 completes BGE's authoritative surface contract for all 40 resolved Stair states and all 161 nonempty resolved Wall post/arm combinations. Deterministic union tiling removes internal faces, preserves canonical material-face semantics, covers rotations and half mirrors, retains typed Path height offsets, and validates every bound topology without registry-ID or consumer-specific rules. The Java 25 controlled suite passes all 135 GameTests with 422 profiles, 3,798 primary bindings, 3,099 owned blocks, three aliases, two special bindings, and zero exemptions. C78 has no Minecraft gameplay-runtime evidence and remains ACTIVE; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C79 adds complete normal families for Chiseled Resin Bricks and Chiseled Cinnabar, axis-aware Purpur Pillar slabs and stairs with ordinary no-AXIS walls, and normal wall-item previews while placed axis walls preserve their verified side/end column faces. A generic, fail-closed CNM bridge now adopts Enderscape Veiled Log and Veiled Wood only after their unique package-owned direct cube-column source resource contract proves exact side/end textures; existing profile owners and strippable sources remain excluded. The Java 25 controlled suite passes all 138 GameTests with 427 profiles, 3,843 primary bindings, 3,139 owned blocks, three aliases, two special bindings, and zero exemptions. C79 has no Minecraft gameplay-runtime evidence and remains ACTIVE; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C78 (Stair and Wall Surface Authority; embedded 4.2.22-bge.canary78.stair-wall-surface-authority+26.2)",
-        "embedded_version": "4.2.22-bge.canary78.stair-wall-surface-authority+26.2",
+        "version": "C79 (CNM Family Bridge; embedded 4.2.23-bge.canary79.cnm-family-bridge+26.2)",
+        "embedded_version": "4.2.23-bge.canary79.cnm-family-bridge+26.2",
         "artifact": {
-          "filename": "BGE C78.jar",
-          "sha256": "ed2f5592b699532174bc63672f69c3574f01eb752175126bbc702e9cc86a07f0"
+          "filename": "BGE C79.jar",
+          "sha256": "7e3265c8746547465ede1a48b31c3db06370de84331b8ff9e35a2ce450650a91"
         },
-        "built_at": "2026-09-19T03:46:47.6785725Z",
-        "source_commit": "85acefa42fa46e133b0917d056817d6eaf0768b3",
+        "built_at": "2026-09-19T07:11:00.7512137Z",
+        "source_commit": "704a19b4022af8661a3b2c33a81abf41ea26d8fb",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -102,16 +103,16 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C78 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
+              "reason": "The exact C79 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "Java 25 clean packaging produced exact `BGE C78.jar`, SHA-256 ed2f5592b699532174bc63672f69c3574f01eb752175126bbc702e9cc86a07f0, from implementation checkpoint 85acefa42fa46e133b0917d056817d6eaf0768b3.",
-                "The C78 controlled Minecraft 26.2 GameTest suite passed 135/135, including all 40 Stair states, all 161 nonempty Wall states, rotations and half mirrors, internal-face removal, LOW/TALL arms, typed Path heights, canonical face semantics, and binding-wide surface authority.",
-                "All 13 architecture/resource/semantic suites passed; the exact-C77 archive boundary changed only 16 bounded existing entries, added or removed none, retained 866 blockstates and 6,895 block models, and preserved the accepted C58 provenance audit."
+                "Java 25 packaging produced exact `BGE C79.jar`, 6,236,308 bytes, SHA-256 7e3265c8746547465ede1a48b31c3db06370de84331b8ff9e35a2ce450650a91, from implementation checkpoint 704a19b4022af8661a3b2c33a81abf41ea26d8fb.",
+                "The C79 controlled Minecraft 26.2 GameTest suite passed 138/138, including the three native additions, all 57 axis resource families, normal no-AXIS wall inventory/placed-model separation, and the exact 79-source plus two generic-axis external inventory.",
+                "Architecture/resource/semantic checks and both JAR audits passed. Against exact C78, the archive boundary has 68 intentional changed entries, 77 authored new entries, zero missing entries, 868 blockstates, 312 families, 6,966 block models, 866 loot tables, zero recipes, and zero invalid JSON; the accepted C58 provenance audit remains passing."
               ]
             }
           ]
         },
-        "summary": "Completes BGE's material-agnostic surface contract with authoritative, deterministic, internally culled patches for every resolved Stair and Wall state."
+        "summary": "Adds three native material families and a fail-closed resource-contract bridge for verified external axis pillars, while preserving ordinary wall state and normal item previews."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -179,10 +180,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 40,
-    "activity_at": "2026-09-19T03:48:34.2721438Z",
-    "updated_at": "2026-09-19T03:48:34.2721438Z",
-    "last_codex_at": "2026-09-19T03:48:34.2721438Z",
-    "source_commit": "85acefa42fa46e133b0917d056817d6eaf0768b3"
+    "revision": 41,
+    "activity_at": "2026-09-19T07:17:10.2696421Z",
+    "updated_at": "2026-09-19T07:17:10.2696421Z",
+    "last_codex_at": "2026-09-19T07:17:10.2696421Z",
+    "source_commit": "704a19b4022af8661a3b2c33a81abf41ea26d8fb"
   }
 }
