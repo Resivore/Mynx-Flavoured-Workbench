@@ -31,7 +31,7 @@
       "exclusions": [
         "`projects/block-geometry-extensions` remains the unchanged owner of canonical material bindings and surface geometry; this project consumes exact BGE C78 public authority and does not patch BGE.",
         "`projects/bge-ctm` remains unchanged and owns CTM connection and overlay policy; this project clips already transformed final quads without choosing CTM rules, sprites, or overlays.",
-        "`projects/translucent-glass-bge-compat` remains unchanged; no responsibility, evidence, or implementation is transferred from that project.",
+        "`projects/bge-complementary` (BGE × Complementary; legacy ID translucent-glass-bge-compat) remains unchanged; no responsibility, evidence, or implementation is transferred from that project.",
         "`WORKBENCH_SERVER_STATE.json` remains human-owned and unchanged.",
         "Shaders, resource-pack classification, block registration, collision, placement, economy, BGE geometry generation, arbitrary translucent materials, and unrelated projects are outside this project's ownership.",
         "Minecraft gameplay and visual behavior are not inferred from compilation, static analysis, unit tests, GameTests, or JAR inspection."
