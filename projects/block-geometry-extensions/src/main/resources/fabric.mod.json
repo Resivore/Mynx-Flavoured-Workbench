@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 77 — Layer Canonical Completion",
-  "description": "Completes a fourth matching BGE Layer as its canonical full material block while retaining legacy Layer states and C76 rendering semantics.",
+  "name": "Block Geometry Extensions Canary 78 — Stair and Wall Surface Authority",
+  "description": "Makes complete resolved Stair and Wall geometry first-class in BGE's generic authoritative surface-patch contract.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

@@ -1,7 +1,6 @@
 package dev.aero.cnmterraincompat;
 
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
-import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import net.minecraft.core.Direction;
@@ -368,6 +367,13 @@ public final class BgeMaterialBindings {
                     problems.add(id(binding.physicalBlock()) + " points outside profile canonical material");
                 }
             });
+            BgeSurfaceGeometry.SurfaceModel surface = binding.surfaceModel(
+                    binding.physicalBlock().defaultBlockState());
+            if (!surface.supported() || surface.patches().isEmpty()) {
+                problems.add(id(binding.physicalBlock()) + " " + binding.topology()
+                        + " has no authoritative default-state surface model: "
+                        + surface.limitation().orElse("empty surface collection"));
+            }
         }
 
         for (NibaruMaterialProfile profile : NibaruMaterialProfiles.all()) {
@@ -566,8 +572,7 @@ public final class BgeMaterialBindings {
 
     private static BgeSurfaceGeometry.SurfaceProvider surfaceProvider(
             NibaruMaterialProfile profile, Topology topology) {
-        boolean terrainHeightInset = profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION);
-        return BgeSurfaceGeometry.provider(topology, terrainHeightInset);
+        return BgeSurfaceGeometry.provider(profile, topology);
     }
 
     private static Identifier id(Block block) {

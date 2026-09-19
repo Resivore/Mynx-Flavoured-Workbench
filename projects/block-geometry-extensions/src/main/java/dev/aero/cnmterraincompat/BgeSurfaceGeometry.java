@@ -3,10 +3,19 @@ package dev.aero.cnmterraincompat;
 import dev.aero.cnmterraincompat.BgeMaterialBindings.Topology;
 import dev.tazer.clutternomore.common.blocks.StepBlock;
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
+import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
+import games.twinhead.moreslabsstairsandwalls.api.material.NativeAxisModelContract;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
+import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.block.state.properties.StairsShape;
+import net.minecraft.world.level.block.state.properties.WallSide;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +27,10 @@ import java.util.TreeSet;
  * BGE-owned description of the real axis-aligned rendered surfaces of a bound geometry state.
  *
  * <p>The contract is deliberately a collection of exposed planar patches rather than one bounding
- * box. Consumers do not need to know whether a state is a Slab, Step, Corner, or a future geometry:
- * a canonical binding and a supported surface model are sufficient. Native Stairs and Walls stay
- * explicitly unsupported until their contextual model topology can be represented without
- * guessing.</p>
+ * box. Consumers do not need to know whether a state is a Slab, Stair, Wall, Step, Corner, or a
+ * future geometry: a canonical binding and a supported surface model are sufficient. Resolved
+ * Stair and Wall state is authoritative here: neighbor-dependent placement has already been
+ * encoded into {@link StairBlock#SHAPE}, {@link WallBlock#UP}, and the four WallSide properties.</p>
  */
 public final class BgeSurfaceGeometry {
     private static final int BLOCK_UNITS = 16;
@@ -93,25 +102,27 @@ public final class BgeSurfaceGeometry {
     /** Built-in provider used by current bindings; future bindings may supply another provider. */
     static SurfaceProvider provider(Topology topology, boolean terrainHeightInset) {
         Objects.requireNonNull(topology, "topology");
-        return state -> describe(topology, state, terrainHeightInset);
+        return state -> describe(topology, state, terrainHeightInset, false);
+    }
+
+    /** Profile-backed provider for every ordinary member of the canonical material catalog. */
+    static SurfaceProvider provider(NibaruMaterialProfile profile, Topology topology) {
+        Objects.requireNonNull(profile, "profile");
+        Objects.requireNonNull(topology, "topology");
+        boolean terrainHeightInset = profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION);
+        // External HugeMushroom models intentionally use arms that overlap the center through
+        // pixel 11. The semantic visual profile, rather than a registry identity, owns that form.
+        boolean extendedWallArms = profile.visualProfile() == VisualProfile.HUGE_MUSHROOM;
+        return state -> describe(topology, state, terrainHeightInset, extendedWallArms);
     }
 
     private static SurfaceModel describe(Topology topology, BlockState state,
-            boolean terrainHeightInset) {
+            boolean terrainHeightInset, boolean extendedWallArms) {
         Objects.requireNonNull(state, "state");
-        if (topology == Topology.STAIR) {
-            return SurfaceModel.unsupported("Native Stair surface regions remain fail-closed: their "
-                    + "vanilla inner/outer model topology is contextual and is not yet exported by BGE.");
-        }
-        if (topology == Topology.WALL) {
-            return SurfaceModel.unsupported("Native Wall surface regions remain fail-closed: post and "
-                    + "arm geometry is neighbor-contextual and is not yet exported by BGE.");
-        }
-
-        List<Cuboid> actual = cuboids(topology, state, terrainHeightInset);
+        List<Cuboid> actual = cuboids(topology, state, terrainHeightInset, extendedWallArms);
         if (!terrainHeightInset) return model(actual, List.of());
         List<Cuboid> standard = cuboids(topology == Topology.FARMLAND_SLAB
-                ? Topology.HORIZONTAL_SLAB : topology, state, false);
+                ? Topology.HORIZONTAL_SLAB : topology, state, false, extendedWallArms);
         return model(actual, exposed(standard));
     }
 
@@ -146,7 +157,7 @@ public final class BgeSurfaceGeometry {
     }
 
     private static List<Cuboid> cuboids(Topology topology, BlockState state,
-            boolean terrainHeightInset) {
+            boolean terrainHeightInset, boolean extendedWallArms) {
         return switch (topology) {
             case CANONICAL_ROOT -> List.of(terrainHeightInset
                     ? new Cuboid(0, 0, 0, 16, 15, 16) : Cuboid.FULL);
@@ -159,8 +170,68 @@ public final class BgeSurfaceGeometry {
             case LAYER -> List.of(layer(state, terrainHeightInset));
             case CORNER -> corner(state, terrainHeightInset);
             case QUARTER_COLUMN -> column(state, terrainHeightInset);
-            case STAIR, WALL -> throw new IllegalStateException("Unsupported topology was not gated");
+            case STAIR -> stair(state, terrainHeightInset);
+            case WALL -> wall(state, terrainHeightInset, extendedWallArms);
         };
+    }
+
+    /**
+     * Uses the same exhaustive world-space decomposition that owns BGE's generated native axis
+     * Stair models. The terrain form keeps that X/Z topology and lowers its two Y bands exactly
+     * as the embedded Path Stair models do.
+     */
+    private static List<Cuboid> stair(BlockState state, boolean terrain) {
+        Direction facing = state.getValue(StairBlock.FACING);
+        Half half = state.getValue(StairBlock.HALF);
+        StairsShape shape = state.getValue(StairBlock.SHAPE);
+        List<Cuboid> result = new ArrayList<>();
+        for (NativeAxisModelContract.Cuboid member :
+                NativeAxisModelContract.stairGeometry(facing, half, shape).cuboids()) {
+            int[] bounds = member.bounds();
+            if (terrain) {
+                bounds[1] = terrainY(bounds[1]);
+                bounds[4] = terrainY(bounds[4]);
+            }
+            result.add(new Cuboid(bounds[0], bounds[1], bounds[2],
+                    bounds[3], bounds[4], bounds[5]));
+        }
+        return List.copyOf(result);
+    }
+
+    private static int terrainY(int standardY) {
+        return switch (standardY) {
+            case 0 -> 0;
+            case 8 -> 7;
+            case 16 -> 15;
+            default -> throw new IllegalArgumentException("Unexpected Stair Y plane " + standardY);
+        };
+    }
+
+    /** Minecraft 26.2 multipart Wall models: optional post plus independent LOW/TALL arms. */
+    private static List<Cuboid> wall(BlockState state, boolean terrain, boolean extendedArms) {
+        List<Cuboid> result = new ArrayList<>();
+        if (state.getValue(WallBlock.UP)) {
+            result.add(new Cuboid(4, 0, 4, 12, terrain ? 15 : 16, 12));
+        }
+        int inward = extendedArms ? 11 : 8;
+        addWallArm(result, Direction.NORTH, state.getValue(WallBlock.NORTH), inward);
+        addWallArm(result, Direction.EAST, state.getValue(WallBlock.EAST), inward);
+        addWallArm(result, Direction.SOUTH, state.getValue(WallBlock.SOUTH), inward);
+        addWallArm(result, Direction.WEST, state.getValue(WallBlock.WEST), inward);
+        return List.copyOf(result);
+    }
+
+    private static void addWallArm(List<Cuboid> result, Direction direction, WallSide side,
+            int inward) {
+        if (side == WallSide.NONE) return;
+        int height = side == WallSide.LOW ? 14 : 16;
+        result.add(switch (direction) {
+            case NORTH -> new Cuboid(5, 0, 0, 11, height, inward);
+            case EAST -> new Cuboid(16 - inward, 0, 5, 16, height, 11);
+            case SOUTH -> new Cuboid(5, 0, 16 - inward, 11, height, 16);
+            case WEST -> new Cuboid(0, 0, 5, inward, height, 11);
+            default -> throw new IllegalArgumentException("Wall arm direction must be horizontal");
+        });
     }
 
     private static Cuboid horizontal(SlabType type, boolean terrain) {

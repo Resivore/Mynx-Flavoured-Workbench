@@ -1039,7 +1039,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                     case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb", "ribbits");
                     case "listResources", "close" -> null;
                     case "getRootResource", "getResource", "getMetadataSection", "location" -> null;
-                    case "toString" -> "BGE C77 client fixture pack";
+                    case "toString" -> "BGE C78 client fixture pack";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected PackResources call " + method);
@@ -1060,7 +1060,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                     case "listResourceStacks" -> Map.of();
                     case "listPacks" -> Stream.of(pack);
-                    case "toString" -> "BGE C77 client fixture manager";
+                    case "toString" -> "BGE C78 client fixture manager";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected ResourceManager call " + method);
