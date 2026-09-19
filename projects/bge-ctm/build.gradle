@@ -51,11 +51,10 @@ def workbenchOriginalsRoot = providers.gradleProperty('workbenchOriginalsRoot')
         .map { file(it) }
         .getOrElse(new File(workbenchRoot, 'originals'))
 def bgeReferenceJar = new File(workbenchRoot,
-        'projects/block-geometry-extensions/artifacts/' +
-                'cnm-nibaru-integration-4.2.19-bge.canary75.surface-semantics+26.2.jar')
+        'projects/block-geometry-extensions/artifacts/BGE C78.jar')
 def cnmReferenceJar = new File(workbenchOriginalsRoot,
         'mods/clutternomore-2.0.7+26.2-fabric.jar')
-def expectedBgeSha256 = 'ea963665679ca116a1d0dc49ea6f730e16ec8222df5174d56c79aa3cd6845d8e'
+def expectedBgeSha256 = 'ed2f5592b699532174bc63672f69c3574f01eb752175126bbc702e9cc86a07f0'
 def expectedCnmSha256 = '41a925e70d5e6e8c098bea7dc88c44486aed46724e35cb2fa4b1622b2a4dbcce'
 def expectedContinuitySha256 = '2094a52b98e247f664ef2ecdbb41d7dcad7779cc7a8fb87f0ed8a4f8196c0446'
 def continuityCoordinates = 'maven.modrinth:1IjD5062:mgUN5Xz2'
@@ -108,14 +107,14 @@ def sha256 = { File file ->
 
 tasks.register('verifyControlledProviders') {
     group = 'verification'
-    description = 'Verifies the exact controlled BGE C75, Clutter No More, and Continuity inputs.'
+    description = 'Verifies the exact controlled BGE C78, Clutter No More, and Continuity inputs.'
     inputs.files(configurations.bgeReference, configurations.cnmReference,
             configurations.continuityReference)
     doLast {
         File bge = configurations.bgeReference.singleFile
         File cnm = configurations.cnmReference.singleFile
         if (sha256(bge) != expectedBgeSha256) {
-            throw new GradleException("BGE C75 reference SHA-256 drifted: ${sha256(bge)}")
+            throw new GradleException("BGE C78 reference SHA-256 drifted: ${sha256(bge)}")
         }
         if (sha256(cnm) != expectedCnmSha256) {
             throw new GradleException("Clutter No More reference SHA-256 drifted: ${sha256(cnm)}")
@@ -140,8 +139,13 @@ tasks.register('verifyControlledProviders') {
                             ['add', 'clear', 'spriteAmount', 'sprites'],
                     'me/pepperbell/continuity/client/processor/overlay/OverlayProcessingPredicate.class':
                             ['shouldProcessQuad', 'isQuadUnitSquare'],
+                    'me/pepperbell/continuity/client/util/QuadUtil.class':
+                            ['emitOverlayQuad', 'square', 'color', 'uv', 'atlas', 'animated',
+                             'chunkLayer', 'itemRenderType', 'ambientOcclusion', 'emit'],
                     'me/pepperbell/continuity/client/model/CtmBlockStateModel$CtmQuadTransform.class':
                             ['transformOnce', 'processQuad'],
+                    'me/pepperbell/continuity/client/model/CtmBlockStateModel.class':
+                            ['emitQuads', 'outputTo'],
             ].each { path, requiredConstants ->
                 def seam = archive.getEntry(path)
                 if (seam == null) {
@@ -151,6 +155,12 @@ tasks.register('verifyControlledProviders') {
                         java.nio.charset.StandardCharsets.ISO_8859_1)
                 if (!requiredConstants.every { constants.contains(it) }) {
                     throw new GradleException("Exact Continuity seam is incompatible: ${path}")
+                }
+                if (path.endsWith('/QuadUtil.class') &&
+                        ['RenderMaterial', 'renderMaterial', 'decal', 'depthBias',
+                         'polygonOffset'].any { constants.contains(it) }) {
+                    throw new GradleException(
+                            'Continuity overlay helper gained an unpreserved material/depth seam')
                 }
             }
         } finally {
@@ -203,7 +213,7 @@ tasks.register('verifyReleaseArtifact') {
             if (metadata.id != 'bge_ctm' || metadata.version != project.version ||
                     metadata.depends?.minecraft != '~26.2' ||
                     metadata.depends?.cnm_terrain_slabs_compat !=
-                            '>=4.2.19-bge.canary75.surface-semantics+26.2' ||
+                            '>=4.2.22-bge.canary78.stair-wall-surface-authority+26.2' ||
                     metadata.depends?.continuity != '=3.0.1+26.2') {
                 throw new GradleException('Release metadata no longer describes the exact BGE/Continuity bridge')
             }
@@ -213,6 +223,7 @@ tasks.register('verifyReleaseArtifact') {
                             'ContinuityOverlayContactMixin',
                             'ContinuityOverlayContributionMixin',
                             'ContinuityOverlayEmissionMixin',
+                            'ContinuityOverlayOutputMixin',
                             'ContinuityOverlayProcessingMixin',
                             'ContinuityQuadContextMixin'] as Set)) {
                 throw new GradleException('Required exact Continuity mixin boundary changed')
@@ -242,6 +253,8 @@ tasks.register('verifyReleaseArtifact') {
                     'dev/resivore/bgectm/continuity/OverlayEmissionGeometry.class',
                     'dev/resivore/bgectm/continuity/OverlayFootprintPlan.class',
                     'dev/resivore/bgectm/continuity/OverlayEmissionController.class',
+                    'dev/resivore/bgectm/continuity/OverlayRenderCoordinator.class',
+                    'dev/resivore/bgectm/continuity/OverlayRenderState.class',
                     'dev/resivore/bgectm/continuity/OverlayProcessingEligibility.class',
                     'dev/resivore/bgectm/client/BgeCtmClient.class',
                     'dev/resivore/bgectm/mixin/BgeDerivedBlockAppearanceMixin.class',
@@ -249,6 +262,7 @@ tasks.register('verifyReleaseArtifact') {
                     'dev/resivore/bgectm/mixin/ContinuityOverlayContactMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayContributionMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayEmissionMixin.class',
+                    'dev/resivore/bgectm/mixin/ContinuityOverlayOutputMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityOverlayProcessingMixin.class',
                     'dev/resivore/bgectm/mixin/ContinuityQuadContextMixin.class'
             ].each { entry ->
@@ -262,6 +276,16 @@ tasks.register('verifyReleaseArtifact') {
             if (resolverConstants.contains('BuiltInRegistries') ||
                     resolverConstants.contains('net/minecraft/resources/Identifier')) {
                 throw new GradleException('Canonical resolver must not infer material identity from registry IDs')
+            }
+            ['dev/resivore/bgectm/SurfaceContactResolver.class',
+             'dev/resivore/bgectm/CanonicalAppearanceResolver.class'].each { genericClass ->
+                String constants = new String(archive.getInputStream(
+                        archive.getEntry(genericClass)).readAllBytes(),
+                        java.nio.charset.StandardCharsets.ISO_8859_1)
+                if (['StairBlock', 'WallBlock', 'STAIR', 'WALL'].any { constants.contains(it) }) {
+                    throw new GradleException(
+                            "Generic surface decision path gained a Stair/Wall-specific branch: ${genericClass}")
+                }
             }
             if (entries.any { it.name.endsWith('.jar') ||
                     it.name.contains('/optifine/ctm/') ||
@@ -277,7 +301,7 @@ tasks.register('verifyReleaseArtifact') {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored Canary 11 JAR for canonical local retention.'
+    description = 'Stages the exact ignored Canary 12 JAR for canonical local retention.'
     dependsOn tasks.named('verifyReleaseArtifact')
     from(packagedJar)
     into(layout.projectDirectory.dir('artifacts'))

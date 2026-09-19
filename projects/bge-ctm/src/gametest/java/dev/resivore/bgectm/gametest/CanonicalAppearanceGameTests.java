@@ -35,11 +35,19 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.block.state.properties.StairsShape;
+import net.minecraft.world.level.block.state.properties.WallSide;
 
 import java.lang.reflect.Method;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 /** Controlled material/state/contact proofs; these are not visual Continuity evidence. */
 public final class CanonicalAppearanceGameTests implements CustomTestMethodInvoker {
@@ -277,7 +285,8 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         BlockState doubled = slabState(Blocks.STONE, SlabType.DOUBLE);
         BlockState layer = layerState(Blocks.STONE, Direction.DOWN, 1);
         BlockState vertical = verticalState(Blocks.STONE, Direction.EAST, false);
-        BlockState unrelatedPartial = Blocks.COBBLESTONE_WALL.defaultBlockState();
+        BlockState unrelatedPartial = BgeCtmFixtureInitializer.UNBOUND_BGE_LOOKING_VERTICAL
+                .defaultBlockState().setValue(VerticalSlabBlock.FACING, Direction.NORTH);
 
         helper.assertTrue(OverlaySourceEligibility.mayReachCanonicalSemantics(top)
                         && OverlaySourceEligibility.mayReachCanonicalSemantics(bottom)
@@ -430,7 +439,7 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     }
 
     @GameTest(maxTicks = 40)
-    public void compoundSurfaceContractsParticipateAndContextualNativeFormsFailClosed(GameTestHelper helper) {
+    public void everyBoundCompoundSurfaceUsesTheGenericContract(GameTestHelper helper) {
         BlockState step = derived(Blocks.STONE, BgeGeometryRole.STEP).defaultBlockState()
                 .setValue(StepBlock.SLAB_TYPE, SlabType.BOTTOM);
         assertPolicy(helper, step, Policy.ELIGIBLE_BOUND_SURFACE);
@@ -460,12 +469,117 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
         NibaruMaterialProfile stone = NibaruMaterialProfiles.fromBlock(Blocks.STONE).orElseThrow();
         BlockState stair = stone.effectiveStairSource().orElseThrow().defaultBlockState();
         BlockState wall = stone.nativeWall().orElseThrow().defaultBlockState();
-        assertPolicy(helper, stair, Policy.UNSUPPORTED_SURFACE_CONTRACT);
-        assertPolicy(helper, wall, Policy.UNSUPPORTED_SURFACE_CONTRACT);
-        assertDecision(helper, stair, ORIGIN, Blocks.STONE.defaultBlockState(), EAST,
-                Direction.UP, Decision.UNSUPPORTED_GEOMETRY);
-        assertDecision(helper, wall, ORIGIN, Blocks.STONE.defaultBlockState(), EAST,
-                Direction.UP, Decision.UNSUPPORTED_GEOMETRY);
+        assertPolicy(helper, stair, Policy.ELIGIBLE_BOUND_SURFACE);
+        assertPolicy(helper, wall, Policy.ELIGIBLE_BOUND_SURFACE);
+        assertAnyPatchConnects(helper, stair, "Stair");
+        assertAllAuthoritativePatchesConsumed(helper, wall, "Wall");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 200)
+    public void c78StairsAndWallsAreExhaustivelyConsumedWithoutTopologyBranches(
+            GameTestHelper helper) {
+        NibaruMaterialProfile stone = NibaruMaterialProfiles.fromBlock(Blocks.STONE).orElseThrow();
+        Block stairBlock = stone.effectiveStairSource().orElseThrow();
+        List<BlockState> stairs = stairBlock.getStateDefinition().getPossibleStates().stream()
+                .filter(state -> !state.getValue(BlockStateProperties.WATERLOGGED)).toList();
+        helper.assertTrue(stairs.size() == 40,
+                "Expected all 40 resolved C78 Stair states, got " + stairs.size());
+        Set<Direction> stairFacings = EnumSet.noneOf(Direction.class);
+        Set<Half> stairHalves = EnumSet.noneOf(Half.class);
+        Set<StairsShape> stairShapes = EnumSet.noneOf(StairsShape.class);
+        for (BlockState stair : stairs) {
+            assertPolicy(helper, stair, Policy.ELIGIBLE_BOUND_SURFACE);
+            helper.assertTrue(!allSurfaces(stair).isEmpty(),
+                    "Resolved Stair state exposed no authoritative surfaces: " + stair);
+            assertAllAuthoritativePatchesConsumed(helper, stair, "Resolved Stair " + stair);
+            assertAnyPatchConnects(helper, stair, "Resolved Stair " + stair);
+            stairFacings.add(stair.getValue(StairBlock.FACING));
+            stairHalves.add(stair.getValue(StairBlock.HALF));
+            stairShapes.add(stair.getValue(StairBlock.SHAPE));
+        }
+        helper.assertTrue(stairFacings.equals(horizontalDirections())
+                        && stairHalves.equals(EnumSet.allOf(Half.class))
+                        && stairShapes.equals(EnumSet.allOf(StairsShape.class)),
+                "Exhaustive Stair consumption missed a facing, half, or shape");
+
+        Block wallBlock = stone.nativeWall().orElseThrow();
+        List<BlockState> walls = wallBlock.getStateDefinition().getPossibleStates().stream()
+                .filter(state -> !state.getValue(BlockStateProperties.WATERLOGGED))
+                .filter(CanonicalAppearanceGameTests::nonemptyWall).toList();
+        helper.assertTrue(walls.size() == 161,
+                "Expected all 161 nonempty resolved C78 Wall states, got " + walls.size());
+        boolean postOnly = false;
+        boolean multipleArms = false;
+        boolean postAndArms = false;
+        Set<Direction> lowDirections = EnumSet.noneOf(Direction.class);
+        Set<Direction> tallDirections = EnumSet.noneOf(Direction.class);
+        for (BlockState wall : walls) {
+            assertPolicy(helper, wall, Policy.ELIGIBLE_BOUND_SURFACE);
+            helper.assertTrue(!allSurfaces(wall).isEmpty(),
+                    "Resolved Wall state exposed no authoritative surfaces: " + wall);
+            assertAllAuthoritativePatchesConsumed(helper, wall, "Resolved Wall " + wall);
+            int arms = 0;
+            for (Direction direction : Direction.Plane.HORIZONTAL) {
+                WallSide side = wall.getValue(wallProperty(direction));
+                if (side != WallSide.NONE) arms++;
+                if (side == WallSide.LOW) lowDirections.add(direction);
+                if (side == WallSide.TALL) tallDirections.add(direction);
+            }
+            postOnly |= wall.getValue(WallBlock.UP) && arms == 0;
+            multipleArms |= arms > 1;
+            postAndArms |= wall.getValue(WallBlock.UP) && arms > 0;
+        }
+        helper.assertTrue(postOnly && multipleArms && postAndArms
+                        && lowDirections.equals(horizontalDirections())
+                        && tallDirections.equals(horizontalDirections()),
+                "Exhaustive Wall consumption missed post/arm combinations or rotations");
+
+        BlockState straightBottom = stairBlock.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.EAST)
+                .setValue(StairBlock.HALF, Half.BOTTOM)
+                .setValue(StairBlock.SHAPE, StairsShape.STRAIGHT);
+        BlockState topSlab = slabState(Blocks.STONE, SlabType.TOP);
+        BlockState step = derived(Blocks.STONE, BgeGeometryRole.STEP).defaultBlockState()
+                .setValue(StepBlock.SLAB_TYPE, SlabType.BOTTOM);
+        assertPatchDecision(helper, straightBottom, Blocks.STONE.defaultBlockState(), SOUTH,
+                Direction.UP, 16, Direction.Axis.X, 8, 16, Direction.Axis.Z, 0, 16,
+                Decision.CONNECT, "Stair upper tread to coplanar full top");
+        assertPatchDecision(helper, straightBottom, Blocks.STONE.defaultBlockState(), SOUTH,
+                Direction.UP, 8, Direction.Axis.X, 0, 8, Direction.Axis.Z, 0, 16,
+                Decision.NON_COPLANAR, "Stair lower tread to noncoplanar full top");
+        assertPatchDecision(helper, straightBottom, straightBottom, SOUTH,
+                Direction.WEST, 8, Direction.Axis.Y, 8, 16, Direction.Axis.Z, 0, 16,
+                Decision.CONNECT, "Stair riser to compatible vertical Stair surface");
+        helper.assertTrue(SurfaceContactResolver.describeAll(straightBottom, ORIGIN, Direction.DOWN)
+                        .stream().noneMatch(patch -> patch.plane16() == 8),
+                "BGE-removed internal Stair member face reappeared in CTM reasoning");
+        assertSomeSurfaceConnection(helper, straightBottom, stairs.getLast(), "Stair to Stair");
+        assertSomeSurfaceConnection(helper, straightBottom, topSlab, "Stair to slab");
+        assertSomeSurfaceConnection(helper, straightBottom, step, "Stair to Step");
+
+        BlockState lowWall = wallBlock.defaultBlockState()
+                .setValue(WallBlock.UP, true)
+                .setValue(WallBlock.NORTH, WallSide.LOW)
+                .setValue(WallBlock.EAST, WallSide.NONE)
+                .setValue(WallBlock.SOUTH, WallSide.NONE)
+                .setValue(WallBlock.WEST, WallSide.NONE);
+        BlockState tallWall = lowWall.setValue(WallBlock.NORTH, WallSide.TALL);
+        helper.assertTrue(!allSurfaces(lowWall).equals(allSurfaces(tallWall)),
+                "LOW and TALL Wall arms collapsed to one surface model");
+        assertPatchDecision(helper, lowWall, Blocks.STONE.defaultBlockState(),
+                ORIGIN.relative(Direction.NORTH), Direction.UP, 14,
+                Direction.Axis.X, 5, 11, Direction.Axis.Z, 0, 4,
+                Decision.NON_COPLANAR, "LOW Wall arm top to full top height mismatch");
+        assertPatchDecision(helper, tallWall, Blocks.STONE.defaultBlockState(),
+                ORIGIN.relative(Direction.NORTH), Direction.UP, 16,
+                Direction.Axis.X, 5, 11, Direction.Axis.Z, 0, 4,
+                Decision.CONNECT, "TALL Wall arm top to coplanar full top");
+        assertSomeSurfaceConnection(helper, lowWall, Blocks.STONE.defaultBlockState(),
+                "LOW Wall to full block");
+        assertSomeSurfaceConnection(helper, tallWall, step, "TALL Wall to partial geometry");
+        assertCompoundContribution(helper, lowWall, "Wall arm/post");
+        assertCompoundContribution(helper, straightBottom, "Stair compound patch");
         helper.succeed();
     }
 
@@ -647,6 +761,120 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
             }
         }
         helper.fail(label + " exposed no independently connectable authoritative patch");
+    }
+
+    private static void assertAllAuthoritativePatchesConsumed(GameTestHelper helper,
+            BlockState state, String label) {
+        for (SurfaceDescriptor patch : allSurfaces(state)) {
+            QuadSurface quad = localQuad(patch);
+            helper.assertTrue(SurfaceContactResolver.matchRenderedSurface(state, quad).isPresent(),
+                    label + " authoritative patch was not consumed through the generic rendered-surface contract: "
+                            + patch);
+        }
+    }
+
+    private static List<SurfaceDescriptor> allSurfaces(BlockState state) {
+        return java.util.Arrays.stream(Direction.values())
+                .flatMap(face -> SurfaceContactResolver.describeAll(state, ORIGIN, face).stream())
+                .toList();
+    }
+
+    private static net.minecraft.world.level.block.state.properties.EnumProperty<WallSide>
+            wallProperty(Direction direction) {
+        return switch (direction) {
+            case NORTH -> WallBlock.NORTH;
+            case EAST -> WallBlock.EAST;
+            case SOUTH -> WallBlock.SOUTH;
+            case WEST -> WallBlock.WEST;
+            default -> throw new IllegalArgumentException("Wall arm direction must be horizontal");
+        };
+    }
+
+    private static Set<Direction> horizontalDirections() {
+        return EnumSet.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST);
+    }
+
+    private static void assertPatchDecision(GameTestHelper helper, BlockState source,
+            BlockState other, BlockPos otherPos, Direction normal, int plane,
+            Direction.Axis uAxis, int uMin, int uMax, Direction.Axis vAxis, int vMin, int vMax,
+            Decision expected, String label) {
+        QuadSurface quad = new QuadSurface(normal, plane, uAxis, uMin, uMax,
+                vAxis, vMin, vMax);
+        helper.assertTrue(SurfaceContactResolver.matchRenderedSurface(source, quad).isPresent(),
+                label + " fixture is not an authoritative source patch: " + quad);
+        Decision actual = SurfaceContactResolver.inspectWithSourceSurface(
+                source, ORIGIN, other, otherPos, normal, quad);
+        helper.assertTrue(actual == expected,
+                label + " expected " + expected + ", got " + actual);
+    }
+
+    private static boolean nonemptyWall(BlockState state) {
+        return state.getValue(WallBlock.UP)
+                || state.getValue(WallBlock.NORTH) != WallSide.NONE
+                || state.getValue(WallBlock.EAST) != WallSide.NONE
+                || state.getValue(WallBlock.SOUTH) != WallSide.NONE
+                || state.getValue(WallBlock.WEST) != WallSide.NONE;
+    }
+
+    private static void assertSomeSurfaceConnection(GameTestHelper helper, BlockState source,
+            BlockState other, String label) {
+        for (Direction face : Direction.values()) {
+            for (SurfaceDescriptor patch : SurfaceContactResolver.describeAll(source, ORIGIN, face)) {
+                QuadSurface quad = localQuad(patch);
+                for (BlockPos neighbor : boundaryNeighbors(patch)) {
+                    if (SurfaceContactResolver.inspectWithSourceSurface(
+                            source, ORIGIN, other, neighbor, face, quad) == Decision.CONNECT) {
+                        return;
+                    }
+                }
+            }
+        }
+        helper.fail(label + " found no generic coplanar/contacting surface pair");
+    }
+
+    private static void assertCompoundContribution(GameTestHelper helper, BlockState receiver,
+            String label) {
+        BlockState full = Blocks.STONE.defaultBlockState();
+        for (Direction face : Direction.values()) {
+            for (SurfaceDescriptor patch : SurfaceContactResolver.describeAll(receiver, ORIGIN, face)) {
+                QuadSurface quad = localQuad(patch);
+                if (quad.uMin16() == 0 && quad.uMax16() == 16
+                        && quad.vMin16() == 0 && quad.vMax16() == 16) continue;
+                for (BlockPos neighbor : boundaryNeighbors(patch)) {
+                    var contribution = SurfaceContactResolver.inspectOverlayContribution(
+                            receiver, ORIGIN, full, neighbor, face, quad);
+                    if (contribution.decision() != Decision.CONNECT
+                            || contribution.footprints().isEmpty()) continue;
+                    helper.assertTrue(contribution.footprints().stream().allMatch(footprint ->
+                                    footprint.uMin16() >= quad.uMin16()
+                                            && footprint.uMax16() <= quad.uMax16()
+                                            && footprint.vMin16() >= quad.vMin16()
+                                            && footprint.vMax16() <= quad.vMax16()),
+                            label + " contribution escaped its authoritative receiver patch");
+                    return;
+                }
+            }
+        }
+        helper.fail(label + " exposed no clipped compound-patch contribution");
+    }
+
+    private static QuadSurface localQuad(SurfaceDescriptor patch) {
+        return new QuadSurface(patch.normal(), (int) patch.plane16(), patch.uAxis(),
+                (int) patch.uBounds().min16(), (int) patch.uBounds().max16(), patch.vAxis(),
+                (int) patch.vBounds().min16(), (int) patch.vBounds().max16());
+    }
+
+    private static List<BlockPos> boundaryNeighbors(SurfaceDescriptor patch) {
+        java.util.ArrayList<BlockPos> neighbors = new java.util.ArrayList<>();
+        if (patch.uBounds().max16() == 16) neighbors.add(ORIGIN.relative(positive(patch.uAxis())));
+        if (patch.uBounds().min16() == 0) {
+            neighbors.add(ORIGIN.relative(positive(patch.uAxis()).getOpposite()));
+        }
+        if (patch.vBounds().max16() == 16) neighbors.add(ORIGIN.relative(positive(patch.vAxis())));
+        if (patch.vBounds().min16() == 0) {
+            neighbors.add(ORIGIN.relative(positive(patch.vAxis()).getOpposite()));
+        }
+        return List.copyOf(neighbors);
     }
 
     private static BlockPos boundaryNeighbor(SurfaceDescriptor patch) {

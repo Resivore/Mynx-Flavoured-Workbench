@@ -7,6 +7,7 @@
     "ContinuityOverlayContactMixin",
     "ContinuityOverlayContributionMixin",
     "ContinuityOverlayEmissionMixin",
+    "ContinuityOverlayOutputMixin",
     "ContinuityOverlayProcessingMixin",
     "ContinuityQuadContextMixin"
   ],

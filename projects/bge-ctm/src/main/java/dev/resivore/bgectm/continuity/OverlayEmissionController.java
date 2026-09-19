@@ -7,10 +7,8 @@ import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
 import dev.resivore.bgectm.SurfaceContactResolver.SurfaceMatch;
 import dev.resivore.bgectm.continuity.ContinuityQuadContext.OverlaySpriteContribution;
 import me.pepperbell.continuity.client.util.QuadUtil;
-import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.util.TriState;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -56,33 +54,30 @@ public final class OverlayEmissionController {
                     "VETO", resolution.reason);
             return;
         }
-        if (resolution.kind == Kind.ORIGINAL) {
-            QuadSurface original = resolution.surfaces.getFirst();
-            BgeCtmDiagnostics.overlayEmit(receiver, face, original, null,
-                    "ORIGINAL", resolution.reason);
+        // Native Continuity emits its extra quads after all receiver quads. Managed overlays are
+        // delayed one step further so the final receiver quad and every logical overlay can be
+        // subdivided at the same authoritative edges. This removes the only render-path
+        // difference that made clipped coplanar triangles depth-unstable.
+        capture.addPendingOverlay(face, sprite, tint, layer, ao,
+                resolution.surfaces, resolution.reason);
+    }
+
+    /** Exact Continuity 3.0.1 overlay attributes, changing only geometry bounds and UV crop. */
+    static void emitSurface(QuadEmitter emitter, Direction face, TextureAtlasSprite sprite,
+            int tint, ChunkSectionLayer layer, TriState ao, QuadSurface surface) {
+        if (OverlayEmissionGeometry.originalUnitSquareMatches(surface)) {
             QuadUtil.emitOverlayQuad(emitter, face, sprite, tint, layer, ao);
             return;
         }
-
-        for (QuadSurface surface : resolution.surfaces) {
-            OverlayEmissionGeometry.Projection projected = OverlayEmissionGeometry.project(surface);
-            emitter.square(face, projected.left(), projected.bottom(), projected.right(),
-                    projected.top(), projected.depth());
-            emitter.color(tint, tint, tint, tint);
-            for (int vertex = 0; vertex < 4; vertex++) {
-                emitter.uv(vertex, interpolate(sprite.getU0(), sprite.getU1(), projected.uvU(vertex)),
-                        interpolate(sprite.getV0(), sprite.getV1(), projected.uvV(vertex)));
-            }
-            emitter.atlas(QuadAtlas.BLOCK);
-            emitter.animated(sprite.contents().isAnimated());
-            emitter.chunkLayer(layer);
-            emitter.itemRenderType(layer == ChunkSectionLayer.TRANSLUCENT
-                    ? Sheets.translucentBlockItemSheet() : Sheets.cutoutBlockItemSheet());
-            emitter.ambientOcclusion(ao);
-            emitter.emit();
-            BgeCtmDiagnostics.overlayEmit(receiver, face, surface, projected,
-                    "PROJECTED", resolution.reason);
+        OverlayEmissionGeometry.Projection projected = OverlayEmissionGeometry.project(surface);
+        emitter.square(face, projected.left(), projected.bottom(), projected.right(),
+                projected.top(), projected.depth());
+        for (int vertex = 0; vertex < 4; vertex++) {
+            emitter.uv(vertex, interpolate(sprite.getU0(), sprite.getU1(), projected.uvU(vertex)),
+                    interpolate(sprite.getV0(), sprite.getV1(), projected.uvV(vertex)));
         }
+        OverlayRenderState.continuity(sprite, tint, layer, ao).apply(emitter);
+        emitter.emit();
     }
 
     private static Resolution resolve(BlockState receiver, Direction face,
