@@ -1,0 +1,101 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 2,
+  "identity": {
+    "uuid": "9a8ccdea-f984-51af-a14f-6b26b4824e01",
+    "name": "BGE × Complementary",
+    "project_id": "bge-complementary",
+    "aliases": [
+      "Block Geometry Extensions × Complementary",
+      "BGE × Complementary Shader Material Parity"
+    ],
+    "legacy_names": [
+      "Translucent Glass × BGE Compatibility",
+      "Translucent Glass × CNM × Nibaru Compatibility"
+    ],
+    "legacy_ids": [
+      "translucent-glass-bge-compat",
+      "translucent-glass-cnm-nibaru-compat"
+    ]
+  },
+  "definition": {
+    "lifecycle": "PLANNED",
+    "goals": [
+      "Make every eligible BGE-derived geometry resolve to the selected Complementary shader material classification of its canonical parent, so changing geometry does not silently change material identity.",
+      "Use BGE's authoritative canonical binding and a supported Complementary/Iris integration seam rather than a second manually maintained inventory of derived block IDs.",
+      "Preserve Translucent Glass as a representative clear-glass compatibility control while covering the broader Complementary material contract."
+    ],
+    "scope": [
+      "Audit and coordinate parent-material parity for BGE's canonical full blocks and their available slab, stair, wall, Vertical Slab, Step, Layer, Corner, Quarter Column, and equivalent derived roles.",
+      "Cover shader-ID classes and their associated reflective, smooth/specular, emissive, translucent/Fancy Glass, foliage, and other material behaviors only where the parent classification and the physical derived geometry make that inheritance meaningful.",
+      "Use the exact supplied Complementary Unbound r5.8.1 archive and saved shader options as read-only audit inputs; record a precise supported implementation plan when current Workbench-owned code cannot complete parity.",
+      "Retain the former project's Translucent Glass findings, especially ordinary resource/CTM composition, translucent render-layer and face-culling concerns, and the boundary with BGE × CTM."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/bge-complementary"
+      ],
+      "exclusions": [
+        "BGE × CTM UUID 5747a309-1bd5-4280-b25c-98669e149928 retains Continuity connection, overlay, canonical-appearance, and physical-contact policy; this project neither duplicates nor broadens that work.",
+        "Block Geometry Extensions and Nibaru retain canonical bindings, geometry registration, model generation, render-layer correctness, and physical surface/culling ownership; a BGE change is considered only after a supported shader-material contract is agreed.",
+        "The immutable originals/shaderpacks reference archive and its saved configuration are never modified, copied into artifacts, or redistributed as a patched shader pack.",
+        "No Iris mixin, private renderer hook, generated per-derived-block mapping, resource-pack-side shader override, or speculative shader-pack patch is an accepted implementation path without documented upstream support and licensing permission.",
+        "Minecraft runtime validation, release artifacts, Canary versions, deployment, and unrelated project status are outside this rescope/audit task."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "PROJECT",
+        "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "requirement": ">=4.2.22-bge.canary78.stair-wall-surface-authority+26.2",
+        "reason": "BGE C78 is the audited owner of authoritative BgeMaterialBindings, canonical parent/state projection, texture roles, and exact derived-geometry surface topology."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "5747a309-1bd5-4280-b25c-98669e149928",
+        "requirement": ">=0.12.0-canary12",
+        "reason": "BGE × CTM owns the separate Fabric appearance bridge and Continuity contact policy that composes with, but does not supply, Iris shader material IDs."
+      },
+      {
+        "type": "MOD",
+        "identifier": "iris",
+        "requirement": "1.11.2+mc26.2 audited stack",
+        "reason": "Iris reads the selected shader pack's block.properties mappings and provides the documented tag syntax available to a shader-pack author."
+      },
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "ComplementaryUnbound_r5.8.1.zip",
+        "requirement": "r5.8.1; SHA-256 bb89b1fc54687d4147a837fb2e3c3f7261a13bee51819761e9b6a91cb7915965",
+        "reason": "Exact user-supplied read-only reference pack whose block.properties material mapping and enabled Fancy Glass setting define this audit target."
+      },
+      {
+        "type": "MOD",
+        "identifier": "translucent-glass",
+        "requirement": "0.3.0 historical audited control",
+        "reason": "Its clear-glass resource treatment remains a representative texture/CTM control, not the defining shader-material scope."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Static rescope and architecture audit complete against BGE C78, BGE × CTM Canary 12, the exact Complementary Unbound r5.8.1 archive, and the supplied Fancy Glass-enabled configuration. BGE has the parent authority; Iris accepts pack-declared IDs/tags, but this exact pack has only explicit block mappings and no supported Workbench-only path to change its material IDs. No implementation or runtime validation has begun.",
+    "releases": {
+      "current": null,
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "NOT_RUN",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 3,
+    "activity_at": "2026-09-19T07:07:08.4908339Z",
+    "updated_at": "2026-09-19T07:07:08.4908339Z",
+    "last_codex_at": "2026-09-19T07:07:08.4908339Z",
+    "source_commit": "0dae5a8ba550e43886f7d74e23567697c466b1df"
+  }
+}
