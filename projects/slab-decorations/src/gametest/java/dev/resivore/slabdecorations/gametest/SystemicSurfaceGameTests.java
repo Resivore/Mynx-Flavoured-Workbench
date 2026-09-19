@@ -353,6 +353,49 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 80)
+    public void exactBgeFarmlandSlabsMatchVanillaThreeByThreeCropFertility(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos crop = helper.absolutePos(new BlockPos(7, 2, 7));
+        BlockPos center = crop.below();
+
+        for (int moisture : List.of(0, 7)) {
+            float expected = moisture == 0 ? 4.0F : 10.0F;
+            for (CropPlacement cropCase : ordinaryFarmlandCropItems()) {
+                Block cropBlock = cropCase.crop();
+                fillCropFertilityNeighborhood(level, center,
+                        Blocks.FARMLAND.defaultBlockState()
+                                .setValue(BlockStateProperties.MOISTURE, moisture));
+                level.setBlock(crop, cropBlock.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+                float vanilla = cropGrowthSpeed(cropBlock, level, crop);
+                helper.assertTrue(vanilla == expected,
+                        "Minecraft 26.2 vanilla 3x3 farmland fertility drifted for " + cropBlock
+                                + " at moisture " + moisture + ": " + vanilla);
+
+                for (SlabType type : SlabType.values()) {
+                    fillCropFertilityNeighborhood(level, center, farmlandSlab(type)
+                            .setValue(BlockStateProperties.MOISTURE, moisture));
+                    level.setBlock(crop, cropBlock.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+                    float slab = cropGrowthSpeed(cropBlock, level, crop);
+                    helper.assertTrue(slab == vanilla,
+                            "BGE Farmland Slab " + type + " changed complete 3x3 crop fertility for "
+                                    + cropBlock + " at moisture " + moisture + ": slab=" + slab
+                                    + ", vanilla=" + vanilla);
+
+                    fillMixedCropFertilityNeighborhood(level, center, type, moisture);
+                    level.setBlock(crop, cropBlock.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+                    float mixed = cropGrowthSpeed(cropBlock, level, crop);
+                    helper.assertTrue(mixed == vanilla,
+                            "mixed vanilla/BGE Farmland Slab neighborhood changed crop fertility for "
+                                    + cropBlock + " " + type + " at moisture " + moisture
+                                    + ": mixed=" + mixed + ", vanilla=" + vanilla);
+                }
+            }
+        }
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 100)
     public void wheatKeepsVanillaGrowthBonemealHarvestAndFarmlandLifecycle(GameTestHelper helper) {
         var level = helper.getLevel();
@@ -671,6 +714,44 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
     private static BlockState farmlandSlab(SlabType type) {
         return CnmTerrainCompat.FARMLAND_SLAB.defaultBlockState()
                 .setValue(BlockStateProperties.SLAB_TYPE, type);
+    }
+
+    private static void fillCropFertilityNeighborhood(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos center,
+            BlockState support) {
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                level.setBlock(center.offset(x, 0, z), support, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            }
+        }
+    }
+
+    private static void fillMixedCropFertilityNeighborhood(
+            net.minecraft.server.level.ServerLevel level,
+            BlockPos center,
+            SlabType type,
+            int moisture) {
+        BlockState vanilla = Blocks.FARMLAND.defaultBlockState()
+                .setValue(BlockStateProperties.MOISTURE, moisture);
+        BlockState slab = farmlandSlab(type).setValue(BlockStateProperties.MOISTURE, moisture);
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                level.setBlock(center.offset(x, 0, z), (x + z & 1) == 0 ? slab : vanilla,
+                        Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            }
+        }
+    }
+
+    private static float cropGrowthSpeed(Block crop, BlockGetter level, BlockPos pos) {
+        try {
+            Method method = CropBlock.class.getDeclaredMethod("getGrowthSpeed",
+                    Block.class, BlockGetter.class, BlockPos.class);
+            method.setAccessible(true);
+            return (float) method.invoke(null, crop, level, pos);
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("could not invoke Minecraft 26.2 crop fertility helper", exception);
+        }
     }
 
     private static void assertShapeOffset(

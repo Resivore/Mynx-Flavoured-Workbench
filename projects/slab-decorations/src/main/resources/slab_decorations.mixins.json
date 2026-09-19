@@ -8,6 +8,7 @@
     "BoneMealItemMixin",
     "BlockStateBaseSurvivalMixin",
     "BlockStateBaseShapeMixin",
+    "CropBlockFertilityMixin",
     "GrowingPlantBlockAccessor",
     "HangingMossSurvivalMixin",
     "MushroomBonemealMixin",

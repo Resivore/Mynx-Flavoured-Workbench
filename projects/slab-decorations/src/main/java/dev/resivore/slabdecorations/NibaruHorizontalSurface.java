@@ -54,10 +54,7 @@ public final class NibaruHorizontalSurface {
         if (exactHorizontalSource == supportState.getBlock()) {
             canonicalSupport = profile.canonicalParent().withPropertiesOf(supportState);
         } else if (supportState.is(CnmTerrainCompat.FARMLAND_SLAB)) {
-            // BGE deliberately keeps its lifecycle-owning Farmland Slab outside material-profile
-            // ownership. Its public block identity is the one narrow non-profile support that
-            // represents vanilla Farmland; no foreign state or registry-name convention enters.
-            canonicalSupport = Blocks.FARMLAND.withPropertiesOf(supportState);
+            canonicalSupport = canonicalizeExactBgeFarmland(supportState);
         } else {
             return Optional.empty();
         }
@@ -120,6 +117,19 @@ public final class NibaruHorizontalSurface {
     /** Downward-facing attachment plane within the support block. */
     public static double ceilingHeight(SlabType type) {
         return type == SlabType.TOP ? 0.5D : 0.0D;
+    }
+
+    /**
+     * Projects only BGE's lifecycle-owning Farmland Slab to its vanilla parent while retaining
+     * the shared MOISTURE property. The slab geometry stays in the real world state.
+     */
+    public static BlockState canonicalizeExactBgeFarmland(BlockState state) {
+        // BGE deliberately keeps Farmland Slab outside material-profile ownership. Its public
+        // identity is the one narrow non-profile support that represents vanilla Farmland; no
+        // foreign state or registry-name convention enters this authority.
+        return state.is(CnmTerrainCompat.FARMLAND_SLAB)
+                ? Blocks.FARMLAND.withPropertiesOf(state)
+                : state;
     }
 
     static Optional<Attachment> attachment(BlockState state, BlockGetter level, BlockPos pos) {

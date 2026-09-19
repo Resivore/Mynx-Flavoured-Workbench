@@ -137,6 +137,8 @@ final class CanonicalProjectionArchitectureTest {
                 "global canSurvive projection seam is not registered");
         assertTrue(commonMixins.contains("BlockStateBaseShapeMixin"),
                 "outline/collision alignment seam is not registered");
+        assertTrue(commonMixins.contains("CropBlockFertilityMixin"),
+                "exact BGE Farmland crop-fertility projection seam is not registered");
         assertTrue(commonMixins.contains("GrowingPlantBlockAccessor"),
                 "generic growing-column contract seam is not registered");
         assertTrue(commonMixins.contains("RibbitsToadstoolGrowthMixin"),
