@@ -1,0 +1,128 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 2,
+  "identity": {
+    "uuid": "b55e1fb7-64b8-41c1-8210-0b785e55c386",
+    "name": "BGE Glass Face Culling",
+    "project_id": "bge-glass-face-culling",
+    "aliases": [
+      "Block Geometry Extensions Glass Face Culling"
+    ],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Remove only the mutually compatible portion of a shared glass interface while preserving every exposed part of each participating surface.",
+      "Consume BGE's binding-owned C78 surface patches as the sole geometry authority for partial-block contact, including compound Stair and Wall topology.",
+      "Preserve upstream baked-model and Continuity output attributes while clipping final quads into deterministic rectangular fragments."
+    ],
+    "scope": [
+      "Wrap baked block models in the final Fabric model-loading phase and intercept their transformed Renderer API quads through the public emitter consumer seam.",
+      "Reconcile vanilla's boolean neighbor culling decision only for canonically compatible BGE glass bindings, then subtract exact coplanar BGE surface-patch intersections from the final source quad.",
+      "Preserve material, sprite, tint, light, normals, winding, UV mapping, and all unaffected geometry when emitting surviving fragments.",
+      "Fail open by passing through unsupported or non-grid final quads instead of inferring geometry not represented by BGE's surface contract."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/bge-glass-face-culling"
+      ],
+      "exclusions": [
+        "`projects/block-geometry-extensions` remains the unchanged owner of canonical material bindings and surface geometry; this project consumes exact BGE C78 public authority and does not patch BGE.",
+        "`projects/bge-ctm` remains unchanged and owns CTM connection and overlay policy; this project clips already transformed final quads without choosing CTM rules, sprites, or overlays.",
+        "`projects/translucent-glass-bge-compat` remains unchanged; no responsibility, evidence, or implementation is transferred from that project.",
+        "`WORKBENCH_SERVER_STATE.json` remains human-owned and unchanged.",
+        "Shaders, resource-pack classification, block registration, collision, placement, economy, BGE geometry generation, arbitrary translucent materials, and unrelated projects are outside this project's ownership.",
+        "Minecraft gameplay and visual behavior are not inferred from compilation, static analysis, unit tests, GameTests, or JAR inspection."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "PROJECT",
+        "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
+        "requirement": ">=4.2.22-bge.canary78.stair-wall-surface-authority+26.2",
+        "reason": "BGE C78 supplies the public canonical material binding and complete binding-owned surface-patch authority consumed by Canary 1; exact C78 is the controlled validation baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "~26.2",
+        "reason": "The baked-model, block-state, and quad interfaces are compiled and controlled against Minecraft Java 26.2."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Required Fabric runtime loader."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.156.0",
+        "reason": "Provides the public model-loading and Renderer API seams used by Canary 1; 0.156.0+26.2 is the exact controlled validation baseline."
+      },
+      {
+        "type": "MOD",
+        "identifier": "clutternomore",
+        "requirement": ">=2.0.7",
+        "reason": "Required transitively with BGE's canonical geometry provider; 2.0.7+26.2 is the exact controlled validation baseline."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": ">=25",
+        "reason": "Java 25 is the controlled compilation, test, and packaging runtime."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 establishes geometry-aware compatible-glass face subtraction entirely from BGE C78 canonical bindings and exact surface patches. A final-phase baked-model wrapper captures upstream transformed quads, restores only eligible source faces suppressed by the boolean neighbor predicate, subtracts exact coplanar receiver intersections, and emits deterministic fragments with interpolated vertex attributes. Controlled validation passes 10 unit tests and seven BGE-backed GameTests, including all 40 Stair states and all 161 nonempty Wall states. No Minecraft client visual session was run, so the project remains ACTIVE and RUNTIME_UNTESTED.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "embedded_version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "bge-glass-face-culling-0.1.0-canary1.jar",
+          "sha256": "00e1e909a36c7575e42163e08b33eb7982f9dc051c753bdfceedda2fe8d1e640"
+        },
+        "built_at": "2026-09-19T04:30:03.6696080Z",
+        "source_commit": "dd70711d2c872d512fa63e86289185f2a5546aea",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": [
+            {
+              "consumer_id": "bge_glass_face_culling",
+              "relationship": "depends",
+              "dependency_id": "minecraft",
+              "predicate": "~26.2",
+              "reason": "Canary 1 is compiled against Minecraft 26.2 baked-model, block-state, and vertex interfaces and must remain on the controlled target release.",
+              "regression_evidence": [
+                "A Java 25 clean build produced exact bge-glass-face-culling-0.1.0-canary1.jar, SHA-256 00e1e909a36c7575e42163e08b33eb7982f9dc051c753bdfceedda2fe8d1e640, from implementation checkpoint dd70711d2c872d512fa63e86289185f2a5546aea.",
+                "Ten unit tests and seven Minecraft 26.2 BGE-backed GameTests passed, covering deterministic rectangle subtraction, bilinear attribute interpolation, fragment emission, canonical glass compatibility, partial overlap, all 40 Stair states, and all 161 nonempty Wall states.",
+                "The exact Fabric Renderer API and model-loading seams, exact BGE C78 provider hash, packaged metadata, and production JAR contents passed controlled verification."
+              ]
+            }
+          ]
+        },
+        "summary": "Removes only the exact mutually compatible BGE glass surface overlap while preserving transformed appearance and every exposed fragment."
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-19T04:31:50.1050629Z",
+    "updated_at": "2026-09-19T04:31:50.1050629Z",
+    "last_codex_at": "2026-09-19T04:31:50.1050629Z",
+    "source_commit": "dd70711d2c872d512fa63e86289185f2a5546aea"
+  }
+}
