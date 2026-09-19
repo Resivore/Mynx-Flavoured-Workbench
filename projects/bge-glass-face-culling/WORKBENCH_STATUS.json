@@ -77,17 +77,17 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 corrects Canary 1's null-Direction culling crash and orders the glass wrapper after Fabric's WRAP_LAST phase so it clips the geometry emitted by supported late wrappers such as Slab Decorations. For null, it now delegates exactly to the upstream cull predicate and never resolves a neighbor or evaluates BGE geometry; real Directions retain C1's BGE C78 boundary behavior. The owner supplied real-client evidence that the exact Canary 1 artifact crashed the previously working world while building chunk meshes with a null Direction in GlassCullingBlockStateModel, and that disabling C1 let that world open. C2 passed controlled validation (13 unit tests and seven BGE-backed GameTests, including all 40 Stair states and all 161 nonempty Wall states), but C2 has not been tested in a real Minecraft client and remains ACTIVE and RUNTIME_UNTESTED.",
+    "milestone": "Canary 3 corrects Canary 2's full-glass ↔ partial-BGE visual failure by reserving every compatible, geometrically evaluable directional source face for exact final-quad clipping rather than allowing the upstream boolean predicate to discard it whole. A null Direction still delegates exactly upstream without a neighbor read or BGE evaluation; noneligible directional boundaries retain ordinary upstream behavior. C3 passed controlled validation (16 unit tests and eight BGE-backed GameTests, including representative full ↔ partial families, all 40 Stair states, and all 161 nonempty Wall states). The owner supplied C2 runtime evidence: the previously failing world now opens without the C1 null-Direction crash; partial ↔ partial appears correct; but full ↔ partial incorrectly removed the full face. C3 itself remains ACTIVE and RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
-        "embedded_version": "0.1.0-canary2",
+        "version": "0.1.0-canary3",
+        "embedded_version": "0.1.0-canary3",
         "artifact": {
-          "filename": "bge-glass-face-culling-0.1.0-canary2.jar",
-          "sha256": "51de571fd2bc549f02fa415b8189f4acf62fb1851051417f5cd7cb011b18914c"
+          "filename": "bge-glass-face-culling-0.1.0-canary3.jar",
+          "sha256": "df55e0c384292c7c79be19be0a6ac4c6b7ce373cb0c6f4de63413817f1ea8d2e"
         },
-        "built_at": "2026-09-19T05:18:27.8291128Z",
-        "source_commit": "437b3dce25218eb901e26b662d021e2ad4e2239b",
+        "built_at": "2026-09-19T06:39:44.6852639Z",
+        "source_commit": "a559613c1b5efba1118bb370d232be7cc1519276",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -96,16 +96,16 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "Canary 2 is compiled against Minecraft 26.2 baked-model, block-state, and vertex interfaces and must remain on the controlled target release.",
+              "reason": "Canary 3 is compiled against Minecraft 26.2 baked-model, block-state, and vertex interfaces and must remain on the controlled target release.",
               "regression_evidence": [
-                "A Java 25 clean build produced exact bge-glass-face-culling-0.1.0-canary2.jar, SHA-256 51de571fd2bc549f02fa415b8189f4acf62fb1851051417f5cd7cb011b18914c, from implementation checkpoint 437b3dce25218eb901e26b662d021e2ad4e2239b.",
-                "Thirteen unit tests and seven Minecraft 26.2 BGE-backed GameTests passed, including null-Direction upstream delegation without boundary lookup, deterministic rectangle subtraction, bilinear attribute interpolation, fragment emission, canonical glass compatibility, partial overlap, all 40 Stair states, and all 161 nonempty Wall states.",
+                "A Java 25 clean build produced exact bge-glass-face-culling-0.1.0-canary3.jar, SHA-256 df55e0c384292c7c79be19be0a6ac4c6b7ce373cb0c6f4de63413817f1ea8d2e, from implementation checkpoint a559613c1b5efba1118bb370d232be7cc1519276.",
+                "Sixteen unit tests and eight Minecraft 26.2 BGE-backed GameTests passed, including null-Direction upstream delegation without boundary lookup, noneligible upstream behavior, eligible-boundary whole-face-cull bypass and clipper handoff, deterministic rectangle subtraction, bilinear attribute interpolation, fragment emission, full/full removal, full/partial exact complement across representative BGE families, partial/partial overlap, all 40 Stair states, and all 161 nonempty Wall states.",
                 "The exact Fabric Renderer API/model-loading seams and C2 phase order, exact BGE C78 provider hash, packaged metadata, and production JAR contents passed controlled verification."
               ]
             }
           ]
         },
-        "summary": "Fixes null-direction chunk meshing and clips only exact compatible BGE glass overlap after supported late geometry transforms."
+        "summary": "Keeps compatible full-glass faces available for exact partial BGE-overlap clipping instead of discarding them whole."
       },
       "accepted": null,
       "rollback": null,
@@ -119,10 +119,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-19T05:18:52.5549747Z",
-    "updated_at": "2026-09-19T05:18:52.5549747Z",
-    "last_codex_at": "2026-09-19T05:18:52.5549747Z",
-    "source_commit": "437b3dce25218eb901e26b662d021e2ad4e2239b"
+    "revision": 3,
+    "activity_at": "2026-09-19T06:39:55.7715436Z",
+    "updated_at": "2026-09-19T06:39:55.7715436Z",
+    "last_codex_at": "2026-09-19T06:39:55.7715436Z",
+    "source_commit": "a559613c1b5efba1118bb370d232be7cc1519276"
   }
 }

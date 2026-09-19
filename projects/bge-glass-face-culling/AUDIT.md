@@ -77,6 +77,14 @@ Slab, Step, Layer, Quarter Column, Corner, Stair, and Wall), all 40 Stair states
 nonempty Wall states. The build hash-gates BGE C78 and the exact Fabric rendering/model-loading
 modules and audits the release JAR boundary.
 
+The final C3 controlled run from implementation checkpoint
+`a559613c1b5efba1118bb370d232be7cc1519276` passed all 16 Java unit tests and all eight BGE-backed
+Minecraft 26.2 GameTests. `verifyControlledProviders` confirmed the exact provider hashes and public
+seams; `verifyReleaseArtifact` confirmed the client-only packaged metadata and JAR boundary. The
+final staged `bge-glass-face-culling-0.1.0-canary3.jar` is 27,257 bytes with SHA-256
+`df55e0c384292c7c79be19be0a6ac4c6b7ce373cb0c6f4de63413817f1ea8d2e`, finalized at
+`2026-09-19T06:39:44.6852639Z`. These are controlled checks, not Minecraft client runtime evidence.
+
 These tests do not render a Minecraft client framebuffer and are not gameplay-runtime or shader
 evidence. The owner observed that exact C2 opened the previously affected world without the C1
 null-Direction crash and that partial ↔ partial geometry appeared correct. The owner also observed
