@@ -1,0 +1,270 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+configurations {
+    bgeReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    cnmReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    rendererReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    modelLoadingReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+def workbenchRoot = rootProject.projectDir.parentFile.parentFile
+def workbenchPrimaryRoot = providers.gradleProperty('workbenchPrimaryRoot')
+        .map { file(it) }
+        .getOrElse(workbenchRoot)
+def workbenchOriginalsRoot = providers.gradleProperty('workbenchOriginalsRoot')
+        .map { file(it) }
+        .getOrElse(new File(workbenchPrimaryRoot, 'originals'))
+def bgeReferenceJar = new File(workbenchPrimaryRoot,
+        'projects/block-geometry-extensions/artifacts/BGE C78.jar')
+def cnmReferenceJar = new File(workbenchOriginalsRoot,
+        'mods/clutternomore-2.0.7+26.2-fabric.jar')
+def rendererCoordinates = 'net.fabricmc.fabric-api:fabric-renderer-api-v1:14.1.3+2b0d8a229e'
+def modelLoadingCoordinates =
+        'net.fabricmc.fabric-api:fabric-model-loading-api-v1:8.0.16+c80601bb9e'
+def expectedBgeSha256 = 'ed2f5592b699532174bc63672f69c3574f01eb752175126bbc702e9cc86a07f0'
+def expectedCnmSha256 = '41a925e70d5e6e8c098bea7dc88c44486aed46724e35cb2fa4b1622b2a4dbcce'
+def expectedRendererSha256 = '44f49db445c904d5bcd6895b23bbe530476a51514140034976c92b1477886115'
+def expectedModelLoadingSha256 = 'a54c09fb75efa6c58ba378adc3791d0b5c8c68a28cb15ef5ce17163cea4e1c6d'
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    compileOnly files(bgeReferenceJar)
+    runtimeOnly files(bgeReferenceJar)
+    testCompileOnly files(bgeReferenceJar)
+    testRuntimeOnly files(bgeReferenceJar)
+    compileOnly files(cnmReferenceJar)
+    runtimeOnly files(cnmReferenceJar)
+
+    bgeReference files(bgeReferenceJar)
+    cnmReference files(cnmReferenceJar)
+    rendererReference(rendererCoordinates) { transitive = false }
+    modelLoadingReference(modelLoadingCoordinates) { transitive = false }
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'bge_glass_face_culling_gametest'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+def sha256 = { File file ->
+    MessageDigest digest = MessageDigest.getInstance('SHA-256')
+    file.withInputStream { input ->
+        byte[] buffer = new byte[64 * 1024]
+        for (int read; (read = input.read(buffer)) >= 0;) {
+            if (read > 0) digest.update(buffer, 0, read)
+        }
+    }
+    digest.digest().encodeHex().toString()
+}
+
+tasks.register('verifyControlledProviders') {
+    group = 'verification'
+    description = 'Verifies exact BGE C78 and the Minecraft 26.2 Fabric rendering seam.'
+    inputs.files(configurations.bgeReference, configurations.cnmReference,
+            configurations.rendererReference, configurations.modelLoadingReference)
+    doLast {
+        File bge = configurations.bgeReference.singleFile
+        File cnm = configurations.cnmReference.singleFile
+        File renderer = configurations.rendererReference.singleFile
+        File modelLoading = configurations.modelLoadingReference.singleFile
+        [
+                (bge): expectedBgeSha256,
+                (cnm): expectedCnmSha256,
+                (renderer): expectedRendererSha256,
+                (modelLoading): expectedModelLoadingSha256
+        ].each { file, expected ->
+            String actual = sha256(file)
+            if (actual != expected) {
+                throw new GradleException("Controlled input drifted: ${file.name} ${actual}")
+            }
+        }
+
+        ZipFile bgeArchive = new ZipFile(bge)
+        try {
+            [
+                    'dev/aero/cnmterraincompat/BgeMaterialBindings.class',
+                    'dev/aero/cnmterraincompat/BgeMaterialBindings$Binding.class',
+                    'dev/aero/cnmterraincompat/BgeSurfaceGeometry$SurfaceModel.class',
+                    'dev/aero/cnmterraincompat/BgeSurfaceGeometry$SurfacePatch.class',
+                    'games/twinhead/moreslabsstairsandwalls/api/material/BehaviorCapability.class',
+                    'games/twinhead/moreslabsstairsandwalls/api/material/VisualProfile.class'
+            ].each { path ->
+                if (bgeArchive.getEntry(path) == null) {
+                    throw new GradleException("BGE C78 surface authority is missing ${path}")
+                }
+            }
+        } finally {
+            bgeArchive.close()
+        }
+
+        ZipFile rendererArchive = new ZipFile(renderer)
+        try {
+            def entry = rendererArchive.getEntry(
+                    'net/fabricmc/fabric/api/client/renderer/v1/Renderer.class')
+            if (entry == null) throw new GradleException('Fabric Renderer API seam is missing')
+            String constants = new String(rendererArchive.getInputStream(entry).readAllBytes(),
+                    java.nio.charset.StandardCharsets.ISO_8859_1)
+            if (!constants.contains('quadEmitter') || !constants.contains('MutableQuadView')) {
+                throw new GradleException('Fabric final-quad consumer seam changed')
+            }
+        } finally {
+            rendererArchive.close()
+        }
+
+        ZipFile modelArchive = new ZipFile(modelLoading)
+        try {
+            [
+                    'net/fabricmc/fabric/api/client/model/loading/v1/ModelLoadingPlugin.class',
+                    'net/fabricmc/fabric/api/client/model/loading/v1/ModelModifier$AfterBakeBlock.class',
+                    'net/fabricmc/fabric/api/client/model/loading/v1/wrapper/WrapperBlockStateModel.class'
+            ].each { path ->
+                if (modelArchive.getEntry(path) == null) {
+                    throw new GradleException("Fabric model wrapper seam is missing ${path}")
+                }
+            }
+        } finally {
+            modelArchive.close()
+        }
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn tasks.named('verifyControlledProviders')
+    options.release = 25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+test {
+    useJUnitPlatform()
+    dependsOn tasks.named('verifyControlledProviders')
+}
+
+def packagedJar = tasks.named('jar').flatMap { it.archiveFile }
+
+tasks.register('verifyReleaseArtifact') {
+    group = 'verification'
+    description = 'Audits the client-only culling artifact and provider boundary.'
+    dependsOn tasks.named('jar')
+    inputs.file(packagedJar)
+    doLast {
+        File artifact = packagedJar.get().asFile
+        if (artifact.name != "bge-glass-face-culling-${project.version}.jar") {
+            throw new GradleException("Unexpected release filename: ${artifact.name}")
+        }
+        ZipFile archive = new ZipFile(artifact)
+        try {
+            def entries = archive.entries().toList()
+            def metadata = new JsonSlurper().parse(
+                    archive.getInputStream(archive.getEntry('fabric.mod.json')))
+            if (metadata.id != 'bge_glass_face_culling' || metadata.version != project.version ||
+                    metadata.environment != 'client' || metadata.depends?.minecraft != '~26.2' ||
+                    metadata.depends?.cnm_terrain_slabs_compat !=
+                            '>=4.2.22-bge.canary78.stair-wall-surface-authority+26.2') {
+                throw new GradleException('Release metadata no longer describes the C78 client consumer')
+            }
+            [
+                    'fabric.mod.json',
+                    'dev/resivore/bgeglassculling/MaterialCompatibility.class',
+                    'dev/resivore/bgeglassculling/SurfaceOverlapResolver.class',
+                    'dev/resivore/bgeglassculling/client/BgeGlassFaceCullingClient.class',
+                    'dev/resivore/bgeglassculling/client/GlassCullingBlockStateModel.class',
+                    'dev/resivore/bgeglassculling/client/GlassQuadClipper.class',
+                    'dev/resivore/bgeglassculling/geometry/Rect16.class',
+                    'dev/resivore/bgeglassculling/geometry/RectSubtraction.class'
+            ].each { path ->
+                if (archive.getEntry(path) == null) {
+                    throw new GradleException("Release artifact is missing ${path}")
+                }
+            }
+            if (entries.any { it.name.startsWith('dev/aero/cnmterraincompat/') ||
+                    it.name.startsWith('games/twinhead/moreslabsstairsandwalls/') ||
+                    it.name.endsWith('.jar') || it.name.startsWith('assets/') }) {
+                throw new GradleException('Consumer artifact must not bundle BGE, providers, or assets')
+            }
+            byte[] resolver = archive.getInputStream(archive.getEntry(
+                    'dev/resivore/bgeglassculling/SurfaceOverlapResolver.class')).readAllBytes()
+            String resolverConstants = new String(resolver,
+                    java.nio.charset.StandardCharsets.ISO_8859_1)
+            if (resolverConstants.contains('StairBlock') || resolverConstants.contains('WallBlock') ||
+                    resolverConstants.contains('BuiltInRegistries')) {
+                throw new GradleException('Generic overlap resolver contains geometry or registry special cases')
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the exact ignored Canary 1 JAR for canonical local retention.'
+    dependsOn tasks.named('verifyReleaseArtifact')
+    from(packagedJar)
+    into(layout.projectDirectory.dir('artifacts'))
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyReleaseArtifact')
+}
+
+java {
+    withSourcesJar()
+}
