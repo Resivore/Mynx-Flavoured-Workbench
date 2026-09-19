@@ -86,6 +86,7 @@ function Test-AllowedChangedEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/AxisModelContract(?:\$.*)?\.class$' -or
             $Name -eq 'cnm_terrain_slabs_compat.mixins.json' -or
             $Name -eq 'assets/cnm_terrain_slabs_compat/lang/en_us.json' -or
+            $Name -eq 'assets/more_slabs_stairs_and_walls/lang/en_us.json' -or
             $Name -eq 'data/minecraft/tags/block/mineable/shovel.json' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompat(?:\$.*)?\.class$' -or
             $Name -eq 'dev/aero/cnmterraincompat/CanonicalGeometryRegistry.class' -or
@@ -133,7 +134,10 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/CnmShapeMapCandidateBridge(?:\$.*)?\.class$' -or
             $Name -match '^assets/more_slabs_stairs_and_walls/blockstates/purpur_pillar_(?:slab|stairs)\.json$' -or
             $Name -match '^assets/more_slabs_stairs_and_walls/models/block/purpur_pillar_(?:slab|stairs)(?:_.*)?\.json$' -or
-            $Name -eq 'assets/more_slabs_stairs_and_walls/models/block/purpur_pillar_wall_inventory.json'
+            $Name -eq 'assets/more_slabs_stairs_and_walls/models/block/purpur_pillar_wall_inventory.json' -or
+            $Name -eq 'games/twinhead/moreslabsstairsandwalls/tools/NativeMaterialResourceGenerator.class' -or
+            $Name -match '^assets/more_slabs_stairs_and_walls/(?:blockstates|items|models/(?:block|item))/[a-z0-9_]+_(?:slab|stairs|wall)(?:_(?:top|bottom|double|inner|outer|post|side(?:_tall)?|inventory))?\.json$' -or
+            $Name -match '^data/more_slabs_stairs_and_walls/loot_table/blocks/[a-z0-9_]+_(?:slab|stairs|wall)\.json$'
 }
 
 $unifiedPath = (Resolve-Path -LiteralPath $UnifiedJar).Path
@@ -222,7 +226,6 @@ try {
 
     foreach ($required in @(
         'fabric.mod.json',
-        'cnm_terrain_slabs_compat.mixins.json',
         'assets/cnm_terrain_slabs_compat/lang/en_us.json',
         'data/minecraft/tags/block/mineable/shovel.json',
         'dev/aero/cnmterraincompat/CnmTerrainCompat.class',
@@ -287,7 +290,6 @@ try {
     $predecessorNew = New-StringSet @($unifiedMap.Keys | Where-Object { -not $predecessorMap.ContainsKey($_) })
     $requiredPredecessorChanges = New-StringSet @(
         'fabric.mod.json',
-        'cnm_terrain_slabs_compat.mixins.json',
         'dev/aero/cnmterraincompat/CnmTerrainCompat.class',
         'dev/aero/cnmterraincompat/mixin/ClutterNoMoreVariantScanMixin.class',
         'dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources.class',
@@ -383,12 +385,12 @@ try {
     $blockModels = @($unifiedMap.Keys | Where-Object { $_ -match "^assets/$namespace/models/block/.+\.json$" })
     $lootTables = @($unifiedMap.Keys | Where-Object { $_ -match "^data/$namespace/loot_table/blocks/[^/]+\.json$" })
     $recipes = @($unifiedMap.Keys | Where-Object { $_ -match "^data/$namespace/recipes?/.*\.json$" })
-    Require ($blockstates.Count -eq 868 -and $slabs.Count -eq 277 -and $stairs.Count -eq 280 -and $walls.Count -eq 311) `
+    Require ($blockstates.Count -eq 875 -and $slabs.Count -eq 279 -and $stairs.Count -eq 282 -and $walls.Count -eq 314) `
             'Native registry/resource inventory changed'
-    Require ($families.Count -eq 312) 'Canonical family inventory changed'
-    Require ($itemDefinitions.Count -eq 867 -and $itemModels.Count -eq 867 -and $blockModels.Count -eq 6966) `
+    Require ($families.Count -eq 314) 'Canonical family inventory changed'
+    Require ($itemDefinitions.Count -eq 876 -and $itemModels.Count -eq 876 -and $blockModels.Count -eq 7067) `
             'Native client resource inventory changed'
-    Require ($lootTables.Count -eq 866 -and $recipes.Count -eq 0) 'Native server resource inventory changed'
+    Require ($lootTables.Count -eq 875 -and $recipes.Count -eq 0) 'Native server resource inventory changed'
 
     $resourceEntries = @($unifiedMap.Keys | Where-Object {
         $_ -match '^(?:assets|data)/' -or $_ -match '(?:^|/)pack\.mcmeta$' -or $_ -match '\.mixins\.json$'
