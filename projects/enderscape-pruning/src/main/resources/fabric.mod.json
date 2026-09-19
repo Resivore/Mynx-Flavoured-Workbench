@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "enderscape_pruning",
+  "version": "${version}",
+  "name": "Enderscape Pruning",
+  "description": "C1 companion compatibility layer that prunes selected Enderscape acquisition paths while retaining upstream registries.",
+  "authors": ["Resivore compatibility workbench"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.enderscapepruning.EnderscapePruning"],
+    "client": ["dev.resivore.enderscapepruning.client.EnderscapePruningClient"],
+    "jei_mod_plugin": ["dev.resivore.enderscapepruning.client.EnderscapePruningJeiPlugin"]
+  },
+  "mixins": ["enderscape_pruning.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": ">=0.157.0",
+    "minecraft": "=26.2",
+    "java": ">=25",
+    "enderscape": "=3.0.2+mc26.2",
+    "matcha_flavoured_data": "*"
+  },
+  "recommends": {
+    "jei": ">=30.18.0"
+  },
+  "custom": {
+    "workbench:enderscape_input": {
+      "filename": "enderscape-fabric-3.0.2+mc26.2.jar",
+      "sha256": "9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b"
+    }
+  }
+}

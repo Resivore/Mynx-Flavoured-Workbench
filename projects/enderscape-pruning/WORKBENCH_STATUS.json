@@ -6,7 +6,8 @@
     "name": "Enderscape Pruning",
     "project_id": "enderscape-pruning",
     "aliases": [
-      "Enderscape 3.0.2 pruning audit"
+      "Enderscape 3.0.2 pruning audit",
+      "Enderscape Pruning Canary 1"
     ],
     "legacy_names": [],
     "legacy_ids": []
@@ -14,24 +15,26 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Define a safe, dependency-aware pruning plan for exact Enderscape 3.0.2 on Minecraft Java 26.2 Fabric without weakening retained End biome, structure, Magnia, potion, or Matcha Flavoured behavior.",
+      "Provide a separate Fabric compatibility layer for exact Enderscape 3.0.2 on Minecraft Java 26.2 without modifying or repackaging the upstream jar.",
       "Suppress future acquisition and discovery of owner-selected equipment while retaining registry identities needed by existing worlds and inventories.",
-      "Reconcile every Enderscape food and food-like loot path with exact Matcha Flavoured component-bearing identities without changing Enderscape's original loot odds or counts."
+      "Reconcile the audited Enderscape food-loot paths with exact current Matcha Flavoured component-bearing identities without changing Enderscape's original loot odds or counts.",
+      "Replace the selected native Enderscape foods' vanilla hunger restoration with the owner-selected current Matcha healing semantics while retaining their upstream effects and special behavior."
     ],
     "scope": [
-      "Audit the exact Enderscape 3.0.2 binary, built-in resource/data packs, recipes, loot tables, advancements, tags, structures, configured and placed features, mixins, and decompiled gameplay code.",
-      "Trace mirror, dagger, rubble-shield variants, Shadoline armor, Enderscape enchantments, native food/effect loops, Matcha-sensitive vanilla food loot, and the full Magnia system through acquisition, discovery, save-data, and worldgen dependencies.",
-      "Record the narrowest safe future implementation boundary and an owner-decision checklist; do not implement pruning, build a Canary, deploy, or claim Minecraft runtime evidence in this audit task."
+      "Generate an always-enabled companion data overlay from the SHA-256-pinned Enderscape input, preserving audited loot-pool math while replacing only selected entries and current Matcha food identity components.",
+      "Filter only the owner-selected recipes, advancement branches, ordinary Creative/JEI discovery identities, normal enchantment availability, and exact Enderscape-specific direct hunger behavior through Fabric APIs and narrow 3.0.2 mixins.",
+      "Package, statically verify, retain, and document Canary 1 without launching Minecraft or changing any testing profile."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/enderscape-pruning"
       ],
       "exclusions": [
-        "Enderscape source or binary modification, registry removal, mixin changes, data/resource-pack implementation, generated artifact production, Canary identity, deployment, or acceptance.",
+        "Enderscape source or binary modification, registry deletion, fork, repackaging, or redistribution; the exact upstream jar remains installed separately and untouched.",
         "Minecraft launches, runtime observations, Test Slot or Test Instance Manager changes, and any access to protected or retired gameplay profiles.",
         "Changes to originals, WORKBENCH_SERVER_STATE.json, Matcha Flavoured, Matcha x JEI Integration, Enderscape's upstream repository, or any unrelated Workbench project.",
-        "Claims that static decompilation proves runtime safety, or that disabling a built-in pack retroactively changes already-generated chunks or stored item/effect identities."
+        "End biome, terrain, world generation, structures other than the selected future loot evaluation, Magnia behavior/worldgen, Magnia Radio availability, and the potion/Void/brewing/arrow systems.",
+        "Claims that build, static checks, or generated artifacts prove Minecraft runtime safety."
       ]
     },
     "dependencies": [
@@ -56,8 +59,8 @@
       {
         "type": "MOD",
         "identifier": "fabric-api",
-        "requirement": ">=0.154.2",
-        "reason": "Stable runtime capability declared by the exact Enderscape binary; future compatibility work should not add an unnecessary upper bound."
+        "requirement": ">=0.157.0",
+        "reason": "Stable resource-pack and Creative-tab capabilities used by Canary 1; no upper bound is imposed."
       },
       {
         "type": "MOD",
@@ -98,25 +101,62 @@
     ]
   },
   "state": {
-    "milestone": "Exact Enderscape 3.0.2 static audit complete. The report recommends acquisition/discovery suppression with registry retention for removable equipment, preservation of all potion/effect and Magnia registries, source-aware Matcha loot replacement without probability drift, and explicit owner decisions before implementation. No implementation, artifact, deployment, or Minecraft runtime test exists.",
+    "milestone": "Canary 1 is a separately packaged, always-enabled Fabric companion for exact Enderscape 3.0.2. It removes only future normal recipes, selected loot results, candidate advancement branches, normal enchantment availability, and narrow Creative/JEI discovery for Shadoline armor, Dagger, Rubble Shield variants, Mirror variants, Bundling, Stun Burst, and Transdimensional; it preserves upstream registries, Rebound, the Magnia Attractor's Resonance path, the full potion/Void system, and Magnia. Its generated overlay preserves audited loot pools, rolls, conditions, weights, count functions, and unrelated entries while emitting current Matcha component identities. Controlled static validation passed; Minecraft runtime remains untested.",
     "releases": {
-      "current": null,
+      "current": {
+        "version": "0.1.0-canary1",
+        "embedded_version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "enderscape-pruning-0.1.0-canary1.jar",
+          "sha256": "93e8b9ae4f4bc010f6ca18b74a0a8ac1744b298e96f3ddfce2c3f876589a2fd5"
+        },
+        "built_at": "2026-09-19T07:29:22.9774388Z",
+        "source_commit": "a3bcd02bda69cf6d2413f1ec59c0a9acf62d8558",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": [
+            {
+              "consumer_id": "enderscape_pruning",
+              "relationship": "depends",
+              "dependency_id": "minecraft",
+              "predicate": "=26.2",
+              "reason": "Canary 1 targets the controlled Minecraft 26.2 recipe, advancement, tag, Creative, food, and resource-pack interfaces.",
+              "regression_evidence": [
+                "A Java 25 Gradle build produced enderscape-pruning-0.1.0-canary1.jar, SHA-256 93e8b9ae4f4bc010f6ca18b74a0a8ac1744b298e96f3ddfce2c3f876589a2fd5, from implementation checkpoint a3bcd02bda69cf6d2413f1ec59c0a9acf62d8558.",
+                "Six focused JUnit static-contract tests passed against Minecraft 26.2 mappings, the exact Enderscape input, and current Matcha data fingerprints."
+              ]
+            },
+            {
+              "consumer_id": "enderscape_pruning",
+              "relationship": "depends",
+              "dependency_id": "enderscape",
+              "predicate": "=3.0.2+mc26.2",
+              "reason": "The generated overlay and one string-targeted Chorus Cake Roll mixin are intentionally bound to the audited Enderscape 3.0.2 data and bytecode shape.",
+              "regression_evidence": [
+                "The generator and tests fail closed unless enderscape-fabric-3.0.2+mc26.2.jar matches SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b.",
+                "The focused suite verifies all ten direct candidate loot paths, all selected recipe and advancement identities, the retained explore_end icon, and the absence of redistributed upstream classes or unrelated overlay resources."
+              ]
+            }
+          ]
+        },
+        "summary": "Prunes selected Enderscape acquisition and discovery paths while preserving upstream registries, loot math, Matcha food identities, the Void system, and Magnia."
+      },
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "STATIC_PASS",
+      "build": "CONTROLLED_VALIDATION_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-19T00:34:34Z",
-    "updated_at": "2026-09-19T00:34:34Z",
-    "last_codex_at": "2026-09-19T00:34:34Z",
-    "source_commit": "f6614d253d5ec8429f398a218be36f9d192caec0"
+    "revision": 2,
+    "activity_at": "2026-09-19T07:29:57.6831896Z",
+    "updated_at": "2026-09-19T07:29:57.6831896Z",
+    "last_codex_at": "2026-09-19T07:29:57.6831896Z",
+    "source_commit": "a3bcd02bda69cf6d2413f1ec59c0a9acf62d8558"
   }
 }

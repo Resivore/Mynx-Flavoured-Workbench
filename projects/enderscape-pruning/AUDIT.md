@@ -481,3 +481,26 @@ These phases deliberately preserve decision gates; they do not silently select t
 8. **Runtime/save matrix.** Execute `TESTING.md` on disposable new and copied existing worlds. Bind evidence to the exact artifact. A pass must cover candidate non-acquisition, legacy stacks, structure loot, Matcha components, native foods, Void loop, Magnia, creative/JEI, reload/reconnect, and registry/log health.
 
 No phase authorizes modifying the upstream jar, protected profiles, server-state record, or unrelated projects.
+
+## 15. Canary 1 owner resolutions — 2026-09-19
+
+The owner resolutions in the Canary 1 implementation brief supersede the open
+choices recorded in section 13 for this release only. C1 suppresses ordinary
+acquisition and discovery of all Shadoline armor, Dagger, the four Rubble
+Shield variants, and all Mirror variants while retaining their upstream
+registries. It suppresses Bundling, Stun Burst, and Transdimensional from
+normal acquisition; leaves Rebound unchanged; and limits newly applied
+Resonance to the retained Magnia Attractor. Shadoline recycling is suppressed,
+`explore_end` remains with a Magnia Attractor display icon, and the candidate
+advancement branches are hidden as complete branches.
+
+For native food, the selected current-Matcha values are one heart for Drift
+Jelly Bottle, Puruberry, and Murublight Bracket, plus two hearts per Chorus
+Cake Roll bite, with their vanilla hunger contribution neutralized. Current
+source-aware Matcha component identities are applied to the audited Bread,
+Carrot, Golden Carrot, Golden Apple, Enchanted Golden Apple, and Chorus Fruit
+loot occurrences; structure-loot Cod, Potato, Poisonous Potato, Honey Bottle,
+and exact Suspicious Stew variants remain untouched. Potions, Void mechanics,
+and Magnia—including worldgen and Magnia Radio availability—remain upstream
+except for Bundling availability. These decisions authorize the narrow C1
+companion implementation; they do not constitute Minecraft runtime evidence.
