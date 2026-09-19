@@ -71,20 +71,47 @@
   "state": {
     "milestone": "Canary 1 is a client-only, provider-neutral canonical-model bridge. It captures the active canonical leaf baked model per resource reload, retains BGE's clean base model, and projects only actual exterior, exact-grid foliage quads over BGE's merged authoritative surfaces. The selected leaf provider remains the visual authority; a texture-only treatment needs no invented geometry and produces no added shell. No runtime client evidence is claimed.",
     "releases": {
-      "current": null,
+      "current": {
+        "version": "0.1.0-canary1",
+        "embedded_version": "0.1.0-canary1",
+        "artifact": {
+          "filename": "bge-bushy-leaves-0.1.0-canary1.jar",
+          "sha256": "e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf"
+        },
+        "built_at": "2026-09-19T22:38:10.3838023Z",
+        "source_commit": "21a98eaa5a21b6c47471781de9a353b22475b6b1",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": [
+            {
+              "consumer_id": "bge_bushy_leaves",
+              "relationship": "depends",
+              "dependency_id": "minecraft",
+              "predicate": "~26.2",
+              "reason": "Canary 1 uses Minecraft 26.2's public block-state model and Fabric final quad-emission seams.",
+              "regression_evidence": [
+                "A clean Java 25/Fabric Loom 1.17.19 build against BGE C82 SHA-256 165229966de7e02b0a42c2b5fc90cefa116f0b626cb55a6378caea6e38f6341c produced bge-bushy-leaves-0.1.0-canary1.jar SHA-256 e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf from implementation checkpoint 21a98eaa5a21b6c47471781de9a353b22475b6b1.",
+                "Six focused unit tests passed: exterior-only projection, exact partial contact subtraction, fail-closed interior/wrong-face rejection, deterministic subtraction deduplication, representative compound occupancy bounds, and invalid-frame rejection.",
+                "Controlled verification passed BGE API, Fabric Renderer/model-loader hash gates, JAR metadata and required-class checks, and asset/provider exclusion checks."
+              ]
+            }
+          ]
+        },
+        "summary": "Projects genuine exterior canonical-leaf foliage over BGE's exact exposed geometry without bundling leaf-provider assets."
+      },
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
-    "validation": { "build": "NOT_RUN", "runtime": "RUNTIME_UNTESTED" },
+    "validation": { "build": "CONTROLLED_VALIDATION_PASS", "runtime": "RUNTIME_UNTESTED" },
     "blocker": null
   },
   "synchronization": {
     "revision": 1,
-    "activity_at": "2026-09-19T22:00:48.1935790Z",
-    "updated_at": "2026-09-19T22:00:48.1935790Z",
-    "last_codex_at": "2026-09-19T22:00:48.1935790Z",
-    "source_commit": "cbce3944c52f7a1bc30919afd546cf7ed419a80a"
+    "activity_at": "2026-09-19T22:38:10.3838023Z",
+    "updated_at": "2026-09-19T22:38:10.3838023Z",
+    "last_codex_at": "2026-09-19T22:38:10.3838023Z",
+    "source_commit": "21a98eaa5a21b6c47471781de9a353b22475b6b1"
   }
 }
