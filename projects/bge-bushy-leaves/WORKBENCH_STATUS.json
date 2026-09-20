@@ -12,13 +12,13 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Make BGE leaf geometry inherit only genuine exterior foliage from its canonical full leaf's currently baked resource-pack model.",
+      "Make BGE leaf geometry inherit only genuine exterior foliage from its canonical full leaf's currently baked resource-pack model, including arbitrary non-grid source primitives where the active resource stack exposes them.",
       "Use BGE canonical bindings and exact exposed SurfacePatch geometry as the sole authority for material identity, resolved topology, and decorative footprint."
     ],
     "scope": [
-      "Install a client-only final block-model wrapper that retains BGE's existing model and projects only axis-aligned exterior canonical foliage quads over merged BGE surface patches.",
-      "Preserve copied quad sprite, tint, material/render-layer, UV, light, and normal data; exact same-canonical leaf contact suppresses only covered boundary regions.",
-      "Fail closed for missing canonical models, unsupported bindings, texture-only leaf treatments, non-grid/non-exterior quads, or incompatible leaf neighbors."
+      "Retain Canary 1 unchanged as the exact recorded runtime-no-op artifact while documenting its axis-aligned rectangle limitation against the active Minecraft 26.2 leaf model.",
+      "Plan, but do not implement in this audit, a late-after-bake client wrapper that consumes final canonical decorative mesh fragments and maps only their cube-exterior portions onto BGE-owned exposed SurfacePatch footprints.",
+      "Preserve copied quad sprite, tint, material/render-layer, UV, light, normals, and winding; use only the active baked resource result and fail closed for absent models, unsupported surface data, invalid primitives, or an unavailable final mesh seam."
     ],
     "boundaries": {
       "owned_paths": ["projects/bge-bushy-leaves"],
@@ -56,9 +56,9 @@
       },
       {
         "type": "RESOURCE_PACK",
-        "identifier": "active canonical leaf model",
+        "identifier": "active canonical leaf model (owner-supplied stack audited 2026-09-20)",
         "requirement": "optional; observed at client resource reload",
-        "reason": "The bridge consumes baked canonical leaf geometry at runtime and emits no authored foliage when a selected pack has no genuine exterior leaf geometry."
+        "reason": "Canary 1's exact owner-supplied runtime no-op is traced to the active baked result: Foundation v2's malformed leaf blockstates are skipped by Minecraft 26.2 and Matcha Flavoured's lower-priority cross_leaves geometry becomes the valid decorative source. C2 must consume the final runtime mesh rather than package resource-pack assets."
       },
       {
         "type": "TOOL",
@@ -69,7 +69,7 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is a client-only, provider-neutral canonical-model bridge. It captures the active canonical leaf baked model per resource reload, retains BGE's clean base model, and projects only actual exterior, exact-grid foliage quads over BGE's merged authoritative surfaces. The selected leaf provider remains the visual authority; a texture-only treatment needs no invented geometry and produces no added shell. No runtime client evidence is claimed.",
+    "milestone": "Canary 1 remains the exact current client-only artifact, but the owner supplied a runtime FAIL/no-op for bge-bushy-leaves-0.1.0-canary1.jar SHA-256 e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf: loading and gameplay succeeded, BGE leaf families resolved, no BGE × Bushy Leaves exception occurred, and no visible bushy foliage was added. The 2026-09-20 audit establishes that Minecraft 26.2 rejects Foundation v2's non-quadrant leaf blockstate rotations; the valid fallback is Matcha Flavoured's baked cross_leaves model with eight rotated exterior quads. C1 rejects all eight as non-grid, while its six core cube quads are not exterior. C2 is planned only: a late-baked arbitrary-primitive exterior-fragment projector over authoritative BGE surfaces, with no copied upstream resource assets.",
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
@@ -104,14 +104,14 @@
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
-    "validation": { "build": "CONTROLLED_VALIDATION_PASS", "runtime": "RUNTIME_UNTESTED" },
+    "validation": { "build": "CONTROLLED_VALIDATION_PASS", "runtime": "RUNTIME_FAIL" },
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-19T22:38:10.3838023Z",
-    "updated_at": "2026-09-19T22:38:10.3838023Z",
-    "last_codex_at": "2026-09-19T22:38:10.3838023Z",
-    "source_commit": "21a98eaa5a21b6c47471781de9a353b22475b6b1"
+    "revision": 2,
+    "activity_at": "2026-09-20T02:42:01.3186384Z",
+    "updated_at": "2026-09-20T02:42:01.3186384Z",
+    "last_codex_at": "2026-09-20T02:42:01.3186384Z",
+    "source_commit": "c01d6351ac35fca342849bf55b1cce0114dc559c"
   }
 }
