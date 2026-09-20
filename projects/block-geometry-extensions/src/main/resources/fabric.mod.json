@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 87 — CNM Rebuild Closure",
-  "description": "Rebuilds deterministic CNM-family geometry and first-bake resources across ShapeMap reloads.",
+  "name": "Block Geometry Extensions Canary 88 — BBB Beam Model Resolution",
+  "description": "Resolves admitted BBB beam visual sources through their blockstate-selected models during CNM first-bake generation.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

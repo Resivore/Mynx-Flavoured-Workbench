@@ -32,6 +32,8 @@ import java.util.Map;
 public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvoker {
     private static final Identifier TEST_SOURCE = Identifier.fromNamespaceAndPath(
             CnmTerrainCompat.MOD_ID, "c81_mapping_fixture");
+    private static final Identifier MOSS_SLAB_CNM_ADMISSION = Identifier.fromNamespaceAndPath(
+            "more_slabs_stairs_and_walls", "moss_block_slab");
 
     @GameTest(maxTicks = 40)
     public void untypedCnmAdmissionBindsOneResolvedCanonicalFamilyWithoutTemporaryDuplicates(
@@ -39,9 +41,10 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
         CnmShapeMapCandidateBridge.Snapshot candidate = CnmShapeMapCandidateBridge.snapshots().stream()
                 .filter(snapshot -> snapshot.phase() == CnmShapeMapCandidateBridge.Phase.BOUND)
                 .filter(snapshot -> !snapshot.deferredMaterial())
+                .filter(snapshot -> snapshot.anchor().equals(MOSS_SLAB_CNM_ADMISSION))
                 .filter(snapshot -> !snapshot.cnmRoles().isEmpty())
                 .findFirst().orElseThrow(() -> new IllegalStateException(
-                        "No real CNM-admitted BGE candidate reached authoritative ShapeMap binding"));
+                        "Moss CNM admission did not reach authoritative ShapeMap binding"));
 
         Item canonical = BuiltInRegistries.ITEM.getValue(candidate.resolvedParent().orElseThrow());
         NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(Block.byItem(canonical)).orElseThrow();
@@ -167,6 +170,38 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
         helper.succeed();
     }
 
+    /**
+     * BBB's standard beam stairs are valid CNM visual sources, but their block ID is not a model
+     * ID: the blockstate selects {@code block/beam/<material>_beam_stairs[_inner|_outer]}.
+     * Exercise the identical first-bake writer for every beam material so this remains a
+     * resource-structure rule rather than an Acacia exception.
+     */
+    @GameTest(maxTicks = 80)
+    public void bbbBeamStairBlockstateModelsCloseGenericResourceGeneration(GameTestHelper helper) {
+        var manager = ExternalMaterialFamilyGameTests.clientFixtureManagerForBbbBeamResourceRegression();
+        Identifier acacia = Identifier.parse("bbb:acacia_beam_stairs");
+        helper.assertTrue(manager.getResource(Identifier.parse("bbb:models/block/acacia_beam_stairs.json")).isEmpty()
+                        && manager.getResource(Identifier.parse("bbb:blockstates/acacia_beam_stairs.json")).isPresent()
+                        && manager.getResource(Identifier.parse(
+                                "bbb:models/block/beam/acacia_beam_stairs_inner.json")).isPresent(),
+                "BBB fixture no longer proves its blockstate-to-beam-model indirection for " + acacia);
+        for (String material : BBB_BEAM_MATERIALS) {
+            Identifier visualSource = Identifier.fromNamespaceAndPath("bbb", material + "_beam_stairs");
+            Map<BgeGeometryRole, Identifier> roles = validationRoles(material);
+            var first = ResolvedCnmCandidateResources.generateVisualSourceForValidation(manager,
+                    visualSource, roles);
+            helper.assertTrue(first.familyCount() == 1,
+                    "First bake omitted valid BBB beam-stair visual source " + visualSource + ": " + first);
+            Map<Identifier, String> bytes = validationResourceBytes(roles);
+            var repeated = ResolvedCnmCandidateResources.generateVisualSourceForValidation(manager,
+                    visualSource, roles);
+            helper.assertTrue(repeated.equals(first) && validationResourceBytes(roles).equals(bytes),
+                    "Repeated BBB beam-stair resource generation was not deterministic: " + visualSource);
+            assertBbbBeamStairResourceClosure(helper, roles, material);
+        }
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void bgeGeneratedGeometryCannotRecursivelySeedAnotherCandidate(GameTestHelper helper) {
         NibaruMaterialProfile profile = NibaruMaterialProfiles.all().getFirst();
@@ -253,6 +288,51 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
         }
         return result;
     }
+
+    private static void assertBbbBeamStairResourceClosure(GameTestHelper helper,
+            Map<BgeGeometryRole, Identifier> roles, String material) {
+        for (Identifier role : roles.values()) {
+            Identifier blockState = Identifier.fromNamespaceAndPath(role.getNamespace(),
+                    "blockstates/" + role.getPath() + ".json");
+            generated(net.minecraft.server.packs.PackType.CLIENT_RESOURCES, blockState);
+        }
+        Identifier layer = roles.get(BgeGeometryRole.LAYER);
+        JsonObject model = generated(net.minecraft.server.packs.PackType.CLIENT_RESOURCES,
+                Identifier.fromNamespaceAndPath(layer.getNamespace(), "models/block/" + layer.getPath()
+                        + "_up_1.json"));
+        JsonObject textures = model.getAsJsonObject("textures");
+        String side = "bbb:block/beam/" + material;
+        String end = side + "_top";
+        helper.assertTrue(textures.get("side").getAsString().equals(side)
+                        && textures.get("top").getAsString().equals(end)
+                        && textures.get("bottom").getAsString().equals(end),
+                "BBB beam-stair resource indirection did not retain the beam side/end texture contract: "
+                        + material + " " + textures);
+    }
+
+    private static Map<BgeGeometryRole, Identifier> validationRoles(String material) {
+        String prefix = "validation/bbb/" + material + "_beam_stairs_";
+        return Map.of(BgeGeometryRole.LAYER, Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
+                        prefix + "layer"),
+                BgeGeometryRole.CORNER, Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
+                        prefix + "corner"),
+                BgeGeometryRole.QUARTER_COLUMN, Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
+                        prefix + "quarter_column"));
+    }
+
+    private static Map<Identifier, String> validationResourceBytes(Map<BgeGeometryRole, Identifier> roles) {
+        Map<Identifier, String> result = new LinkedHashMap<>();
+        for (Identifier role : roles.values()) {
+            Identifier blockState = Identifier.fromNamespaceAndPath(role.getNamespace(),
+                    "blockstates/" + role.getPath() + ".json");
+            result.put(blockState, generated(net.minecraft.server.packs.PackType.CLIENT_RESOURCES, blockState)
+                    .toString());
+        }
+        return result;
+    }
+
+    private static final List<String> BBB_BEAM_MATERIALS = List.of("oak", "spruce", "birch", "jungle",
+            "acacia", "dark_oak", "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak");
 
     /**
      * The fixture was untyped during registry admission. Once CNM selected its actual profile,

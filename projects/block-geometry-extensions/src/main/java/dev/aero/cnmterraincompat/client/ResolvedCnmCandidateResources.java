@@ -68,6 +68,25 @@ public final class ResolvedCnmCandidateResources {
     }
 
     /**
+     * Exercises the same geometry writer for an admitted visual source whose registered family
+     * identity is outside this test seam. The supplied IDs are resource-only and never register
+     * or bind a material parent.
+     */
+    public static GenerationSummary generateVisualSourceForValidation(ResourceManager manager,
+            Identifier visualSource, Map<BgeGeometryRole, Identifier> roles) {
+        Objects.requireNonNull(manager, "manager");
+        Objects.requireNonNull(visualSource, "visualSource");
+        Objects.requireNonNull(roles, "roles");
+        if (!roles.keySet().containsAll(List.of(BgeGeometryRole.LAYER, BgeGeometryRole.CORNER,
+                BgeGeometryRole.QUARTER_COLUMN))) {
+            throw new IllegalArgumentException("Validation visual source is missing a BGE tail: " + roles);
+        }
+        Identifier layer = roles.get(BgeGeometryRole.LAYER);
+        return writeFamilies(manager, Map.of(layer, new FamilyResources(visualSource, Map.copyOf(roles),
+                java.util.Optional.empty())));
+    }
+
+    /**
      * First-bake regression seam. It deliberately uses only admitted visual references, before
      * a caller relies on any elected parent. A later ordinary generation replaces the same role
      * resources from the resolved parent without adding another functional family.
@@ -83,6 +102,11 @@ public final class ResolvedCnmCandidateResources {
             families.put(family.roles().get(BgeGeometryRole.LAYER),
                     new FamilyResources(family.visualSource(), family.roles(), family.wall()));
         }
+        return writeFamilies(manager, families);
+    }
+
+    private static GenerationSummary writeFamilies(ResourceManager manager,
+            Map<Identifier, FamilyResources> families) {
         int models = 0;
         for (FamilyResources family : families.values()) {
             Textures textures = Textures.resolve(manager, family.visualSource());
@@ -387,8 +411,8 @@ public final class ResolvedCnmCandidateResources {
                 Set<Identifier> visiting) {
             if (!visiting.add(model)) throw new IllegalStateException("Cyclic canonical model parent: " + model);
             try {
-                Resource resource = manager.getResource(modelResourceId(model)).orElseThrow(() ->
-                        new IllegalStateException("Missing canonical model for resolved CNM parent: " + model));
+                Resource resource = manager.getResource(modelResourceId(model)).orElse(null);
+                if (resource == null) return blockStateVariables(manager, model, visiting);
                 JsonObject root;
                 try (var reader = resource.openAsReader()) {
                     root = JsonParser.parseReader(reader).getAsJsonObject();
@@ -410,6 +434,70 @@ public final class ResolvedCnmCandidateResources {
             }
         }
 
+        /**
+         * A block ID normally names {@code models/block/<id>}. BBB beam standard forms instead
+         * name their concrete models from the blockstate (for example,
+         * {@code block/beam/acacia_beam_stairs_inner}). Keep the ShapeMap parent unchanged and
+         * follow that provider-owned visual indirection only when the direct model is absent.
+         */
+        private static Map<String, String> blockStateVariables(ResourceManager manager, Identifier model,
+                Set<Identifier> visiting) {
+            if (model.getPath().startsWith("block/")) {
+                throw new IllegalStateException("Missing canonical model for resolved CNM parent: " + model);
+            }
+            Identifier blockState = Identifier.fromNamespaceAndPath(model.getNamespace(),
+                    "blockstates/" + model.getPath() + ".json");
+            Resource resource = manager.getResource(blockState).orElseThrow(() ->
+                    new IllegalStateException("Missing canonical model for resolved CNM parent: " + model));
+            JsonObject root;
+            try (var reader = resource.openAsReader()) {
+                root = JsonParser.parseReader(reader).getAsJsonObject();
+            } catch (IOException exception) {
+                throw new IllegalStateException("Cannot read canonical blockstate " + blockState, exception);
+            }
+            List<Identifier> models = new ArrayList<>();
+            collectBlockStateModels(root, models);
+            if (models.isEmpty()) {
+                throw new IllegalStateException("Canonical blockstate has no model for resolved CNM parent: "
+                        + model + " " + blockState);
+            }
+            IllegalStateException failure = null;
+            Map<String, String> firstVariables = null;
+            for (Identifier visualModel : models) {
+                try {
+                    Map<String, String> variables = variables(manager, visualModel, visiting);
+                    if (firstVariables == null) firstVariables = variables;
+                    if (hasOrdinaryTextureContract(variables)) return variables;
+                } catch (IllegalStateException exception) {
+                    failure = exception;
+                }
+            }
+            if (firstVariables != null) return firstVariables;
+            throw new IllegalStateException("Cannot resolve a canonical visual model through blockstate "
+                    + blockState + " for resolved CNM parent: " + model, failure);
+        }
+
+        private static void collectBlockStateModels(JsonElement value, List<Identifier> models) {
+            if (value.isJsonObject()) {
+                JsonObject object = value.getAsJsonObject();
+                JsonElement model = object.get("model");
+                if (model != null && model.isJsonPrimitive() && model.getAsJsonPrimitive().isString()) {
+                    models.add(Identifier.parse(model.getAsString()));
+                }
+                for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+                    if (!entry.getKey().equals("model")) collectBlockStateModels(entry.getValue(), models);
+                }
+            } else if (value.isJsonArray()) {
+                for (JsonElement child : value.getAsJsonArray()) collectBlockStateModels(child, models);
+            }
+        }
+
+        private static boolean hasOrdinaryTextureContract(Map<String, String> variables) {
+            return firstValue(variables, "side", "all", "texture", "particle") != null
+                    && firstValue(variables, "top", "end", "all", "side", "particle") != null
+                    && firstValue(variables, "bottom", "top", "end", "all", "side", "particle") != null;
+        }
+
         private static Identifier modelResourceId(Identifier model) {
             String path = model.getPath().startsWith("block/") ? "models/" + model.getPath()
                     : "models/block/" + model.getPath();
@@ -417,13 +505,18 @@ public final class ResolvedCnmCandidateResources {
         }
 
         private static String first(Map<String, String> variables, Identifier canonical, String... names) {
+            String value = firstValue(variables, names);
+            return value == null ? null : texture(canonical, value);
+        }
+
+        private static String firstValue(Map<String, String> variables, String... names) {
             for (String name : names) {
                 String value = resolve(variables, variables.get(name));
-                if (value != null) return texture(canonical, value);
+                if (value != null) return value;
             }
             for (String value : variables.values()) {
                 String resolved = resolve(variables, value);
-                if (resolved != null) return texture(canonical, resolved);
+                if (resolved != null) return resolved;
             }
             return null;
         }

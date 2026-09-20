@@ -1455,6 +1455,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             + "\",\"x\":90,\"y\":90},\"axis=y\":{\"model\":\"" + model
                             + "\"},\"axis=z\":{\"model\":\"" + model
                             + "\",\"x\":90,\"y\":180}}}");
+            addBbbBeamStandardFormFixtures(json, material);
         }
         json.put(Identifier.parse("mynx_trees:items/silver_birch_leaves.json"),
                 "{\"model\":{\"type\":\"minecraft:model\","
@@ -1527,6 +1528,11 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         return clientFixtureManager(true);
     }
 
+    /** BBB resource regression fixture: direct conventional models must remain genuinely absent. */
+    static ResourceManager clientFixtureManagerForBbbBeamResourceRegression() {
+        return clientFixtureManager(false);
+    }
+
     /** Small native-resource fixture with distinguishable topology/UV data for C87 copying tests. */
     private static void addStructuralReferenceFixtures(Map<Identifier, String> json, String reference) {
         String namespace = "more_slabs_stairs_and_walls";
@@ -1556,6 +1562,34 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         json.put(Identifier.fromNamespaceAndPath(namespace, "models/block/" + reference + ".json"),
                 "{\"parent\":\"minecraft:block/block\",\"textures\":{\"all\":\"minecraft:block/"
                         + reference + "_full\"}}");
+    }
+
+    /**
+     * BBB's retained beam slab/stair models live below {@code block/beam/}; there is deliberately
+     * no {@code models/block/<material>_beam_<form>.json}. These tiny JSON-only fixtures preserve
+     * that resource topology without importing any provider texture bytes.
+     */
+    private static void addBbbBeamStandardFormFixtures(Map<Identifier, String> json, String material) {
+        String beam = "bbb:block/beam/" + material;
+        String stairs = material + "_beam_stairs";
+        String slab = material + "_beam_slab";
+        json.put(Identifier.fromNamespaceAndPath("bbb", "blockstates/" + stairs + ".json"),
+                "{\"variants\":{\"facing=north,half=bottom,shape=inner_left\":{\"model\":\""
+                        + beam + "_beam_stairs_inner\"},\"facing=north,half=bottom,shape=straight\":{\"model\":\""
+                        + beam + "_beam_stairs\"}}}");
+        json.put(Identifier.fromNamespaceAndPath("bbb", "models/block/beam/" + material
+                        + "_beam_stairs_inner.json"),
+                "{\"textures\":{\"side\":\"" + beam + "\",\"top\":\"" + beam + "_top\"}}");
+        json.put(Identifier.fromNamespaceAndPath("bbb", "models/block/beam/" + material
+                        + "_beam_stairs.json"),
+                "{\"textures\":{\"side\":\"" + beam + "_top\",\"bottom\":\"" + beam + "\"}}");
+        json.put(Identifier.fromNamespaceAndPath("bbb", "blockstates/" + slab + ".json"),
+                "{\"variants\":{\"facing=up,type=bottom\":{\"model\":\"" + beam
+                        + "_beam_slab\"}}}");
+        json.put(Identifier.fromNamespaceAndPath("bbb", "models/block/beam/" + material
+                        + "_beam_slab.json"),
+                "{\"textures\":{\"side\":\"" + beam + "\",\"top\":\"" + beam
+                        + "_top\",\"bottom\":\"" + beam + "_top\"}}");
     }
 
     private static List<String> bbbBeamMaterials() {
