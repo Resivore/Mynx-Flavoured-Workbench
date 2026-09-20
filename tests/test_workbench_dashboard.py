@@ -432,23 +432,26 @@ class WorkbenchDashboardTests(unittest.TestCase):
 
     def test_current_main_legacy_canary_display_overrides_are_exactly_bound(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        expected = {
-            "building-but-better": "C8",
-            "yungs-api-26.2": "C2",
-            "workbench-test-marker": "C2",
-            "matcha-noxious-redstone": "C3",
-            "ribbit-villagers": "C2",
-        }
-        manifests = [
-            dashboard.load_json(root / "projects" / project_id / "WORKBENCH_STATUS.json")
-            for project_id in expected
-            if project_id != "ribbit-villagers"
-        ]
-        manifests.append(dashboard.load_json(root / "resourcepacks" / "ribbit-villagers" / "WORKBENCH_STATUS.json"))
-        for manifest in manifests:
-            current = manifest["state"]["releases"]["current"]
-            number = dashboard.canary_number_for_release(manifest["identity"]["uuid"], current)
-            self.assertEqual(f"C{number}", expected[manifest["identity"]["project_id"]])
+        statuses = dashboard.load_repository_statuses(root)
+        for project_uuid, override in dashboard.CANARY_DISPLAY_OVERRIDES.items():
+            with self.subTest(project_uuid=project_uuid):
+                self.assertIn(project_uuid, statuses)
+                manifest = statuses[project_uuid][1]
+                current = manifest["state"]["releases"]["current"]
+                artifact = current["artifact"]
+                filename = None if artifact is None else artifact["filename"]
+                ordinary = dashboard.resolve_canary_number(
+                    current["version"],
+                    current.get("embedded_version"),
+                    filename,
+                )
+                number = dashboard.canary_number_for_release(project_uuid, current)
+                if ordinary is not None:
+                    self.assertEqual(number, ordinary)
+                else:
+                    self.assertEqual(current["version"], override["version"])
+                    self.assertEqual(artifact["sha256"], override["sha256"])
+                    self.assertEqual(number, override["canary"])
 
     def test_changed_override_identity_requires_a_new_override_or_canary(self) -> None:
         uuid = "5d42f47f-b006-4125-840d-dec0d2728afa"
@@ -475,12 +478,16 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertEqual(by_id["mynx-regions-unexplored"].lifecycle, "ACTIVE")
         self.assertEqual(by_id["slab-decorations"].lifecycle, "ACTIVE")
         bge = by_id["block-geometry-extensions"]
+        bge_current = statuses[bge.uuid][1]["state"]["releases"]["current"]
+        bge_accepted = statuses[bge.uuid][1]["state"]["releases"]["accepted"]
+        expected_deployed_release = dashboard.canonical_release_identity(bge_accepted)
         self.assertEqual(bge.lifecycle, "ACTIVE")
-        self.assertEqual(bge.current_version, "C73 (Canonical Bindings; embedded 4.2.17-bge.canary73.canonical-bindings+26.2)")
+        self.assertEqual(bge.current_version, bge_current["version"])
+        self.assertEqual(bge.current_canary, dashboard.canary_number_for_release(bge.uuid, bge_current))
+        self.assertEqual(server_state[bge.uuid], expected_deployed_release)
+        self.assertNotEqual(expected_deployed_release, dashboard.canonical_release_identity(bge_current))
         self.assertEqual(bge.server_status, "OUTDATED")
-        self.assertEqual(bge.deployed_release, dashboard.canonical_release_identity(
-            statuses[bge.uuid][1]["state"]["releases"]["accepted"]
-        ))
+        self.assertEqual(bge.deployed_release, expected_deployed_release)
         all_manifests = [
             dashboard.load_json(path)
             for container in ("projects", "resourcepacks")
@@ -489,6 +496,10 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertFalse(any(manifest["definition"]["lifecycle"] == "TESTING" for manifest in all_manifests))
         html = dashboard.render_dashboard(records, generated_at=datetime(2026, 9, 16, 5, 10, tzinfo=timezone.utc))
         payload = json.loads(re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL).group(1))  # type: ignore[union-attr]
+        payload_by_id = {project["projectId"]: project for project in payload["projects"]}
+        expected_bge_payload = dashboard._project_payload(bge)
+        self.assertEqual(payload_by_id[bge.project_id]["version"], bge_current["version"])
+        self.assertEqual(payload_by_id[bge.project_id]["versionDisplay"], expected_bge_payload["versionDisplay"])
         self.assertFalse(any(project["lifecycle"] == "TESTING" for project in payload["projects"]))
         self.assertEqual(len(payload["projects"]), len(records))
         self.assertIn("<title>Mynx Dashboard</title>", html)
