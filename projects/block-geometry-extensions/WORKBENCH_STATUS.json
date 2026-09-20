@@ -34,7 +34,7 @@
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.32-bge.canary88.bbb-beam-model-resolution+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.33-bge.canary89.cnm-family-root-classification+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, six Mynx Trees log, wood, and leaf sources, all 12 BBB beam parents including Pale Oak, and 39 Enderscape sources (14 axis-aware, 20 ordinary, three terrain, and two path). The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite; absent `block_of_raw_magnia` is one declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched, but their provider state is geometry-only and cannot carry an independent material AXIS; C69 therefore gives BGE canonical AxisSlab and AxisStairs forms, retains BBB's ordinary thin WoodenWallBlock as the canonical wall, and keeps the five other BGE axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
@@ -42,6 +42,7 @@
         "projects/block-geometry-extensions"
       ],
       "exclusions": [
+        "C89 changes only CNM/BGE family-root classification after normal first-pass family completion: every canonically bound non-root role, whether supplied as a normal slab, stair, wall, Vertical Slab, Step, Layer, Corner, or Quarter Column, is rejected as a later CNM source by both Slab and Stair scan branches. It adds no name- or provider-specific exclusion, synthetic geometry combination, canonical binding, validation bypass, registration, resource, placement, economy, CTM, or provider-behavior change.",
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
         "C68 changes only normal axis-material Layer face UV rectangles: it preserves Layer bounds, placement, collision, state, texture roles, grain rotation, special visual paths, non-axis materials, all other geometries, registration, data, display transforms, and external-material support.",
@@ -61,7 +62,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C88 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C89 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -84,17 +85,17 @@
     ]
   },
   "state": {
-    "milestone": "C88 corrects the supplied C87 BBB beam-stair first-bake crash: legitimate CNM/ShapeMap resolution may select a BBB beam stair whose blockstate names the provider's `block/beam/...` visual models rather than providing a direct block-ID model. BGE now resolves that already admitted source through its blockstate-selected ordinary texture contract without changing canonical identity or eligibility. Controlled Java 25 validation passed all 155/155 GameTests; C88 remains ACTIVE and runtime-untested. Supplied C87/C86/C85/C84 and exact-C80 observations remain predecessor-only; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C89 corrects the supplied canonical-binding world-load failure without adding any synthetic binding: after an ordinary first CNM family-completion pass, BGE classifies every canonically bound non-root geometry role as derived and both CNM Slab and Stair scan branches reject it as a future family root. This preserves intended direct material family autopopulation while preventing generic recursive combinations such as `material_slab_wall` and `material_wall_slab`. Controlled Java 25 validation passed all 156/156 GameTests; C89 remains ACTIVE and runtime-untested. C88 and older observations remain predecessor-only; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C88 (BBB Beam Model Resolution; embedded 4.2.32-bge.canary88.bbb-beam-model-resolution+26.2)",
-        "embedded_version": "4.2.32-bge.canary88.bbb-beam-model-resolution+26.2",
+        "version": "C89 (CNM Family Root Classification; embedded 4.2.33-bge.canary89.cnm-family-root-classification+26.2)",
+        "embedded_version": "4.2.33-bge.canary89.cnm-family-root-classification+26.2",
         "artifact": {
-          "filename": "BGE C88.jar",
-          "sha256": "fb007b8e5ebd3062e8f9af04ad893be77c87640d49d09cc23482f82883327bf3"
+          "filename": "BGE C89.jar",
+          "sha256": "cc1368f48fffcde03997c4d3f1d0e8907236c584d7ae107f35eb4e06e98667f2"
         },
-        "built_at": "2026-09-20T06:36:39.1205985Z",
-        "source_commit": "af37629a9df09209b444afae3f1a0030d1325200",
+        "built_at": "2026-09-20T14:28:39.0134844Z",
+        "source_commit": "f529b96f708520d5d01f1af21313f409d9ae2e32",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -103,16 +104,16 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C88 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
+              "reason": "The exact C89 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "Java 25 clean packaging produced exact `BGE C88.jar`, 6,408,199 bytes, SHA-256 fb007b8e5ebd3062e8f9af04ad893be77c87640d49d09cc23482f82883327bf3, from implementation/artifact checkpoint af37629a9df09209b444afae3f1a0030d1325200.",
-                "The C88 controlled Minecraft 26.2 GameTest suite passed 155/155, including two fresh ShapeMap mapping/resolution passes, no-wall generic completion, first-bake/repeated resource generation, and direct/repeated `bbb:acacia_beam_stairs` blockstate-model resource generation across all 12 BBB beam materials.",
-                "Material-profile architecture and exact C80/accepted-C58 archive audits passed. The C88 verifier found one root descriptor, zero nested JARs, zero packaged CNM classes, zero forbidden provider texture bytes, 167 intentional C80 changes, 43 allowed new entries, zero missing predecessor entries, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, zero recipes, and zero invalid JSON."
+                "Java 25 clean packaging produced exact `BGE C89.jar`, 6,408,281 bytes, SHA-256 cc1368f48fffcde03997c4d3f1d0e8907236c584d7ae107f35eb4e06e98667f2, from preceding coherent implementation/artifact checkpoint f529b96f708520d5d01f1af21313f409d9ae2e32.",
+                "The C89 controlled Minecraft 26.2 GameTest suite passed 156/156, including generic regression coverage that canonically bound slab/stair roles reject CNM candidate admission without adding `material_slab_wall`, while ordinary canonical material family roles remain bound and validated.",
+                "Material-profile architecture, Glass Corner UV, and exact C80/accepted-C58 archive audits passed. The C89 verifier found one root descriptor, zero nested JARs, zero packaged CNM classes, zero forbidden provider texture bytes, 168 intentional C80 changes, 43 allowed new entries, zero missing predecessor entries, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, zero recipes, and zero invalid JSON."
               ]
             }
           ]
         },
-        "summary": "Resolves valid BBB beam-stair visual variables through provider blockstate-selected models during first-bake CNM/BGE generation while preserving C87 ShapeMap closure and all existing geometry identities."
+        "summary": "Prevents every canonically bound non-root CNM/BGE geometry role from recursively seeding another CNM material family while preserving normal direct material-family autopopulation and canonical binding validation."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -180,10 +181,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 50,
-    "activity_at": "2026-09-20T06:36:39.1205985Z",
-    "updated_at": "2026-09-20T06:36:39.1205985Z",
-    "last_codex_at": "2026-09-20T06:36:39.1205985Z",
-    "source_commit": "af37629a9df09209b444afae3f1a0030d1325200"
+    "revision": 51,
+    "activity_at": "2026-09-20T14:28:39.0134844Z",
+    "updated_at": "2026-09-20T14:28:39.0134844Z",
+    "last_codex_at": "2026-09-20T14:28:39.0134844Z",
+    "source_commit": "f529b96f708520d5d01f1af21313f409d9ae2e32"
   }
 }
