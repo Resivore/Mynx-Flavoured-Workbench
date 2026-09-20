@@ -31,15 +31,26 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
         super.extractRenderState(entity, state, partialTick);
         Entity owner = entity.owner();
         if (owner instanceof Villager villager) {
-            // Keep the line attached to the same deterministic tip used by the isolated
-            // crossed-arms rod layer without assuming vanilla/player arm geometry.
             Vec3 villagerPosition = villager.getPosition(partialTick);
             float yaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
-            FishingRodPose.Point tip = FishingRodPose.tip(villagerPosition.x, villagerPosition.y,
-                    villagerPosition.z, yaw);
-            state.line = tip.isFinite()
-                    ? new Vec3(tip.x(), tip.y(), tip.z()).subtract(entity.getPosition(partialTick))
-                    : null;
+            Vec3 ribbitsTip = VwrFishingRodLayer.ribbitsRodTip(villager);
+            if (ribbitsTip != null) {
+                // The provider captures this endpoint from the same PoseStack that submitted the
+                // authored rod, rather than retaining an independent VWR rod-tip approximation.
+                state.line = ribbitsTip.subtract(entity.getPosition(partialTick));
+            } else if (!VwrFishingRodLayer.ribbitsRodProviderAvailable()) {
+                // Ribbits is optional. Retain C17's proven stick/line presentation only when its
+                // visual provider or resources are unavailable.
+                FishingRodPose.Point tip = FishingRodPose.tip(villagerPosition.x, villagerPosition.y,
+                        villagerPosition.z, yaw);
+                state.line = tip.isFinite()
+                        ? new Vec3(tip.x(), tip.y(), tip.z()).subtract(entity.getPosition(partialTick))
+                        : null;
+            } else {
+                // Await the matching rod-layer submission instead of displaying a line from an
+                // arbitrary fallback point beside an available authored rod.
+                state.line = null;
+            }
         } else state.line = null;
     }
 

@@ -1,9 +1,8 @@
 package dev.resivore.villagerwork;
 
 /**
- * Shared, model-independent approximation for the visible Fisherman rod.  It deliberately uses
- * body yaw rather than player-arm bones, so frog-villager resource packs retain control of the
- * villager model while the rod and line still agree on a stable physical direction.
+ * C17's model-independent stick fallback. The optional Ribbits rod path captures its line origin
+ * from the rendered model transform instead of using these values.
  */
 public final class FishingRodPose {
     /**
@@ -34,9 +33,9 @@ public final class FishingRodPose {
         }
     }
 
-    // The line origin starts from C15's verified approximation, then follows the same body-space
-    // inward movement as the rendered rod.  Positive model Z toward the torso reduces its
-    // outward body-yaw distance without changing height.
+    // The fallback line origin starts from C15's verified approximation, then follows the same
+    // body-space inward movement as the fallback stick. Positive model Z toward the torso
+    // reduces its outward body-yaw distance without changing height.
     static final double C15_TIP_FORWARD = 1.37;
     static final double TIP_FORWARD = C15_TIP_FORWARD - C17_INWARD_BODY_OFFSET.z();
     private static final double TIP_RIGHT = 0.10;
@@ -50,7 +49,7 @@ public final class FishingRodPose {
         }
     }
 
-    /** Returns the approximate outer tip of the custom-rendered, forward-held vanilla rod. */
+    /** Returns the approximate outer tip of the fallback forward-held stick. */
     public static Point tip(double villagerX, double villagerY, double villagerZ, float bodyYawDegrees) {
         if (!Double.isFinite(villagerX) || !Double.isFinite(villagerY) || !Double.isFinite(villagerZ)
                 || !Float.isFinite(bodyYawDegrees)) return new Point(Double.NaN, Double.NaN, Double.NaN);

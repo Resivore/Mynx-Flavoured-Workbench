@@ -20,20 +20,20 @@ class FishingRodPoseTest {
         assertTrue(FishingRodPose.C17_INWARD_BODY_OFFSET.hasNoVerticalComponent());
     }
 
-    @Test void rodTipFacesTheVillagerBodyDirectionAndStaysFinite() {
+    @Test void fallbackStickTipFacesTheVillagerBodyDirectionAndStaysFinite() {
         FishingRodPose.Point south = FishingRodPose.tip(10.0, 64.0, 20.0, 0.0F);
         FishingRodPose.Point east = FishingRodPose.tip(10.0, 64.0, 20.0, -90.0F);
 
         assertTrue(south.isFinite());
         assertTrue(east.isFinite());
         assertEquals(21.29, south.z(), 0.000001,
-                "the shared line origin follows the corrected physical body-space inward movement");
+                "the fallback line origin follows the corrected physical body-space inward movement");
         assertEquals(11.29, east.x(), 0.000001,
-                "the shared line origin follows the corrected physical body-space inward movement");
+                "the fallback line origin follows the corrected physical body-space inward movement");
         assertEquals(0.08, FishingRodPose.C15_TIP_FORWARD - (south.z() - 20.0), 0.000001,
-                "the line tip must move inward by exactly the rod's body-space correction");
+                "the fallback line tip must move inward by exactly the rod's body-space correction");
         assertEquals(65.51, south.y(), 0.000001,
-                "the shared line origin keeps C15's visible height");
+                "the fallback line origin keeps C15's visible height");
     }
 
     @Test void invalidInputsNeverProduceAUsableLineOrigin() {
