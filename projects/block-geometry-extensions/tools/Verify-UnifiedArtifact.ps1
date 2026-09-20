@@ -86,6 +86,7 @@ function Test-AllowedChangedEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/BgeMaterialBindings(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmShapeMapCandidateBridge(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/DeferredCnmGeometryBlock(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/(?:DeferredCnmWallBlock|SourceProviderTintFallback)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ResolvedCnmCandidateData(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ResolvedCnmCandidateResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/AxisModelContract(?:\$.*)?\.class$' -or
@@ -143,6 +144,7 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -eq 'dev/aero/cnmterraincompat/mixin/BlockItemPlacementMixin.class' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmShapeMapCandidateBridge(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/DeferredCnmGeometryBlock(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/(?:DeferredCnmWallBlock|SourceProviderTintFallback)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ResolvedCnmCandidateData(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ResolvedCnmCandidateResources(?:\$.*)?\.class$' -or
             $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/CanonicalPillarTextureResolver(?:\$.*)?\.class$' -or

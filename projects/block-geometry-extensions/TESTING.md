@@ -1,44 +1,43 @@
-# BGE C86 Enderscape Layer-facing binding manual verification
+# BGE C87 CNM rebuild-closure manual verification
 
-Current candidate: `BGE C86.jar`
+Current candidate: `BGE C87.jar`
 
-- Embedded version: `4.2.30-bge.canary86.ender-layer-facing-binding+26.2`
-- SHA-256: `0767ac014444264a418dec21e23009190552d10e6c2508043de46ee918b1a715`
-- Source checkpoint: `cf9c26fffcb3e4527fac4e30a608173626991129`
+- Embedded version: `4.2.31-bge.canary87.cnm-rebuild-closure+26.2`
+- SHA-256: `0f639cd769c0dc4f2efa1247391096c16b286fb399d96b54c3095fd464a5255d`
+- Source checkpoint: `45207323fa68d80665a7f5dfe7ec337c36c0dbf3`
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`
-- Immediate predecessor: exact C85 `BGE C85.jar`, SHA-256 `05c3df94913ccd343e9aab7afd9c7869e5bd6d41b50d0d1d21b8afff31db0510`.
+- Immediate predecessor: exact C86 `BGE C86.jar`, SHA-256 `0767ac014444264a418dec21e23009190552d10e6c2508043de46ee918b1a715`.
 - Rollback: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`.
 - Accepted release: exact C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`.
 
-This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C86 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
+This checklist is lifecycle-neutral. Record only behavior actually observed for the
+exact C87 bytes above. It does not authorize inspecting, creating, selecting, or
+modifying any protected or retired Minecraft profile.
 
-## C85 predecessor evidence — does not transfer to C86
+## CNM repeated-ShapeMap regression
 
-The supplied C85 world/datapack-load failure is specific to `cnm_terrain_slabs_compat 4.2.29-bge.canary85.ender-item-tint-fallback+26.2`: `BgeMaterialBindings.validateAndFreeze()` reports an unclassified shared canonical `facing` for the five Enderscape Layer families. C86 explicitly classifies that exact shared DirectionalBlock property and does not otherwise weaken binding validation. The report is not a C86 runtime result, and C86 has no gameplay-runtime observation.
+1. Use stock Clutter No More 2.0.7+26.2 and Enderscape 3.0.2+mc26.2. In one client launch, allow an initial CNM ShapeMap build, then trigger one legitimate later client reload or other ordinary ShapeMap reconstruction. Do not add or remove BGE/CNM blocks between passes.
+2. After both passes, inspect the selector/menu and placed forms for `mossy stone`, `polished end stone`, `shadoline`, `mirestone`, `kurodite`, `etched alluring magnia`, `dusk purpur block`, `celestial bricks`, and `murublight bricks`. Each eligible family must still contain exactly one BGE Corner, Quarter Column, and Layer.
+3. After both passes, inspect `veiled planks`, `celestial planks`, and `murublight planks`. Each must still contain exactly one normal Wall plus exactly one BGE Corner, Quarter Column, and Layer; no role may duplicate or select a different canonical parent.
+4. If log diagnostics are available, confirm each current pass describes that pass's resolved graph rather than reporting a stale role retained from an earlier mapping list. Record both trigger sequence and observed graph/role identities.
 
-The reported C84 Veiled Leaves startup fault and C83 Blistered Magnia `POLARITY` callback fault remain predecessor-only evidence; their C85/C84 fixes are retained unchanged by C86.
+## First-load resources and Enderscape visuals
 
-The retained C80 owner observations (Chiseled Resin Bricks and Chiseled Cinnabar PASS; Purpur side texture and missing existing-CNM forms FAIL) remain exact-C80 evidence only. Do not transfer them to C86.
+1. On the first client load, before manually reloading resources, open selector/inventory previews and place representative automatic CNM forms. There must be no missing model/texture warning or placeholder for a valid admitted BGE role. Repeat one ordinary client reload and confirm the same resources remain deterministic.
+2. Verify all six new full families—`stripped veiled log`, `stripped veiled wood`, `stripped celestial stem`, `stripped celestial hyphae`, `stripped murublight stem`, and `stripped murublight hyphae`. Check every normal BGE role, axis-aware placement, side/end textures, and UV orientation. Do not infer or test an invented stripping transition from a derived geometry.
+3. Compare `veiled end stone`, `celestial overgrowth`, and `corrupt overgrowth` against the Crimson Nylium BGE structural face/UV behavior while retaining their Enderscape material textures. Compare `celestial path` and `corrupt path` against Dirt Path/Grass Path BGE structural face/UV behavior. This does not imply source-only growth, path, survival, or flattening behavior on derived geometry.
+4. Check Void Shale's BGE roles use the exact side appearance on horizontal faces and the exact end appearance on top/bottom faces, with no axis state and no missing `enderscape:block/void_shale` reference.
+5. Exercise every exposed Blinklamp luminance state and selector/inventory preview. Every BGE geometry must use the provider's actual state-specific visual resources, retain C84 luminance behavior, and have no missing model/texture.
+6. Place and render a Veiled Leaves slab in-world and inspect its inventory/menu preview. It must not crash chunk rendering and must retain the canonical provider appearance when the provider uses a model-owned tint route rather than a registered block tint source. Recheck a native foliage material to ensure its tint behavior is unchanged.
 
-## C86 canonical-facing world-load regression
+## Retained boundaries and evidence discipline
 
-1. With the exact pinned Enderscape 3.0.2+mc26.2 and stock Clutter No More 2.0.7+26.2, create and load both a new and an existing world. Confirm datapack/world loading completes with no `BgeMaterialBindings.validateAndFreeze()` fatal validation error.
-2. For `veiled_end_stone`, `celestial_overgrowth`, `corrupt_overgrowth`, `celestial_path`, and `corrupt_path`, create/use the BGE Layer forms through normal supported play. Confirm each family registers once, and completing a Layer produces the canonical source without a binding-validation failure.
-3. If commands or state inspection are available, repeat the full-Layer completion for each valid cardinal and vertical exposed face. Record the source blockstate's resulting `facing`; it must match the completed Layer's face rather than silently resetting to a default.
-4. Recheck an existing axis-bearing family such as `veiled_log`: a completed Layer's canonical `axis` must remain intact, confirming C86 did not replace established canonical-property projection.
-
-## Exact Enderscape audit boundaries
-
-1. Recheck the C83 runtime-resource closure: CNM-resolved families retain Corner, Quarter Column, and Layer after a normal client resource reload, and generated resources resolve under their own namespace.
-2. For all 33 audited Enderscape sources, verify source identity and generated geometry/resources. The audit records projected material/geometry contracts; it deliberately does not claim that unprojected provider-specific source interactions are inherited by BGE geometry.
-3. In particular, source-only behavior for Void Shale and overgrowth/path sources (natural/iteration/stress interactions, attachment/survival/random-tick transforms, flattening, bonemeal, or provider-specific collision) remains canonical-provider behavior unless an exact C86 generated-role observation is recorded. Do not infer it from appearance or controlled tests.
-
-## Regression and evidence discipline
-
-1. Recheck representative Macaw's Paths, Mynx Trees, Ribbits, Building But Better, and native CNM families for retained registration, placement, collision, drops, canonical ownership, and switching behavior.
-2. Recheck C78 Stair/Wall surface behavior and C71/C72 Farmland Slab behavior separately if those scopes are relevant.
-3. For every observation, record the exact candidate SHA-256, source/mod versions, datapack configuration, reproducible sequence, expected result, and observed result. Controlled build, static checks, and GameTests do not establish gameplay acceptance.
+1. Recheck C86's completed Enderscape Layer facing behavior for the five DirectionalBlock-derived terrain/path families, and C84's Magnia/Blinklamp material-state behavior, only as regressions. Preserve the existing placement, economy, drop, and canonicalization behavior unless an exact C87 observation differs.
+2. The retained C86/C85/C84 and C80 owner observations are predecessor-only evidence and do not establish a C87 result. C87 has no recorded gameplay-runtime observation or acceptance.
+3. For every observation, record the exact candidate SHA-256, source/mod versions, datapack configuration, repeatable sequence, expected result, and observed result. Controlled builds, static checks, and GameTests do not establish gameplay acceptance.
 
 ## Retention and rollback
 
-Retain `BGE C86.jar` by its exact SHA-256 before runtime work. Keep C85 as immediate predecessor provenance, C72 as rollback provenance, and C70 as the accepted release; do not overwrite a retained artifact.
+Retain `BGE C87.jar` by its exact SHA-256 before runtime work. Keep C86 as
+immediate predecessor provenance, C72 as rollback provenance, and C70 as the
+accepted release; do not overwrite a retained artifact.
