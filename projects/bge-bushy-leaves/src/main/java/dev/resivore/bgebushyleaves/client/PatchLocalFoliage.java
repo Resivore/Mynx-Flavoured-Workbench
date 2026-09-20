@@ -54,9 +54,9 @@ final class PatchLocalFoliage {
                 && cullTest.test(patch.normal());
     }
 
-    private static void emitCard(QuadView source, QuadEmitter output, PatchFrame frame,
+    static void emitCard(QuadView source, QuadEmitter output, PatchFrame frame,
             PatchFoliagePlan.Card card, boolean reverse) {
-        output.copyFrom(source);
+        copyAppearance(source, output);
         PatchFoliagePlan.Vertex[] vertices = card.vertices();
         int[] winding = reverse ? new int[] {0, 3, 2, 1} : new int[] {0, 1, 2, 3};
         float[][] positions = new float[4][3];
@@ -75,6 +75,25 @@ final class PatchLocalFoliage {
         output.nominalFace(frame.normal());
         output.cullFace(null);
         output.emit();
+    }
+
+    /**
+     * Copies the public appearance contract without assuming the captured mesh and destination
+     * emitter share an implementation. Sodium's FRAPI output can receive a QuadView captured by
+     * another renderer, so {@link QuadEmitter#copyFrom(QuadView)} must not cross that boundary.
+     */
+    private static void copyAppearance(QuadView source, QuadEmitter output) {
+        output.atlas(source.atlas());
+        output.chunkLayer(source.chunkLayer());
+        output.itemRenderType(source.itemRenderType());
+        output.emissive(source.emissive());
+        output.diffuseShade(source.diffuseShade());
+        output.ambientOcclusion(source.ambientOcclusion());
+        output.foilType(source.foilType());
+        output.shadeMode(source.shadeMode());
+        output.animated(source.animated());
+        output.tintIndex(source.tintIndex());
+        output.tag(source.tag());
     }
 
     private static float[] position(PatchFrame frame, PatchFoliagePlan.Vertex vertex) {
