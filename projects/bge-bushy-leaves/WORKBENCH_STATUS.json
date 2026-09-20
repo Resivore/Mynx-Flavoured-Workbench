@@ -12,13 +12,14 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Make BGE leaf geometry inherit only genuine exterior foliage from its canonical full leaf's currently baked resource-pack model, including arbitrary non-grid source primitives where the active resource stack exposes them.",
-      "Use BGE canonical bindings and exact exposed SurfacePatch geometry as the sole authority for material identity, resolved topology, and decorative footprint."
+      "Keep canonical full leaves entirely provider-owned while making BGE-derived leaf geometry visibly bushy through provider-neutral, additive foliage.",
+      "Use BGE canonical bindings and exact exposed SurfacePatch geometry as the sole authority for material identity, resolved topology, and decorative attachment footprint.",
+      "Sample active final canonical leaf appearance after public Fabric model wrapping, without resource-path, registry-name, or provider-specific conventions."
     ],
     "scope": [
-      "Retain Canary 1 unchanged as the exact recorded runtime-no-op artifact while documenting its axis-aligned rectangle limitation against the active Minecraft 26.2 leaf model.",
-      "Plan, but do not implement in this audit, a late-after-bake client wrapper that consumes final canonical decorative mesh fragments and maps only their cube-exterior portions onto BGE-owned exposed SurfacePatch footprints.",
-      "Preserve copied quad sprite, tint, material/render-layer, UV, light, normals, and winding; use only the active baked resource result and fail closed for absent models, unsupported surface data, invalid primitives, or an unavailable final mesh seam."
+      "Canary 2 captures each canonical-root leaf BlockStateModel after ModelModifier.WRAP_LAST_PHASE, retains the clean BGE base model, and appends authored two-sided slanted cards only over merged binding-owned surface patches.",
+      "The cards preserve the sampled canonical quad's atlas/sprite, tint, material, render layer, UV, emissive, light, and shading behavior by copying it before changing authored positions and normals; non-cull samples are preferred and ordinary canonical leaf quads are the fallback.",
+      "The generic path covers BGE horizontal Slabs, resolved Stairs and Walls, Vertical Slabs, Steps, Layers, Corners, and Quarter Columns; a centralized small-support rule scales or omits a motif without geometry-name branches."
     ],
     "boundaries": {
       "owned_paths": ["projects/bge-bushy-leaves"],
@@ -26,7 +27,7 @@
         "BGE remains unchanged and owns canonical material identity plus resolved SurfacePatch topology; BGE × CTM remains optional adjacent context, not a dependency or geometry authority.",
         "No bushy-leaf resource-pack, mod, texture, model JSON, shader, provider class, or asset is copied, redistributed, or modified. The protected Minecraft testing profiles are not inspected or changed.",
         "Inventory, hand, creative-menu, JEI, collision, outline, placement, drops, recipes, waterlogging, leaf distance/persistence/decay, rain drip, redstone, pathfinding, and BGE family membership remain untouched.",
-        "No registry-name inference, per-geometry ID list, Stair/Wall special branch, guessed cube halo, or gameplay-state mutation is permitted."
+        "No registry-name inference, per-geometry ID list, Stair/Wall special branch, guessed cube halo, broad same-leaf decorative culling, or gameplay-state mutation is permitted."
       ]
     },
     "dependencies": [
@@ -34,13 +35,13 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": ">=4.2.22-bge.canary78.stair-wall-surface-authority+26.2",
-        "reason": "C78 is the oldest demonstrated BGE release with authoritative resolved patches for every requested topology; C82 is the controlled compile baseline."
+        "reason": "C78 is the oldest demonstrated BGE capability that supplies authoritative resolved patches for every requested topology; C84 is the controlled C2 compile baseline."
       },
       {
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Canary 1 targets Minecraft Java 26.2 public block-model and final renderer-quad interfaces."
+        "reason": "Canary 2 targets Minecraft Java 26.2 public block-model and renderer-quad interfaces."
       },
       {
         "type": "MOD",
@@ -52,13 +53,13 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": ">=0.156.0",
-        "reason": "Provides public 26.2 model-loading and renderer APIs."
+        "reason": "Provides the public model-loading and renderer APIs used by the client-only C2 wrapper."
       },
       {
         "type": "RESOURCE_PACK",
-        "identifier": "active canonical leaf model (owner-supplied stack audited 2026-09-20)",
-        "requirement": "optional; observed at client resource reload",
-        "reason": "Canary 1's exact owner-supplied runtime no-op is traced to the active baked result: Foundation v2's malformed leaf blockstates are skipped by Minecraft 26.2 and Matcha Flavoured's lower-priority cross_leaves geometry becomes the valid decorative source. C2 must consume the final runtime mesh rather than package resource-pack assets."
+        "identifier": "active canonical leaf model",
+        "requirement": "optional; sampled at client resource reload",
+        "reason": "Owner runtime evidence confirms Foundation v2 visibly supplies the active full-block bushy leaves in the real stack. C2 samples whichever final canonical baked leaf appearance is active and does not package or depend on Foundation, Matcha, or another provider's resource path."
       },
       {
         "type": "TOOL",
@@ -69,17 +70,17 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 remains the exact current client-only artifact, but the owner supplied a runtime FAIL/no-op for bge-bushy-leaves-0.1.0-canary1.jar SHA-256 e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf: loading and gameplay succeeded, BGE leaf families resolved, no BGE × Bushy Leaves exception occurred, and no visible bushy foliage was added. The 2026-09-20 audit establishes that Minecraft 26.2 rejects Foundation v2's non-quadrant leaf blockstate rotations; the valid fallback is Matcha Flavoured's baked cross_leaves model with eight rotated exterior quads. C1 rejects all eight as non-grid, while its six core cube quads are not exterior. C2 is planned only: a late-baked arbitrary-primitive exterior-fragment projector over authoritative BGE surfaces, with no copied upstream resource assets.",
+    "milestone": "Canary 2 is the current client-only additive-rendering artifact: it samples active final canonical leaf appearance after WRAP_LAST, renders BGE's clean base unchanged, and attaches deterministic crossed/slanted foliage cards only to merged BGE SurfacePatches. The owner corrected revision 2's static-inference claim: Foundation v2 is visibly active for canonical full leaves in the real client stack; the exact model-loading enabler remains unasserted and is unnecessary to C2. Exact C1 bge-bushy-leaves-0.1.0-canary1.jar SHA-256 e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf remains RUNTIME_FAIL/no-op: it loaded, reached gameplay, raised no BGE × Bushy Leaves exception, and added no visible foliage. C2 has controlled validation only and remains RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
-        "embedded_version": "0.1.0-canary1",
+        "version": "0.2.0-canary2",
+        "embedded_version": "0.2.0-canary2",
         "artifact": {
-          "filename": "bge-bushy-leaves-0.1.0-canary1.jar",
-          "sha256": "e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf"
+          "filename": "bge-bushy-leaves-0.2.0-canary2.jar",
+          "sha256": "728bb10952642edb37f1c22e9a5514bf1499e4b2c7f97024c09ee88a9c1596eb"
         },
-        "built_at": "2026-09-19T22:38:10.3838023Z",
-        "source_commit": "21a98eaa5a21b6c47471781de9a353b22475b6b1",
+        "built_at": "2026-09-20T03:23:34.3646021Z",
+        "source_commit": "aca6a47036f47064cdaaf285c7362281da3f4c51",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -88,30 +89,30 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "Canary 1 uses Minecraft 26.2's public block-state model and Fabric final quad-emission seams.",
+              "reason": "Canary 2 uses Minecraft 26.2's public final model and Fabric renderer-quad seams while consuming BGE's capability-owned surface contract rather than a BGE release-name check.",
               "regression_evidence": [
-                "A clean Java 25/Fabric Loom 1.17.19 build against BGE C82 SHA-256 165229966de7e02b0a42c2b5fc90cefa116f0b626cb55a6378caea6e38f6341c produced bge-bushy-leaves-0.1.0-canary1.jar SHA-256 e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf from implementation checkpoint 21a98eaa5a21b6c47471781de9a353b22475b6b1.",
-                "Six focused unit tests passed: exterior-only projection, exact partial contact subtraction, fail-closed interior/wrong-face rejection, deterministic subtraction deduplication, representative compound occupancy bounds, and invalid-frame rejection.",
-                "Controlled verification passed BGE API, Fabric Renderer/model-loader hash gates, JAR metadata and required-class checks, and asset/provider exclusion checks."
+                "A clean Java 25 / Fabric Loom 1.17.19 check and staged JAR build against BGE C84 SHA-256 9c3a7af8eb86ffabcf5ddc3c7ba96134fb4322c6b92c3530dc8788edac015759 produced bge-bushy-leaves-0.2.0-canary2.jar, 31,408 bytes, SHA-256 728bb10952642edb37f1c22e9a5514bf1499e4b2c7f97024c09ee88a9c1596eb from implementation checkpoint aca6a47036f47064cdaaf285c7362281da3f4c51.",
+                "Nineteen focused synthetic/unit tests passed: semantic leaf acceptance/rejection, decorative appearance preference and ordinary fallback, path-neutral appearance selection, resource-reload invalidation, deterministic patch-local variation, full patch cards, Slabs, resolved Stair fixtures, Wall fixtures, Vertical Slabs, Steps, Layers, Corners, every Quarter Column occupancy, small-patch scale/omit, no empty-space support, and coplanar patch deduplication.",
+                "Controlled verification passed BGE API and Fabric renderer/model-loader hash gates, JAR metadata and required-class checks, and provider-asset exclusion checks; it is not Minecraft visual runtime evidence."
               ]
             }
           ]
         },
-        "summary": "Projects genuine exterior canonical-leaf foliage over BGE's exact exposed geometry without bundling leaf-provider assets."
+        "summary": "Adds deterministic, authored patch-local foliage using the active canonical leaf appearance while leaving BGE physical topology and canonical full-leaf rendering unchanged."
       },
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
-    "validation": { "build": "CONTROLLED_VALIDATION_PASS", "runtime": "RUNTIME_FAIL" },
+    "validation": { "build": "CONTROLLED_VALIDATION_PASS", "runtime": "RUNTIME_UNTESTED" },
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-20T02:42:01.3186384Z",
-    "updated_at": "2026-09-20T02:42:01.3186384Z",
-    "last_codex_at": "2026-09-20T02:42:01.3186384Z",
-    "source_commit": "c01d6351ac35fca342849bf55b1cce0114dc559c"
+    "revision": 3,
+    "activity_at": "2026-09-20T03:23:34.3646021Z",
+    "updated_at": "2026-09-20T03:23:34.3646021Z",
+    "last_codex_at": "2026-09-20T03:23:34.3646021Z",
+    "source_commit": "aca6a47036f47064cdaaf285c7362281da3f4c51"
   }
 }

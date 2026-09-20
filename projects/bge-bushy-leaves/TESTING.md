@@ -1,79 +1,75 @@
-# BGE × Bushy Leaves — recorded Canary 1 result and future C2 verification
+# BGE × Bushy Leaves — Canary 2 owner visual matrix
 
-## Recorded owner evidence: exact Canary 1 is a runtime no-op
+Test exactly `bge-bushy-leaves-0.2.0-canary2.jar`, SHA-256
+`728bb10952642edb37f1c22e9a5514bf1499e4b2c7f97024c09ee88a9c1596eb`.
 
-The owner tested exactly `bge-bushy-leaves-0.1.0-canary1.jar`, SHA-256
-`e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf`.
+Canary 2 is world-rendering-only. It should retain the clean BGE inventory, held-item,
+Creative-menu, JEI, and dropped-item models. It does not alter collision, selection, placement,
+economy, waterlogging, leaf state/lifecycle, ticks, rain, pathfinding, redstone, BGE family
+membership, or BGE × CTM behavior.
 
-- BGE × Bushy Leaves loaded normally and BGE leaf families resolved.
-- Minecraft reached normal gameplay.
-- No BGE × Bushy Leaves exception or crash was observed.
-- No visible bushy foliage was added to BGE leaf geometries.
+## Recorded predecessor evidence
 
-This is a `RUNTIME_FAIL` for Canary 1's visible result, not a startup failure. No unreported
-geometry row, shader result, pack-change result, or visual detail is implied.
+Canary 1 is not evidence for C2. The owner tested exact C1
+`bge-bushy-leaves-0.1.0-canary1.jar`, SHA-256
+`e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf`: it loaded normally,
+reached gameplay without a BGE × Bushy Leaves exception, and added no visible foliage. C1 remains
+`RUNTIME_FAIL`/no-op.
 
-The audit in `AUDIT.md` identifies the active source as Matcha Flavoured's baked
-`minecraft:block/cross_leaves` model. Foundation v2 contains attempted replacement leaf
-blockstates, but Minecraft Java 26.2 rejects their non-right-angle blockstate rotations before
-they can select Foundation's `_bushy` models. Canary 1's rectangle-only detector then rejects
-every active Matcha decorative quad as non-grid.
+C2 has no Minecraft runtime observation yet. Do not mark a row passed from a build, launch,
+resource reload, or headless test.
 
-## C2 status
+## Foundation active: first visual pass, shaders off
 
-C2 does not yet exist, has not been built, and has no artifact or runtime result. The following is
-the verification plan for a future implementation only. It must be revised if its implementation
-or an owner-selected resource stack changes the audited source path.
+With the usual active stack, compare an untouched canonical Foundation full leaf to BGE derivatives.
+Foundation's full-block replacement need not be reproduced. The expected relationship is:
 
-## First C2 gate — source and mesh capture
+- The canonical full leaf remains completely untouched and continues to display its active
+  Foundation result.
+- BGE geometry remains physically recognizable.
+- The BGE form receives additive protruding foliage which feels consistent in family
+  texture/color/tint with the canonical control.
+- No foliage forms a cube-space/whole-block halo or attaches across obviously empty space.
 
-With the exact active priority order from `AUDIT.md`, reload resources and compare ordinary Oak,
-Spruce, and Cherry Leaves with their BGE forms. Confirm that the canonical controls still use their
-normal Matcha cross-leaf presentation before evaluating BGE geometry. A C2 candidate must:
+Test Oak, Spruce or another tinted vanilla leaf, and Cherry. Test Silver Birch and Wisteria if the
+provider model is present and BGE admits the family. For each family, look for wrong sprite,
+incorrect biome tint, black/opaque cards, missing textures, z-fighting, flicker, or layer/shader
+errors.
 
-1. add foliage only where a BGE `SurfacePatch` exists;
-2. preserve the active outer-top/outer-bottom sprites, tint behavior, cutout material, UVs, and
-   two-sided presentation from the canonical baked mesh;
-3. leave BGE inventory, hand, dropped-item, Creative-menu, and JEI models clean; and
-4. introduce no missing texture, opaque plane, z-fighting, full-cube halo, or foliage attached to
-   a BGE member that is not physically present.
+## Geometry matrix
 
-Do not infer a pass from a clean launch, a resource reload, a build, or a headless fixture.
+For each available family, inspect from several angles and record exact state plus observations:
 
-## Geometry matrix — shaders off
-
-For each row, compare the BGE form with the nearest corresponding exposed region of a canonical
-full leaf. Inspect from several angles because the current source is slanted cross-plane geometry,
-not a six-face shell.
-
-| Geometry | Required C2 observation |
+| Geometry | Required C2 check |
 |---|---|
-| Bottom and top Slab | Foliage is supported by the occupied half only; the empty half receives no invented full-cube shell. |
-| Stair | Test several facings, TOP/BOTTOM, STRAIGHT, INNER, and OUTER. Real tread, riser, side, and underside surfaces may carry the mapped exterior fragments; removed members may not. |
-| Wall | Test post, LOW and TALL arms, and compound arms. No fragment may occupy a missing arm or duplicate an internal tile. |
-| Vertical Slab / Step | Test several facings and single/double Steps. Each actual surface is eligible; empty half-cells remain undecorated. |
-| Layer | Test 1/4, 2/4, and 3/4 occupancy in useful orientations. Decorative fragments remain anchored to the occupied boundary. |
-| Corner / Quarter Column | Test every rotation and all six Quarter Column occupancies. No whole-block fallback may appear. |
+| Bottom Slab; Top Slab | Foliage follows only the occupied half and its exposed surfaces. |
+| Stairs | Test multiple facings, TOP/BOTTOM, and STRAIGHT/INNER/OUTER. Treads, risers, sides, and undersides may be bushy; removed members may not. |
+| Walls | Test post, LOW arm, TALL arm, and compound arms. Tiny arms must not receive a 16×16 tuft or internal duplicate cards. |
+| Vertical Slabs | Test both orientations; empty halves remain unclaimed. |
+| Steps | Test single and double states in several facings. |
+| Layers | Test 1/4, 2/4, and 3/4 thickness/orientation. No card may be supported by the unused 12/16 or 8/16 volume. |
+| Corners | Test every rotation; foliage follows only the occupied L-shaped form. |
+| Quarter Columns | Test all occupancies, including the two diagonal forms. No whole-block fallback may appear. |
 
-Repeat Oak, Spruce, and Cherry. Test Silver Birch or Wisteria only after the active provider's own
-lower-priority model resources are available for audit; the supplied pack copy proves Foundation's
-Mynx overrides are malformed but does not contain that provider fallback.
+## Adjacency
 
-## Contact and override checks
+Test canonical full leaf beside BGE leaf, equal BGE forms, different BGE forms of the same family,
+leaf beside non-leaf full block, and partial beside partial. C2 deliberately does not broadly remove
+foliage merely because a neighbor has the same canonical leaf material. It may suppress a complete
+16×16 boundary only when the renderer itself supplies a reliable full-face cull result.
 
-The active Matcha decorative planes have no `cullface`; their canonical appearance does not itself
-suppress the eight decorative quads at a leaf contact. A C2 candidate must not invent broad
-same-leaf culling merely because two block cells touch. Test canonical full leaf ↔ BGE leaf,
-identical BGE geometry, different BGE geometry of the same canonical material, incompatible leaf
-material, non-leaf, partial-to-full, and partial-to-partial contacts. Record only actual effects.
+Watch especially for giant cube halos, cards over empty regions, dense tiny Wall/Column surfaces,
+internal duplicates, or decorative foliage disappearing too aggressively at partial contacts.
 
-Temporarily removing or replacing the model-owning Matcha resource must cause C2 to follow the new
-final canonical mesh or fail closed; it may not retain a cached Matcha sprite or a hard-coded cross
-shape. A texture-only canonical treatment must add no invented geometry.
+## Resource reload and complementary
 
-## Complementary and reporting
+Reload resources with Foundation active and confirm BGE foliage uses the currently active canonical
+appearance while retaining C2's BGE-aware geometry. With a different bushy pack, a plain
+texture-only leaf pack, or a modded admitted leaf family, C2 should follow the final canonical
+appearance when emitted: it must not require Foundation/Matcha filenames, `_bushy` paths, or an
+Oak convention. A valid ordinary leaf face is an intentional fallback appearance.
 
-Repeat representative Slab, Stair, Wall, Layer, Corner, Quarter Column, and contact rows with the
-normally supported Complementary stack. Record the exact C2 filename/SHA-256, BGE artifact/SHA-256,
-resource-pack priority order, leaf family, geometry state, shader state, and only the observations
-actually made. Runtime testing does not itself change lifecycle or accept a release.
+After shader-off behavior is coherent, repeat representative Slab, Stair, Wall, Layer, Corner, and
+Quarter Column cases with the current supported Complementary stack. Record exact resource-pack
+order, BGE artifact/hash, C2 hash, family/state, shader state, and only direct observations. Owner
+runtime evidence remains the only basis for changing C2 from `RUNTIME_UNTESTED`.
