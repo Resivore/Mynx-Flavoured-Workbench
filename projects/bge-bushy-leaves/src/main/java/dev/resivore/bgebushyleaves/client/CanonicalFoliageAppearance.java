@@ -18,8 +18,12 @@ import java.util.Optional;
  */
 final class CanonicalFoliageAppearance {
     private final List<Snapshot> samples;
+    private final int fallbackTintIndex;
 
-    private CanonicalFoliageAppearance(List<Snapshot> samples) { this.samples = List.copyOf(samples); }
+    private CanonicalFoliageAppearance(List<Snapshot> samples, int fallbackTintIndex) {
+        this.samples = List.copyOf(samples);
+        this.fallbackTintIndex = fallbackTintIndex;
+    }
 
     static Optional<CanonicalFoliageAppearance> sample(MeshView mesh) {
         List<AppearanceSelection.Candidate<Snapshot>> candidates = new ArrayList<>();
@@ -30,11 +34,18 @@ final class CanonicalFoliageAppearance {
             candidates.add(new AppearanceSelection.Candidate<>(Snapshot.capture(quad), decorative));
         });
         List<Snapshot> selected = AppearanceSelection.preferDecorative(candidates);
-        return selected.isEmpty() ? Optional.empty() : Optional.of(new CanonicalFoliageAppearance(selected));
+        // Some bushy providers put their texture-bearing non-cull cards beside a standard tinted
+        // leaf shell. The decorative card itself can legitimately be untinted; inherit only the
+        // sampled canonical tint metadata in that case. If no sampled quad is tinted, -1 remains
+        // authoritative for plain/untinted leaves.
+        int fallbackTint = candidates.stream().map(AppearanceSelection.Candidate::value)
+                .mapToInt(Snapshot::tintIndex).filter(index -> index >= 0).findFirst().orElse(-1);
+        return selected.isEmpty() ? Optional.empty() : Optional.of(new CanonicalFoliageAppearance(selected, fallbackTint));
     }
 
     Snapshot choose(long stableSeed) {
-        return samples.get(Math.floorMod((int) (stableSeed ^ (stableSeed >>> 32)), samples.size()));
+        Snapshot selected = samples.get(Math.floorMod((int) (stableSeed ^ (stableSeed >>> 32)), samples.size()));
+        return selected.tintIndex() >= 0 || fallbackTintIndex < 0 ? selected : selected.withTintIndex(fallbackTintIndex);
     }
 
     /** Immutable copied FRAPI data required by the authored world-block foliage cards. */
@@ -101,5 +112,9 @@ final class CanonicalFoliageAppearance {
         boolean animated() { return animated; }
         int tintIndex() { return tintIndex; }
         int tag() { return tag; }
+        Snapshot withTintIndex(int replacement) {
+            return new Snapshot(u, v, color, lightmap, chunkLayer, emissive, diffuseShade,
+                    ambientOcclusion, foilType, shadeMode, animated, replacement, tag);
+        }
     }
 }

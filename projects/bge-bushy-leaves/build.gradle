@@ -140,10 +140,10 @@ tasks.register('verifyReleaseArtifact') {
              'dev/resivore/bgebushyleaves/client/BgeBushyLeavesClient.class',
              'dev/resivore/bgebushyleaves/client/BushyLeafBlockStateModel.class',
              'dev/resivore/bgebushyleaves/client/CanonicalFoliageAppearance.class',
-             'dev/resivore/bgebushyleaves/client/PatchLocalFoliage.class',
+             'dev/resivore/bgebushyleaves/client/BlockSpaceFoliage.class',
              'dev/resivore/bgebushyleaves/BgeLeafEligibility.class',
-             'dev/resivore/bgebushyleaves/geometry/PatchMerger.class',
-             'dev/resivore/bgebushyleaves/geometry/PatchFoliagePlan.class'].each { path ->
+             'dev/resivore/bgebushyleaves/geometry/BlockSpaceOccupancy.class',
+             'dev/resivore/bgebushyleaves/geometry/BlockSpaceFoliagePlan.class'].each { path ->
                 if (archive.getEntry(path) == null) throw new GradleException("Release artifact is missing ${path}")
             }
             archive.entries().each { entry ->

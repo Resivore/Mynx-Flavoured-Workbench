@@ -3,7 +3,7 @@
   "id": "bge_bushy_leaves",
   "version": "${version}",
   "name": "BGE × Bushy Leaves",
-  "description": "Adds authored, patch-local foliage using the active canonical leaf appearance and BGE-authoritative exposed surfaces.",
+  "description": "Adds occupancy-clipped, block-space bushy foliage using the active canonical leaf appearance and BGE-authoritative surfaces.",
   "authors": ["Resivore"],
   "license": "MIT",
   "environment": "client",
@@ -26,7 +26,7 @@
           "relationship": "depends",
           "dependency_id": "minecraft",
           "predicate": "~26.2",
-          "reason": "Canary 5 consumes Minecraft 26.2's public final model, renderer-quad, and BGE surface-contract seams while retaining only BGE's oldest required public SurfacePatch capability.",
+          "reason": "Canary 6 consumes Minecraft 26.2's public final model, renderer-quad, and BGE surface-contract seams while retaining only BGE's oldest required public SurfacePatch capability.",
           "regression_evidence": [
             "Controlled verification resolves, SHA-256 verifies, and compiles against the BGE artifact currently declared by authoritative main; this is build evidence, not an exact runtime BGE dependency."
           ]

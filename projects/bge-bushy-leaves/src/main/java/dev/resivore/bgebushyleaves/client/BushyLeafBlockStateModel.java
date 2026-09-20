@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.function.Predicate;
 
-/** Retains BGE's clean model, then appends authored foliage supported by BGE surface patches. */
+/** Retains BGE's clean model, then appends occupancy-clipped world-space foliage planes. */
 final class BushyLeafBlockStateModel extends WrapperBlockStateModel {
     BushyLeafBlockStateModel(BlockStateModel wrapped) { super(wrapped); }
 
@@ -25,17 +25,16 @@ final class BushyLeafBlockStateModel extends WrapperBlockStateModel {
         wrapped.emitQuads(output, level, pos, state, random, cullTest);
         BgeLeafEligibility.binding(state).flatMap(binding -> binding.canonicalState(state)
                 .flatMap(canonical -> CanonicalLeafModels.find(canonical).map(model -> new Source(binding, canonical, model))))
-                .ifPresent(source -> emitPatchLocalFoliage(output, level, pos, state, cullTest, source));
+                .ifPresent(source -> emitBlockSpaceFoliage(output, level, pos, state, source));
     }
 
-    private static void emitPatchLocalFoliage(QuadEmitter output, BlockAndTintGetter level, BlockPos pos,
-            BlockState physical, Predicate<@Nullable Direction> cullTest, Source source) {
+    private static void emitBlockSpaceFoliage(QuadEmitter output, BlockAndTintGetter level, BlockPos pos,
+            BlockState physical, Source source) {
         var canonicalQuads = Renderer.get().mutableMesh();
         // Never consume or perturb BGE's upstream random stream after it emitted the clean base.
         source.model.emitQuads(canonicalQuads.emitter(), level, pos, source.canonical,
-                RandomSource.create(PatchLocalFoliage.canonicalSeed(pos, source.canonical)), ignored -> false);
-        PatchLocalFoliage.emit(canonicalQuads, output, source.binding, source.canonical,
-                physical, pos, cullTest);
+                RandomSource.create(BlockSpaceFoliage.canonicalSeed(pos, source.canonical)), ignored -> false);
+        BlockSpaceFoliage.emit(canonicalQuads, output, source.binding, source.canonical, physical, pos);
     }
 
     @Override public @Nullable Object createGeometryKey(BlockAndTintGetter level, BlockPos pos,

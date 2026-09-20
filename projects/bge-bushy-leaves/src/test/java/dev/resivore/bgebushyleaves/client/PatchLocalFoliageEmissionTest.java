@@ -1,8 +1,6 @@
 package dev.resivore.bgebushyleaves.client;
 
-import dev.resivore.bgebushyleaves.geometry.PatchFoliagePlan;
-import dev.resivore.bgebushyleaves.geometry.PatchFrame;
-import dev.resivore.bgebushyleaves.geometry.Rect16;
+import dev.resivore.bgebushyleaves.geometry.BlockSpaceFoliagePlan;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadView;
@@ -35,11 +33,7 @@ final class PatchLocalFoliageEmissionTest {
         CanonicalFoliageAppearance.Snapshot snapshot = CanonicalFoliageAppearance.Snapshot.capture(source);
         List<EmittedQuad> emitted = new ArrayList<>();
         QuadEmitter output = proxy(QuadEmitter.class, new OutputHandler(new EmittedQuad(), emitted));
-        PatchFrame frame = new PatchFrame(Direction.UP, 16, Direction.Axis.X,
-                new Rect16(0, 16, 0, 16), Direction.Axis.Z, Direction.UP);
-        PatchFoliagePlan.Card card = PatchFoliagePlan.plan(frame, 0xBEEFL).getFirst();
-
-        PatchLocalFoliage.emitCard(snapshot, output, frame, card, false);
+        BlockSpaceFoliage.emitCard(snapshot, output, card(), false);
 
         assertEquals(1, emitted.size());
         EmittedQuad cardQuad = emitted.getFirst();
@@ -53,7 +47,7 @@ final class PatchLocalFoliageEmissionTest {
         assertEquals(sourceState.animated, cardQuad.animated);
         assertEquals(sourceState.tintIndex, cardQuad.tintIndex);
         assertEquals(sourceState.tag, cardQuad.tag);
-        assertEquals(Direction.UP, cardQuad.nominalFace);
+        assertEquals(Direction.SOUTH, cardQuad.nominalFace);
         assertNull(cardQuad.cullFace);
         for (int vertex = 0; vertex < 4; vertex++) {
             assertEquals(sourceState.u[vertex], cardQuad.u[vertex]);
@@ -72,11 +66,7 @@ final class PatchLocalFoliageEmissionTest {
         CanonicalFoliageAppearance.Snapshot snapshot = CanonicalFoliageAppearance.Snapshot.capture(source);
         List<EmittedQuad> emitted = new ArrayList<>();
         QuadEmitter output = proxy(QuadEmitter.class, new OutputHandler(new EmittedQuad(), emitted));
-        PatchFrame frame = new PatchFrame(Direction.UP, 16, Direction.Axis.X,
-                new Rect16(0, 16, 0, 16), Direction.Axis.Z, Direction.UP);
-        PatchFoliagePlan.Card card = PatchFoliagePlan.plan(frame, 0xBEEFL).getFirst();
-
-        PatchLocalFoliage.emitCard(snapshot, output, frame, card, false);
+        BlockSpaceFoliage.emitCard(snapshot, output, card(), false);
 
         assertEquals(1, emitted.size());
         assertEquals(QuadAtlas.BLOCK, emitted.getFirst().atlas);
@@ -102,10 +92,7 @@ final class PatchLocalFoliageEmissionTest {
 
         List<EmittedQuad> emitted = new ArrayList<>();
         QuadEmitter output = proxy(QuadEmitter.class, new OutputHandler(new EmittedQuad(), emitted));
-        PatchFrame frame = new PatchFrame(Direction.UP, 16, Direction.Axis.X,
-                new Rect16(0, 16, 0, 16), Direction.Axis.Z, Direction.UP);
-        PatchLocalFoliage.emitCard(selected, output, frame,
-                PatchFoliagePlan.plan(frame, 0xC5L).getFirst(), false);
+        BlockSpaceFoliage.emitCard(selected, output, card(), false);
 
         assertEquals(1, emitted.size());
         EmittedQuad cardQuad = emitted.getFirst();
@@ -128,9 +115,36 @@ final class PatchLocalFoliageEmissionTest {
                         || field.getGenericType().getTypeName().contains(QuadView.class.getName())));
     }
 
+    @Test
+    void decorativeTextureInheritsOnlySampledCanonicalTintAndLeavesUntintedMeshesUntinted() {
+        SourceHandler tintedShell = new SourceHandler(new SourceQuad(0, Direction.NORTH));
+        SourceHandler untintedDecoration = new SourceHandler(new SourceQuad(-1, null));
+        CanonicalFoliageAppearance tinted = CanonicalFoliageAppearance.sample(new ExpiringMesh(List.of(
+                new ExpiringQuad(proxy(QuadView.class, tintedShell), tintedShell),
+                new ExpiringQuad(proxy(QuadView.class, untintedDecoration), untintedDecoration)))).orElseThrow();
+        assertEquals(0, tinted.choose(0L).tintIndex());
+        List<EmittedQuad> emitted = new ArrayList<>();
+        BlockSpaceFoliage.emitCard(tinted.choose(0L), proxy(QuadEmitter.class,
+                new OutputHandler(new EmittedQuad(), emitted)), card(), false);
+        assertEquals(0, emitted.getFirst().tintIndex);
+
+        SourceHandler untintedShell = new SourceHandler(new SourceQuad(-1, Direction.NORTH));
+        SourceHandler anotherUntintedDecoration = new SourceHandler(new SourceQuad(-1, null));
+        CanonicalFoliageAppearance untinted = CanonicalFoliageAppearance.sample(new ExpiringMesh(List.of(
+                new ExpiringQuad(proxy(QuadView.class, untintedShell), untintedShell),
+                new ExpiringQuad(proxy(QuadView.class, anotherUntintedDecoration), anotherUntintedDecoration)))).orElseThrow();
+        assertEquals(-1, untinted.choose(0L).tintIndex());
+    }
+
     @SuppressWarnings("unchecked")
     private static <T> T proxy(Class<T> type, InvocationHandler handler) {
         return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {type}, handler);
+    }
+
+    private static BlockSpaceFoliagePlan.Card card() {
+        return new BlockSpaceFoliagePlan.Card(0, 16, new BlockSpaceFoliagePlan.Vertex[] {
+                new BlockSpaceFoliagePlan.Vertex(0, 0, 0), new BlockSpaceFoliagePlan.Vertex(16, 0, 0),
+                new BlockSpaceFoliagePlan.Vertex(16, 16, 0), new BlockSpaceFoliagePlan.Vertex(0, 16, 0)});
     }
 
     private static final class SourceHandler implements InvocationHandler {
