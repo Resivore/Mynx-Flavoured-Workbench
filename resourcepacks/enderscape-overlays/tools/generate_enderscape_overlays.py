@@ -10,6 +10,7 @@ import json
 import pathlib
 import struct
 import sys
+import tempfile
 import zipfile
 import zlib
 from datetime import datetime
@@ -525,6 +526,11 @@ def verify(args: argparse.Namespace) -> None:
         for name, value in expected.items():
             if read_entry(archive, name) != value:
                 raise GenerationError(f"artifact entry differs from deterministic generation: {name}")
+    with tempfile.TemporaryDirectory(prefix="enderscape-overlays-verify-") as temporary_directory:
+        regenerated = pathlib.Path(temporary_directory) / "regenerated.zip"
+        write_archive(regenerated, expected)
+        if sha256(regenerated) != sha256(args.artifact):
+            raise GenerationError("artifact bytes do not match deterministic archive regeneration")
     print(f"verified {args.artifact} (sha256 {sha256(args.artifact)})")
 
 
