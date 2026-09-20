@@ -44,11 +44,26 @@ final class MaterializedWaystoneRenderingContractTest {
         assertTrue(models.contains("block.defaultBlockState()"));
         assertTrue(models.contains("getBlockStateModelSet()"));
         assertTrue(models.contains("for (Direction direction : Direction.values())"));
-        assertTrue(models.contains("faces.size() != Direction.values().length"));
+        assertTrue(models.contains("part.getQuads(direction)"));
+        assertTrue(models.contains("DirectionalMaterialResolver.resolve"));
         assertTrue(models.contains("material.face(waystoneQuad.direction())"));
-        assertTrue(models.contains("remapUv(waystoneQuad.packedUV0()"));
+        assertFalse(models.contains("getQuads(null)"));
         assertTrue(block.contains("wrapped.collectParts(random, parts)"));
         assertFalse(block.contains("new BakedQuad("));
+    }
+
+    @Test
+    void spriteRetargetingUsesFabricNormalizedSpriteBakingInsteadOfAtlasArithmetic() throws IOException {
+        String models = read("MaterializedWaystoneModels.java");
+
+        assertTrue(models.contains("Renderer.get().quadEmitter"));
+        assertTrue(models.contains("SpriteLocalUvs.unbake"));
+        assertTrue(models.contains("materialBake(new Material.Baked"));
+        assertTrue(models.contains("MutableQuadView.BAKE_NORMALIZED"));
+        assertTrue(models.contains("SpriteLocalUvs.isInside"));
+        assertFalse(models.contains("remapUv("));
+        assertFalse(models.contains("getU(relative"));
+        assertFalse(models.contains("getV(relative"));
     }
 
     @Test

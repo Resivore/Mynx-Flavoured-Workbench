@@ -1,13 +1,16 @@
 package dev.resivore.dragonbound.client;
 
 import dev.resivore.dragonbound.material.WaystoneMaterial;
+import net.fabricmc.fabric.api.client.renderer.v1.Renderer;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
-import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -48,26 +51,7 @@ final class MaterializedWaystoneModels {
 
     static BakedQuad retarget(BakedQuad waystoneQuad, DirectionalMaterial material) {
         BakedQuad.MaterialInfo donor = material.face(waystoneQuad.direction());
-        TextureAtlasSprite sourceSprite = waystoneQuad.materialInfo().sprite();
-        TextureAtlasSprite donorSprite = donor.sprite();
-        BakedQuad.MaterialInfo replacement = new BakedQuad.MaterialInfo(
-                donorSprite,
-                donor.layer(),
-                donor.itemRenderType(),
-                -1,
-                donor.shade(),
-                0);
-        return new BakedQuad(
-                waystoneQuad.position0(),
-                waystoneQuad.position1(),
-                waystoneQuad.position2(),
-                waystoneQuad.position3(),
-                remapUv(waystoneQuad.packedUV0(), sourceSprite, donorSprite),
-                remapUv(waystoneQuad.packedUV1(), sourceSprite, donorSprite),
-                remapUv(waystoneQuad.packedUV2(), sourceSprite, donorSprite),
-                remapUv(waystoneQuad.packedUV3(), sourceSprite, donorSprite),
-                waystoneQuad.direction(),
-                replacement);
+        return rebakeSpriteLocal(waystoneQuad, donor).orElse(waystoneQuad);
     }
 
     private static Optional<DirectionalMaterial> load(Identifier blockId) {
@@ -87,30 +71,25 @@ final class MaterializedWaystoneModels {
         List<BlockStateModelPart> parts = new ArrayList<>();
         model.collectParts(RandomSource.create(0x4457415953544F4EL), parts);
 
-        EnumMap<Direction, BakedQuad.MaterialInfo> faces = new EnumMap<>(Direction.class);
+        EnumMap<Direction, List<BakedQuad.MaterialInfo>> exteriorCandidates = new EnumMap<>(Direction.class);
+        for (Direction direction : Direction.values()) {
+            exteriorCandidates.put(direction, new ArrayList<>());
+        }
         for (BlockStateModelPart part : parts) {
-            collectFaces(part.getQuads(null), faces);
             for (Direction direction : Direction.values()) {
-                collectFaces(part.getQuads(direction), faces);
+                for (BakedQuad quad : part.getQuads(direction)) {
+                    // getQuads(direction) is the model's cull-specific exterior data. An entry
+                    // whose geometric direction disagrees is not a safe face-material source.
+                    if (quad.direction() != direction) {
+                        return Optional.empty();
+                    }
+                    exteriorCandidates.get(direction).add(quad.materialInfo());
+                }
             }
         }
 
-        if (faces.size() != Direction.values().length) {
-            return Optional.empty();
-        }
-        return Optional.of(new DirectionalMaterial(blockId, faces));
-    }
-
-    private static void collectFaces(
-            List<BakedQuad> quads,
-            EnumMap<Direction, BakedQuad.MaterialInfo> faces) {
-        for (BakedQuad quad : quads) {
-            BakedQuad.MaterialInfo material = quad.materialInfo();
-            if (faces.containsKey(quad.direction()) || !safeOpaqueMaterial(material)) {
-                continue;
-            }
-            faces.put(quad.direction(), material);
-        }
+        return DirectionalMaterialResolver.resolve(exteriorCandidates, MaterializedWaystoneModels::safeOpaqueMaterial)
+                .map(faces -> new DirectionalMaterial(blockId, faces));
     }
 
     private static boolean safeOpaqueMaterial(BakedQuad.MaterialInfo material) {
@@ -120,12 +99,37 @@ final class MaterializedWaystoneModels {
                 && material.sprite().transparency().isOpaque();
     }
 
-    private static long remapUv(long packed, TextureAtlasSprite source, TextureAtlasSprite target) {
-        float sourceU = UVPair.unpackU(packed);
-        float sourceV = UVPair.unpackV(packed);
-        float relativeU = (sourceU - source.getU0()) / (source.getU1() - source.getU0());
-        float relativeV = (sourceV - source.getV0()) / (source.getV1() - source.getV0());
-        return UVPair.pack(target.getU(relativeU * 16.0F), target.getV(relativeV * 16.0F));
+    /**
+     * Rebuilds a baked Waystone quad through Fabric's 26.2 sprite baker. Minecraft stores
+     * BakedQuad UVs as raw atlas coordinates; Fabric's materialBake expects sprite-local
+     * normalized coordinates, then performs the target-sprite interpolation itself.
+     */
+    private static Optional<BakedQuad> rebakeSpriteLocal(
+            BakedQuad waystoneQuad,
+            BakedQuad.MaterialInfo donor) {
+        TextureAtlasSprite sourceSprite = waystoneQuad.materialInfo().sprite();
+        TextureAtlasSprite donorSprite = donor.sprite();
+        BakedQuad[] output = new BakedQuad[1];
+        QuadEmitter emitter = Renderer.get().quadEmitter(view -> output[0] = view.toBakedQuad(donorSprite));
+        emitter.fromBakedQuad(waystoneQuad);
+
+        if (!SpriteLocalUvs.unbake(emitter, sourceSprite)) {
+            return Optional.empty();
+        }
+
+        // BAKE_NORMALIZED keeps our [0, 1] source-local coordinates intact. Fabric's sprite
+        // baker maps each one into precisely this donor sprite's atlas rectangle.
+        emitter.materialBake(new Material.Baked(donorSprite, false), MutableQuadView.BAKE_NORMALIZED);
+        emitter.chunkLayer(donor.layer());
+        emitter.itemRenderType(donor.itemRenderType());
+        emitter.tintIndex(-1);
+        emitter.diffuseShade(donor.shade());
+        emitter.emissive(false);
+        emitter.emit();
+
+        return Optional.ofNullable(output[0])
+                .filter(rebaked -> rebaked.direction() == waystoneQuad.direction())
+                .filter(rebaked -> SpriteLocalUvs.isInside(rebaked, donorSprite));
     }
 
     record DirectionalMaterial(Identifier blockId, EnumMap<Direction, BakedQuad.MaterialInfo> faces) {
