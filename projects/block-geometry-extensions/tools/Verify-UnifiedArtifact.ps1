@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C83.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C84.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
     [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C80.jar')
 )
@@ -130,6 +130,7 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -match '^data/cnm_terrain_slabs_compat/loot_table/blocks/farmland_slab\.json$' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/CanonicalShapeMapAudit(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/(?:EnderscapeMaterialGeometry|ExternalMaterialStateBridge)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ExternalMaterial(?:Blocks|Catalog|Families|GeneratedData)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/(?:MacawsPaths|MynxTrees|Ribbits|Bbb|Enderscape)InitializationMixin(?:\$.*)?\.class$' -or
@@ -161,8 +162,8 @@ Require ((Get-FileSha256 $acceptedPath) -eq '1a4e4d1cd9c8709720ec84975e70caffb55
         'Exact accepted unified BGE C58 boundary hash mismatch'
 Require ((Get-FileSha256 $predecessorPath) -eq '5bc7c23a3724a1e20bc2142459f33d2a45a19295c27d40197c5fc48d6e43b0fc') `
         'Exact BGE C80 predecessor hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C83.jar') `
-        'Distributable artifact filename is not exactly BGE C83.jar'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C84.jar') `
+        'Distributable artifact filename is not exactly BGE C84.jar'
 
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
@@ -178,15 +179,15 @@ try {
     $nestedJars = @($unifiedMap.Keys | Where-Object { $_.EndsWith('.jar', [System.StringComparison]::OrdinalIgnoreCase) })
     Require ($nestedJars.Count -eq 0) "Nested JARs are forbidden: $($nestedJars -join ', ')"
     $cnmClasses = @($unifiedMap.Keys | Where-Object { $_ -match '^dev/tazer/clutternomore/' })
-    Require ($cnmClasses.Count -eq 0) "C83 must retain stock CNM as an external dependency: $($cnmClasses -join ', ')"
+    Require ($cnmClasses.Count -eq 0) "C84 must retain stock CNM as an external dependency: $($cnmClasses -join ', ')"
 
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.27-bge.canary83.cnm-runtime-resource-closure-enderscape+26.2') `
-            'Unified Fabric version is not exact C83'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 83 ' + [char]0x2014 + ' Runtime Resource Closure & Enderscape')) `
-            'Unified Fabric display name is not exact C83'
+    Require ($metadata.version -eq '4.2.28-bge.canary84.ender-material-state-bridge+26.2') `
+            'Unified Fabric version is not exact C84'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 84 ' + [char]0x2014 + ' Enderscape Material-State Bridge')) `
+            'Unified Fabric display name is not exact C84'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -273,9 +274,11 @@ try {
     }
     foreach ($required in @(
         'dev/aero/cnmterraincompat/client/BgeGeneratedResourceWriter.class',
-        'dev/aero/cnmterraincompat/mixin/EnderscapeInitializationMixin.class'
+        'dev/aero/cnmterraincompat/mixin/EnderscapeInitializationMixin.class',
+        'dev/aero/cnmterraincompat/ExternalMaterialStateBridge.class',
+        'dev/aero/cnmterraincompat/EnderscapeMaterialGeometry.class'
     )) {
-        Require $newEntries.Contains($required) "Required C83 class is absent: $required"
+        Require $newEntries.Contains($required) "Required C84 class is absent: $required"
     }
     Require (-not $unifiedMap.ContainsKey('dev/aero/cnmterraincompat/CnmAxisFamilyBridge.class')) `
             'C83 must not package the retired registry-wide C79 axis scanner'
@@ -319,13 +322,13 @@ try {
         'assets/more_slabs_stairs_and_walls/models/block/purpur_pillar_wall_inventory.json'
     )
     Require ($predecessorMissing.Count -eq 0) `
-            "C83 lost exact C80 predecessor entries: $(@($predecessorMissing) -join ', ')"
+            "C84 lost exact C80 predecessor entries: $(@($predecessorMissing) -join ', ')"
     Require (@($predecessorChanged | Where-Object { -not (Test-AllowedChangedEntry $_) }).Count -eq 0) `
-            "C83 changed entries outside its C80-bounded scope: $(@($predecessorChanged | Where-Object { -not (Test-AllowedChangedEntry $_) }) -join ', ')"
+            "C84 changed entries outside its C80-bounded scope: $(@($predecessorChanged | Where-Object { -not (Test-AllowedChangedEntry $_) }) -join ', ')"
     Require (@($requiredPredecessorChanges | Where-Object { -not $predecessorChanged.Contains($_) }).Count -eq 0) `
-            "C83 omitted required C80-bounded changes: $(@($requiredPredecessorChanges | Where-Object { -not $predecessorChanged.Contains($_) }) -join ', ')"
+            "C84 omitted required C80-bounded changes: $(@($requiredPredecessorChanges | Where-Object { -not $predecessorChanged.Contains($_) }) -join ', ')"
     Require (@($predecessorNew | Where-Object { -not (Test-AllowedNewEntry $_) }).Count -eq 0) `
-            "C83 added entries beyond its exact C80-bounded scope: $(@($predecessorNew | Where-Object { -not (Test-AllowedNewEntry $_) }) -join ', ')"
+            "C84 added entries beyond its exact C80-bounded scope: $(@($predecessorNew | Where-Object { -not (Test-AllowedNewEntry $_) }) -join ', ')"
 
     $interiorTexture = [System.Text.Encoding]::UTF8.GetBytes('ribbits:block/toadstool_inside')
     foreach ($name in $unifiedMap.Keys) {
