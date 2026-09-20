@@ -1,54 +1,43 @@
-# BGE C83 runtime-resource closure and Enderscape manual verification
+# BGE C84 Enderscape material-state bridge manual verification
 
-Current candidate: `BGE C83.jar`
+Current candidate: `BGE C84.jar`
 
-- Embedded version: `4.2.27-bge.canary83.cnm-runtime-resource-closure-enderscape+26.2`
-- SHA-256: `c0865a2677fbcdc82b53b751e145a3330757694fd73a064671e8fd6d9cd4b4c9`
-- Source checkpoint: `c35161ffb995f3000192e22b4a25e832662e6b16`
+- Embedded version: `4.2.28-bge.canary84.ender-material-state-bridge+26.2`
+- SHA-256: `9c3a7af8eb86ffabcf5ddc3c7ba96134fb4322c6b92c3530dc8788edac015759`
+- Source checkpoint: `7df5c8ebad8a7721afc80afe354d59d13be78877`
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`
-- Immediate predecessor: exact C82 `BGE C82.jar`, SHA-256 `165229966de7e02b0a42c2b5fc90cefa116f0b626cb55a6378caea6e38f6341c`.
+- Immediate predecessor: exact C83 `BGE C83.jar`, SHA-256 `c0865a2677fbcdc82b53b751e145a3330757694fd73a064671e8fd6d9cd4b4c9`.
 - Rollback: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`.
 - Accepted release: exact C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`.
 
-This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C83 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
+This checklist is lifecycle-neutral. Record only behavior actually observed for the exact C84 bytes above. It does not authorize inspecting, creating, selecting, or modifying any protected or retired Minecraft profile.
 
-## Verified C80 owner runtime evidence — does not transfer to C83
+## C83 predecessor evidence — does not transfer to C84
 
-The retained C80 SHA-256 above was verified before these supplied observations were recorded:
+The reported C83 startup fault is specific to C83: `BlisteredMagniaBlock`'s copied light callback reads `POLARITY`, but its generic BGE-derived block state did not contain that property. C84 introduces the explicit material-state bridge to correct that fault. The report is not a C84 runtime result, and C84 has no gameplay-runtime observation.
 
-- PASS: Chiseled Resin Bricks renders/functions as intended.
-- PASS: Chiseled Cinnabar renders/functions as intended.
-- PASS: Purpur Pillar exposes its complete geometry registration.
-- FAIL: Purpur Pillar derived geometry has an incorrect/broken side texture.
-- FAIL: existing CNM families such as Moss Block omit Corner, Quarter Column, and Layer and expose only the six preexisting roles.
+The retained C80 owner observations (Chiseled Resin Bricks and Chiseled Cinnabar PASS; Purpur side texture and missing existing-CNM forms FAIL) remain exact-C80 evidence only. Do not transfer them to C84.
 
-These are individual C80 observations, not an aggregate runtime result or acceptance. C83 has no Minecraft runtime observation.
+## C84 state-bearing Enderscape geometry
 
-## C83 runtime generated-resource closure
+1. With Enderscape 3.0.2+mc26.2 and stock Clutter No More 2.0.7+26.2, load all nine roles (source, Slab, Stair, Wall, Vertical Slab, Step, Layer, Corner, and Quarter Column) for `nebulite_block`, Alluring Magnia, Repulsive Magnia, Blistered Magnia, and Blinklamp. Confirm each role registers once and does not create a second CNM family.
+2. For Nebulite and both Magnia forms, confirm the derived roles preserve the expected power/signal behavior. For Blistered Magnia, placement adjacent to canonical/BGE Magnia selects `none`, `alluring`, or `repulsive` polarity as applicable; re-evaluate scheduled changes, signal behavior, sound, dynamic map color, and light level (`0` unpolarized, `14` polarized) across every role.
+3. Confirm Blistered Magnia no longer crashes during startup or placement because a copied callback reads an absent `POLARITY` property. Record any crash report with the exact JAR SHA-256 and loaded-mod versions.
+4. For Blinklamp, test each luminance state (`0` through `7`) across every derived role. Confirm state transitions, copied light behavior, and the model progression `0`, `1/2`, `3/4`, `5/6`, `7` map to the audited five provider luminance model textures.
+5. Recheck ordinary geometry state independently: slab type, stair shape/facing, wall arms, vertical orientation, step, layer, corner, and quarter-column state must still work alongside material state; one must not replace the other.
 
-1. With stock Clutter No More 2.0.7+26.2, open actual CNM-resolved families for Moss Block, one stone/brick material, and one log/pillar material. Each must contain exactly one Corner, Quarter Column, and Layer as well as the preexisting roles; no duplicate or separate BGE family may appear.
-2. Trigger the normal client resource-reload route after BGE/CNM generation, then recheck those forms and their inventory items. They must remain present and textured with no missing blockstate, model, or item-definition errors.
-3. Recheck one BGE-generated external family. Its generated blockstate, model, and item resource must resolve under that resource's own namespace, never through a `clutternomore` namespace substitution.
-4. Verify Layer, Corner, and Quarter Column blocks never recursively seed another CNM family.
+## Exact Enderscape audit boundaries
 
-## Enderscape exact catalog
-
-1. With Enderscape 3.0.2+mc26.2 installed, verify Veiled Log, Veiled Wood, Celestial Stem, Celestial Hyphae, Murublight Stem, Murublight Hyphae, Shadoline Pillar, and Dusk Purpur Pillar across X/Y/Z placement. Their side/end material roles must remain correct; ordinary walls remain no-`AXIS` walls.
-2. Verify all listed normal materials, especially actual `enderscape:nebulite_block` for Block of Nebulite, Veiled Leaves tinting, and Drift Jelly Block's translucent slime-style inset behavior. `enderscape:block_of_raw_magnia` is intentionally absent: the controlled provider bytes contain no block, item, or model for it.
-3. Verify Veiled End Stone, Celestial Overgrowth, and Corrupt Overgrowth preserve their source side/top/bottom materials; Corrupt Overgrowth uses Enderscape Mirestone underneath. Verify Celestial Path and Corrupt Path retain lowered path surfaces and their source material roles; Corrupt Path also uses Enderscape Mirestone underneath.
-
-## Purpur Pillar material-face regression
-
-1. Obtain Purpur Pillar and every registered form: source, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, and Layer.
-2. Across X/Y/Z placement, confirm world-facing material sides use the canonical `purpur_pillar_side` texture and end/cap faces use `purpur_pillar_top`; neither may substitute for the other or leave a missing texture.
-3. Compare with Quartz Pillar and an ordinary log. Axis rotation must preserve each material's own side/end distinction. Purpur Wall remains an ordinary no-`AXIS` WallBlock with its normal wall inventory silhouette.
+1. Recheck the C83 runtime-resource closure: CNM-resolved families retain Corner, Quarter Column, and Layer after a normal client resource reload, and generated resources resolve under their own namespace.
+2. For all 33 audited Enderscape sources, verify source identity and generated geometry/resources. The audit records projected material/geometry contracts; it deliberately does not claim that unprojected provider-specific source interactions are inherited by BGE geometry.
+3. In particular, source-only behavior for Void Shale and overgrowth/path sources (natural/iteration/stress interactions, attachment/survival/random-tick transforms, flattening, bonemeal, or provider-specific collision) remains canonical-provider behavior unless an exact C84 generated-role observation is recorded. Do not infer it from appearance or controlled tests.
 
 ## Regression and evidence discipline
 
-1. Recheck Chiseled Resin Bricks, Chiseled Cinnabar, existing Macaw's Paths, Mynx Trees, Ribbits, and Building But Better families for retained placement, collision, drops, ownership, and switching behavior.
-2. Recheck representative C78 Stair and Wall forms and C71/C72 Farmland Slab behavior separately when those scopes are relevant.
-3. For any observation, record the exact candidate SHA-256, source/mod versions, datapack configuration, reproducible sequence, observed result, and expected result. Do not infer acceptance or a C83 aggregate runtime pass from controlled validation.
+1. Recheck representative Macaw's Paths, Mynx Trees, Ribbits, Building But Better, and native CNM families for retained registration, placement, collision, drops, canonical ownership, and switching behavior.
+2. Recheck C78 Stair/Wall surface behavior and C71/C72 Farmland Slab behavior separately if those scopes are relevant.
+3. For every observation, record the exact candidate SHA-256, source/mod versions, datapack configuration, reproducible sequence, expected result, and observed result. Controlled build, static checks, and GameTests do not establish gameplay acceptance.
 
 ## Retention and rollback
 
-Retain `BGE C83.jar` by its exact SHA-256 before runtime work. Keep C82 as the immediate predecessor provenance, C72 as rollback provenance, and C70 as the accepted release; do not overwrite a retained artifact.
+Retain `BGE C84.jar` by its exact SHA-256 before runtime work. Keep C83 as immediate predecessor provenance, C72 as rollback provenance, and C70 as the accepted release; do not overwrite a retained artifact.

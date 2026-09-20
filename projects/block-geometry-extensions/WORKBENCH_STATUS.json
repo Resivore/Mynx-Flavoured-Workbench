@@ -34,7 +34,7 @@
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.27-bge.canary83.cnm-runtime-resource-closure-enderscape+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.28-bge.canary84.ender-material-state-bridge+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, six Mynx Trees log, wood, and leaf sources, all 12 BBB beam parents including Pale Oak, and 33 Enderscape sources (eight axial, 21 normal, three terrain, and two path). Enderscape's actual `nebulite_block` is the requested Block of Nebulite; absent `block_of_raw_magnia` is one declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched, but their provider state is geometry-only and cannot carry an independent material AXIS; C69 therefore gives BGE canonical AxisSlab and AxisStairs forms, retains BBB's ordinary thin WoodenWallBlock as the canonical wall, and keeps the five other BGE axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
@@ -53,7 +53,7 @@
         "C76 changes only generated Ribbits Red Toadstool, Brown Toadstool, and Toadstool Stem texture selection plus the human-facing BGE Canary filename. Provider-owned source-block rendering, every non-toadstool family, geometry, economy, behavior, canonical identity, and the C75 surface-semantics API remain unchanged.",
         "C77 changes only successful placement of the fourth matching normal-catalog Layer and the legacy four-Layer fallback model for uniform-textured HugeMushroomBlock providers. Layers one through three, failed or incompatible placement, legacy four-Layer state validity, recipes, drops, family identities, C75 surface semantics, C76 generated toadstool texture semantics, and provider-owned canonical source-block rendering remain unchanged.",
         "C78 changes only binding-owned surface descriptions for resolved Stair and Wall state plus their validation. It adds no CTM or rendering policy, changes no block registration, state, collision, placement, economy, resource model, material identity, or consumer-specific rule, and leaves `projects/bge-ctm` untouched.",
-        "C79 adds normal BGE families for `minecraft:chiseled_resin_bricks`, `minecraft:chiseled_cinnabar`, and axis-aware `minecraft:purpur_pillar`; regular walls remain ordinary no-AXIS WallBlocks. C80 removes C79's registry-wide external axis scanner and uses stock CNM as an external dependency. C81 separates preregistration from family identity: it records real CNM admissions, preregisters inert BGE tail candidates without inventing a parent, then uses CNM's actual resolved ShapeMap component to bind or discard them and completes every known BGE profile in that same component. C82 closes the remaining profile-free resolved branch with canonical-source drops and generated normal client geometry read only after ShapeMap resolution; catalog-only role tags remain typed-profile indexes. C83 writes every BGE-owned generated client resource to both CNM's in-memory resource view and its namespace-preserving client runtime pack path, and adds only the 33 exact Enderscape sources after the provider's own initialization; it does not copy Enderscape assets, modify CNM, manufacture `block_of_raw_magnia`, alter existing provider ownership, placement, economy, CTM, or unverified runtime behavior."
+        "C79 adds normal BGE families for `minecraft:chiseled_resin_bricks`, `minecraft:chiseled_cinnabar`, and axis-aware `minecraft:purpur_pillar`; regular walls remain ordinary no-AXIS WallBlocks. C80 removes C79's registry-wide external axis scanner and uses stock CNM as an external dependency. C81 separates preregistration from family identity: it records real CNM admissions, preregisters inert BGE tail candidates without inventing a parent, then uses CNM's actual resolved ShapeMap component to bind or discard them and completes every known BGE profile in that same component. C82 closes the remaining profile-free resolved branch with canonical-source drops and generated normal client geometry read only after ShapeMap resolution; catalog-only role tags remain typed-profile indexes. C83 writes every BGE-owned generated client resource to both CNM's in-memory resource view and its namespace-preserving client runtime pack path, and adds only the 33 exact Enderscape sources after the provider's own initialization; it does not copy Enderscape assets, modify CNM, manufacture `block_of_raw_magnia`, alter existing provider ownership, placement, economy, CTM, or unverified runtime behavior. C84 corrects the Blistered Magnia `ofFullCopy` state-callback seam through an explicit Enderscape material-state bridge: geometry state remains separate while Nebulite power, Magnia power, Blistered Magnia polarity, and Blinklamp luminance are carried into every derived role. The exact Enderscape audit records source behavior boundaries rather than claiming that non-projected provider interactions are inherited."
       ]
     },
     "dependencies": [
@@ -61,7 +61,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C83 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C84 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -84,17 +84,17 @@
     ]
   },
   "state": {
-    "milestone": "C83 is the narrow runtime-resource corrective successor to C82: each BGE-owned generated blockstate, model, and item definition now reaches both CNM's live resource view and its runtime generated pack at the resource's real namespace, so post-generation client reloads retain Corner, Quarter Column, and Layer resources. It adds the exact 33 Enderscape families only after Enderscape initialization, preserves their axial, terrain, path, leaf, and slime-inset contracts, uses actual `nebulite_block` for Block of Nebulite, and records only absent `block_of_raw_magnia` as an exclusion. The C83 Java 25 controlled suite passed 144/144 GameTests; C83 remains ACTIVE and runtime-untested. The verified exact-C80 owner observations remain predecessor-only; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C84 corrects C83's external Blistered Magnia startup failure: `Properties.ofFullCopy(source)` retained a light callback requiring `POLARITY`, while a generic derived block had no such property. A reusable explicit material-state bridge now carries the audited Enderscape material state into each derived geometry role without replacing geometry state. Controlled Java 25 validation passed all 146/146 GameTests; C84 remains ACTIVE and runtime-untested. The supplied C83 startup failure and verified exact-C80 owner observations remain predecessor-only; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C83 (Runtime Resource Closure & Enderscape; embedded 4.2.27-bge.canary83.cnm-runtime-resource-closure-enderscape+26.2)",
-        "embedded_version": "4.2.27-bge.canary83.cnm-runtime-resource-closure-enderscape+26.2",
+        "version": "C84 (Enderscape Material-State Bridge; embedded 4.2.28-bge.canary84.ender-material-state-bridge+26.2)",
+        "embedded_version": "4.2.28-bge.canary84.ender-material-state-bridge+26.2",
         "artifact": {
-          "filename": "BGE C83.jar",
-          "sha256": "c0865a2677fbcdc82b53b751e145a3330757694fd73a064671e8fd6d9cd4b4c9"
+          "filename": "BGE C84.jar",
+          "sha256": "9c3a7af8eb86ffabcf5ddc3c7ba96134fb4322c6b92c3530dc8788edac015759"
         },
-        "built_at": "2026-09-19T22:43:44.8069835Z",
-        "source_commit": "c35161ffb995f3000192e22b4a25e832662e6b16",
+        "built_at": "2026-09-20T03:04:16.2523380Z",
+        "source_commit": "7df5c8ebad8a7721afc80afe354d59d13be78877",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -103,16 +103,16 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C83 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
+              "reason": "The exact C84 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; this target-specific Minecraft predicate remains bound to the controlled-validation release bytes.",
               "regression_evidence": [
-                "Java 25 packaging produced exact `BGE C83.jar`, 6,343,924 bytes, SHA-256 c0865a2677fbcdc82b53b751e145a3330757694fd73a064671e8fd6d9cd4b4c9, from implementation checkpoint c35161ffb995f3000192e22b4a25e832662e6b16.",
-                "The C83 controlled Minecraft 26.2 GameTest suite passed 144/144, including stock CNM's resolved nine-role Moss component, all 778 BGE-owned generated client resources, all 112 optional families, and exact Enderscape axial, terrain, path, leaf, and Drift Jelly contracts.",
-                "Architecture and exact C80 predecessor archive audits passed. The C83 verifier found one root descriptor, zero nested JARs, zero packaged CNM classes, 151 intentional C80 changes, 16 allowed new entries, zero missing predecessor entries, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, zero recipes, and zero invalid JSON."
+                "Java 25 packaging produced exact `BGE C84.jar`, 6,394,766 bytes, SHA-256 9c3a7af8eb86ffabcf5ddc3c7ba96134fb4322c6b92c3530dc8788edac015759, from implementation/artifact checkpoint 7df5c8ebad8a7721afc80afe354d59d13be78877.",
+                "The C84 controlled Minecraft 26.2 GameTest suite passed 146/146, including the complete 33-source Enderscape catalog, the five state-bearing Enderscape materials, every generated geometry role, generated state-resource selectors, and stock CNM resolved-family closure.",
+                "Material-profile architecture and exact C80 predecessor archive audits passed. The C84 verifier found one root descriptor, zero nested JARs, zero packaged CNM classes, 163 intentional C80 changes, 39 allowed new entries, zero missing predecessor entries, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, zero recipes, and zero invalid JSON."
               ]
             }
           ]
         },
-        "summary": "Mirrors all BGE-owned generated client resources into CNM's namespace-preserving runtime pack and adds 33 exact Enderscape families with typed axial, terrain, path, leaf, and slime-inset semantics. The C80 predecessor SHA-256 was verified before recording its supplied observations; those observations do not establish C83 runtime status."
+        "summary": "Carries audited Enderscape power, polarity, and luminance state into BGE-derived geometry so C83's Blistered Magnia callback no longer reads an absent property; preserves geometry-state separation and records explicit source-behavior boundaries for the complete 33-source audit."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -180,10 +180,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 45,
-    "activity_at": "2026-09-19T22:51:11.4951349Z",
-    "updated_at": "2026-09-19T22:51:11.4951349Z",
-    "last_codex_at": "2026-09-19T22:51:11.4951349Z",
-    "source_commit": "c35161ffb995f3000192e22b4a25e832662e6b16"
+    "revision": 46,
+    "activity_at": "2026-09-20T03:04:16.2523380Z",
+    "updated_at": "2026-09-20T03:04:16.2523380Z",
+    "last_codex_at": "2026-09-20T03:04:16.2523380Z",
+    "source_commit": "7df5c8ebad8a7721afc80afe354d59d13be78877"
   }
 }
