@@ -1,6 +1,6 @@
 # Testing
 
-C11 (`0.1.0-canary11`) is the exact current candidate: `slab-decorations-0.1.0-canary11.jar`, 67,533 bytes, SHA-256 `7e15d2f1cb93ad97656e1380b83f905df143c7df79e149b9187fc74c6d5e90ba`, built `2026-09-19T05:22:00.2476822Z`, from source checkpoint `5a41f357d23a96068f56eb75a5c4f9fe52de4b8e`. It is `ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED` and is not accepted. C10 is its exact predecessor.
+C12 (`0.1.0-canary12`) is the exact current candidate: `slab-decorations-0.1.0-canary12.jar`, 79,591 bytes, SHA-256 `34ec81c28c548a9e291e344b44bce5f1577592a1ca5eb14f49ec2bacd212c611`, built `2026-09-20T05:03:16.2234250Z`, from source checkpoint `53c1dc4b183f1da5cbce6afcb49aca0bb333592a`. It is `ACTIVE / CONTROLLED_VALIDATION_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED` and is not accepted. C11 is its exact predecessor.
 
 ## Automated evidence
 
@@ -10,25 +10,20 @@ Using Java 25, the offline Gradle command below passed from a clean project outp
 gradle clean test runGameTest build --offline --no-daemon -Pterrain_slabs_reference_jar=<verified Terrain Slabs 3.3.2 reference JAR>
 ```
 
-- JUnit: 5/5 passed. The architecture checks confirm the exact C72 BGE Farmland Slab public identity, the registered exact-state crop-fertility seam, normal-profile behavior, and the optional Ribbits mixin boundary.
-- Fabric GameTests: 45/45 passed against the installed BGE C72 artifact (`4.2.16-bge.canary72.farmland-slab-low-water+26.2`, SHA-256 `f9f892fcdf3f78879ef19dd8cd6bf398de40b84f1a579d6cef8781f1313188f7`).
-- The C11 direct `CropBlock.getGrowthSpeed` test proves full 3×3 fertility parity for wheat, carrots, potatoes, beetroot, torchflower, and pitcher crop paths: vanilla dry farmland is `4.0`, hydrated farmland is `10.0`, and BGE Farmland Slab BOTTOM/TOP/DOUBLE plus mixed vanilla/BGE neighborhoods match exactly while retaining their real `MOISTURE` values. The ordinary random-tick growth check remains secondary coverage.
-- Crop-family item-placement tests retain canonical farmland survival, exact BOTTOM `-0.5 Y` projection and unshifted TOP/DOUBLE projection, vanilla bonemeal, mature wheat drops, BGE hydration/lifecycle behavior, and pumpkin/melon stem exclusion.
-- The same GameTests reject pumpkin and melon stem families, including attached stems; ordinary stem-item use leaves the item stack and slab unchanged.
-- Transaction tests verify that only the exact optional `ribbits:toadstool_stem` identity is a structural continuation: a successful BOTTOM transaction replaces its ground-contact slab with the generated exact stem state, while TOP/DOUBLE preserve their slab. Failed transactions restore the exact original slab and source state.
-
-The optional mixin wraps Ribbits' shared private huge-growth placement seam on `ToadstoolBlock`; therefore both `ribbits:toadstool` (red) and `ribbits:small_brown_toadstool` (brown) retain Ribbits' own 0.4 roll, configured-feature selection, and spread fallback. C11 does not special-case their ordinary vegetation placement: their inherited `VegetationBlock` machinery continues to provide BOTTOM projection and unshifted TOP/DOUBLE placement.
+- JUnit: 7/7 passed. The checks pin the exact Enderscape 3.0.2+mc26.2 reference SHA-256, verify the optional behavior-class contracts and direct Void Torch base class, and verify that C12 declares no Enderscape production dependency.
+- Fabric GameTests: 47/47 passed against the controlled BGE C72 artifact. Coverage includes native Snow Layer BOTTOM/TOP/DOUBLE stacking, geometry and collision parity, and generated-pillar reconciliation: BOTTOM upward and TOP downward Enderscape-style continuations consume only the matching support after success, while failed transactions restore exact source and support states.
+- The existing canonical survival, root/anchor, floor/ceiling surface, crop, aquatic, generic lantern/sign, floor-torch, and optional Ribbits coverage remains green. Void and Bulb Lantern generic paths and Enderscape standing/ceiling hanging-sign contracts stay delegated to those shared paths.
+- The exact Enderscape reference JAR was a static/JUnit input only. The headless server deliberately did not load Enderscape because its full runtime dependency stack was unavailable; therefore this is not Enderscape gameplay-runtime evidence and it does not exercise client particles or rendering.
 
 ## Runtime verification still required
 
-No Minecraft testing profile, client, save/reload, or actual full Ribbits dependency stack was launched for C11. The following observations remain user-directed runtime evidence:
+No Minecraft testing profile, client, save/reload, Enderscape runtime stack, deployment, or acceptance was launched or changed for C12. The following observations remain user-directed runtime evidence:
 
-1. Place each small toadstool on an eligible BGE Farmland Slab BOTTOM state; confirm its visual, collision/outline, and targeting projection is exactly `-0.5 Y`. Repeat on TOP and DOUBLE and confirm no translation.
-2. Bonemeal each color repeatedly on BOTTOM until the huge-growth roll succeeds. Confirm red uses Ribbits' red huge feature and brown uses its brown huge feature; when the generated exact stem contacts the support, only that BOTTOM slab becomes the generated `ribbits:toadstool_stem` state.
-3. Repeat successful huge growth on TOP and DOUBLE; confirm the original support slab survives unchanged and the structure is not globally translated.
-4. Force or find a failed huge-generation site for each color. Confirm the exact support slab and Ribbits source/fallback behavior are restored, with no canonical full block, missing support, or partial feature left behind.
-5. Confirm a missed 0.4 huge-growth roll still follows Ribbits' ordinary same-color spreading path for both colors.
-6. Check vanilla red and brown mushroom huge growth from BGE slabs remains unchanged, and repeat the Ribbits checks with Ribbits absent to confirm the optional mixin is inert.
-7. Exercise crop placement, growth, bonemeal, harvest, and moisture transitions for all six ordinary crop families on BOTTOM/TOP/DOUBLE BGE Farmland Slabs in a normal client session; include a reload to confirm persistence and visual behavior.
+1. On BGE native horizontal slabs, place and stack vanilla Snow Layers and Enderscape Veiled Leaf Piles on BOTTOM, TOP, and DOUBLE supports. Confirm native layering behavior and the expected `-0.5 Y` BOTTOM representation with unshifted TOP/DOUBLE behavior.
+2. Test Enderscape directional vegetation whose real `FACING` is UP and DOWN, including a Murublight Chanterelle. Confirm its surface selection, model/outline/collision/targeting alignment, growth, and cleanup. Verify a horizontal facing remains unmodified and unsupported by this compatibility seam.
+3. Trigger Veiled, Celestial, and Murublight structure growth on matching supports. Confirm success preserves Enderscape feature logic while consuming only a matching BOTTOM-upward or TOP-ceiling generated pillar contact; confirm all other support states and failed attempts restore exactly without global structure translation.
+4. Exercise full Puruberry chains: vine, flower, unripe berry, attached ripe berry, and a detached ripe berry. Confirm the attached chain uses one topmost vine anchor and detached ripe berries are not projected as supported attachments.
+5. Confirm Void Torch floor placement and particles align to the slab surface, while Void Wall Torch remains excluded. Verify Bulb Lantern particles align and generic Void/Bulb Lantern, Enderscape standing-sign, and ceiling-hanging-sign behavior remains intact.
+6. Repeat the existing vanilla, crop, aquatic, lantern/sign, floor-torch, and optional Ribbits regressions in a normal client session, then save/reload to verify persistence and client geometry.
 
 Record only observed outcomes against this exact artifact identity in `WORKBENCH_STATUS.json`; runtime results alone do not change lifecycle or acceptance.

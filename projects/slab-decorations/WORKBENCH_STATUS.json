@@ -26,7 +26,9 @@
       "Preserve the plant cell and support's real fluid states in the projected world view instead of applying a global waterlogged rejection, allowing canonical aquatic behavior only where the corresponding vanilla fluid and substrate context accepts it.",
       "Align accepted ceiling foliage under top slabs by exactly +0.5 Y and accepted upward foliage over bottom slabs by exactly -0.5 Y across shared model, outline, targeting, cached/context collision, visual, interaction, entity-inside, breaking-overlay, and shape-derived particle geometry; bottom/double ceiling supports and top/double upward supports remain unshifted.",
       "Preserve historical release provenance and the bounded Grass Block, Moss Block, and Pale Moss Block substrate-bonemeal behavior inherited from C3, including exact item consumption, native-slab restoration/reconciliation, generated vegetation positioning, and lowered-azalea safety.",
-      "Use exact unified BGE C72, CNM 2.0.7, Terrain Slabs 3.3.2, Java 25, Gradle 9.5.1, Loom 1.17.19, and Fabric API 0.157.0+26.2 only as controlled build/test or read-only comparison baselines; runtime dependency eligibility remains capability/provider-based."
+      "Use exact unified BGE C72, CNM 2.0.7, Terrain Slabs 3.3.2, Java 25, Gradle 9.5.1, Loom 1.17.19, and Fabric API 0.157.0+26.2 only as controlled build/test or read-only comparison baselines; runtime dependency eligibility remains capability/provider-based.",
+      "Treat vanilla SnowLayerBlock and exact optional Enderscape Veiled Leaf Piles as native stackable floor layers; resolve Enderscape directional vegetation only through its actual UP or DOWN FACING direction and resolve Puruberry parts through their topmost supporting vine, preserving Enderscape's own behavior contracts.",
+      "Use narrow optional Enderscape pseudo mixins to preserve the upstream sapling and chanterelle bonemeal-target rules while adapting their generation through the existing support transaction, and to align only Void Torch and Bulb Lantern particles with their shared visible surface offset."
     ],
     "boundaries": {
       "owned_paths": [
@@ -34,11 +36,11 @@
       ],
       "exclusions": [
         "The explicit structural blacklist is limited to pumpkin and melon stems plus attached stems, Chorus Plant and Chorus Flower, Lily Pad, regular Vine, multiface attachments including Glow Lichen, Cocoa, wall signs, wall hanging signs, wall torches, redstone torches, chains, and side- or wall-mounted aquatic/coral attachments; these receive no horizontal-slab attachment or offset.",
-        "Generation never shifts persisted tree, mushroom, fungus, or azalea feature coordinates. It consumes only a matching bottom-slab ground-contact continuation after a successful ordinary vanilla feature; top/double slab supports are preserved.",
+        "Generation never shifts persisted tree, mushroom, fungus, or azalea feature coordinates. Ordinary features consume only matching bottom-slab ground-contact continuations after success; the narrow optional Enderscape seam also consumes matching generated pillar continuations for BOTTOM upward or TOP ceiling support, while all other supports are restored.",
         "Vertical slabs, CNM Steps, layers, stairs, walls, columns, vanilla or foreign slabs, rails, redstone components, pressure plates, chains, pointed dripstone, machinery, and arbitrary non-vegetation decorations remain outside horizontal-slab projection ownership.",
         "The read-only projection supports ordinary BlockGetter and LevelReader placement/survival contracts. Raw ChunkAccess inspection is delegated and arbitrary custom placement systems that bypass those world-view accessors are not claimed compatible.",
         "Unified Block Geometry Extensions retains canonical material/native-slab ownership; this project adds no duplicate plant blocks, persisted offset property, registry-name parser, competing material table, standalone Nibaru dependency, or hard Mynx × Regions Unexplored dependency.",
-        "No Test Slot, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by Canary 11 controlled validation; the protected gameplay instance remains off-limits."
+        "No Test Slot, accepted stack, Minecraft profile, deployment, gameplay runtime result, or promotion is changed by Canary 12 controlled validation; the protected gameplay instance remains off-limits."
       ]
     },
     "dependencies": [
@@ -91,10 +93,22 @@
         "reason": "Optional private huge-toadstool feature seam; production linkage remains absent and the ordinary no-Ribbits path is unchanged."
       },
       {
+        "type": "MOD",
+        "identifier": "enderscape",
+        "requirement": "* (optional compatibility)",
+        "reason": "Canary 12 uses optional pseudo mixins and behavior-class contracts only; its exact reference JAR is a read-only test input and no production descriptor dependency is declared."
+      },
+      {
         "type": "OTHER",
         "identifier": "Terrain Slabs v3.3.2-26.2.jar",
         "requirement": "SHA-256 c67c334c8ea0a6a47effa96b740568bf505f41e9484a82e06736819f26f78eda",
         "reason": "Exact MIT-licensed read-only behavior and artifact-contract comparison baseline; it is not a runtime dependency and no code or assets are copied."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "enderscape-fabric-3.0.2+mc26.2.jar",
+        "requirement": "SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b",
+        "reason": "Exact MIT-licensed read-only behavior reference and JUnit contract input; it is not packaged or a runtime hard dependency."
       },
       {
         "type": "TOOL",
@@ -117,22 +131,22 @@
     ]
   },
   "state": {
-    "milestone": "C11 succeeds exact C10. Minecraft 26.2 CropBlock.getGrowthSpeed reads the real 3x3 support states beneath a crop and counts only GROWS_CROPS, so C10's survival-only canonical projection left exact BGE Farmland Slabs at vanilla fertility 1.0 instead of dry 4.0 or hydrated 10.0. C11 redirects only those helper reads through the existing exact BGE Farmland Slab → minecraft:farmland authority, preserving MOISTURE and all vanilla probability/crowding mathematics for CropBlock and PitcherCropBlock without altering slab geometry, crop offsets, lifecycle, bonemeal, harvest, or the explicit stem exclusion. Java 25 controlled validation passed 5/5 JUnit tests and 45/45 headless server GameTests; neither suite ran a client renderer, real save/reload, or a complete Ribbits runtime dependency stack. C11 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
+    "milestone": "C12 succeeds exact C11 with native Snow Layer parity and optional Enderscape compatibility. It projects exact Veiled Leaf Piles, real UP/DOWN directional vegetation, and attached Puruberry chains through canonical support without fabricating horizontal directions; preserves Enderscape's own bonemeal-target logic while its Veiled, Celestial, and Murublight growth uses the existing rollback-safe transaction; and aligns narrow Void Torch/Bulb Lantern particle effects. Java 25 controlled validation passed 7/7 JUnit tests and 47/47 headless server GameTests. The exact Enderscape reference checksum and static contracts were checked, but its full dependency stack was not loaded by the server suite; no client, real save/reload, or gameplay runtime evidence exists. C12 is ACTIVE, NOT_DEPLOYED, RUNTIME_UNTESTED, and unaccepted.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary11",
-        "embedded_version": "0.1.0-canary11",
+        "version": "0.1.0-canary12",
+        "embedded_version": "0.1.0-canary12",
         "artifact": {
-          "filename": "slab-decorations-0.1.0-canary11.jar",
-          "sha256": "7e15d2f1cb93ad97656e1380b83f905df143c7df79e149b9187fc74c6d5e90ba"
+          "filename": "slab-decorations-0.1.0-canary12.jar",
+          "sha256": "34ec81c28c548a9e291e344b44bce5f1577592a1ca5eb14f49ec2bacd212c611"
         },
-        "built_at": "2026-09-19T05:22:00.2476822Z",
-        "source_commit": "5a41f357d23a96068f56eb75a5c4f9fe52de4b8e",
+        "built_at": "2026-09-20T05:03:16.2234250Z",
+        "source_commit": "53c1dc4b183f1da5cbce6afcb49aca0bb333592a",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Restores exact BGE Farmland Slab 3×3 crop-fertility parity without changing vanilla growth mathematics."
+        "summary": "Adds native snow-layer parity and narrow optional Enderscape support while preserving canonical survival, feature, and particle behavior."
       },
       "accepted": null,
       "rollback": null,
@@ -146,10 +160,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-19T05:22:00.2476822Z",
-    "updated_at": "2026-09-19T05:22:00.2476822Z",
-    "last_codex_at": "2026-09-19T05:22:00.2476822Z",
-    "source_commit": "5a41f357d23a96068f56eb75a5c4f9fe52de4b8e"
+    "revision": 13,
+    "activity_at": "2026-09-20T05:03:16.2234250Z",
+    "updated_at": "2026-09-20T05:03:16.2234250Z",
+    "last_codex_at": "2026-09-20T05:03:16.2234250Z",
+    "source_commit": "53c1dc4b183f1da5cbce6afcb49aca0bb333592a"
   }
 }
