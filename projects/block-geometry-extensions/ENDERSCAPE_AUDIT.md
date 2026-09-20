@@ -32,6 +32,8 @@ projects that exact facing into its canonical source rather than resetting it to
 
 `D` is an explicit non-inheritance boundary, not an implicit fallback: the
 canonical Enderscape block remains provider-owned and is the only form that
-advertises the listed source-specific behavior. C86's GameTests construct every
-admitted family with the exact provider JAR, exercise every C bridge, and prove
-that every C-bridge copied callback has its required derived state.
+advertises the listed source-specific behavior. C86's controlled GameTests keep
+the exact provider dependency and use a concrete DirectionalBlock carrier for
+each affected source ID to prove that the shared global `facing` is classified
+and projected only on full-Layer canonicalization; existing state-bridge
+coverage remains intact.
