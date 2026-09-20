@@ -1,17 +1,18 @@
-# Testing — Canary 1
+# Testing — Canary 2
 
 Test only the exact release below with the unchanged upstream Enderscape input.
 
 | Field | Value |
 |---|---|
-| Companion artifact | `enderscape-pruning-0.1.0-canary1.jar` |
-| Version | `0.1.0-canary1` |
-| Companion SHA-256 | `93e8b9ae4f4bc010f6ca18b74a0a8ac1744b298e96f3ddfce2c3f876589a2fd5` |
-| Built at | `2026-09-19T07:29:22.9774388Z` |
-| Implementation checkpoint | `a3bcd02bda69cf6d2413f1ec59c0a9acf62d8558` |
+| Companion artifact | `enderscape-pruning-0.1.0-canary2.jar` |
+| Version | `0.1.0-canary2` |
+| Companion SHA-256 | `1da6a13cbd5a0027159a45d66cff89261aa5dd53cd9c438a5c3a1b17f4a0039b` |
+| Built at | `2026-09-20T01:52:05.0944502Z` |
+| Implementation checkpoint | `cb0707e9af08f230280dd7f73994153443233924` |
 | Required upstream input | `enderscape-fabric-3.0.2+mc26.2.jar` — SHA-256 `9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b` |
+| Required Matcha provider | `matcha-flavoured-data-0.1.0-canary2.jar` — SHA-256 `0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639` |
 
-Canary 1 has controlled build/static evidence only. It is `RUNTIME_UNTESTED`.
+Canary 2 has controlled build/static evidence only. It is `RUNTIME_UNTESTED`.
 Do not use a protected or retired gameplay profile. The intended target world has
 never loaded the End, so this procedure validates the approved new-game design;
 it does not make historical End inventories or generated chunks a release gate.
@@ -51,7 +52,16 @@ it does not make historical End inventories or generated chunks a release gate.
    remains ordinary and Resonance can be newly applied to a Magnia Attractor
    but not to a newly acquired Mirror or Dagger.
 
-## 3. Matcha food behavior
+## 3. Canary 2 pruning and crafting
+
+1. Kill representative Rubblemites, including with Looting where practical. The existing 65% player-kill reward chance and count/Looting behavior must yield `enderscape:nebulite_shards`; Rubble Chitin must never drop. Confirm unrelated Rubblemite behavior and rewards remain upstream.
+2. Check Enderscape tabs, vanilla tabs, Creative Search, JEI when installed, recipe-book unlocks, normal loot, and normal acquisition routes. Rubble Chitin must be absent. Existing legacy stacks may continue to resolve; do not treat their retained registry identity or void-immunity tag as a new acquisition path.
+3. With the exact Matcha C2 Kindling (the component-bearing Beacon Kindling item), craft a Void Campfire using exactly one Kindling and one `enderscape:void_shale` in either shapeless arrangement. The output must be exactly one `enderscape:void_campfire`.
+4. Verify that a vanilla `minecraft:stick` plus Void Shale, ordinary chicken spawn eggs plus Void Shale, extra ingredients, and the former shaped logs/sticks/Void Shale recipe do not craft a Void Campfire.
+5. Let natural Veiled Leaves decay repeatedly and break representative leaves without shears or Silk Touch. Veiled Saplings must never result from either passive leaf path. Break leaves with shears and Silk Touch to confirm direct Veiled Leaves acquisition remains available.
+6. Craft exactly one Veiled Leaves into exactly one Veiled Sapling in either shapeless arrangement. Confirm no four-to-one or alternate passive acquisition route is introduced.
+
+## 4. Matcha food behavior
 
 1. In the audited Enderscape loot routes, inspect complete component maps and
    quantities for Bread, Carrot, Golden Carrot, Golden Apple, Enchanted Golden
@@ -69,14 +79,14 @@ it does not make historical End inventories or generated chunks a release gate.
    comparator behavior, sounds/particles, final teleport, and final removal
    must remain upstream.
 
-## 4. Reload and evidence
+## 5. Reload and evidence
 
 1. Run `/reload`, disconnect/reconnect, and reopen Creative Search and JEI.
    Require no duplicate or stale Matcha food identities and no hidden candidate
    variant leak.
-2. Preserve logs and the exact release identifiers above with every observation.
+2. Repeat the C2 Rubblemite, Void Campfire, and Veiled Leaves checks after reload. Preserve logs and the exact release identifiers above with every observation.
    Record only observed behavior. Any registry/data/loot/advancement error,
    changed loot math, wrong Matcha component identity, unexpected hunger,
    lost Void/Magnia behavior, or discovery leak is a failure.
 
-No Minecraft runtime observation has been supplied for C1 yet.
+No Minecraft runtime observation has been supplied for C1 or C2 yet.

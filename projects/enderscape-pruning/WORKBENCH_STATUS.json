@@ -7,7 +7,8 @@
     "project_id": "enderscape-pruning",
     "aliases": [
       "Enderscape 3.0.2 pruning audit",
-      "Enderscape Pruning Canary 1"
+      "Enderscape Pruning Canary 1",
+      "Enderscape Pruning Canary 2"
     ],
     "legacy_names": [],
     "legacy_ids": []
@@ -18,12 +19,15 @@
       "Provide a separate Fabric compatibility layer for exact Enderscape 3.0.2 on Minecraft Java 26.2 without modifying or repackaging the upstream jar.",
       "Suppress future acquisition and discovery of owner-selected equipment while retaining registry identities needed by existing worlds and inventories.",
       "Reconcile the audited Enderscape food-loot paths with exact current Matcha Flavoured component-bearing identities without changing Enderscape's original loot odds or counts.",
-      "Replace the selected native Enderscape foods' vanilla hunger restoration with the owner-selected current Matcha healing semantics while retaining their upstream effects and special behavior."
+      "Replace the selected native Enderscape foods' vanilla hunger restoration with the owner-selected current Matcha healing semantics while retaining their upstream effects and special behavior.",
+      "Remove Rubble Chitin from future normal acquisition and discovery while retaining its registry identity and changing only the Rubblemite reward identity to Nebulite Shards.",
+      "Replace the Void Campfire recipe with exact current Matcha Flavoured Kindling plus Void Shale, and move Veiled Sapling acquisition from passive leaf drops to a one-to-one Veiled Leaves recipe."
     ],
     "scope": [
       "Generate an always-enabled companion data overlay from the SHA-256-pinned Enderscape input, preserving audited loot-pool math while replacing only selected entries and current Matcha food identity components.",
       "Filter only the owner-selected recipes, advancement branches, ordinary Creative/JEI discovery identities, normal enchantment availability, and exact Enderscape-specific direct hunger behavior through Fabric APIs and narrow 3.0.2 mixins.",
-      "Package, statically verify, retain, and document Canary 1 without launching Minecraft or changing any testing profile."
+      "Package, statically verify, retain, and document Canary 1 without launching Minecraft or changing any testing profile.",
+      "Generate C2 overrides for the exact Rubblemite and Veiled Leaves loot tables, the Void Campfire recipe, and the Veiled Sapling recipe; use one narrow custom crafting serializer only because current Matcha Kindling is a component-bearing vanilla item rather than a separate registry entry."
     ],
     "boundaries": {
       "owned_paths": [
@@ -83,8 +87,8 @@
       {
         "type": "PROJECT",
         "identifier": "a0a522b0-bc02-48dc-81de-efc8757171c5",
-        "requirement": "Accepted Matcha Flavoured 1.12 data authority",
-        "reason": "Defines the component-bearing food identities with which Enderscape's vanilla-food loot must be reconciled."
+        "requirement": "Matcha Flavoured Data 0.1.0-canary2 accepted current artifact (SHA-256 0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639)",
+        "reason": "Defines C1 food identities and C2's Kindling identity: minecraft:chicken_spawn_egg carrying minecraft:item_model minecraft:beacon_kindling."
       },
       {
         "type": "PROJECT",
@@ -101,17 +105,17 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is a separately packaged, always-enabled Fabric companion for exact Enderscape 3.0.2. It removes only future normal recipes, selected loot results, candidate advancement branches, normal enchantment availability, and narrow Creative/JEI discovery for Shadoline armor, Dagger, Rubble Shield variants, Mirror variants, Bundling, Stun Burst, and Transdimensional; it preserves upstream registries, Rebound, the Magnia Attractor's Resonance path, the full potion/Void system, and Magnia. Its generated overlay preserves audited loot pools, rolls, conditions, weights, count functions, and unrelated entries while emitting current Matcha component identities. Controlled static validation passed; Minecraft runtime remains untested.",
+    "milestone": "Canary 2 retains all C1 pruning, Matcha food, Rebound, Magnia, and Void-system boundaries. It makes Rubble Chitin undiscoverable and unobtainable in future normal gameplay while preserving legacy registry/tag resolution and changing only Rubblemite's reward identity to Nebulite Shards; requires exact accepted Matcha Kindling plus Void Shale for the replacement Void Campfire recipe; and moves Veiled Sapling acquisition to the deliberate one-to-one Veiled Leaves recipe while preserving direct shears/Silk Touch leaf acquisition. Controlled static validation passed; Minecraft runtime remains untested.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
-        "embedded_version": "0.1.0-canary1",
+        "version": "0.1.0-canary2",
+        "embedded_version": "0.1.0-canary2",
         "artifact": {
-          "filename": "enderscape-pruning-0.1.0-canary1.jar",
-          "sha256": "93e8b9ae4f4bc010f6ca18b74a0a8ac1744b298e96f3ddfce2c3f876589a2fd5"
+          "filename": "enderscape-pruning-0.1.0-canary2.jar",
+          "sha256": "1da6a13cbd5a0027159a45d66cff89261aa5dd53cd9c438a5c3a1b17f4a0039b"
         },
-        "built_at": "2026-09-19T07:29:22.9774388Z",
-        "source_commit": "a3bcd02bda69cf6d2413f1ec59c0a9acf62d8558",
+        "built_at": "2026-09-20T01:52:05.0944502Z",
+        "source_commit": "cb0707e9af08f230280dd7f73994153443233924",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -120,10 +124,10 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "=26.2",
-              "reason": "Canary 1 targets the controlled Minecraft 26.2 recipe, advancement, tag, Creative, food, and resource-pack interfaces.",
+              "reason": "Canary 2 targets controlled Minecraft 26.2 recipe, advancement, tag, Creative, food, component, and resource-pack interfaces.",
               "regression_evidence": [
-                "A Java 25 Gradle build produced enderscape-pruning-0.1.0-canary1.jar, SHA-256 93e8b9ae4f4bc010f6ca18b74a0a8ac1744b298e96f3ddfce2c3f876589a2fd5, from implementation checkpoint a3bcd02bda69cf6d2413f1ec59c0a9acf62d8558.",
-                "Six focused JUnit static-contract tests passed against Minecraft 26.2 mappings, the exact Enderscape input, and current Matcha data fingerprints."
+                "A Java 25 Gradle build produced enderscape-pruning-0.1.0-canary2.jar, SHA-256 1da6a13cbd5a0027159a45d66cff89261aa5dd53cd9c438a5c3a1b17f4a0039b, from implementation checkpoint cb0707e9af08f230280dd7f73994153443233924.",
+                "Nine focused JUnit static-contract tests passed against Minecraft 26.2 mappings, the exact Enderscape input, the accepted Matcha C2 Kindling source fingerprint, and current Matcha food data fingerprints."
               ]
             },
             {
@@ -131,15 +135,26 @@
               "relationship": "depends",
               "dependency_id": "enderscape",
               "predicate": "=3.0.2+mc26.2",
-              "reason": "The generated overlay and one string-targeted Chorus Cake Roll mixin are intentionally bound to the audited Enderscape 3.0.2 data and bytecode shape.",
+              "reason": "The generated overlay, C2 Void Campfire serializer, and one string-targeted Chorus Cake Roll mixin are intentionally bound to the audited Enderscape 3.0.2 data and bytecode shape.",
               "regression_evidence": [
                 "The generator and tests fail closed unless enderscape-fabric-3.0.2+mc26.2.jar matches SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b.",
-                "The focused suite verifies all ten direct candidate loot paths, all selected recipe and advancement identities, the retained explore_end icon, and the absence of redistributed upstream classes or unrelated overlay resources."
+                "The focused suite verifies C1's ten direct candidate loot paths and selected recipe/advancement identities, C2's exact Rubblemite identity-only rewrite, all JSON Rubble Chitin references, Matcha Kindling, replacement Void Campfire recipe, Veiled Leaves loot rewrite, one-to-one Veiled Sapling recipe, retained explore_end icon, and absence of redistributed upstream classes or unrelated overlay resources."
+              ]
+            },
+            {
+              "consumer_id": "enderscape_pruning",
+              "relationship": "depends",
+              "dependency_id": "matcha_flavoured_data",
+              "predicate": "=0.1.0-canary2",
+              "reason": "C2's custom Void Campfire serializer must match Matcha C2's component-bearing Beacon Kindling identity at runtime; a normal item-only recipe would accept ordinary chicken spawn eggs.",
+              "regression_evidence": [
+                "The generator pins Matcha's beacon_kindling recipe SHA-256 e2a91a3d1f9f29c183561bf720967bc41b87e8be1693d6918d07462181ba1fb1 and fails closed if its item, model, marker, or beacon_kindling tag changes.",
+                "fabric.mod.json requires matcha_flavoured_data =0.1.0-canary2, and the focused suite verifies the custom serializer accepts the authoritative base item/model identity rather than a vanilla stick recipe."
               ]
             }
           ]
         },
-        "summary": "Prunes selected Enderscape acquisition and discovery paths while preserving upstream registries, loot math, Matcha food identities, the Void system, and Magnia."
+        "summary": "Prunes Rubble Chitin, replaces its Rubblemite reward with Nebulite Shards, uses Matcha Kindling for Void Campfires, and moves Veiled Saplings to a one-to-one leaves recipe while preserving C1 and upstream systems."
       },
       "accepted": null,
       "rollback": null,
@@ -153,10 +168,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-19T07:29:57.6831896Z",
-    "updated_at": "2026-09-19T07:29:57.6831896Z",
-    "last_codex_at": "2026-09-19T07:29:57.6831896Z",
-    "source_commit": "a3bcd02bda69cf6d2413f1ec59c0a9acf62d8558"
+    "revision": 3,
+    "activity_at": "2026-09-20T01:52:05.0944502Z",
+    "updated_at": "2026-09-20T01:52:05.0944502Z",
+    "last_codex_at": "2026-09-20T01:52:05.0944502Z",
+    "source_commit": "cb0707e9af08f230280dd7f73994153443233924"
   }
 }
