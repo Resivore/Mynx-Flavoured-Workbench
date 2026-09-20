@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "project": {
+    "id": "enderscape-overlays",
+    "name": "Enderscape Overlays",
+    "version": "0.1.0-canary1",
+    "pack_format": {
+      "min_format": 88,
+      "max_format": 999
+    }
+  },
+  "inputs": {
+    "enderscape": {
+      "path": "originals/mods/enderscape-fabric-3.0.2+mc26.2.jar",
+      "sha256": "9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b",
+      "license": "MIT (declared in fabric.mod.json)",
+      "texture_prefix": "assets/enderscape/textures/block/"
+    },
+    "matcha_overlays": {
+      "path": "originals/resourcepacks/Matcha-Overlays-v37.zip",
+      "sha256": "2642dcea338100f469df905b212423683e83ae7c683c7b9fabfbd2195a2fe802",
+      "license": "CC BY-NC 4.0 (LICENSE in archive)",
+      "tile_prefix": "assets/minecraft/optifine/ctm/"
+    }
+  },
+  "templates": {
+    "grass_top": {"donor": "overlays/grass_block", "method": "overlay", "connect": "block", "faces": "top", "layer": "cutout_mipped", "tint": true},
+    "mycelium_top": {"donor": "overlays/mycelium", "method": "overlay", "connect": "block", "faces": "top", "layer": "cutout_mipped", "tint": true},
+    "warped_nylium_top": {"donor": "overlays/warped_nylium", "method": "overlay", "connect": "block", "faces": "top", "layer": "cutout_mipped", "tint": true},
+    "log_sides": {"donor": "overlays/logs/oak_log", "method": "overlay", "connect": "block", "faces": "sides", "layer": "cutout_mipped", "tint": true},
+    "crimson_stem_sides": {"donor": "overlays/logs/crimson_stem", "method": "overlay", "connect": "block", "faces": "sides", "layer": "cutout_mipped", "tint": true},
+    "warped_stem_sides": {"donor": "overlays/logs/warped_stem", "method": "overlay", "connect": "block", "faces": "sides", "layer": "cutout_mipped", "tint": true},
+    "planks": {"donor": "overlays/planks/acacia_planks", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "end_stone_bricks": {"donor": "overlays/end_stone_bricks", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "cracked_stone_bricks": {"donor": "overlays/cracked_stone_bricks", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "mossy_stone_bricks": {"donor": "_overlays/mossy_stone_brick", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout", "tint": false},
+    "deepslate": {"donor": "overlays/deepslate", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "deepslate_bricks": {"donor": "overlays/deepslate_bricks", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "cracked_deepslate_bricks": {"donor": "overlays/cracked_deepslate_bricks", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "tuff": {"donor": "overlays/tuff", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "tuff_bricks": {"donor": "overlays/tuff_bricks", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "ore": {"donor": "_overlays/ore/coal_ore", "method": "overlay", "connect": null, "faces": null, "layer": "cutout", "tint": false},
+    "bricks": {"donor": "overlays/bricks", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "mushroom": {"donor": "overlays/mushrooms/brown_mushroom_block", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true},
+    "corruption_copper": {"donor": "overlays/weathered_copper", "method": "overlay", "connect": "block", "faces": "all", "layer": "cutout_mipped", "tint": true}
+  },
+  "alpha_equivalence_checks": [
+    {
+      "name": "generic plank topology",
+      "members": [
+        "overlays/planks/acacia_planks",
+        "overlays/planks/birch_planks",
+        "overlays/planks/crimson_planks",
+        "overlays/planks/warped_planks"
+      ]
+    },
+    {
+      "name": "generic ore topology",
+      "members": [
+        "_overlays/ore/coal_ore",
+        "_overlays/ore/iron_ore",
+        "_overlays/ore/gold_ore",
+        "_overlays/ore/diamond_ore",
+        "_overlays/ore/redstone_ore"
+      ]
+    }
+  ],
+  "block_roles": {
+    "enderscape:celestial_overgrowth": "source",
+    "enderscape:celestial_path": "target-only",
+    "enderscape:veiled_end_stone": "source",
+    "enderscape:corrupt_overgrowth": "source",
+    "enderscape:corrupt_path": "target-only",
+    "enderscape:veiled_log": "source",
+    "enderscape:celestial_stem": "source",
+    "enderscape:murublight_stem": "source",
+    "enderscape:veiled_planks": "both",
+    "enderscape:celestial_planks": "both",
+    "enderscape:murublight_planks": "both",
+    "enderscape:cracked_end_stone_bricks": "both",
+    "enderscape:overgrown_end_stone_bricks": "both",
+    "enderscape:polished_end_stone": "target-only",
+    "enderscape:chiseled_end_stone": "target-only",
+    "enderscape:mirestone": "both",
+    "enderscape:mirestone_bricks": "both",
+    "enderscape:cracked_mirestone_bricks": "both",
+    "enderscape:overgrown_mirestone_bricks": "both",
+    "enderscape:polished_mirestone": "target-only",
+    "enderscape:chiseled_mirestone": "target-only",
+    "enderscape:veradite": "both",
+    "enderscape:veradite_bricks": "both",
+    "enderscape:polished_veradite": "target-only",
+    "enderscape:chiseled_veradite": "target-only",
+    "enderscape:kurodite": "both",
+    "enderscape:kurodite_bricks": "both",
+    "enderscape:polished_kurodite": "target-only",
+    "enderscape:chiseled_kurodite": "target-only",
+    "enderscape:nebulite_ore": "source",
+    "enderscape:mirestone_nebulite_ore": "source",
+    "enderscape:shadoline_ore": "source",
+    "enderscape:mirestone_shadoline_ore": "source",
+    "enderscape:celestial_bricks": "both",
+    "enderscape:murublight_bricks": "both",
+    "enderscape:celestial_cap": "both",
+    "enderscape:murublight_cap": "both"
+  },
+  "relationships": [
+    {"id": "celestial-overgrowth", "family": "Celestial overgrowth", "source_blocks": ["enderscape:celestial_overgrowth"], "target_blocks": ["minecraft:end_stone", "enderscape:celestial_path"], "material": "celestial_overgrowth_top.png", "template": "grass_top", "model_evidence": "celestial_overgrowth_0.json retains minecraft:block/end_stone as bottom", "notes": "Celestial Path is a receiver only."},
+    {"id": "veiled-end-stone", "family": "Veiled End Stone", "source_blocks": ["enderscape:veiled_end_stone"], "target_blocks": ["minecraft:end_stone"], "material": "veiled_end_stone_top.png", "template": "mycelium_top", "model_evidence": "veiled_end_stone_0.json retains minecraft:block/end_stone as bottom", "notes": "Mycelium was selected over warped nylium because its subdued soil edge reads as veiling rather than corruption."},
+    {"id": "corrupt-overgrowth", "family": "Corrupt overgrowth", "source_blocks": ["enderscape:corrupt_overgrowth"], "target_blocks": ["enderscape:mirestone", "enderscape:corrupt_path"], "material": "corrupt_overgrowth_top.png", "template": "warped_nylium_top", "model_evidence": "corrupt_overgrowth_0.json retains enderscape:block/mirestone as bottom", "notes": "Corrupt Path is a receiver only."},
+    {"id": "veiled-log-ground", "family": "Natural log ground contacts", "source_blocks": ["enderscape:veiled_log"], "target_blocks": ["enderscape:veiled_end_stone"], "material": "veiled_log.png", "template": "log_sides", "axis_caveat": "cube_column axis rotations are supported through Matcha TEXTURE orientation; end-grain is excluded by faces=sides."},
+    {"id": "celestial-stem-ground", "family": "Natural stem ground contacts", "source_blocks": ["enderscape:celestial_stem"], "target_blocks": ["enderscape:celestial_overgrowth"], "material": "celestial_stem.png", "template": "crimson_stem_sides", "axis_caveat": "cube_column axis rotations are supported through Matcha TEXTURE orientation; end-grain is excluded by faces=sides."},
+    {"id": "murublight-stem-ground", "family": "Natural stem ground contacts", "source_blocks": ["enderscape:murublight_stem"], "target_blocks": ["enderscape:corrupt_overgrowth"], "material": "murublight_stem.png", "template": "warped_stem_sides", "axis_caveat": "cube_column axis rotations are supported through Matcha TEXTURE orientation; end-grain is excluded by faces=sides."},
+    {"id": "veiled-planks", "family": "Plank families", "source_blocks": ["enderscape:veiled_planks"], "target_blocks": ["enderscape:veiled_planks", "enderscape:celestial_planks", "enderscape:murublight_planks"], "material": "veiled_planks.png", "template": "planks"},
+    {"id": "celestial-planks", "family": "Plank families", "source_blocks": ["enderscape:celestial_planks"], "target_blocks": ["enderscape:veiled_planks", "enderscape:celestial_planks", "enderscape:murublight_planks"], "material": "celestial_planks.png", "template": "planks", "excludes": ["corruption-celestial-to-murublight-planks"]},
+    {"id": "murublight-planks", "family": "Plank families", "source_blocks": ["enderscape:murublight_planks"], "target_blocks": ["enderscape:veiled_planks", "enderscape:celestial_planks", "enderscape:murublight_planks"], "material": "murublight_planks.png", "template": "planks"},
+    {"id": "cracked-end-stone-bricks", "family": "End Stone construction", "source_blocks": ["enderscape:cracked_end_stone_bricks"], "target_blocks": ["minecraft:end_stone_bricks", "enderscape:cracked_end_stone_bricks", "enderscape:overgrown_end_stone_bricks", "enderscape:polished_end_stone", "enderscape:chiseled_end_stone"], "material": "cracked_end_stone_bricks.png", "template": "cracked_stone_bricks"},
+    {"id": "overgrown-end-stone-bricks", "family": "End Stone construction", "source_blocks": ["enderscape:overgrown_end_stone_bricks"], "target_blocks": ["minecraft:end_stone_bricks", "enderscape:cracked_end_stone_bricks", "enderscape:overgrown_end_stone_bricks", "enderscape:polished_end_stone", "enderscape:chiseled_end_stone"], "material": "overgrown_end_stone_bricks.png", "emissive_material": "overgrown_end_stone_bricks_emissive.png", "template": "mossy_stone_bricks", "notes": "Normal and emissive tiles are generated from the same donor alpha bytes."},
+    {"id": "mirestone", "family": "Mirestone", "source_blocks": ["enderscape:mirestone"], "target_blocks": ["enderscape:mirestone", "enderscape:mirestone_bricks", "enderscape:cracked_mirestone_bricks", "enderscape:overgrown_mirestone_bricks", "enderscape:polished_mirestone", "enderscape:chiseled_mirestone"], "material": "mirestone.png", "template": "deepslate"},
+    {"id": "mirestone-bricks", "family": "Mirestone", "source_blocks": ["enderscape:mirestone_bricks"], "target_blocks": ["enderscape:mirestone", "enderscape:mirestone_bricks", "enderscape:cracked_mirestone_bricks", "enderscape:overgrown_mirestone_bricks", "enderscape:polished_mirestone", "enderscape:chiseled_mirestone"], "material": "mirestone_bricks.png", "template": "deepslate_bricks"},
+    {"id": "cracked-mirestone-bricks", "family": "Mirestone", "source_blocks": ["enderscape:cracked_mirestone_bricks"], "target_blocks": ["enderscape:mirestone", "enderscape:mirestone_bricks", "enderscape:cracked_mirestone_bricks", "enderscape:overgrown_mirestone_bricks", "enderscape:polished_mirestone", "enderscape:chiseled_mirestone"], "material": "cracked_mirestone_bricks.png", "template": "cracked_deepslate_bricks"},
+    {"id": "overgrown-mirestone-bricks", "family": "Mirestone", "source_blocks": ["enderscape:overgrown_mirestone_bricks"], "target_blocks": ["enderscape:mirestone", "enderscape:mirestone_bricks", "enderscape:cracked_mirestone_bricks", "enderscape:overgrown_mirestone_bricks", "enderscape:polished_mirestone", "enderscape:chiseled_mirestone"], "material": "overgrown_mirestone_bricks.png", "emissive_material": "overgrown_mirestone_bricks_emissive.png", "template": "mossy_stone_bricks", "notes": "Normal and emissive tiles are generated from the same donor alpha bytes."},
+    {"id": "veradite", "family": "Veradite", "source_blocks": ["enderscape:veradite"], "target_blocks": ["enderscape:veradite", "enderscape:veradite_bricks", "enderscape:polished_veradite", "enderscape:chiseled_veradite"], "material": "veradite.png", "template": "tuff", "excludes": ["corruption-veradite-to-kurodite"]},
+    {"id": "veradite-bricks", "family": "Veradite", "source_blocks": ["enderscape:veradite_bricks"], "target_blocks": ["enderscape:veradite", "enderscape:veradite_bricks", "enderscape:polished_veradite", "enderscape:chiseled_veradite"], "material": "veradite_bricks.png", "template": "tuff_bricks", "excludes": ["corruption-veradite-bricks-to-kurodite-bricks"]},
+    {"id": "kurodite", "family": "Kurodite", "source_blocks": ["enderscape:kurodite"], "target_blocks": ["enderscape:kurodite", "enderscape:kurodite_bricks", "enderscape:polished_kurodite", "enderscape:chiseled_kurodite"], "material": "kurodite.png", "template": "deepslate"},
+    {"id": "kurodite-bricks", "family": "Kurodite", "source_blocks": ["enderscape:kurodite_bricks"], "target_blocks": ["enderscape:kurodite", "enderscape:kurodite_bricks", "enderscape:polished_kurodite", "enderscape:chiseled_kurodite"], "material": "kurodite_bricks.png", "template": "deepslate_bricks"},
+    {"id": "nebulite-ore", "family": "Ores", "source_blocks": ["enderscape:nebulite_ore"], "target_blocks": ["minecraft:end_stone"], "material": "nebulite_ore.png", "emissive_material": "nebulite_ore_emissive.png", "template": "ore", "notes": "End Stone substrate; normal and emissive tiles share every donor alpha."},
+    {"id": "mirestone-nebulite-ore", "family": "Ores", "source_blocks": ["enderscape:mirestone_nebulite_ore"], "target_blocks": ["enderscape:mirestone"], "material": "mirestone_nebulite_ore.png", "emissive_material": "nebulite_ore_emissive.png", "template": "ore", "notes": "Mirestone substrate; normal and emissive tiles share every donor alpha."},
+    {"id": "shadoline-ore", "family": "Ores", "source_blocks": ["enderscape:shadoline_ore"], "target_blocks": ["minecraft:end_stone"], "material": "shadoline_ore.png", "template": "ore"},
+    {"id": "mirestone-shadoline-ore", "family": "Ores", "source_blocks": ["enderscape:mirestone_shadoline_ore"], "target_blocks": ["enderscape:mirestone"], "material": "mirestone_shadoline_ore.png", "template": "ore"},
+    {"id": "celestial-bricks", "family": "Celestial and Murublight bricks", "source_blocks": ["enderscape:celestial_bricks"], "target_blocks": ["enderscape:celestial_bricks", "enderscape:murublight_bricks"], "material": "celestial_bricks.png", "template": "bricks", "excludes": ["corruption-celestial-to-murublight-bricks"]},
+    {"id": "murublight-bricks", "family": "Celestial and Murublight bricks", "source_blocks": ["enderscape:murublight_bricks"], "target_blocks": ["enderscape:celestial_bricks", "enderscape:murublight_bricks"], "material": "murublight_bricks.png", "template": "bricks"},
+    {"id": "celestial-cap", "family": "Large organic blocks", "source_blocks": ["enderscape:celestial_cap"], "target_blocks": ["enderscape:celestial_cap", "enderscape:murublight_cap"], "material": "celestial_cap.png", "template": "mushroom", "model_evidence": "celestial_cap.json is minecraft:block/cube_all", "excludes": ["corruption-celestial-to-murublight-cap"]},
+    {"id": "murublight-cap", "family": "Large organic blocks", "source_blocks": ["enderscape:murublight_cap"], "target_blocks": ["enderscape:celestial_cap", "enderscape:murublight_cap"], "material": "murublight_cap.png", "template": "mushroom", "model_evidence": "murublight_cap.json is minecraft:block/cube_all"},
+    {"id": "corruption-veradite-to-kurodite", "family": "Corruption transitions", "source_blocks": ["enderscape:veradite"], "target_blocks": ["enderscape:kurodite"], "material": "veradite.png", "template": "corruption_copper", "priority": "high", "recipe_evidence": "kurodite_from_veradite.json uses enderscape:void_lachryma"},
+    {"id": "corruption-veradite-bricks-to-kurodite-bricks", "family": "Corruption transitions", "source_blocks": ["enderscape:veradite_bricks"], "target_blocks": ["enderscape:kurodite_bricks"], "material": "veradite_bricks.png", "template": "corruption_copper", "priority": "high", "recipe_evidence": "kurodite_bricks_from_veradite_bricks.json uses enderscape:void_lachryma"},
+    {"id": "corruption-celestial-to-murublight-planks", "family": "Corruption transitions", "source_blocks": ["enderscape:celestial_planks"], "target_blocks": ["enderscape:murublight_planks"], "material": "celestial_planks.png", "template": "corruption_copper", "priority": "high", "recipe_evidence": "murublight_planks_from_celestial_planks.json uses enderscape:void_lachryma"},
+    {"id": "corruption-celestial-to-murublight-bricks", "family": "Corruption transitions", "source_blocks": ["enderscape:celestial_bricks"], "target_blocks": ["enderscape:murublight_bricks"], "material": "celestial_bricks.png", "template": "corruption_copper", "priority": "high", "recipe_evidence": "murublight_bricks_from_celestial_bricks.json uses enderscape:void_lachryma"},
+    {"id": "corruption-celestial-to-murublight-stem", "family": "Corruption transitions", "source_blocks": ["enderscape:celestial_stem"], "target_blocks": ["enderscape:murublight_stem"], "material": "celestial_stem.png", "template": "corruption_copper", "priority": "high", "faces_override": "sides", "recipe_evidence": "murublight_stem_from_celestial_stem.json uses enderscape:void_lachryma", "axis_caveat": "Only stem side texture participates; end-grain remains excluded."},
+    {"id": "corruption-celestial-to-murublight-cap", "family": "Corruption transitions", "source_blocks": ["enderscape:celestial_cap"], "target_blocks": ["enderscape:murublight_cap"], "material": "celestial_cap.png", "template": "corruption_copper", "priority": "high", "recipe_evidence": "murublight_cap_from_celestial_cap.json uses enderscape:void_lachryma"}
+  ],
+  "deferred": [
+    "BGE-specific geometry integration and any slab, stair, or wall source behavior; ordinary Continuity overlays are intentionally restricted to evidence-backed full-block and unit-face relationships.",
+    "Chiseled decorative faces, pillars, stripped logs and stems, doors, trapdoors, buttons, pressure plates, fences, fence gates, signs, hanging signs, shelves, leaves, lamps, Magnia, Void Shale, and Drift Jelly Block.",
+    "Shadoline construction and Purpur, Dusk Purpur, and Purpur Tile families. Likely future donors are generic metal/chain, purpur, and tile families after a separate relationship pass."
+  ]
+}
