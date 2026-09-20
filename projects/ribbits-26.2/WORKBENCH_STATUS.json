@@ -187,21 +187,21 @@
     ]
   },
   "state": {
-    "milestone": "Canary 27 replaces the small-brown item and block textures with the approved 14-by-14 keyed item sprite and matching 64-by-64 Matcha atlas, retains Canary 26's volumetric, same-color huge-growth, and future-only village behavior, and changes Gardener tier 1 to persistently select three of five independent red/brown mushroom, daisy, lily-pad, and small-dripleaf exchanges. Canary 28 adds only a narrowly scoped optional client Fisherman-rod provider for VWR: it resolves the existing private `fisherman_ribbit` model and shared Ribbits texture, renders only its actual `fishing_rod` bone, explicitly hides decorative `fishing_rod_2`/`fishing_rod_3`, and returns the outer shaft endpoint from that same loaded model transform. It adds no Ribbits gameplay, profession behavior, model/resource payload, resource mutation, or VWR dependency; unavailable resources simply leave consumers to their own fallback. Canary 28 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
+    "milestone": "Canary 27's toadstool and Gardener behavior remains unchanged. Exact user-supplied visual evidence binds only to paired Ribbits C28 and VWR C18: the Ribbits rod rendered but was severely displaced from the villager's hands, and VWR's line was detached and could extend toward an arbitrary high world/view point. Those observations establish no aggregate PASS. C29 changes only the optional VWR Fisherman visual bridge: it derives an explicit grip and outer-shaft tip from the actual `fishing_rod` Geo hierarchy, reanchors the rendered shaft grip at the caller's crossed arms, suppresses `fishing_rod_2` and `fishing_rod_3`, and exposes the same arm-local physical tip for VWR's line origin without camera-position endpoint math. It adds no Ribbits gameplay, model/resource payload, resource mutation, or VWR dependency; unavailable resources leave consumers to their fallback. C29 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
     "releases": {
       "current": {
-      "version": "4.1.6+26.2-mynx-canary28",
+      "version": "4.1.6+26.2-mynx-canary29",
       "artifact": {
-        "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary28.jar",
-        "sha256": "96fcad5ba1c06ebb573e6f1554f907ff867d6076c97bc903f64545a5b86ea342"
+        "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary29.jar",
+        "sha256": "29cd32edba3d9a4bd1838f3f01cd783e16e34a23f0c090450b54299125b7e5dd"
       },
-      "built_at": "2026-09-20T06:35:55.7689755Z",
-      "source_commit": "5b01f8aebadfe4c019ed09851d9907556790e4f6",
+      "built_at": "2026-09-20T14:59:43.8067987Z",
+      "source_commit": "3e68262c95e273cafd25fa421bcc0e107084df82",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-      "summary": "Exposes only the existing Fisherman rod geometry as an optional client visual provider while retaining C27's toadstool and Gardener behavior."
+      "summary": "Physically reanchors the optional Fisherman rod and shares its actual outer-shaft tip with VWR while retaining C27's toadstool and Gardener behavior."
       },
       "accepted": {
         "version": "4.1.6+26.2-mynx-canary24",
@@ -228,10 +228,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 34,
-    "activity_at": "2026-09-20T06:35:47Z",
-    "updated_at": "2026-09-20T06:35:47Z",
-    "last_codex_at": "2026-09-20T06:35:47Z",
-    "source_commit": "5b01f8aebadfe4c019ed09851d9907556790e4f6"
+    "revision": 35,
+    "activity_at": "2026-09-20T14:59:43Z",
+    "updated_at": "2026-09-20T14:59:43Z",
+    "last_codex_at": "2026-09-20T14:59:43Z",
+    "source_commit": "3e68262c95e273cafd25fa421bcc0e107084df82"
   }
 }

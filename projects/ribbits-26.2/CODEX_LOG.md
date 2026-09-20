@@ -344,3 +344,14 @@
 - Artifact: Current unaccepted private `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary28.jar`, 3,384,224 bytes, SHA-256 `96fcad5ba1c06ebb573e6f1554f907ff867d6076c97bc903f64545a5b86ea342`, built `2026-09-20T06:35:55.7689755Z`, from the source checkpoint above. Accepted Canary 24 remains unchanged.
 - Result: The optional visual provider is limited to the existing rod geometry and is current without a runtime claim.
 - Next state: Retain the exact ignored C28 artifact, validate and integrate revision 34 on authoritative `main`, preserve accepted C24, and use the focused C28 procedure only if the owner elects to collect runtime evidence.
+
+## 2026-09-20T14:59:43Z — Reanchor the optional VWR Fisherman rod bridge in Canary 29
+
+- Revision: 35
+- Source checkpoint: `3e68262c95e273cafd25fa421bcc0e107084df82`
+- Changes: Bound the exact supplied visual observations only to paired Ribbits C28 and VWR C18: the Ribbits rod rendered but was severely displaced from the villager's hands, and VWR's line was detached and could extend toward an arbitrary high world/view point. Those observations are not a broad PASS. C29 changes only the optional visual bridge: it derives explicit grip and outer-shaft-tip points from the real `fishing_rod` Geo hierarchy, reanchors the rendered shaft grip at VWR's crossed arms, suppresses `fishing_rod_2` and `fishing_rod_3`, and exposes the same arm-local physical tip to VWR without camera-position endpoint math. It adds no Ribbits gameplay, resource payload/mutation, or VWR dependency; consumers retain their fallback when unavailable.
+- Build/static: Fresh private assembly staged 363 resources / 266 strict JSON files and passed `STATIC TREE PASS`. Java 25 / Gradle 9.5.1 / Fabric Loom 1.15.5 offline `clean check build` passed, including all 55 private-resource tests and focused rod-bridge contracts. The finalized private artifact passed `STATIC JAR PASS` with zero errors or blockers. Static evidence is not Minecraft runtime validation.
+- Runtime: C28/C18 retain only the exact scoped user observations above. C29 was not deployed, launched, or observed; no testing profile was accessed. It is `ACTIVE / STATIC_PASS / RUNTIME_UNTESTED`; accepted C24 is unchanged.
+- Artifact: Current unaccepted private `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary29.jar`, 3,388,052 bytes, SHA-256 `29cd32edba3d9a4bd1838f3f01cd783e16e34a23f0c090450b54299125b7e5dd`, built at `2026-09-20T14:59:43.8067987Z`, from the source checkpoint above. Canonical ignored-artifact retention remains required before integration.
+- Result: C29 is current with static evidence, no runtime claim, and the C24 accepted release preserved.
+- Next state: Retain the exact artifact, validate and integrate/push revision 35 to authoritative `main`, regenerate the best-effort dashboard, then run the focused paired C29/C19 normal-20-TPS visual and fallback trial when the owner chooses.
