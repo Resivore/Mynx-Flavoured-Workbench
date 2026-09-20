@@ -34,6 +34,14 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
             CnmTerrainCompat.MOD_ID, "c81_mapping_fixture");
     private static final Identifier MOSS_SLAB_CNM_ADMISSION = Identifier.fromNamespaceAndPath(
             "more_slabs_stairs_and_walls", "moss_block_slab");
+    private static final Identifier MIRESTONE = Identifier.parse("enderscape:mirestone");
+    private static final Identifier MIRESTONE_SLAB = Identifier.parse("enderscape:mirestone_slab");
+    private static final Identifier MIRESTONE_WALL = Identifier.parse("enderscape:mirestone_wall");
+    private static final Identifier MIRESTONE_DEFERRED_WALL = Identifier.fromNamespaceAndPath(
+            CnmTerrainCompat.MOD_ID, "deferred/enderscape/mirestone_slab_wall");
+    private static final Identifier PETRIFIED_OAK_SLAB = Identifier.parse("minecraft:petrified_oak_slab");
+    private static final Identifier PETRIFIED_OAK_DEFERRED_WALL = Identifier.fromNamespaceAndPath(
+            CnmTerrainCompat.MOD_ID, "deferred/minecraft/petrified_oak_slab_wall");
 
     @GameTest(maxTicks = 40)
     public void untypedCnmAdmissionBindsOneResolvedCanonicalFamilyWithoutTemporaryDuplicates(
@@ -126,6 +134,89 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
                         CnmTerrainCompat.MOD_ID.equals(BuiltInRegistries.ITEM.getKey(item).getNamespace())),
                 "Generic CNM slab/stair family did not resolve exactly one BGE-owned normal Wall: "
                         + resolved.stream().map(BuiltInRegistries.ITEM::getKey).toList());
+        helper.succeed();
+    }
+
+    /**
+     * C90 regression for the supplied lifecycle: CNM admits an unknown Slab, BGE preregisters
+     * its provisional Wall, and only ShapeMap's resolved component reveals a provider-owned Wall.
+     * The provisional carrier must retire as documented non-material state while the one resolved
+     * family keeps the real Wall and one copy of each BGE tail role.
+     */
+    @GameTest(maxTicks = 40)
+    public void resolvedRealWallRetiresRegisteredProvisionalWallWithoutRecursiveFamily(
+            GameTestHelper helper) {
+        CnmShapeMapCandidateBridge.Snapshot candidate = CnmShapeMapCandidateBridge.snapshots().stream()
+                .filter(snapshot -> snapshot.anchor().equals(MIRESTONE_SLAB))
+                .findFirst().orElseThrow(() -> new IllegalStateException(
+                        "CNM did not admit the untyped Mirestone Slab fixture"));
+        CnmShapeMapCandidateBridge.ProvisionalGenericFamily provisional =
+                CnmShapeMapCandidateBridge.provisionalGenericFamilies().stream()
+                        .filter(family -> family.visualSource().equals(MIRESTONE_SLAB))
+                        .findFirst().orElseThrow(() -> new IllegalStateException(
+                                "Mirestone CNM admission did not preregister its generic tail"));
+        CnmShapeMapCandidateBridge.ResolvedGenericFamily resolved =
+                CnmShapeMapCandidateBridge.resolvedGenericFamilies().stream()
+                        .filter(family -> family.canonicalParent().equals(MIRESTONE))
+                        .findFirst().orElseThrow(() -> new IllegalStateException(
+                                "Mirestone CNM admission did not resolve a generic family"));
+
+        Block canonical = BuiltInRegistries.BLOCK.getValue(MIRESTONE);
+        Block realWall = BuiltInRegistries.BLOCK.getValue(MIRESTONE_WALL);
+        Block provisionalWall = BuiltInRegistries.BLOCK.getValue(MIRESTONE_DEFERRED_WALL);
+        List<Item> component = ShapeMap.getShapes(canonical.asItem());
+
+        helper.assertTrue(candidate.phase() == CnmShapeMapCandidateBridge.Phase.BOUND
+                        && candidate.deferredMaterial()
+                        && candidate.resolvedParent().filter(MIRESTONE::equals).isPresent()
+                        && provisional.wall().filter(MIRESTONE_DEFERRED_WALL::equals).isPresent()
+                        && provisionalWall instanceof DeferredCnmWallBlock
+                        && BgeMaterialBindings.ownedBlocks().contains(provisionalWall)
+                        && CnmShapeMapCandidateBridge.resolvedComponentHasRealWall(component),
+                "Untyped Mirestone admission did not reach the registered-provisional/real-Wall lifecycle");
+        helper.assertTrue(resolved.wall().isEmpty()
+                        && BgeMaterialBindings.fromBlock(provisionalWall).isEmpty()
+                        && BgeMaterialBindings.exemptions().getOrDefault(provisionalWall, "")
+                                .equals("CNM candidate: resolved component already contains a real Wall.")
+                        && java.util.Collections.frequency(component, realWall.asItem()) == 1
+                        && !component.contains(provisionalWall.asItem())
+                        && component.stream().filter(item -> Block.byItem(item)
+                                instanceof net.minecraft.world.level.block.WallBlock).count() == 1,
+                "Resolved Mirestone component retained a provisional Wall instead of one real Wall: "
+                        + component.stream().map(BuiltInRegistries.ITEM::getKey).toList());
+        for (Identifier role : resolved.roles().values()) {
+            Block block = BuiltInRegistries.BLOCK.getValue(role);
+            helper.assertTrue(java.util.Collections.frequency(component, block.asItem()) == 1
+                            && BgeMaterialBindings.fromBlock(block).orElseThrow().canonicalMaterial() == canonical,
+                    "Resolved Mirestone family lost or duplicated its BGE role " + role);
+        }
+        helper.assertTrue(!BuiltInRegistries.BLOCK.containsKey(Identifier.parse("enderscape:mirestone_slab_wall"))
+                        && !BuiltInRegistries.BLOCK.containsKey(Identifier.parse("enderscape:mirestone_wall_slab")),
+                "A resolved family root recursively registered a Mirestone geometry combination");
+        BgeMaterialBindings.requireValid();
+        helper.succeed();
+    }
+
+    /** Retains the inverse C87 behavior for a genuinely Wall-free resolved generic component. */
+    @GameTest(maxTicks = 40)
+    public void wallFreeResolvedComponentBindsItsRegisteredProvisionalWall(GameTestHelper helper) {
+        CnmShapeMapCandidateBridge.ResolvedGenericFamily resolved =
+                CnmShapeMapCandidateBridge.resolvedGenericFamilies().stream()
+                        .filter(family -> family.canonicalParent().equals(PETRIFIED_OAK_SLAB))
+                        .findFirst().orElseThrow(() -> new IllegalStateException(
+                                "Petrified Oak Slab no-Wall fixture did not resolve generically"));
+        Block canonical = BuiltInRegistries.BLOCK.getValue(PETRIFIED_OAK_SLAB);
+        Block provisionalWall = BuiltInRegistries.BLOCK.getValue(PETRIFIED_OAK_DEFERRED_WALL);
+        List<Item> component = ShapeMap.getShapes(canonical.asItem());
+
+        helper.assertTrue(resolved.wall().filter(PETRIFIED_OAK_DEFERRED_WALL::equals).isPresent()
+                        && java.util.Collections.frequency(component, provisionalWall.asItem()) == 1
+                        && component.stream().filter(item -> Block.byItem(item)
+                                instanceof net.minecraft.world.level.block.WallBlock).count() == 1
+                        && BgeMaterialBindings.fromBlock(provisionalWall).orElseThrow().canonicalMaterial()
+                                == canonical
+                        && !BgeMaterialBindings.exemptions().containsKey(provisionalWall),
+                "Wall-free resolved component did not retain its one legitimate provisional Wall");
         helper.succeed();
     }
 

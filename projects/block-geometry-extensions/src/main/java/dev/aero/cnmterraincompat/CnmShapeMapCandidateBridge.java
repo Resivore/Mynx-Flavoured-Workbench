@@ -126,7 +126,6 @@ public final class CnmShapeMapCandidateBridge {
             // in the anchor component; no registry path or name participates in that decision.
             if (candidate.deferredWall != null && !componentHasWall(mappings, candidate.source.asItem())) {
                 candidate.inject(mappings, candidate.deferredWall);
-                candidate.contributesDeferredWall = true;
             }
             candidate.phase = Phase.MAPPING_INJECTED;
         }
@@ -217,6 +216,15 @@ public final class CnmShapeMapCandidateBridge {
             pending.addAll(graph.getOrDefault(item, Set.of()));
         }
         return false;
+    }
+
+    /**
+     * Phase-B authority for an optional generic Wall carrier. The carrier itself is a WallBlock,
+     * so it must not make its own provisional registration look like a resolved CNM Wall.
+     */
+    static boolean resolvedComponentHasRealWall(List<Item> component) {
+        return component.stream().map(Block::byItem).anyMatch(block -> block instanceof net.minecraft.world.level.block.WallBlock
+                && !(block instanceof DeferredCnmWallBlock));
     }
 
     private static void reportResolvedFamilies() {
@@ -461,10 +469,23 @@ public final class CnmShapeMapCandidateBridge {
                 for (Map.Entry<BgeGeometryRole, Block> entry : bgeRoles.entrySet()) {
                     BgeMaterialBindings.bindResolvedCnmCandidate(entry.getValue(), canonical, entry.getKey());
                 }
-                if (deferredWall != null && contributesDeferredWall) {
-                    ensureComponentMember(component, inverse, parent, deferredWall.asItem());
-                    requireExactlyOne(component, itemId(parent), List.of(deferredWall.asItem()));
-                    BgeMaterialBindings.bindResolvedCnmWallCandidate(deferredWall, canonical);
+                if (deferredWall != null) {
+                    if (resolvedComponentHasRealWall(component)) {
+                        // Phase A can only see the still-unresolved graph, so its registered Wall
+                        // carrier may be present by the time CNM elects a component that already
+                        // owns a real Wall. Remove that carrier from the final graph and classify
+                        // its retained registry identity as deliberately non-material. It must not
+                        // silently become a second family root or an anonymous owned block.
+                        rejected.add(deferredWall.asItem());
+                        contributesDeferredWall = false;
+                        exemptIfUnbound(deferredWall,
+                                "CNM candidate: resolved component already contains a real Wall.");
+                    } else {
+                        contributesDeferredWall = true;
+                        ensureComponentMember(component, inverse, parent, deferredWall.asItem());
+                        requireExactlyOne(component, itemId(parent), List.of(deferredWall.asItem()));
+                        BgeMaterialBindings.bindResolvedCnmWallCandidate(deferredWall, canonical);
+                    }
                 }
             }
             if (resolvedParent != null && resolvedParent != parent) {

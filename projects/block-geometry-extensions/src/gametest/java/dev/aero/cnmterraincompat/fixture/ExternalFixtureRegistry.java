@@ -123,6 +123,17 @@ public final class ExternalFixtureRegistry {
                         .mapColor(BlisteredMagniaBlock::getMapColor)));
         register("enderscape", "blinklamp", new BlinklampBlock(enderscapeProperties("blinklamp")));
 
+        // This is intentionally not an ExternalMaterialCatalog entry. It is a CNM-only fixture
+        // for the actual lifecycle where an untyped slab admission preregisters BGE's deferred
+        // Wall, then ShapeMap resolves the same family through this provider-owned real Wall.
+        Block mirestone = register("enderscape", "mirestone", Blocks.END_STONE, false);
+        registerSlab("enderscape", "mirestone_slab", mirestone);
+        registerStairs("enderscape", "mirestone_stairs", mirestone);
+        register("enderscape", "mirestone_wall", new WallBlock(BlockBehaviour.Properties
+                .ofFullCopy(Blocks.END_STONE)
+                .setId(ResourceKey.create(Registries.BLOCK,
+                        Identifier.fromNamespaceAndPath("enderscape", "mirestone_wall")))));
+
         for (String path : new String[] {"chiseled_end_stone", "cracked_end_stone_bricks",
                 "chiseled_purpur", "chiseled_shadoline", "chiseled_veradite",
                 "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
