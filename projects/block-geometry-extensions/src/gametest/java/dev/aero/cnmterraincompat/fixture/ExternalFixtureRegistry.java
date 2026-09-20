@@ -11,6 +11,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.HugeMushroomBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -124,9 +125,15 @@ public final class ExternalFixtureRegistry {
                 "chiseled_purpur", "chiseled_shadoline", "chiseled_veradite",
                 "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
                 "chiseled_dusk_purpur", "void_shale", "celestial_cap", "murublight_cap", "end_lamp",
-                "drift_jelly_block", "veiled_end_stone", "celestial_overgrowth",
-                "corrupt_overgrowth", "celestial_path", "corrupt_path"}) {
+                "drift_jelly_block"}) {
             register("enderscape", path, Blocks.END_STONE, false);
+        }
+        // The five concrete 3.0.2 terrain/path classes inherit DirectionalBlock. Their canonical
+        // FACING is the same property instance that BGE Layers use for exposed geometry, which is
+        // the exact state collision exercised by the C86 canonical-binding regression.
+        for (String path : new String[] {"veiled_end_stone", "celestial_overgrowth",
+                "corrupt_overgrowth", "celestial_path", "corrupt_path"}) {
+            registerDirectional("enderscape", path);
         }
         register("enderscape", "veiled_leaves", Blocks.OAK_LEAVES, false);
     }
@@ -156,6 +163,12 @@ public final class ExternalFixtureRegistry {
                 .setId(ResourceKey.create(Registries.BLOCK, id));
         Block block = axis ? new RotatedPillarBlock(properties) : new Block(properties);
         return register(namespace, path, block);
+    }
+
+    private static Block registerDirectional(String namespace, String path) {
+        Identifier id = Identifier.fromNamespaceAndPath(namespace, path);
+        return register(namespace, path, new DirectionalBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.END_STONE)
+                .setId(ResourceKey.create(Registries.BLOCK, id))));
     }
 
     private static Block registerSlab(String namespace, String path, Block source) {

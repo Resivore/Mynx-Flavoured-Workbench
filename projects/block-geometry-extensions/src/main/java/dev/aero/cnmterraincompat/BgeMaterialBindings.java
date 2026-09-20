@@ -553,11 +553,17 @@ public final class BgeMaterialBindings {
         if (HugeMushroomMaterial.isHugeMushroom(profile)) {
             for (Property<?> property : HugeMushroomSurface.properties()) addShared(result, source, canonical, property);
         }
-        // Horizontal Slabs use facing as glazed-pattern material state. Every other standard
-        // geometry uses its ordinary facing as topology and, where required, carries pattern state
-        // independently through GlazedPatternState.PATTERN_FACING.
+        // Horizontal Slabs use facing as glazed-pattern material state. A Layer's facing normally
+        // belongs to its exposed geometry face, but DirectionalBlock canonical parents share that
+        // exact six-way property instance. At full occupancy, preserve the selected face as the
+        // canonical directional material state instead of silently resetting it to the default.
+        // Other geometry roles carry pattern state independently through
+        // GlazedPatternState.PATTERN_FACING.
         if (role == Role.HORIZONTAL_SLAB) {
             addShared(result, source, canonical, BlockStateProperties.HORIZONTAL_FACING);
+        }
+        if (role == Role.LAYER) {
+            addShared(result, source, canonical, BlockStateProperties.FACING);
         }
         return List.copyOf(result);
     }

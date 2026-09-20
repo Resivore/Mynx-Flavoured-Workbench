@@ -274,6 +274,41 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
+    /** C86: Directional Enderscape terrain must retain its shared canonical facing at Layer completion. */
+    @GameTest(maxTicks = 40)
+    public void enderscapeDirectionalLayersPreserveCanonicalFacingWithoutDisturbingMaterialState(
+            GameTestHelper helper) {
+        List<String> directionalSources = List.of("veiled_end_stone", "celestial_overgrowth",
+                "corrupt_overgrowth", "celestial_path", "corrupt_path");
+        BgeMaterialBindings.requireValid();
+        for (String source : directionalSources) {
+            ExternalMaterialFamilies.Binding binding = external("enderscape:" + source);
+            BlockState canonical = binding.source().defaultBlockState();
+            BlockState layer = binding.layer().defaultBlockState()
+                    .setValue(BgeLayerBlock.LAYERS, 4)
+                    .setValue(BgeLayerBlock.FACING, Direction.WEST);
+            helper.assertTrue(canonical.hasProperty(BlockStateProperties.FACING)
+                            && layer.hasProperty(BlockStateProperties.FACING),
+                    "Enderscape DirectionalBlock fixture lost the exact shared FACING property: " + source);
+            BlockState projected = BgeMaterialBindings.projectToCanonical(layer).orElseThrow();
+            helper.assertTrue(projected.is(binding.source())
+                            && projected.getValue(BlockStateProperties.FACING) == Direction.WEST,
+                    "Full Enderscape Layer did not preserve canonical facing for " + source + ": "
+                            + projected);
+        }
+
+        ExternalMaterialFamilies.Binding axial = external("enderscape:veiled_log");
+        BlockState axisLayer = axial.layer().defaultBlockState()
+                .setValue(BgeLayerBlock.LAYERS, 4)
+                .setValue(BgeLayerBlock.FACING, Direction.SOUTH)
+                .setValue(BlockStateProperties.AXIS, Direction.Axis.X);
+        BlockState axisProjection = BgeMaterialBindings.projectToCanonical(axisLayer).orElseThrow();
+        helper.assertTrue(axisProjection.is(axial.source())
+                        && axisProjection.getValue(BlockStateProperties.AXIS) == Direction.Axis.X,
+                "Layer facing classification disturbed the existing canonical AXIS projection");
+        helper.succeed();
+    }
+
     /** C84: source material state and geometry state must coexist on every generated form. */
     @GameTest(maxTicks = 40)
     public void enderscapeMaterialStateBridgePreservesMagniaAndBlinklampContracts(GameTestHelper helper) {
