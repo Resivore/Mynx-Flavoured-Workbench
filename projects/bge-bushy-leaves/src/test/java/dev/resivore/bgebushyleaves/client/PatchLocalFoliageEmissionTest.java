@@ -6,6 +6,7 @@ import dev.resivore.bgebushyleaves.geometry.Rect16;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadView;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.MeshView;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.ShadeMode;
 import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
@@ -16,32 +17,34 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Regression coverage for copying captured FRAPI appearance into a renderer-owned output quad. */
+/** Regression coverage for capturing and emitting a renderer-neutral owned appearance. */
 final class PatchLocalFoliageEmissionTest {
     @Test
     void emitsCardsThroughPublicQuadAccessorsInsteadOfRendererBulkCopy() {
         SourceQuad sourceState = SourceQuad.decorative();
         QuadView source = proxy(QuadView.class, new SourceHandler(sourceState));
+        CanonicalFoliageAppearance.Snapshot snapshot = CanonicalFoliageAppearance.Snapshot.capture(source);
         List<EmittedQuad> emitted = new ArrayList<>();
         QuadEmitter output = proxy(QuadEmitter.class, new OutputHandler(new EmittedQuad(), emitted));
         PatchFrame frame = new PatchFrame(Direction.UP, 16, Direction.Axis.X,
                 new Rect16(0, 16, 0, 16), Direction.Axis.Z, Direction.UP);
         PatchFoliagePlan.Card card = PatchFoliagePlan.plan(frame, 0xBEEFL).getFirst();
 
-        PatchLocalFoliage.emitCard(source, output, frame, card, false);
+        PatchLocalFoliage.emitCard(snapshot, output, frame, card, false);
 
         assertEquals(1, emitted.size());
         EmittedQuad cardQuad = emitted.getFirst();
-        assertEquals(sourceState.atlas, cardQuad.atlas);
+        assertEquals(QuadAtlas.BLOCK, cardQuad.atlas);
         assertEquals(sourceState.chunkLayer, cardQuad.chunkLayer);
-        assertTrue(cardQuad.itemRenderTypeCopied);
         assertEquals(sourceState.emissive, cardQuad.emissive);
         assertEquals(sourceState.diffuseShade, cardQuad.diffuseShade);
         assertEquals(sourceState.ambientOcclusion, cardQuad.ambientOcclusion);
@@ -66,16 +69,63 @@ final class PatchLocalFoliageEmissionTest {
     void emitsBlockAtlasWhenWrappedSourceHasNoAtlasBackingData() {
         SourceQuad sourceState = SourceQuad.decorative();
         QuadView source = proxy(QuadView.class, new SourceHandler(sourceState, true));
+        CanonicalFoliageAppearance.Snapshot snapshot = CanonicalFoliageAppearance.Snapshot.capture(source);
         List<EmittedQuad> emitted = new ArrayList<>();
         QuadEmitter output = proxy(QuadEmitter.class, new OutputHandler(new EmittedQuad(), emitted));
         PatchFrame frame = new PatchFrame(Direction.UP, 16, Direction.Axis.X,
                 new Rect16(0, 16, 0, 16), Direction.Axis.Z, Direction.UP);
         PatchFoliagePlan.Card card = PatchFoliagePlan.plan(frame, 0xBEEFL).getFirst();
 
-        PatchLocalFoliage.emitCard(source, output, frame, card, false);
+        PatchLocalFoliage.emitCard(snapshot, output, frame, card, false);
 
         assertEquals(1, emitted.size());
         assertEquals(QuadAtlas.BLOCK, emitted.getFirst().atlas);
+    }
+
+    @Test
+    void capturesCompleteAppearanceDuringIterationThenEmitsAfterEverySourceViewExpires() {
+        SourceQuad ordinaryState = SourceQuad.ordinary();
+        SourceQuad decorativeState = SourceQuad.decorative();
+        SourceHandler ordinaryHandler = new SourceHandler(ordinaryState);
+        SourceHandler decorativeHandler = new SourceHandler(decorativeState);
+        QuadView ordinary = proxy(QuadView.class, ordinaryHandler);
+        QuadView decorative = proxy(QuadView.class, decorativeHandler);
+        MeshView mesh = new ExpiringMesh(List.of(new ExpiringQuad(ordinary, ordinaryHandler),
+                new ExpiringQuad(decorative, decorativeHandler)));
+
+        CanonicalFoliageAppearance appearance = CanonicalFoliageAppearance.sample(mesh).orElseThrow();
+        CanonicalFoliageAppearance.Snapshot selected = appearance.choose(0L);
+        assertTrue(ordinaryHandler.invalidated);
+        assertTrue(decorativeHandler.invalidated);
+        // The non-cull candidate remains preferred after both renderer callback lifetimes end.
+        assertEquals(decorativeState.tintIndex, selected.tintIndex());
+
+        List<EmittedQuad> emitted = new ArrayList<>();
+        QuadEmitter output = proxy(QuadEmitter.class, new OutputHandler(new EmittedQuad(), emitted));
+        PatchFrame frame = new PatchFrame(Direction.UP, 16, Direction.Axis.X,
+                new Rect16(0, 16, 0, 16), Direction.Axis.Z, Direction.UP);
+        PatchLocalFoliage.emitCard(selected, output, frame,
+                PatchFoliagePlan.plan(frame, 0xC5L).getFirst(), false);
+
+        assertEquals(1, emitted.size());
+        EmittedQuad cardQuad = emitted.getFirst();
+        assertEquals(QuadAtlas.BLOCK, cardQuad.atlas);
+        assertEquals(decorativeState.chunkLayer, cardQuad.chunkLayer);
+        assertEquals(decorativeState.emissive, cardQuad.emissive);
+        assertEquals(decorativeState.diffuseShade, cardQuad.diffuseShade);
+        assertEquals(decorativeState.ambientOcclusion, cardQuad.ambientOcclusion);
+        assertEquals(decorativeState.shadeMode, cardQuad.shadeMode);
+        assertEquals(decorativeState.animated, cardQuad.animated);
+        assertEquals(decorativeState.tintIndex, cardQuad.tintIndex);
+        assertEquals(decorativeState.tag, cardQuad.tag);
+        assertEquals(0, ordinaryHandler.accessesAfterInvalidation);
+        assertEquals(0, decorativeHandler.accessesAfterInvalidation);
+        assertFalse(Arrays.stream(CanonicalFoliageAppearance.class.getDeclaredFields())
+                .anyMatch(field -> QuadView.class.isAssignableFrom(field.getType())
+                        || field.getGenericType().getTypeName().contains(QuadView.class.getName())));
+        assertFalse(Arrays.stream(CanonicalFoliageAppearance.Snapshot.class.getDeclaredFields())
+                .anyMatch(field -> QuadView.class.isAssignableFrom(field.getType())
+                        || field.getGenericType().getTypeName().contains(QuadView.class.getName())));
     }
 
     @SuppressWarnings("unchecked")
@@ -86,6 +136,8 @@ final class PatchLocalFoliageEmissionTest {
     private static final class SourceHandler implements InvocationHandler {
         private final SourceQuad state;
         private final boolean atlasUnavailable;
+        private boolean invalidated;
+        private int accessesAfterInvalidation;
 
         private SourceHandler(SourceQuad state) { this(state, false); }
 
@@ -94,17 +146,24 @@ final class PatchLocalFoliageEmissionTest {
             this.atlasUnavailable = atlasUnavailable;
         }
 
+        private void invalidate() { invalidated = true; }
+
         @Override public Object invoke(Object proxy, Method method, Object[] arguments) {
+            String name = method.getName();
+            if (!name.equals("toString") && !name.equals("hashCode") && !name.equals("equals") && invalidated) {
+                accessesAfterInvalidation++;
+                throw new AssertionError("source QuadView escaped its mesh callback: " + name);
+            }
             int vertex = arguments != null && arguments.length == 1 && arguments[0] instanceof Integer
                     ? (Integer) arguments[0] : -1;
-            return switch (method.getName()) {
+            return switch (name) {
                 case "u" -> state.u[vertex];
                 case "v" -> state.v[vertex];
                 case "color" -> state.color[vertex];
                 case "lightmap" -> state.lightmap[vertex];
                 case "atlas" -> {
                     if (atlasUnavailable) throw new AssertionError("wrapped source atlas must not be read");
-                    yield state.atlas;
+                    yield QuadAtlas.ITEM;
                 }
                 case "chunkLayer" -> state.chunkLayer;
                 case "itemRenderType", "foilType" -> null;
@@ -115,11 +174,33 @@ final class PatchLocalFoliageEmissionTest {
                 case "animated" -> state.animated;
                 case "tintIndex" -> state.tintIndex;
                 case "tag" -> state.tag;
+                case "cullFace" -> state.cullFace;
                 case "toString" -> "SourceQuad";
                 case "hashCode" -> System.identityHashCode(proxy);
                 case "equals" -> proxy == arguments[0];
                 default -> defaultValue(method.getReturnType());
             };
+        }
+    }
+
+    private record ExpiringQuad(QuadView quad, SourceHandler handler) {}
+
+    private static final class ExpiringMesh implements MeshView {
+        private final List<ExpiringQuad> quads;
+
+        private ExpiringMesh(List<ExpiringQuad> quads) { this.quads = List.copyOf(quads); }
+
+        @Override public int size() { return quads.size(); }
+
+        @Override public void forEach(Consumer<? super QuadView> consumer) {
+            for (ExpiringQuad quad : quads) {
+                consumer.accept(quad.quad());
+                quad.handler().invalidate();
+            }
+        }
+
+        @Override public void outputTo(QuadEmitter emitter) {
+            throw new AssertionError("appearance capture must use MeshView.forEach");
         }
     }
 
@@ -160,7 +241,6 @@ final class PatchLocalFoliageEmissionTest {
                     return proxy;
                 case "atlas": state.atlas = (QuadAtlas) arguments[0]; return proxy;
                 case "chunkLayer": state.chunkLayer = (ChunkSectionLayer) arguments[0]; return proxy;
-                case "itemRenderType": state.itemRenderTypeCopied = true; return proxy;
                 case "emissive": state.emissive = (Boolean) arguments[0]; return proxy;
                 case "diffuseShade": state.diffuseShade = (Boolean) arguments[0]; return proxy;
                 case "ambientOcclusion": state.ambientOcclusion = (TriState) arguments[0]; return proxy;
@@ -192,17 +272,23 @@ final class PatchLocalFoliageEmissionTest {
         final float[] v = {0.0F, 16.0F, 16.0F, 0.0F};
         final int[] color = {0xFFABCDEF, 0xFF012345, 0xFF56789A, 0xFFFEDCBA};
         final int[] lightmap = {1, 2, 3, 4};
-        final QuadAtlas atlas = QuadAtlas.BLOCK;
         final ChunkSectionLayer chunkLayer = ChunkSectionLayer.TRANSLUCENT;
         final boolean emissive = true;
         final boolean diffuseShade = false;
         final TriState ambientOcclusion = TriState.FALSE;
         final ShadeMode shadeMode = ShadeMode.ENHANCED;
         final boolean animated = true;
-        final int tintIndex = 7;
+        final int tintIndex;
         final int tag = 42;
+        final Direction cullFace;
 
-        static SourceQuad decorative() { return new SourceQuad(); }
+        private SourceQuad(int tintIndex, Direction cullFace) {
+            this.tintIndex = tintIndex;
+            this.cullFace = cullFace;
+        }
+
+        static SourceQuad decorative() { return new SourceQuad(7, null); }
+        static SourceQuad ordinary() { return new SourceQuad(2, Direction.NORTH); }
     }
 
     private static final class EmittedQuad {
@@ -216,7 +302,6 @@ final class PatchLocalFoliageEmissionTest {
         final boolean[] hasNormal = new boolean[4];
         QuadAtlas atlas;
         ChunkSectionLayer chunkLayer;
-        boolean itemRenderTypeCopied;
         boolean emissive;
         boolean diffuseShade;
         TriState ambientOcclusion;
@@ -241,7 +326,6 @@ final class PatchLocalFoliageEmissionTest {
             System.arraycopy(hasNormal, 0, copy.hasNormal, 0, 4);
             copy.atlas = atlas;
             copy.chunkLayer = chunkLayer;
-            copy.itemRenderTypeCopied = itemRenderTypeCopied;
             copy.emissive = emissive;
             copy.diffuseShade = diffuseShade;
             copy.ambientOcclusion = ambientOcclusion;

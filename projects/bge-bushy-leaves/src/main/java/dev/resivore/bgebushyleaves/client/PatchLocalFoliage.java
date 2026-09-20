@@ -8,7 +8,6 @@ import dev.resivore.bgebushyleaves.geometry.PatchMerger;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MeshView;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
-import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadView;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
@@ -40,9 +39,10 @@ final class PatchLocalFoliage {
                 long patchSeed = mix(canonicalSeed(pos, canonical) ^ ((long) physical.hashCode() << 1)
                         ^ patchHash(patch));
                 for (PatchFoliagePlan.Card card : PatchFoliagePlan.plan(patch, patchSeed)) {
-                    QuadView source = appearance.choose(mix(patchSeed ^ card.ordinal()));
-                    emitCard(source, output, patch, card, false);
-                    emitCard(source, output, patch, card, true);
+                    CanonicalFoliageAppearance.Snapshot appearanceSample = appearance.choose(
+                            mix(patchSeed ^ card.ordinal()));
+                    emitCard(appearanceSample, output, patch, card, false);
+                    emitCard(appearanceSample, output, patch, card, true);
                 }
             }
         });
@@ -55,7 +55,8 @@ final class PatchLocalFoliage {
                 && cullTest.test(patch.normal());
     }
 
-    static void emitCard(QuadView source, QuadEmitter output, PatchFrame frame,
+    /** Emits one card from an owned snapshot; no transient source quad is available here. */
+    static void emitCard(CanonicalFoliageAppearance.Snapshot source, QuadEmitter output, PatchFrame frame,
             PatchFoliagePlan.Card card, boolean reverse) {
         copyAppearance(source, output);
         PatchFoliagePlan.Vertex[] vertices = card.vertices();
@@ -65,7 +66,6 @@ final class PatchLocalFoliage {
             PatchFoliagePlan.Vertex vertex = vertices[winding[target]];
             positions[target] = position(frame, vertex);
             output.pos(target, positions[target][0], positions[target][1], positions[target][2]);
-            // Matching winding maps the sampled sprite's own UV/tint/light behavior to both sides.
             int sampled = winding[target];
             output.uv(target, source.u(sampled), source.v(sampled));
             output.color(target, source.color(sampled));
@@ -78,19 +78,12 @@ final class PatchLocalFoliage {
         output.emit();
     }
 
-    /**
-     * Copies the public appearance contract without assuming the captured mesh and destination
-     * emitter share an implementation. Sodium's FRAPI output can receive a QuadView captured by
-     * another renderer, so {@link QuadEmitter#copyFrom(QuadView)} must not cross that boundary.
-     */
-    private static void copyAppearance(QuadView source, QuadEmitter output) {
-        // This path is exclusively emitted from a BlockStateModel into world chunk geometry, so
-        // its texture coordinates always address the block atlas. Do not read QuadView#atlas():
-        // Sodium's FRAPI wrapper can expose a source view with no backing quad data for that
-        // accessor, even though the public per-vertex appearance accessors remain usable.
+    /** Copies the owned public appearance data into a renderer-owned output quad. */
+    private static void copyAppearance(CanonicalFoliageAppearance.Snapshot source, QuadEmitter output) {
+        // This BlockStateModel-to-world-chunk path always uses the public block atlas. The source
+        // QuadView atlas backing is deliberately never queried.
         output.atlas(QuadAtlas.BLOCK);
         output.chunkLayer(source.chunkLayer());
-        output.itemRenderType(source.itemRenderType());
         output.emissive(source.emissive());
         output.diffuseShade(source.diffuseShade());
         output.ambientOcclusion(source.ambientOcclusion());
