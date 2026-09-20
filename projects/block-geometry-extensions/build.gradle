@@ -24,7 +24,7 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     implementation('maven.modrinth:ewyjbmG4:VpbPsokl') { transitive = false }
-    // C84 uses the exact locally retained Enderscape 3.0.2 API for its optional material bridge.
+    // C85 retains the exact locally retained Enderscape 3.0.2 API for its optional material bridge.
     // It remains compile-only: Enderscape stays provider-owned at runtime.
     compileOnly files('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
 }

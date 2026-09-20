@@ -379,6 +379,32 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
+    /** C85: Enderscape Veiled Leaves has a canonical model-only item definition. */
+    @GameTest(maxTicks = 40)
+    public void enderscapeModelOnlyItemDefinitionKeepsBlockTintAndValidInheritance(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        Identifier canonical = Identifier.parse("enderscape:items/veiled_leaves.json");
+        JsonObject canonicalModel = resourceJson(manager, canonical).getAsJsonObject("model");
+        helper.assertTrue(canonicalModel.get("type").getAsString().equals("minecraft:model")
+                        && canonicalModel.get("model").getAsString()
+                                .equals("enderscape:block/veiled_leaves")
+                        && !canonicalModel.has("tints"),
+                "Enderscape Veiled Leaves fixture no longer matches its canonical model-only item definition");
+
+        LayerGeneratedResources.generateExternalForValidation(manager);
+        JsonObject generatedVeiled = generatedClientJson(itemResource(
+                external("enderscape:veiled_leaves").layer())).getAsJsonObject("model");
+        helper.assertTrue(!generatedVeiled.has("tints"),
+                "Generated Veiled Leaves Layer invented an item tint instead of using its block tint source");
+
+        JsonObject inheritedSilverBirch = generatedClientJson(itemResource(
+                external("mynx_trees:silver_birch_leaves").layer())).getAsJsonObject("model");
+        helper.assertTrue(inheritedSilverBirch.getAsJsonArray("tints").get(0).getAsJsonObject()
+                        .get("value").getAsInt() == -8034015,
+                "Generated Silver Birch Layer stopped inheriting its explicit canonical item tint");
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void absentOptionalProviderIsANoOp(GameTestHelper helper) {
         int before = ExternalMaterialFamilies.all().size();
@@ -1229,8 +1255,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                         + "\"model\":\"mynx_trees:block/wisteria_leaves\"}}" );
         json.put(Identifier.parse("enderscape:items/veiled_leaves.json"),
                 "{\"model\":{\"type\":\"minecraft:model\","
-                        + "\"model\":\"enderscape:block/veiled_leaves\","
-                        + "\"tints\":[{\"type\":\"minecraft:constant\",\"value\":-8034015}]}}" );
+                        + "\"model\":\"enderscape:block/veiled_leaves\"}}" );
         for (String source : List.of("red_toadstool", "brown_toadstool", "toadstool_stem")) {
             json.put(Identifier.fromNamespaceAndPath("ribbits", "models/block/" + source + ".json"),
                     "{\"parent\":\"ribbits:block/provider_huge_mushroom\","

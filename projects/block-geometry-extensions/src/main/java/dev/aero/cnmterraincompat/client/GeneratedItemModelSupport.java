@@ -51,9 +51,9 @@ final class GeneratedItemModelSupport {
             if (model != null && model.has("tints") && model.get("tints").isJsonArray()) {
                 return Optional.of(model.getAsJsonArray("tints").deepCopy());
             }
-            if (profile.tintProfile() != TintProfile.NONE) {
-                throw new IllegalStateException("Canonical tinted item has no tint sources: " + resourceId);
-            }
+            // A canonical item definition may intentionally delegate color to the block model
+            // and registered block tint source.  Only an explicitly declared item tint array is
+            // inherited here; SOURCE_PROVIDER still supplies the generated block-model tint.
             return Optional.empty();
         } catch (IOException | RuntimeException exception) {
             throw new IllegalStateException("Cannot read canonical item definition: " + resourceId, exception);
