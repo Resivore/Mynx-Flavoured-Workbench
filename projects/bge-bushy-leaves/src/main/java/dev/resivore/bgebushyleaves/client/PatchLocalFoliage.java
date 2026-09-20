@@ -6,6 +6,7 @@ import dev.resivore.bgebushyleaves.geometry.PatchFoliagePlan;
 import dev.resivore.bgebushyleaves.geometry.PatchFrame;
 import dev.resivore.bgebushyleaves.geometry.PatchMerger;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.MeshView;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadAtlas;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadView;
 import net.minecraft.core.BlockPos;
@@ -83,7 +84,11 @@ final class PatchLocalFoliage {
      * another renderer, so {@link QuadEmitter#copyFrom(QuadView)} must not cross that boundary.
      */
     private static void copyAppearance(QuadView source, QuadEmitter output) {
-        output.atlas(source.atlas());
+        // This path is exclusively emitted from a BlockStateModel into world chunk geometry, so
+        // its texture coordinates always address the block atlas. Do not read QuadView#atlas():
+        // Sodium's FRAPI wrapper can expose a source view with no backing quad data for that
+        // accessor, even though the public per-vertex appearance accessors remain usable.
+        output.atlas(QuadAtlas.BLOCK);
         output.chunkLayer(source.chunkLayer());
         output.itemRenderType(source.itemRenderType());
         output.emissive(source.emissive());

@@ -62,6 +62,22 @@ final class PatchLocalFoliageEmissionTest {
         assertFalse(cardQuad.bulkCopyAttempted);
     }
 
+    @Test
+    void emitsBlockAtlasWhenWrappedSourceHasNoAtlasBackingData() {
+        SourceQuad sourceState = SourceQuad.decorative();
+        QuadView source = proxy(QuadView.class, new SourceHandler(sourceState, true));
+        List<EmittedQuad> emitted = new ArrayList<>();
+        QuadEmitter output = proxy(QuadEmitter.class, new OutputHandler(new EmittedQuad(), emitted));
+        PatchFrame frame = new PatchFrame(Direction.UP, 16, Direction.Axis.X,
+                new Rect16(0, 16, 0, 16), Direction.Axis.Z, Direction.UP);
+        PatchFoliagePlan.Card card = PatchFoliagePlan.plan(frame, 0xBEEFL).getFirst();
+
+        PatchLocalFoliage.emitCard(source, output, frame, card, false);
+
+        assertEquals(1, emitted.size());
+        assertEquals(QuadAtlas.BLOCK, emitted.getFirst().atlas);
+    }
+
     @SuppressWarnings("unchecked")
     private static <T> T proxy(Class<T> type, InvocationHandler handler) {
         return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {type}, handler);
@@ -69,8 +85,14 @@ final class PatchLocalFoliageEmissionTest {
 
     private static final class SourceHandler implements InvocationHandler {
         private final SourceQuad state;
+        private final boolean atlasUnavailable;
 
-        private SourceHandler(SourceQuad state) { this.state = state; }
+        private SourceHandler(SourceQuad state) { this(state, false); }
+
+        private SourceHandler(SourceQuad state, boolean atlasUnavailable) {
+            this.state = state;
+            this.atlasUnavailable = atlasUnavailable;
+        }
 
         @Override public Object invoke(Object proxy, Method method, Object[] arguments) {
             int vertex = arguments != null && arguments.length == 1 && arguments[0] instanceof Integer
@@ -80,7 +102,10 @@ final class PatchLocalFoliageEmissionTest {
                 case "v" -> state.v[vertex];
                 case "color" -> state.color[vertex];
                 case "lightmap" -> state.lightmap[vertex];
-                case "atlas" -> state.atlas;
+                case "atlas" -> {
+                    if (atlasUnavailable) throw new AssertionError("wrapped source atlas must not be read");
+                    yield state.atlas;
+                }
                 case "chunkLayer" -> state.chunkLayer;
                 case "itemRenderType", "foilType" -> null;
                 case "emissive" -> state.emissive;
