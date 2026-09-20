@@ -18,7 +18,7 @@
       "Preserve the accepted server-owned channel, exact-destination safety, persistent anchor, loss protection, recipes, configuration migration, discovery behavior, geometry, and art while allowing one eligible building block identity to select the Waystone's visual material without expanding into a general waypoint or teleport system."
     ],
     "scope": [
-      "Canary 14 succeeds the statically verified Canary 13 with one persistent block-id material component, a two-input dynamic crafting recipe, and client-only baked-model wrappers that retain the accepted four-cuboid Waystone geometry and UVs while substituting safe default-state directional donor sprites. It preserves vanilla's completed item render state before retargeting quads, synchronizes only the placed visual-material identity to clients, and invalidates changed client geometry.",
+      "Canary 15 succeeds the runtime-failed Canary 14 material renderer with one persistent block-id material component, a two-input dynamic crafting recipe, and client-only baked-model wrappers that retain the accepted four-cuboid Waystone geometry. It converts verified raw BakedQuad atlas UVs back to source-sprite-local coordinates, delegates target interpolation to Fabric's normalized sprite baker, rejects any output outside the selected donor sprite, and resolves every donor direction only from unanimous cull-specific default-state exterior faces. It preserves vanilla's completed item render state before retargeting quads, synchronizes only the placed visual-material identity to clients, and invalidates changed client geometry.",
       "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, existing primary recipes plus the dynamic material recipe, one-click and mouse-release-independent channel lifecycle, exact arrival at the visible Waystone top, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
       "Retain exact accepted Canary 5 and focused-runtime-passed Canary 4 rollback artifacts together with the Dragonbound-owned Staff art and the separately licensed Matcha Stable Void snapshot and notice."
     ],
@@ -81,22 +81,22 @@
     ]
   },
   "state": {
-    "milestone": "Canary 14 repairs the exact Canary 13 selectable-material runtime failure: item rendering now retains the normal baked Waystone render state, and placed material identity now reaches the client with geometry invalidation. It preserves Canary 12 as the accepted release and awaits focused runtime visual verification.",
+    "milestone": "Canary 15 repairs the exact Canary 14 selectable-material runtime failure: C14 converted raw atlas UVs as though they were 0-to-16 sprite coordinates, allowing its target UVs to span unrelated atlas textures. C15 uses Fabric's normalized sprite rebake for both item and placed forms and accepts only canonical cull-specific donor exterior faces. It preserves Canary 12 as the accepted release and awaits focused runtime visual verification.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary14",
+        "version": "0.1.0-canary15",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary14.jar",
-          "sha256": "b9b8f2d14561cc023517df30de05e9738e5b1878236a83e8a816250712ea4c30"
+          "filename": "dragonbound-waystone-0.1.0-canary15.jar",
+          "sha256": "e1e71c8b9b938b57003eed91dfa2693c610db58b203bef3644d49575d7db9f49"
         },
-        "built_at": "2026-09-19T22:01:54.0679522Z",
-        "embedded_version": "0.1.0-canary14",
-        "source_commit": "cc33caf2abaac89e3367a055b4f5944878cfe02c",
+        "built_at": "2026-09-20T02:25:21.2923040Z",
+        "embedded_version": "0.1.0-canary15",
+        "source_commit": "9e571b10c572a186b2a09f06e3f656aeb2d65aa2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Repairs dynamic item and placed material rendering while preserving the Waystone's accepted geometry and return system."
+        "summary": "Rebakes Waystone UVs into one canonical donor sprite for both item and placed material rendering."
       },
       "accepted": {
         "version": "0.1.0-canary12",
@@ -131,10 +131,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-19T22:01:54.0679522Z",
-    "updated_at": "2026-09-19T22:01:54.0679522Z",
-    "last_codex_at": "2026-09-19T22:01:54.0679522Z",
-    "source_commit": "cc33caf2abaac89e3367a055b4f5944878cfe02c"
+    "revision": 12,
+    "activity_at": "2026-09-20T02:26:15.0848756Z",
+    "updated_at": "2026-09-20T02:26:15.0848756Z",
+    "last_codex_at": "2026-09-20T02:26:15.0848756Z",
+    "source_commit": "9e571b10c572a186b2a09f06e3f656aeb2d65aa2"
   }
 }
