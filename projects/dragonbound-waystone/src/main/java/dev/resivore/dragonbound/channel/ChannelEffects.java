@@ -13,7 +13,7 @@ import net.minecraft.world.phys.Vec3;
 /** Server-owned visual feedback for valid Dragonbound channels and confirmed arrivals. */
 final class ChannelEffects {
     static final Identifier MIRROR_TELEPORT_SOUND_ID =
-            Identifier.fromNamespaceAndPath("enderscape", "mirror.teleport");
+            Identifier.fromNamespaceAndPath("enderscape", "item.mirror.teleport");
     static final Identifier MIRROR_TELEPORT_IN_PARTICLE_ID =
             Identifier.fromNamespaceAndPath("enderscape", "mirror_teleport_in");
     static final int MIRROR_ARRIVAL_PARTICLE_COUNT = 50;

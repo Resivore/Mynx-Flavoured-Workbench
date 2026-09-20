@@ -100,7 +100,7 @@ final class ChannelEffectsTest {
 
     @Test
     void mirrorArrivalUsesTheAuditedEnderscapePresentationParameters() {
-        assertEquals(Identifier.fromNamespaceAndPath("enderscape", "mirror.teleport"),
+        assertEquals(Identifier.fromNamespaceAndPath("enderscape", "item.mirror.teleport"),
                 ChannelEffects.MIRROR_TELEPORT_SOUND_ID);
         assertEquals(Identifier.fromNamespaceAndPath("enderscape", "mirror_teleport_in"),
                 ChannelEffects.MIRROR_TELEPORT_IN_PARTICLE_ID);

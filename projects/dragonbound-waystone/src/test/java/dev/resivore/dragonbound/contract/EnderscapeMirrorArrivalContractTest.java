@@ -20,6 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class EnderscapeMirrorArrivalContractTest {
     private static final String ENDERSCAPE_SHA256 =
             "9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b";
+    private static final String MIRROR_TELEPORT_REGISTER_HOLDER_ARGUMENT = "mirror.teleport";
+    private static final String MIRROR_TELEPORT_REGISTRY_PATH =
+            "item." + MIRROR_TELEPORT_REGISTER_HOLDER_ARGUMENT;
+    private static final String ITEM_SOUND_REGISTRATION_TEMPLATE = "item.\u0001";
     private static final Path JAVA_ROOT = Path.of("src/main/java/dev/resivore/dragonbound");
     private static final Path ENDERSCAPE_JAR = Path.of(System.getProperty("workbenchRoot", "../.."))
             .resolve("originals/mods/enderscape-fabric-3.0.2+mc26.2.jar");
@@ -52,8 +56,13 @@ final class EnderscapeMirrorArrivalContractTest {
                     StandardCharsets.UTF_8);
 
             assertTrue(particleRegistrations.contains("mirror_teleport_in"));
-            assertTrue(soundRegistrations.contains("mirror.teleport"));
-            assertTrue(sounds.contains("\"item.mirror.teleport\""));
+            // EnderscapeItemSounds.registerHolder prefixes its local argument with "item."
+            // before passing it to Enderscape.registerSoundEventHolder. The literal argument in
+            // its static initializer is therefore not the final registry path.
+            assertTrue(soundRegistrations.contains(MIRROR_TELEPORT_REGISTER_HOLDER_ARGUMENT));
+            assertTrue(soundRegistrations.contains(ITEM_SOUND_REGISTRATION_TEMPLATE));
+            assertEquals("item.mirror.teleport", MIRROR_TELEPORT_REGISTRY_PATH);
+            assertTrue(sounds.contains("\"" + MIRROR_TELEPORT_REGISTRY_PATH + "\""));
         }
     }
 
