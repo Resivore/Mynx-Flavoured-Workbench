@@ -1,7 +1,6 @@
 package com.yungnickyoung.minecraft.ribbits.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import com.geckolib.animatable.GeoAnimatable;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
@@ -16,7 +15,6 @@ import com.geckolib.util.RenderUtil;
 import com.yungnickyoung.minecraft.ribbits.RibbitsCommon;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector4f;
@@ -26,7 +24,9 @@ import org.joml.Vector4f;
  *
  * <p>The provider deliberately renders only the {@code fishing_rod} bone from the private
  * Fisherman model. {@code fishing_rod_2} and {@code fishing_rod_3} are Ribbits' decorative
- * hanging line and terminal bobber, not part of the reusable rod visual.</p>
+ * hanging line and terminal bobber, not part of the reusable rod visual. The bridge deliberately
+ * rebases the authored shaft on its own grip instead of inheriting the Ribbit body's accessories
+ * placement.</p>
  */
 public final class RibbitsFishermanRodBridge {
     private static final Identifier MODEL = RibbitsCommon.id("fisherman_ribbit");
@@ -36,23 +36,14 @@ public final class RibbitsFishermanRodBridge {
     private static final RodRenderer RENDERER = new RodRenderer();
 
     /*
-     * These are VWR C17's already-vetted crossed-arms presentation transforms. Keeping them in
-     * this render-only bridge lets an optional caller substitute the authored geometry without
-     * taking ownership of it or resetting that presentation.
+     * Actual authored shaft endpoint: the fishing_rod bone pivots at (0, 5.5, -5.5), while its
+     * outer face is at z=-15. The bone pivot is the reusable logical grip; the shaft outer face
+     * is therefore -9.5 pixels on its local Z axis. Both coordinates are derived from the
+     * Fisherman geometry, not from its body/accessories hierarchy or an item-display transform.
      */
-    private static final float ARM_LOCAL_VERTICAL_TRANSLATION = 0.35F;
-    private static final float ARM_LOCAL_DEPTH_TRANSLATION = -0.54F;
-    private static final float ROTATE_X_DEGREES = -58.0F;
-    private static final float ROTATE_Y_DEGREES = 12.0F;
-    private static final float ROTATE_Z_DEGREES = -12.0F;
-    private static final float SCALE = 1.28F;
-
-    /*
-     * Actual authored shaft endpoint: the fishing_rod bone pivots at (0, 5.5, -5.5), while the
-     * shaft's outer face is at z=-15. The bridge resolves the bone from the loaded model and
-     * transforms this local point through the same PoseStack used to render it.
-     */
-    private static final float OUTER_TIP_Z_FROM_ROD_PIVOT = -9.5F / 16.0F;
+    private static final RodLocalPoint GRIP_FROM_ROD_PIVOT = new RodLocalPoint(0.0F, 0.0F, 0.0F);
+    private static final RodLocalPoint OUTER_TIP_FROM_ROD_PIVOT =
+            new RodLocalPoint(0.0F, 0.0F, -9.5F / 16.0F);
     private static boolean warnedUnavailable;
 
     private RibbitsFishermanRodBridge() {
@@ -70,22 +61,26 @@ public final class RibbitsFishermanRodBridge {
     }
 
     /**
-     * Submits only the authored rod and returns its transformed outer tip in camera-relative
-     * coordinates. A {@code null} result means the provider is unavailable and the caller must
-     * use its own fallback visual.
+     * Submits only the authored rod at the caller's crossed-arm grip and returns its explicit
+     * arm-local outer-tip offset. The return value is never world or camera-relative space.
+     * A {@code null} result means the provider is unavailable and the caller must use its own
+     * fallback visual.
      */
-    public static Vec3 submit(PoseStack poseStack, SubmitNodeCollector collector, int light) {
+    public static ArmLocalRodTip submit(PoseStack poseStack, SubmitNodeCollector collector, int light) {
         if (!isAvailable()) return null;
 
         try {
+            StandaloneRodBasis basis = RENDERER.standaloneBasis();
             poseStack.pushPose();
-            applyVwrC17Placement(poseStack);
-            Vec3 tip = RENDERER.captureOuterTip(poseStack);
-            CameraRenderState camera = Minecraft.getInstance().gameRenderer.gameRenderState()
-                    .levelRenderState.cameraRenderState;
-            RENDERER.performRenderPass(VISUAL, null, poseStack, collector, camera, light, 0.0F);
-            poseStack.popPose();
-            return tip;
+            try {
+                basis.attachGripAtOrigin(poseStack);
+                RENDERER.performRenderPass(VISUAL, null, poseStack, collector,
+                        Minecraft.getInstance().gameRenderer.gameRenderState()
+                                .levelRenderState.cameraRenderState, light, 0.0F);
+            } finally {
+                poseStack.popPose();
+            }
+            return basis.tipFromArmGrip();
         } catch (RuntimeException | LinkageError exception) {
             if (!warnedUnavailable) {
                 warnedUnavailable = true;
@@ -95,12 +90,29 @@ public final class RibbitsFishermanRodBridge {
         }
     }
 
-    private static void applyVwrC17Placement(PoseStack poseStack) {
-        poseStack.translate(0.0F, ARM_LOCAL_VERTICAL_TRANSLATION, ARM_LOCAL_DEPTH_TRANSLATION);
-        poseStack.mulPose(Axis.XP.rotationDegrees(ROTATE_X_DEGREES));
-        poseStack.mulPose(Axis.YP.rotationDegrees(ROTATE_Y_DEGREES));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(ROTATE_Z_DEGREES));
-        poseStack.scale(SCALE, SCALE, SCALE);
+    /**
+     * Returns the physical shaft tip from the same standalone grip-relative basis used by
+     * {@link #submit(PoseStack, SubmitNodeCollector, int)}. Integrators convert this explicit
+     * arm-local coordinate through their own entity transform; no camera position is involved.
+     */
+    public static ArmLocalRodTip armLocalTip() {
+        if (!isAvailable()) return null;
+        try {
+            return RENDERER.standaloneBasis().tipFromArmGrip();
+        } catch (RuntimeException | LinkageError exception) {
+            return null;
+        }
+    }
+
+    /** A physical outer shaft point relative to the crossed-arms grip, in model/arm-local space. */
+    public record ArmLocalRodTip(float x, float y, float z) {
+        public boolean isFinite() {
+            return Float.isFinite(x) && Float.isFinite(y) && Float.isFinite(z);
+        }
+    }
+
+    /** A point in the authored {@code fishing_rod} bone's own pivot-relative coordinate system. */
+    private record RodLocalPoint(float x, float y, float z) {
     }
 
     private static final class RodVisual implements GeoAnimatable {
@@ -146,30 +158,52 @@ public final class RibbitsFishermanRodBridge {
 
         @Override
         public void adjustModelBonesForRender(RenderPassInfo<GeoRenderState> renderInfo, BoneSnapshots bones) {
+            bones.ifPresent("main", snapshot -> snapshot.skipRender(true));
             bones.ifPresent("body", snapshot -> snapshot.skipRender(true));
             bones.ifPresent("left_arm", snapshot -> snapshot.skipRender(true));
             bones.ifPresent("right_arm", snapshot -> snapshot.skipRender(true));
             bones.ifPresent("right_leg", snapshot -> snapshot.skipRender(true));
             bones.ifPresent("left_leg", snapshot -> snapshot.skipRender(true));
-            bones.ifPresent("fishing_rod_2", snapshot -> snapshot.skipRender(true));
+            bones.ifPresent("fishing_rod_2", snapshot -> {
+                snapshot.skipRender(true);
+                snapshot.skipChildrenRender(true);
+            });
             bones.ifPresent("fishing_rod_3", snapshot -> snapshot.skipRender(true));
         }
 
-        private Vec3 captureOuterTip(PoseStack poseStack) {
+        /**
+         * Establishes the reusable rod basis directly from the loaded geometry. The grip is the
+         * fishing_rod pivot; shifting by its rendered position detaches the shaft from the
+         * Ribbit-only body/accessories origin before it is attached to another entity's hands.
+         */
+        private StandaloneRodBasis standaloneBasis() {
             GeoBone rod = getGeoModel().getBakedModel(MODEL).getBone("fishing_rod")
                     .orElseThrow(() -> new IllegalStateException("Ribbits Fisherman rod bone is missing"));
-            poseStack.pushPose();
-            applyGeometryRoot(poseStack);
-            RenderUtil.transformToBone(poseStack, rod);
-            Vector4f tip = poseStack.last().pose().transform(
-                    new Vector4f(0.0F, 0.0F, OUTER_TIP_Z_FROM_ROD_PIVOT, 1.0F));
-            poseStack.popPose();
-            return new Vec3(tip.x(), tip.y(), tip.z());
+            PoseStack modelPose = new PoseStack();
+            applyGeometryRoot(modelPose);
+            RenderUtil.transformToBone(modelPose, rod);
+            Vec3 grip = transform(modelPose, GRIP_FROM_ROD_PIVOT);
+            Vec3 tip = transform(modelPose, OUTER_TIP_FROM_ROD_PIVOT);
+            return new StandaloneRodBasis(grip, new ArmLocalRodTip(
+                    (float)(tip.x - grip.x), (float)(tip.y - grip.y), (float)(tip.z - grip.z)));
+        }
+
+        private static Vec3 transform(PoseStack poseStack, RodLocalPoint point) {
+            Vector4f transformed = poseStack.last().pose().transform(
+                    new Vector4f(point.x(), point.y(), point.z(), 1.0F));
+            return new Vec3(transformed.x(), transformed.y(), transformed.z());
         }
 
         private static void applyGeometryRoot(PoseStack poseStack) {
             // GeoObjectRenderer's normal object root; shared by rendering and outer-tip capture.
             poseStack.translate(0.5F, 0.51F, 0.5F);
+        }
+    }
+
+    /** The complete standalone basis shared by visible rod submission and line-origin extraction. */
+    private record StandaloneRodBasis(Vec3 rawGripPosition, ArmLocalRodTip tipFromArmGrip) {
+        private void attachGripAtOrigin(PoseStack poseStack) {
+            poseStack.translate(-rawGripPosition.x, -rawGripPosition.y, -rawGripPosition.z);
         }
     }
 }

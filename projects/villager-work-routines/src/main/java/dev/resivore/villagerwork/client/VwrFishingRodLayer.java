@@ -2,8 +2,6 @@ package dev.resivore.villagerwork.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -14,6 +12,7 @@ import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import dev.resivore.villagerwork.FishingFloat;
@@ -28,7 +27,6 @@ import net.minecraft.world.item.Items;
  * equipment synchronization, avoiding vanilla's duplicate fishing line and hook.
  */
 public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, VillagerModel> {
-    private static final Map<Integer, RodTip> RIBBITS_ROD_TIPS = new ConcurrentHashMap<>();
     private final ItemInHandRenderer itemRenderer;
 
     public VwrFishingRodLayer(RenderLayerParent<VillagerRenderState, VillagerModel> parent,
@@ -46,21 +44,14 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         if (!(entity instanceof Villager villager)) return;
         boolean fishing = hasLiveFloat(villager);
         boolean shearing = hasLiveShears(villager);
-        if (!fishing && !shearing) {
-            RIBBITS_ROD_TIPS.remove(villager.getId());
-            return;
-        }
+        if (!fishing && !shearing) return;
 
         if (fishing) {
             poseStack.pushPose();
-            // Apply C17's physical inward correction in the unrotated body basis.  Applying it
-            // after translateToArms would use the pitched arms basis and repeat C16's downward
-            // local-Z result instead of moving the rod toward the torso.
-            FishingRodPose.BodySpaceOffset inward = FishingRodPose.C17_INWARD_BODY_OFFSET;
-            poseStack.translate(inward.x(), inward.y(), inward.z());
             getParentModel().translateToArms(state, poseStack);
-            submitFishingRod(villager, poseStack, collector, light);
+            boolean submittedRibbitsRod = RibbitsFishermanRodProvider.submit(poseStack, collector, light);
             poseStack.popPose();
+            if (!submittedRibbitsRod) submitFishingStick(villager, state, poseStack, collector, light);
         }
         if (shearing) {
             poseStack.pushPose();
@@ -70,21 +61,14 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         }
     }
 
-    private void submitFishingRod(Villager villager, PoseStack poseStack, SubmitNodeCollector collector, int light) {
-        Vec3 cameraRelativeTip = RibbitsFishermanRodProvider.submit(poseStack, collector, light);
-        Vec3 cameraPosition = Minecraft.getInstance().gameRenderer.gameRenderState()
-                .levelRenderState.cameraRenderState.pos;
-        if (cameraRelativeTip != null && cameraPosition != null) {
-            RIBBITS_ROD_TIPS.put(villager.getId(), new RodTip(cameraRelativeTip.add(cameraPosition), villager.tickCount));
-            return;
-        }
-
-        RIBBITS_ROD_TIPS.remove(villager.getId());
-        submitFishingStick(villager, poseStack, collector, light);
-    }
-
-    private void submitFishingStick(Villager villager, PoseStack poseStack, SubmitNodeCollector collector, int light) {
+    private void submitFishingStick(Villager villager, VillagerRenderState state, PoseStack poseStack,
+                                    SubmitNodeCollector collector, int light) {
         poseStack.pushPose();
+        // C17 stays solely on the item-renderer fallback path. The standalone Ribbits rod is
+        // attached directly to the crossed-arms grip and never inherits these display transforms.
+        FishingRodPose.BodySpaceOffset inward = FishingRodPose.C17_INWARD_BODY_OFFSET;
+        poseStack.translate(inward.x(), inward.y(), inward.z());
+        getParentModel().translateToArms(state, poseStack);
         poseStack.translate(0.0F, FishingRodPose.STICK_VERTICAL_TRANSLATION,
                 FishingRodPose.STICK_ARM_LOCAL_DEPTH_TRANSLATION);
         poseStack.mulPose(Axis.XP.rotationDegrees(-58.0F));
@@ -117,17 +101,23 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                 villager.getBoundingBox().inflate(18.0), marker -> marker.owner() == villager).isEmpty();
     }
 
-    /** Returns this frame's exact camera-to-world rod tip when the optional provider rendered it. */
-    static Vec3 ribbitsRodTip(Villager villager) {
-        RodTip tip = RIBBITS_ROD_TIPS.get(villager.getId());
-        if (tip == null || Math.abs(villager.tickCount - tip.ownerTick()) > 1) return null;
-        return tip.worldPosition();
+    /**
+     * Converts the provider's explicit crossed-arms-local shaft tip to world space using the
+     * interpolated villager location and actual body yaw. Entity layers receive a camera-relative
+     * PoseStack in 26.2, so the camera is intentionally never used for this physical endpoint.
+     */
+    static Vec3 ribbitsRodTip(Villager villager, float partialTick) {
+        RibbitsFishermanRodProvider.ArmLocalRodTip armLocalTip = RibbitsFishermanRodProvider.armLocalTip();
+        if (armLocalTip == null) return null;
+        Vec3 position = villager.getPosition(partialTick);
+        float bodyYaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
+        FishingRodPose.Point worldTip = FishingRodPose.tipFromCrossedArms(position.x, position.y,
+                position.z, bodyYaw, new FishingRodPose.ArmLocalPoint(armLocalTip.x(),
+                        armLocalTip.y(), armLocalTip.z()));
+        return worldTip.isFinite() ? new Vec3(worldTip.x(), worldTip.y(), worldTip.z()) : null;
     }
 
     static boolean ribbitsRodProviderAvailable() {
         return RibbitsFishermanRodProvider.isAvailable();
-    }
-
-    private record RodTip(Vec3 worldPosition, int ownerTick) {
     }
 }

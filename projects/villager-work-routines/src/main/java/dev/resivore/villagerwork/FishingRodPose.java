@@ -5,6 +5,18 @@ package dev.resivore.villagerwork;
  * from the rendered model transform instead of using these values.
  */
 public final class FishingRodPose {
+    /*
+     * Minecraft 26.2 renderer contract inspected from the mapped client classes:
+     * LivingEntityRenderer applies Y(180 - bodyYaw), then scale(-1, -1, 1), then translates
+     * (0, -1.501, 0). VillagerModel.translateToArms then applies the authored arms part pose
+     * offset (0, 3, -1)/16 and X rotation -0.75. These constants convert an explicit arm-local
+     * Ribbits tip to world space without relying on the camera-relative layer PoseStack.
+     */
+    static final double ADULT_RENDER_BASE_Y = -1.501D;
+    static final double CROSSED_ARMS_PIVOT_Y = 3.0D / 16.0D;
+    static final double CROSSED_ARMS_PIVOT_Z = -1.0D / 16.0D;
+    static final double CROSSED_ARMS_X_ROTATION_RADIANS = -0.75D;
+
     /**
      * `translateToArms` uses a model-local vertical axis whose effective screen direction was
      * established by C13 runtime evidence: changing +0.08 to -0.10 visibly raised the stick.
@@ -47,6 +59,43 @@ public final class FishingRodPose {
         public boolean isFinite() {
             return Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z);
         }
+    }
+
+    /** A physical point relative to the vanilla crossed-arms grip, in arm/model-local units. */
+    public record ArmLocalPoint(double x, double y, double z) {
+        public boolean isFinite() {
+            return Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z);
+        }
+    }
+
+    /**
+     * Converts a standalone rod point from the crossed-arms grip to world space. This matches
+     * Minecraft 26.2's adult VillagerModel/LivingEntityRenderer transform sequence and receives
+     * only the interpolated entity position and body orientation; camera state is not an input.
+     */
+    public static Point tipFromCrossedArms(double villagerX, double villagerY, double villagerZ,
+                                            float bodyYawDegrees, ArmLocalPoint armLocalTip) {
+        if (!Double.isFinite(villagerX) || !Double.isFinite(villagerY) || !Double.isFinite(villagerZ)
+                || !Float.isFinite(bodyYawDegrees) || armLocalTip == null || !armLocalTip.isFinite())
+            return new Point(Double.NaN, Double.NaN, Double.NaN);
+
+        double armCos = Math.cos(CROSSED_ARMS_X_ROTATION_RADIANS);
+        double armSin = Math.sin(CROSSED_ARMS_X_ROTATION_RADIANS);
+        double armsX = armLocalTip.x();
+        double armsY = armLocalTip.y() * armCos - armLocalTip.z() * armSin
+                + CROSSED_ARMS_PIVOT_Y + ADULT_RENDER_BASE_Y;
+        double armsZ = armLocalTip.y() * armSin + armLocalTip.z() * armCos + CROSSED_ARMS_PIVOT_Z;
+
+        // LivingEntityRenderer's -1/-1/1 model flip precedes its Y(180 - bodyYaw) rotation.
+        double yaw = Math.toRadians(180.0D - bodyYawDegrees);
+        double cos = Math.cos(yaw);
+        double sin = Math.sin(yaw);
+        double flippedX = -armsX;
+        double flippedY = -armsY;
+        double flippedZ = armsZ;
+        return new Point(villagerX + cos * flippedX + sin * flippedZ,
+                villagerY + flippedY,
+                villagerZ - sin * flippedX + cos * flippedZ);
     }
 
     /** Returns the approximate outer tip of the fallback forward-held stick. */

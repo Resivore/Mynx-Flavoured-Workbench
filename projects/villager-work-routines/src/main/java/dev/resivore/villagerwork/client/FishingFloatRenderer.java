@@ -33,10 +33,11 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
         if (owner instanceof Villager villager) {
             Vec3 villagerPosition = villager.getPosition(partialTick);
             float yaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
-            Vec3 ribbitsTip = VwrFishingRodLayer.ribbitsRodTip(villager);
+            Vec3 ribbitsTip = VwrFishingRodLayer.ribbitsRodTip(villager, partialTick);
             if (ribbitsTip != null) {
-                // The provider captures this endpoint from the same PoseStack that submitted the
-                // authored rod, rather than retaining an independent VWR rod-tip approximation.
+                // The provider's standalone grip/tip basis is shared by visible rod submission
+                // and this explicit model-to-world conversion, rather than retaining a second
+                // VWR approximation or deriving an endpoint from camera position.
                 state.line = ribbitsTip.subtract(entity.getPosition(partialTick));
             } else if (!VwrFishingRodLayer.ribbitsRodProviderAvailable()) {
                 // Ribbits is optional. Retain C17's proven stick/line presentation only when its
