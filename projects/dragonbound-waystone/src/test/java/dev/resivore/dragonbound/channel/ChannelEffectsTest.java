@@ -1,6 +1,7 @@
 package dev.resivore.dragonbound.channel;
 
 import org.junit.jupiter.api.Test;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,8 +48,6 @@ final class ChannelEffectsTest {
         assertTrue(ChannelEffects.foregroundChannelParticleCount(39, 40)
                 > ChannelEffects.foregroundChannelParticleCount(0, 40));
         assertEquals(8, ChannelEffects.foregroundChannelParticleCount(39, 40));
-        assertEquals(24, ChannelEffects.FOREGROUND_SUCCESS_PARTICLE_COUNT);
-
         for (int duration : new int[] {2, 7, 40, 137}) {
             assertEquals(3, ChannelEffects.foregroundChannelParticleCount(0, duration));
             assertEquals(8, ChannelEffects.foregroundChannelParticleCount(duration - 1L, duration));
@@ -65,18 +64,12 @@ final class ChannelEffectsTest {
     void targetedForegroundStartsStayNearGroundAndWithinTheirConfiguredRadius() {
         Vec3 ground = ChannelEffects.foregroundGroundOrigin(new Vec3(10.0D, 64.0D, -4.0D));
         Vec3 channelStart = ChannelEffects.foregroundParticleStart(ground, 0.65D, -0.05D, -0.65D);
-        Vec3 successStart = ChannelEffects.foregroundParticleStart(ground, -0.75D, 0.05D, 0.75D);
 
         assertEquals(10.65D, channelStart.x, 1.0E-10D);
         assertEquals(64.0D, channelStart.y, 1.0E-10D);
         assertEquals(-4.65D, channelStart.z, 1.0E-10D);
-        assertEquals(9.25D, successStart.x, 1.0E-10D);
-        assertEquals(64.10D, successStart.y, 1.0E-10D);
-        assertEquals(-3.25D, successStart.z, 1.0E-10D);
         assertEquals(0.65D, ChannelEffects.FOREGROUND_CHANNEL_HORIZONTAL_RADIUS);
-        assertEquals(0.75D, ChannelEffects.FOREGROUND_SUCCESS_HORIZONTAL_RADIUS);
         assertEquals(0.05D, ChannelEffects.FOREGROUND_CHANNEL_VERTICAL_SPREAD);
-        assertEquals(0.05D, ChannelEffects.FOREGROUND_SUCCESS_VERTICAL_SPREAD);
     }
 
     @Test
@@ -100,9 +93,23 @@ final class ChannelEffectsTest {
     }
 
     @Test
-    void existingBodyParticleCountsRemainFrozen() {
-        assertEquals(30, ChannelEffects.SUCCESS_PARTICLE_COUNT);
+    void channelBuildupCountsRemainFrozen() {
         assertEquals(1, ChannelEffects.CHANNEL_PARTICLES_AT_START);
         assertEquals(4, ChannelEffects.CHANNEL_PARTICLES_AT_COMPLETION);
+    }
+
+    @Test
+    void mirrorArrivalUsesTheAuditedEnderscapePresentationParameters() {
+        assertEquals(Identifier.fromNamespaceAndPath("enderscape", "mirror.teleport"),
+                ChannelEffects.MIRROR_TELEPORT_SOUND_ID);
+        assertEquals(Identifier.fromNamespaceAndPath("enderscape", "mirror_teleport_in"),
+                ChannelEffects.MIRROR_TELEPORT_IN_PARTICLE_ID);
+        assertEquals(50, ChannelEffects.MIRROR_ARRIVAL_PARTICLE_COUNT);
+        assertEquals(0.5D, ChannelEffects.MIRROR_ARRIVAL_Y_OFFSET);
+        assertEquals(0.5D, ChannelEffects.MIRROR_ARRIVAL_HORIZONTAL_SPREAD);
+        assertEquals(1.0D, ChannelEffects.MIRROR_ARRIVAL_VERTICAL_SPREAD);
+        assertEquals(0.1D, ChannelEffects.MIRROR_ARRIVAL_SPEED);
+        assertEquals(0.65F, ChannelEffects.MIRROR_ARRIVAL_SOUND_VOLUME);
+        assertEquals(1.0F, ChannelEffects.MIRROR_ARRIVAL_SOUND_PITCH);
     }
 }

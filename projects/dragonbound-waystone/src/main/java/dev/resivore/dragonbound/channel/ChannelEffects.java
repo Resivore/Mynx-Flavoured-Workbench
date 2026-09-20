@@ -1,25 +1,35 @@
 package dev.resivore.dragonbound.channel;
 
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
 
 /** Server-owned visual feedback for valid Dragonbound channels and confirmed arrivals. */
 final class ChannelEffects {
-    static final int SUCCESS_PARTICLE_COUNT = 30;
-    static final int FOREGROUND_SUCCESS_PARTICLE_COUNT = 24;
+    static final Identifier MIRROR_TELEPORT_SOUND_ID =
+            Identifier.fromNamespaceAndPath("enderscape", "mirror.teleport");
+    static final Identifier MIRROR_TELEPORT_IN_PARTICLE_ID =
+            Identifier.fromNamespaceAndPath("enderscape", "mirror_teleport_in");
+    static final int MIRROR_ARRIVAL_PARTICLE_COUNT = 50;
+    static final double MIRROR_ARRIVAL_Y_OFFSET = 0.5D;
+    static final double MIRROR_ARRIVAL_HORIZONTAL_SPREAD = 0.5D;
+    static final double MIRROR_ARRIVAL_VERTICAL_SPREAD = 1.0D;
+    static final double MIRROR_ARRIVAL_SPEED = 0.1D;
+    static final float MIRROR_ARRIVAL_SOUND_VOLUME = 0.65F;
+    static final float MIRROR_ARRIVAL_SOUND_PITCH = 1.0F;
     static final int CHANNEL_PARTICLES_AT_START = 1;
     static final int CHANNEL_PARTICLES_AT_COMPLETION = 4;
     static final int FOREGROUND_CHANNEL_PARTICLES_AT_START = 3;
     static final int FOREGROUND_CHANNEL_PARTICLES_AT_COMPLETION = 8;
     static final double FOREGROUND_GROUND_OFFSET = 0.05D;
     static final double FOREGROUND_CHANNEL_HORIZONTAL_RADIUS = 0.65D;
-    static final double FOREGROUND_SUCCESS_HORIZONTAL_RADIUS = 0.75D;
     static final double FOREGROUND_CHANNEL_VERTICAL_SPREAD = 0.05D;
-    static final double FOREGROUND_SUCCESS_VERTICAL_SPREAD = 0.05D;
     static final double FOREGROUND_MOTION_HORIZONTAL_MAX = 0.035D;
     static final double FOREGROUND_MOTION_VERTICAL_MIN = 0.06D;
     static final double FOREGROUND_MOTION_VERTICAL_MAX = 0.12D;
@@ -30,18 +40,27 @@ final class ChannelEffects {
     static void successfulTeleport(ServerPlayer player) {
         ServerLevel level = (ServerLevel) player.level();
         Vec3 position = player.position();
+        level.sendParticles(
+                mirrorTeleportInParticle(),
+                position.x,
+                position.y + MIRROR_ARRIVAL_Y_OFFSET,
+                position.z,
+                MIRROR_ARRIVAL_PARTICLE_COUNT,
+                MIRROR_ARRIVAL_HORIZONTAL_SPREAD,
+                MIRROR_ARRIVAL_VERTICAL_SPREAD,
+                MIRROR_ARRIVAL_HORIZONTAL_SPREAD,
+                MIRROR_ARRIVAL_SPEED
+        );
         level.playSound(
                 null,
                 position.x,
                 position.y,
                 position.z,
-                SoundEvents.ENDERMAN_TELEPORT,
+                mirrorTeleportSound(),
                 SoundSource.PLAYERS,
-                1.0F,
-                1.0F
+                MIRROR_ARRIVAL_SOUND_VOLUME,
+                MIRROR_ARRIVAL_SOUND_PITCH
         );
-        portalBurst(level, position);
-        foregroundPortalBurst(player, level);
     }
 
     static void channelStarted(ServerPlayer player, int channelTicks) {
@@ -128,28 +147,19 @@ final class ChannelEffects {
         );
     }
 
-    private static void portalBurst(ServerLevel level, Vec3 position) {
-        level.sendParticles(
-                ParticleTypes.PORTAL,
-                position.x,
-                position.y + 0.9D,
-                position.z,
-                SUCCESS_PARTICLE_COUNT,
-                0.50D,
-                0.90D,
-                0.50D,
-                0.08D
-        );
+    private static SoundEvent mirrorTeleportSound() {
+        return BuiltInRegistries.SOUND_EVENT.getOptional(MIRROR_TELEPORT_SOUND_ID)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Required Enderscape Mirror teleport sound is unavailable: " + MIRROR_TELEPORT_SOUND_ID));
     }
 
-    private static void foregroundPortalBurst(ServerPlayer player, ServerLevel level) {
-        targetedRisingReversePortalParticles(
-                player,
-                level,
-                FOREGROUND_SUCCESS_PARTICLE_COUNT,
-                FOREGROUND_SUCCESS_HORIZONTAL_RADIUS,
-                FOREGROUND_SUCCESS_VERTICAL_SPREAD
-        );
+    private static SimpleParticleType mirrorTeleportInParticle() {
+        return BuiltInRegistries.PARTICLE_TYPE.getOptional(MIRROR_TELEPORT_IN_PARTICLE_ID)
+                .filter(SimpleParticleType.class::isInstance)
+                .map(SimpleParticleType.class::cast)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Required Enderscape Mirror arrival particle is unavailable: "
+                                + MIRROR_TELEPORT_IN_PARTICLE_ID));
     }
 
     /** Sends count-zero packets so each targeted reverse-portal particle has a deliberate upward launch. */

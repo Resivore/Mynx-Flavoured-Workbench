@@ -5,6 +5,12 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
+def workbenchRoot = providers.gradleProperty('workbench_root')
+        .orElse(rootProject.projectDir.parentFile.parentFile.absolutePath)
+        .get()
+def enderscapeJar = file("${workbenchRoot}/originals/mods/enderscape-fabric-3.0.2+mc26.2.jar")
+def enderscapeSha256 = '9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b'
+
 base {
     archivesName = project.archives_base_name
 }
@@ -17,6 +23,7 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    compileOnly files(enderscapeJar)
 
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -35,8 +42,43 @@ tasks.withType(JavaCompile).configureEach {
     it.options.release = 25
 }
 
+sourceSets {
+    test {
+        resources {
+            srcDir 'src/main/resources'
+            exclude 'fabric.mod.json'
+        }
+    }
+}
+
 tasks.named('test') {
+    dependsOn 'verifyPinnedEnderscapeInput'
     useJUnitPlatform()
+    systemProperty 'workbenchRoot', workbenchRoot
+    // These are static contracts. Do not load Dragonbound's production metadata into the
+    // Fabric JUnit launcher, because its required Enderscape provider belongs to a real runtime.
+    classpath = classpath.filter { entry ->
+        entry != layout.buildDirectory.dir('resources/main').get().asFile
+    }
+}
+
+tasks.register('verifyPinnedEnderscapeInput') {
+    inputs.file(enderscapeJar)
+    doLast {
+        if (!enderscapeJar.isFile()) {
+            throw new GradleException("Missing required Enderscape input: ${enderscapeJar}")
+        }
+        def digest = java.security.MessageDigest.getInstance('SHA-256')
+        enderscapeJar.withInputStream { input ->
+            byte[] buffer = new byte[8192]
+            for (int count; (count = input.read(buffer)) > 0;) {
+                digest.update(buffer, 0, count)
+            }
+        }
+        if (digest.digest().encodeHex().toString() != enderscapeSha256) {
+            throw new GradleException('Enderscape input SHA-256 differs from the Dragonbound Mirror arrival contract')
+        }
+    }
 }
 
 java {
