@@ -123,7 +123,10 @@ public final class NibaruProviderAdapter {
         NibaruMaterialProfile profile = profile(source).orElse(null);
         if (profile == null) return new VerticalSlabBlock(properties);
         VerticalSlabBlock result;
-        if (HugeMushroomMaterial.isHugeMushroom(profile)) {
+        ExternalMaterialStateBridge materialStateBridge = ExternalMaterialStateBridge.forProfile(profile);
+        if (materialStateBridge.requiresBridge()) {
+            result = EnderscapeMaterialGeometry.vertical(materialStateBridge, properties);
+        } else if (HugeMushroomMaterial.isHugeMushroom(profile)) {
             result = new HugeMushroomVerticalSlabBlock(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
             result = new NibaruLeavesVerticalSlabBlock(properties);
@@ -175,7 +178,10 @@ public final class NibaruProviderAdapter {
         NibaruMaterialProfile profile = profile(source).orElse(null);
         if (profile == null) return new StepBlock(properties);
         StepBlock result;
-        if (HugeMushroomMaterial.isHugeMushroom(profile)) {
+        ExternalMaterialStateBridge materialStateBridge = ExternalMaterialStateBridge.forProfile(profile);
+        if (materialStateBridge.requiresBridge()) {
+            result = EnderscapeMaterialGeometry.step(materialStateBridge, properties);
+        } else if (HugeMushroomMaterial.isHugeMushroom(profile)) {
             result = new HugeMushroomStepBlock(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE)) {
             result = new NibaruLeavesStepBlock(properties);
@@ -230,9 +236,12 @@ public final class NibaruProviderAdapter {
             throw new IllegalStateException("Unsupported BGE Layer material " + profile.canonicalParentId()
                     + ": " + support.status() + " " + support.missingCapabilities());
         }
-        BgeLayerBlock result = HugeMushroomMaterial.isHugeMushroom(profile)
-                ? new HugeMushroomLayerBlock(profile, properties)
-                : BgeLayerSpecializedBlocks.create(profile, properties);
+        ExternalMaterialStateBridge materialStateBridge = ExternalMaterialStateBridge.forProfile(profile);
+        BgeLayerBlock result = materialStateBridge.requiresBridge()
+                ? EnderscapeMaterialGeometry.layer(materialStateBridge, profile, properties)
+                : HugeMushroomMaterial.isHugeMushroom(profile)
+                        ? new HugeMushroomLayerBlock(profile, properties)
+                        : BgeLayerSpecializedBlocks.create(profile, properties);
         bindExisting(profile, BgeGeometryRole.LAYER, result);
         return result;
     }
@@ -241,9 +250,12 @@ public final class NibaruProviderAdapter {
     public static BgeCornerBlock createCorner(NibaruMaterialProfile profile,
             BlockBehaviour.Properties properties) {
         requireLocalSupport(profile, BgeGeometryRole.CORNER);
-        BgeCornerBlock result = HugeMushroomMaterial.isHugeMushroom(profile)
-                ? new HugeMushroomCornerBlock(profile, properties)
-                : BgeCornerBlock.create(profile, properties);
+        ExternalMaterialStateBridge materialStateBridge = ExternalMaterialStateBridge.forProfile(profile);
+        BgeCornerBlock result = materialStateBridge.requiresBridge()
+                ? EnderscapeMaterialGeometry.corner(materialStateBridge, profile, properties)
+                : HugeMushroomMaterial.isHugeMushroom(profile)
+                        ? new HugeMushroomCornerBlock(profile, properties)
+                        : BgeCornerBlock.create(profile, properties);
         bindExisting(profile, BgeGeometryRole.CORNER, result);
         return result;
     }
@@ -252,9 +264,12 @@ public final class NibaruProviderAdapter {
     public static BgeColumnBlock createQuarterColumn(NibaruMaterialProfile profile,
             BlockBehaviour.Properties properties) {
         requireLocalSupport(profile, BgeGeometryRole.QUARTER_COLUMN);
-        BgeColumnBlock result = HugeMushroomMaterial.isHugeMushroom(profile)
-                ? new HugeMushroomColumnBlock(profile, properties)
-                : BgeColumnBlock.create(profile, properties);
+        ExternalMaterialStateBridge materialStateBridge = ExternalMaterialStateBridge.forProfile(profile);
+        BgeColumnBlock result = materialStateBridge.requiresBridge()
+                ? EnderscapeMaterialGeometry.column(materialStateBridge, profile, properties)
+                : HugeMushroomMaterial.isHugeMushroom(profile)
+                        ? new HugeMushroomColumnBlock(profile, properties)
+                        : BgeColumnBlock.create(profile, properties);
         bindExisting(profile, BgeGeometryRole.QUARTER_COLUMN, result);
         return result;
     }

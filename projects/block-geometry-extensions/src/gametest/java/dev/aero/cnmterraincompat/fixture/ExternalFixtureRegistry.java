@@ -17,6 +17,11 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.penumbra.enderscape.block.BlinklampBlock;
+import net.penumbra.enderscape.block.BlisteredMagniaBlock;
+import net.penumbra.enderscape.block.MagniaBlock;
+import net.penumbra.enderscape.block.NebuliteBlock;
+import net.penumbra.enderscape.block.properties.MagniaPolarity;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -105,16 +110,31 @@ public final class ExternalFixtureRegistry {
                 "dusk_purpur_pillar"}) {
             register("enderscape", path, Blocks.OAK_LOG, true);
         }
+        register("enderscape", "nebulite_block", new NebuliteBlock(enderscapeProperties("nebulite_block")));
+        register("enderscape", "alluring_magnia", new MagniaBlock(MagniaPolarity.ALLURING,
+                enderscapeProperties("alluring_magnia")));
+        register("enderscape", "repulsive_magnia", new MagniaBlock(MagniaPolarity.REPULSIVE,
+                enderscapeProperties("repulsive_magnia")));
+        register("enderscape", "blistered_magnia", new BlisteredMagniaBlock(
+                enderscapeProperties("blistered_magnia").lightLevel(BlisteredMagniaBlock.lightLevel())
+                        .mapColor(BlisteredMagniaBlock::getMapColor)));
+        register("enderscape", "blinklamp", new BlinklampBlock(enderscapeProperties("blinklamp")));
+
         for (String path : new String[] {"chiseled_end_stone", "cracked_end_stone_bricks",
-                "chiseled_purpur", "nebulite_block", "chiseled_shadoline", "chiseled_veradite",
+                "chiseled_purpur", "chiseled_shadoline", "chiseled_veradite",
                 "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
-                "alluring_magnia", "repulsive_magnia", "chiseled_dusk_purpur",
-                "blistered_magnia", "void_shale", "celestial_cap", "murublight_cap", "end_lamp",
-                "blinklamp", "drift_jelly_block", "veiled_end_stone", "celestial_overgrowth",
+                "chiseled_dusk_purpur", "void_shale", "celestial_cap", "murublight_cap", "end_lamp",
+                "drift_jelly_block", "veiled_end_stone", "celestial_overgrowth",
                 "corrupt_overgrowth", "celestial_path", "corrupt_path"}) {
             register("enderscape", path, Blocks.END_STONE, false);
         }
         register("enderscape", "veiled_leaves", Blocks.OAK_LEAVES, false);
+    }
+
+    private static BlockBehaviour.Properties enderscapeProperties(String path) {
+        Identifier id = Identifier.fromNamespaceAndPath("enderscape", path);
+        return BlockBehaviour.Properties.ofFullCopy(Blocks.END_STONE)
+                .setId(ResourceKey.create(Registries.BLOCK, id));
     }
 
     private static Block registerBbbSlab(String material, Block beam) {

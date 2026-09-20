@@ -39,6 +39,14 @@ public final class ExternalMaterialBlocks {
 
     public static SlabBlock createSlab(Block source, Block.Properties properties, boolean leaves,
             boolean hugeMushroom) {
+        return createSlab(source, properties, leaves, hugeMushroom,
+                ExternalMaterialStateBridge.forSource(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(source)));
+    }
+
+    public static SlabBlock createSlab(Block source, Block.Properties properties, boolean leaves,
+            boolean hugeMushroom, ExternalMaterialStateBridge materialStateBridge) {
+        if (materialStateBridge.requiresBridge())
+            return EnderscapeMaterialGeometry.slab(materialStateBridge, source, properties);
         if (leaves) return new LeafSlab(properties);
         if (hugeMushroom) return new HugeMushroomSlabBlock(properties);
         return source.defaultBlockState().hasProperty(BlockStateProperties.AXIS)
@@ -47,6 +55,14 @@ public final class ExternalMaterialBlocks {
 
     public static StairBlock createStairs(Block source, Block.Properties properties, boolean leaves,
             boolean hugeMushroom) {
+        return createStairs(source, properties, leaves, hugeMushroom,
+                ExternalMaterialStateBridge.forSource(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(source)));
+    }
+
+    public static StairBlock createStairs(Block source, Block.Properties properties, boolean leaves,
+            boolean hugeMushroom, ExternalMaterialStateBridge materialStateBridge) {
+        if (materialStateBridge.requiresBridge())
+            return EnderscapeMaterialGeometry.stairs(materialStateBridge, source, properties);
         if (leaves) return new LeafStairs(source.defaultBlockState(), properties);
         if (hugeMushroom)
             return new HugeMushroomStairsBlock(source.defaultBlockState(), properties);
@@ -57,6 +73,14 @@ public final class ExternalMaterialBlocks {
 
     public static WallBlock createWall(Block source, Block.Properties properties, boolean leaves,
             boolean hugeMushroom) {
+        return createWall(source, properties, leaves, hugeMushroom,
+                ExternalMaterialStateBridge.forSource(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(source)));
+    }
+
+    public static WallBlock createWall(Block source, Block.Properties properties, boolean leaves,
+            boolean hugeMushroom, ExternalMaterialStateBridge materialStateBridge) {
+        if (materialStateBridge.requiresBridge())
+            return EnderscapeMaterialGeometry.wall(materialStateBridge, properties);
         // A wall's connection state is its complete placement contract. It is not a rotated
         // pillar merely because the material it is made from has an axis.
         return leaves ? new LeafWall(properties)

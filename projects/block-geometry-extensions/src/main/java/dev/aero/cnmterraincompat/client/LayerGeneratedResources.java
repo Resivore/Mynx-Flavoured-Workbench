@@ -3,6 +3,7 @@ package dev.aero.cnmterraincompat.client;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
+import dev.aero.cnmterraincompat.ExternalMaterialStateBridge;
 import dev.aero.cnmterraincompat.LayerGeneratedData;
 import dev.tazer.clutternomore.client.assets.AssetGenerator;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
@@ -68,6 +69,7 @@ public final class LayerGeneratedResources {
 
     private static boolean canonicalFullModelReusable(ResourceManager manager,
             NibaruMaterialProfile profile) {
+        if (ExternalMaterialStateBridge.forProfile(profile).isBlisteredMagnia()) return false;
         if (profile.orientationPolicy() != NibaruMaterialProfile.OrientationPolicy.UNIFORM
                 || profile.insetVisualContract().isPresent()) return false;
         // A uniformly skinned BGE family can still be rooted at a provider HugeMushroomBlock.

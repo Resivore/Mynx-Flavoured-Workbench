@@ -541,6 +541,15 @@ public final class BgeMaterialBindings {
         addShared(result, source, canonical, BlockStateProperties.PERSISTENT);
         addShared(result, source, canonical, BlockStateProperties.SNOWY);
         addShared(result, source, canonical, BlockStateProperties.WATERLOGGED);
+        // State-bridge properties are material state, not geometry state.  They deliberately
+        // participate in canonical normalization alongside the native material properties above.
+        // The bridge only names properties whose exact property instances were added to every
+        // derived role and validated at provider registration.
+        ExternalMaterialStateBridge bridge = ExternalMaterialStateBridge.forProfile(profile);
+        for (String propertyName : bridge.materialProperties()) {
+            canonical.getProperties().stream().filter(property -> property.getName().equals(propertyName))
+                    .findFirst().ifPresent(property -> addShared(result, source, canonical, property));
+        }
         if (HugeMushroomMaterial.isHugeMushroom(profile)) {
             for (Property<?> property : HugeMushroomSurface.properties()) addShared(result, source, canonical, property);
         }

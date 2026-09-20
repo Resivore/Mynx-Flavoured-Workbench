@@ -21,7 +21,7 @@ import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c83-enderscape-canonical-catalog-v1";
+    public static final String PROFILE_VERSION = "bge-c84-enderscape-material-state-bridge-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -76,9 +76,14 @@ public final class ExternalMaterialCatalog {
 
     private static Spec uniform(String id, Set<TagKey<Block>> tags,
             Map<String, Identifier> providerRoles) {
+        return uniform(id, tags, providerRoles, ExternalMaterialStateBridge.forSource(Identifier.parse(id)));
+    }
+
+    private static Spec uniform(String id, Set<TagKey<Block>> tags,
+            Map<String, Identifier> providerRoles, ExternalMaterialStateBridge materialStateBridge) {
         Identifier key = Identifier.parse(id);
         String texture = key.getNamespace() + ":block/" + key.getPath();
-        return new Spec(key, key.getNamespace(), key, key, providerRoles,
+        return new Spec(key, key.getNamespace(), key, key, providerRoles, materialStateBridge,
                 VisualProfile.UNIFORM, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
                 texture, texture, texture, "", TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                 tags, Set.of(), List.of());
@@ -268,7 +273,8 @@ public final class ExternalMaterialCatalog {
     }
 
     public record Spec(Identifier id, String provider, Identifier providerReference,
-            Identifier generatedIdentity, Map<String, Identifier> providerRoles, VisualProfile visual,
+            Identifier generatedIdentity, Map<String, Identifier> providerRoles,
+            ExternalMaterialStateBridge materialStateBridge, VisualProfile visual,
             NibaruMaterialProfile.OrientationPolicy orientation,
             String side, String top, String bottom, String interior,
             TintProfile tint, NibaruMaterialProfile.RenderLayer renderLayer,
@@ -279,6 +285,7 @@ public final class ExternalMaterialCatalog {
                 throw new IllegalArgumentException("Provider reference must be owned by " + provider);
             }
             providerRoles = Map.copyOf(providerRoles);
+            materialStateBridge = materialStateBridge == null ? ExternalMaterialStateBridge.NONE : materialStateBridge;
             for (Map.Entry<String, Identifier> role : providerRoles.entrySet()) {
                 if (!Set.of("slab", "stairs", "wall").contains(role.getKey())) {
                     throw new IllegalArgumentException("Unsupported provider geometry role " + role.getKey());
@@ -290,6 +297,19 @@ public final class ExternalMaterialCatalog {
             blockTags = Set.copyOf(blockTags);
             capabilities = Set.copyOf(capabilities);
             transitions = List.copyOf(transitions);
+        }
+
+        /** Source-compatible constructor for ordinary external profiles with no material bridge. */
+        public Spec(Identifier id, String provider, Identifier providerReference,
+                Identifier generatedIdentity, Map<String, Identifier> providerRoles, VisualProfile visual,
+                NibaruMaterialProfile.OrientationPolicy orientation,
+                String side, String top, String bottom, String interior,
+                TintProfile tint, NibaruMaterialProfile.RenderLayer renderLayer,
+                Set<TagKey<Block>> blockTags, Set<BehaviorCapability> capabilities,
+                List<MaterialTransition> transitions) {
+            this(id, provider, providerReference, generatedIdentity, providerRoles,
+                    ExternalMaterialStateBridge.forSource(id), visual, orientation,
+                    side, top, bottom, interior, tint, renderLayer, blockTags, capabilities, transitions);
         }
     }
 

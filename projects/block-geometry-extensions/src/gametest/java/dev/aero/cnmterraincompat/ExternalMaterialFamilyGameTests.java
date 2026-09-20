@@ -1,6 +1,7 @@
 package dev.aero.cnmterraincompat;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import dev.aero.cnmterraincompat.AxisModelContract.AxisUvPolicy;
@@ -48,6 +49,11 @@ import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.penumbra.enderscape.block.BlisteredMagniaBlock;
+import net.penumbra.enderscape.block.HasMagniaPolarity;
+import net.penumbra.enderscape.block.HasMagniaPowerSignal;
+import net.penumbra.enderscape.block.MagniaBlock;
+import net.penumbra.enderscape.block.state.OptionalMagniaPolarityProperty;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
@@ -192,7 +198,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C83_INVENTORY|sources=112|mcwpaths=57"
+        System.out.println("EXTERNAL_C84_INVENTORY|sources=112|mcwpaths=57"
                 + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=33|relations=1008");
         helper.succeed();
     }
@@ -268,6 +274,111 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
+    /** C84: source material state and geometry state must coexist on every generated form. */
+    @GameTest(maxTicks = 40)
+    public void enderscapeMaterialStateBridgePreservesMagniaAndBlinklampContracts(GameTestHelper helper) {
+        ExternalMaterialFamilies.Binding blistered = external("enderscape:blistered_magnia");
+        for (Map.Entry<String, Block> role : blistered.roles().entrySet()) {
+            if (role.getKey().equals("block")) continue;
+            Block block = role.getValue();
+            BlockState none = block.defaultBlockState();
+            helper.assertTrue(none.hasProperty(BlisteredMagniaBlock.POLARITY)
+                            && none.getValue(BlisteredMagniaBlock.POLARITY)
+                                    == OptionalMagniaPolarityProperty.NONE
+                            && none.getLightEmission() == 0,
+                    "Blistered Magnia bridge lost NONE material state for " + role.getKey());
+            BlockState alluring = none.setValue(BlisteredMagniaBlock.POLARITY,
+                    OptionalMagniaPolarityProperty.ALLURING);
+            BlockState repulsive = none.setValue(BlisteredMagniaBlock.POLARITY,
+                    OptionalMagniaPolarityProperty.REPULSIVE);
+            helper.assertTrue(alluring.getLightEmission() == 14 && repulsive.getLightEmission() == 14
+                            && block instanceof HasMagniaPolarity && block instanceof HasMagniaPowerSignal,
+                    "Blistered Magnia light/interface bridge failed for " + role.getKey());
+        }
+
+        Map<String, String> geometryProperties = Map.of(
+                "slab", "type", "stairs", "facing", "wall", "north", "vertical_slab", "facing",
+                "step", "type", "corner", "facing", "quarter_column", "occupancy", "layer", "layers");
+        for (Map.Entry<String, String> requirement : geometryProperties.entrySet()) {
+            BlockState state = blistered.roles().get(requirement.getKey()).defaultBlockState();
+            helper.assertTrue(state.getProperties().stream().anyMatch(property ->
+                            property.getName().equals(requirement.getValue()))
+                            && state.hasProperty(BlisteredMagniaBlock.POLARITY),
+                    "Blistered Magnia material property collided with " + requirement.getKey()
+                            + " geometry state");
+        }
+
+        for (String source : List.of("alluring_magnia", "repulsive_magnia")) {
+            for (Map.Entry<String, Block> role : external("enderscape:" + source).roles().entrySet()) {
+                if (role.getKey().equals("block")) continue;
+                BlockState state = role.getValue().defaultBlockState();
+                helper.assertTrue(state.hasProperty(MagniaBlock.POWER)
+                                && state.getValue(MagniaBlock.POWER) == 0
+                                && role.getValue() instanceof HasMagniaPolarity
+                                && role.getValue() instanceof HasMagniaPowerSignal,
+                        "Fixed-polarity Magnia bridge lost power/interface state for " + source + "/"
+                                + role.getKey());
+            }
+        }
+
+        for (Map.Entry<String, Block> role : external("enderscape:blinklamp").roles().entrySet()) {
+            if (role.getKey().equals("block")) continue;
+            BlockState state = role.getValue().defaultBlockState();
+            helper.assertTrue(state.getProperties().stream().anyMatch(property ->
+                            property.getName().equals("luminance")) && state.getLightEmission() == 15,
+                    "Blinklamp luminance bridge lost its copied light callback for " + role.getKey());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void enderscapeMaterialStateResourcesCoverEveryGeneratedGeometry(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        ExternalMaterialGeneratedResources.generate(manager);
+        LayerGeneratedResources.generateExternalForValidation(manager);
+        QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
+
+        ExternalMaterialFamilies.Binding blistered = external("enderscape:blistered_magnia");
+        for (Map.Entry<String, Block> role : blistered.roles().entrySet()) {
+            if (role.getKey().equals("block")) continue;
+            JsonObject state = generatedClientJson(blockStateResource(role.getValue()));
+            if (state.has("variants")) {
+                Set<String> selectors = state.getAsJsonObject("variants").keySet();
+                helper.assertTrue(selectors.stream().anyMatch(key -> key.contains("polarity=none"))
+                                && selectors.stream().anyMatch(key -> key.contains("polarity=alluring"))
+                                && selectors.stream().anyMatch(key -> key.contains("polarity=repulsive")),
+                        "Blistered Magnia variants do not cover material polarity for " + role.getKey());
+            } else {
+                helper.assertTrue(state.has("multipart") && state.getAsJsonArray("multipart").asList().stream()
+                                .map(JsonElement::getAsJsonObject).map(part -> part.getAsJsonObject("when"))
+                                .anyMatch(when -> when.has("polarity")
+                                        && when.get("polarity").getAsString().equals("alluring")),
+                        "Blistered Magnia wall multipart state lost polarity selector");
+            }
+        }
+        JsonObject alluringSlab = generatedClientJson(blockStateResource(
+                external("enderscape:alluring_magnia").slab())).getAsJsonObject("variants");
+        helper.assertTrue(alluringSlab.keySet().stream().anyMatch(key -> key.contains("power=0"))
+                        && alluringSlab.keySet().stream().anyMatch(key -> key.contains("power=15")),
+                "Fixed Magnia resources do not cover the full power state range");
+        JsonObject blinklampSlab = generatedClientJson(blockStateResource(
+                external("enderscape:blinklamp").slab())).getAsJsonObject("variants");
+        helper.assertTrue(blinklampSlab.keySet().stream().anyMatch(key -> key.contains("luminance=0"))
+                        && blinklampSlab.keySet().stream().anyMatch(key -> key.contains("luminance=7")),
+                "Blinklamp resources do not cover the full luminance state range");
+        Identifier blinklampSlabId = BuiltInRegistries.BLOCK.getKey(external("enderscape:blinklamp").slab());
+        JsonObject luminanceOneModel = generatedClientJson(Identifier.fromNamespaceAndPath(
+                blinklampSlabId.getNamespace(), "models/block/" + blinklampSlabId.getPath()
+                        + "_luminance1.json"));
+        helper.assertTrue(blinklampSlab.entrySet().stream().filter(entry ->
+                                entry.getKey().contains("luminance=2"))
+                        .allMatch(entry -> entry.getValue().getAsJsonObject().get("model").getAsString()
+                                .endsWith("_luminance1"))
+                        && luminanceOneModel.toString().contains("enderscape:block/blinklamp_luminance1"),
+                "Blinklamp luminance 2 did not retain Enderscape's shared luminance-1 model");
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void absentOptionalProviderIsANoOp(GameTestHelper helper) {
         int before = ExternalMaterialFamilies.all().size();
@@ -309,7 +420,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
         helper.assertTrue(relations == 1008 && canonicalDerived.size() == 896 && bgeGenerated.size() == 778,
-                "C83 relation/canonical/generated identity count mismatch: " + relations + "/"
+                "C84 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
         helper.assertTrue(audit.variantCount() == 112 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
@@ -536,7 +647,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(walls.getAsJsonArray("values").size() == 112,
                 "External wall classification does not contain every scoped full-parent family");
         helper.assertTrue(loot == 442, "Expected 442 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C83_SERVER_RESOURCES|standardLoot=442|wallTags=112|materialFamilies=112");
+        System.out.println("EXTERNAL_C84_SERVER_RESOURCES|standardLoot=442|wallTags=112|materialFamilies=112");
         helper.succeed();
     }
 
@@ -584,7 +695,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(generatedRelations == 778 && resolvedModelReferences >= 778,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C83_CLIENT_RESOURCES|generatedRelations=778|blockstates=778|items=778"
+        System.out.println("EXTERNAL_C84_CLIENT_RESOURCES|generatedRelations=778|blockstates=778|items=778"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }

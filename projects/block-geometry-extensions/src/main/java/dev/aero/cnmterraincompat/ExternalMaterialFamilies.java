@@ -46,6 +46,7 @@ public final class ExternalMaterialFamilies {
         if (source == null || !spec.id().equals(BuiltInRegistries.BLOCK.getKey(source))) {
             throw new IllegalStateException("Provider completed without required source block " + spec.id());
         }
+        spec.materialStateBridge().validateSource(source);
         Block reference = BuiltInRegistries.BLOCK.getValue(spec.providerReference());
         if (reference == null || !spec.providerReference().equals(BuiltInRegistries.BLOCK.getKey(reference))) {
             throw new IllegalStateException("Provider completed without required Path reference "
@@ -60,11 +61,15 @@ public final class ExternalMaterialFamilies {
         boolean hugeMushroom = spec.visual()
                 == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM;
         RoleSelection slab = selectStandardRole(spec, "slab", slabId, SlabBlock.class,
-                () -> ExternalMaterialBlocks.createSlab(source, properties(slabId, source), leaves, hugeMushroom));
+                () -> ExternalMaterialBlocks.createSlab(source, properties(slabId, source), leaves, hugeMushroom,
+                        spec.materialStateBridge()));
         RoleSelection stairs = selectStandardRole(spec, "stairs", stairsId, StairBlock.class,
-                () -> ExternalMaterialBlocks.createStairs(source, properties(stairsId, source), leaves, hugeMushroom));
+                () -> ExternalMaterialBlocks.createStairs(source, properties(stairsId, source), leaves, hugeMushroom,
+                        spec.materialStateBridge()));
         RoleSelection wall = selectStandardRole(spec, "wall", wallId, WallBlock.class,
-                () -> ExternalMaterialBlocks.createWall(source, wallProperties(wallId, source), leaves, hugeMushroom));
+                () -> ExternalMaterialBlocks.createWall(source,
+                        wallProperties(wallId, source, spec.materialStateBridge()), leaves, hugeMushroom,
+                        spec.materialStateBridge()));
         Set<String> generatedStandardRoles = new LinkedHashSet<>();
         if (slab.generated()) generatedStandardRoles.add("slab");
         if (stairs.generated()) generatedStandardRoles.add("stairs");
@@ -103,6 +108,7 @@ public final class ExternalMaterialFamilies {
                     NibaruProviderAdapter.derived(profile, BgeGeometryRole.QUARTER_COLUMN).orElseThrow(),
                     NibaruProviderAdapter.derived(profile, BgeGeometryRole.LAYER).orElseThrow(),
                     generatedRoles(pending.generatedStandardRoles()));
+            pending.spec().materialStateBridge().validateDerived(pending.spec().id(), binding.roles());
             BY_SOURCE.put(pending.spec().id(), binding);
             copyFireToAll(binding);
         }
@@ -197,7 +203,11 @@ public final class ExternalMaterialFamilies {
      * query a property it cannot have.  Copy the observable material semantics
      * without carrying source-only state predicates into the normal wall route.
      */
-    private static BlockBehaviour.Properties wallProperties(Identifier id, Block source) {
+    private static BlockBehaviour.Properties wallProperties(Identifier id, Block source,
+            ExternalMaterialStateBridge materialStateBridge) {
+        // This material state belongs to the parent rather than to wall geometry. Retain the
+        // provider callbacks; the bridge installs their required property on the wall state.
+        if (materialStateBridge.requiresBridge()) return properties(id, source);
         BlockState state = source.defaultBlockState();
         BlockBehaviour.Properties result = BlockBehaviour.Properties.of()
                 .setId(ResourceKey.create(Registries.BLOCK, id))
