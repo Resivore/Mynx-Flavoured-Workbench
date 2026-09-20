@@ -21,11 +21,18 @@ public final class BgeLeafEligibility {
 
     public static boolean isLeaf(Binding binding, BlockState physicalState) {
         Objects.requireNonNull(binding, "binding");
-        return binding.canonicalState(physicalState).filter(canonical ->
-                canonical.is(BlockTags.LEAVES) || binding.materialProfile().map(profile ->
-                        profile.visualProfile() == VisualProfile.LEAVES_CUTOUT_TINTED
-                                && profile.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE))
-                        .orElse(false)).isPresent();
+        return binding.canonicalState(physicalState)
+                .map(canonical -> hasLeafSemantics(canonical.is(BlockTags.LEAVES), binding.materialProfile()))
+                .orElse(false);
+    }
+
+    /** Semantic-only test shared by BGE binding resolution and focused tests; never uses names. */
+    static boolean hasLeafSemantics(boolean canonicalLeafTag,
+            Optional<games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile> profile) {
+        return canonicalLeafTag || profile.map(value ->
+                value.visualProfile() == VisualProfile.LEAVES_CUTOUT_TINTED
+                        && value.capabilities().contains(BehaviorCapability.LEAF_LIFECYCLE))
+                .orElse(false);
     }
 
     public static boolean sameCanonicalLeaf(Binding source, BlockState other) {

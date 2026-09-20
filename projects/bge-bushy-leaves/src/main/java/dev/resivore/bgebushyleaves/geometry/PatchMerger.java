@@ -41,7 +41,24 @@ public final class PatchMerger {
                 result.add(new Rect16(u.get(start), u.get(ui), v.get(vi), v.get(vi + 1)));
             }
         }
-        return result;
+        // The first pass produces disjoint row spans. Coalesce equal spans across adjacent rows
+        // so union-tiled BGE compounds do not receive duplicate motifs at internal tile seams.
+        result.sort(Comparator.comparingInt(Rect16::uMin).thenComparingInt(Rect16::uMax)
+                .thenComparingInt(Rect16::vMin));
+        List<Rect16> merged = new ArrayList<>();
+        for (Rect16 candidate : result) {
+            if (!merged.isEmpty()) {
+                Rect16 previous = merged.getLast();
+                if (previous.uMin() == candidate.uMin() && previous.uMax() == candidate.uMax()
+                        && previous.vMax() == candidate.vMin()) {
+                    merged.set(merged.size() - 1, new Rect16(previous.uMin(), previous.uMax(),
+                            previous.vMin(), candidate.vMax()));
+                    continue;
+                }
+            }
+            merged.add(candidate);
+        }
+        return merged;
     }
     private static boolean covered(List<Rect16> source, Rect16 cell) {
         return source.stream().anyMatch(rect -> rect.covers(cell));

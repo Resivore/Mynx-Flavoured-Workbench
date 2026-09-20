@@ -24,10 +24,10 @@ configurations {
 }
 
 def workbenchRoot = rootProject.projectDir.parentFile.parentFile
-def bgeReferenceJar = new File(workbenchRoot, 'projects/block-geometry-extensions/artifacts/BGE C82.jar')
+def bgeReferenceJar = new File(workbenchRoot, 'projects/block-geometry-extensions/artifacts/BGE C84.jar')
 def rendererCoordinates = 'net.fabricmc.fabric-api:fabric-renderer-api-v1:14.1.3+2b0d8a229e'
 def modelLoadingCoordinates = 'net.fabricmc.fabric-api:fabric-model-loading-api-v1:8.0.16+c80601bb9e'
-def expectedBgeSha256 = '165229966de7e02b0a42c2b5fc90cefa116f0b626cb55a6378caea6e38f6341c'
+def expectedBgeSha256 = '9c3a7af8eb86ffabcf5ddc3c7ba96134fb4322c6b92c3530dc8788edac015759'
 def expectedRendererSha256 = '44f49db445c904d5bcd6895b23bbe530476a51514140034976c92b1477886115'
 def expectedModelLoadingSha256 = 'a54c09fb75efa6c58ba378adc3791d0b5c8c68a28cb15ef5ce17163cea4e1c6d'
 
@@ -58,7 +58,7 @@ def sha256 = { File file ->
 
 tasks.register('verifyControlledProviders') {
     group = 'verification'
-    description = 'Verifies BGE C82 plus the Minecraft 26.2 public model and renderer seams.'
+    description = 'Verifies BGE C84 plus the Minecraft 26.2 public model and renderer seams.'
     inputs.files(configurations.bgeReference, configurations.rendererReference, configurations.modelLoadingReference)
     doLast {
         [(configurations.bgeReference.singleFile): expectedBgeSha256,
@@ -74,7 +74,7 @@ tasks.register('verifyControlledProviders') {
              'dev/aero/cnmterraincompat/BgeSurfaceGeometry$SurfacePatch.class',
              'games/twinhead/moreslabsstairsandwalls/api/material/BehaviorCapability.class',
              'games/twinhead/moreslabsstairsandwalls/api/material/VisualProfile.class'].each { path ->
-                if (bge.getEntry(path) == null) throw new GradleException("BGE C82 lacks ${path}")
+                if (bge.getEntry(path) == null) throw new GradleException("BGE C84 lacks ${path}")
             }
         } finally { bge.close() }
         ZipFile renderer = new ZipFile(configurations.rendererReference.singleFile)
@@ -128,10 +128,11 @@ tasks.register('verifyReleaseArtifact') {
             ['fabric.mod.json',
              'dev/resivore/bgebushyleaves/client/BgeBushyLeavesClient.class',
              'dev/resivore/bgebushyleaves/client/BushyLeafBlockStateModel.class',
-             'dev/resivore/bgebushyleaves/client/CanonicalFoliageProjection.class',
+             'dev/resivore/bgebushyleaves/client/CanonicalFoliageAppearance.class',
+             'dev/resivore/bgebushyleaves/client/PatchLocalFoliage.class',
              'dev/resivore/bgebushyleaves/BgeLeafEligibility.class',
-             'dev/resivore/bgebushyleaves/FoliageSurfaceResolver.class',
-             'dev/resivore/bgebushyleaves/geometry/PatchMerger.class'].each { path ->
+             'dev/resivore/bgebushyleaves/geometry/PatchMerger.class',
+             'dev/resivore/bgebushyleaves/geometry/PatchFoliagePlan.class'].each { path ->
                 if (archive.getEntry(path) == null) throw new GradleException("Release artifact is missing ${path}")
             }
             archive.entries().each { entry ->
