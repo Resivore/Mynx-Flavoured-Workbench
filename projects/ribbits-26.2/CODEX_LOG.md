@@ -333,3 +333,14 @@
 - Artifact: Current unaccepted private `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar`, 3,377,508 bytes, SHA-256 `088C4B7E88C432D6275395E29273597CF42575F59350FE8B4F48C46E6DF7F9FD`, built at `2026-09-18T05:47:40.8628936Z`, from the source checkpoint above. Accepted Canary 24 remains unchanged at 3,365,141 bytes / SHA-256 `E2C62BD1AB3884D4E1BD0C583801774AF0FC2F2B54D9483EECC2FBB7DD6E2657`.
 - Result: ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED.
 - Next state: Retain the exact ignored C27 artifact, validate and integrate revision 33 on authoritative `main`, preserve accepted C24, and use the focused C27 procedure only if the owner elects to collect runtime evidence.
+
+## 2026-09-20T06:35:47Z — Expose the existing Fisherman rod as an optional VWR visual provider in Canary 28
+
+- Revision: 34
+- Source checkpoint: `5b01f8aebadfe4c019ed09851d9907556790e4f6`
+- Changes: Added a narrow client-only bridge that loads the existing private `fisherman_ribbit` model and Ribbits texture, submits only the `fishing_rod` bone under the C17-derived crossed-arms placement, explicitly suppresses `fishing_rod_2` decorative hanging-line geometry and `fishing_rod_3` decorative terminal/bobber geometry, and returns the physical outer shaft tip from the same model/PoseStack transform. It adds no Ribbits gameplay, profession behavior, resource payload, resource mutation, or VWR dependency; absent client resources make the bridge unavailable so consumers can use their own fallback.
+- Build/static: The focused Java bridge contract passed after the final Canary 28 configuration, and all 55 private-resource assembler tests passed. Fresh private assembly and tree validation passed at 363 resources / 266 strict JSON documents with zero errors or blockers; final archive inspection was `STATIC JAR PASS` with the same counts and zero errors or blockers. Static/build evidence is not Minecraft runtime validation.
+- Runtime: No Minecraft launch, deployment, testing-profile access, or gameplay observation occurred. Canary 28 is **ACTIVE / STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED**.
+- Artifact: Current unaccepted private `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary28.jar`, 3,384,224 bytes, SHA-256 `96fcad5ba1c06ebb573e6f1554f907ff867d6076c97bc903f64545a5b86ea342`, built `2026-09-20T06:35:55.7689755Z`, from the source checkpoint above. Accepted Canary 24 remains unchanged.
+- Result: The optional visual provider is limited to the existing rod geometry and is current without a runtime claim.
+- Next state: Retain the exact ignored C28 artifact, validate and integrate revision 34 on authoritative `main`, preserve accepted C24, and use the focused C28 procedure only if the owner elects to collect runtime evidence.

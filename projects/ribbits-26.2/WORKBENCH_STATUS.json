@@ -187,21 +187,21 @@
     ]
   },
   "state": {
-    "milestone": "Canary 27 replaces the small-brown item and block textures with the approved 14-by-14 keyed item sprite and matching 64-by-64 Matcha atlas, retains Canary 26's volumetric, same-color huge-growth, and future-only village behavior, and changes Gardener tier 1 to persistently select three of five independent red/brown mushroom, daisy, lily-pad, and small-dripleaf exchanges. Canary 27 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
+    "milestone": "Canary 27 replaces the small-brown item and block textures with the approved 14-by-14 keyed item sprite and matching 64-by-64 Matcha atlas, retains Canary 26's volumetric, same-color huge-growth, and future-only village behavior, and changes Gardener tier 1 to persistently select three of five independent red/brown mushroom, daisy, lily-pad, and small-dripleaf exchanges. Canary 28 adds only a narrowly scoped optional client Fisherman-rod provider for VWR: it resolves the existing private `fisherman_ribbit` model and shared Ribbits texture, renders only its actual `fishing_rod` bone, explicitly hides decorative `fishing_rod_2`/`fishing_rod_3`, and returns the outer shaft endpoint from that same loaded model transform. It adds no Ribbits gameplay, profession behavior, model/resource payload, resource mutation, or VWR dependency; unavailable resources simply leave consumers to their own fallback. Canary 28 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
     "releases": {
       "current": {
-      "version": "4.1.6+26.2-mynx-canary27",
+      "version": "4.1.6+26.2-mynx-canary28",
       "artifact": {
-        "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar",
-        "sha256": "088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd"
+        "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary28.jar",
+        "sha256": "96fcad5ba1c06ebb573e6f1554f907ff867d6076c97bc903f64545a5b86ea342"
       },
-      "built_at": "2026-09-18T05:47:40.8628936Z",
-      "source_commit": "9fe0bf18b3799e749fdf736a3b330d5bee8e23e2",
+      "built_at": "2026-09-20T06:35:55.7689755Z",
+      "source_commit": "5b01f8aebadfe4c019ed09851d9907556790e4f6",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-      "summary": "Uses the approved brown small-toadstool visuals and persistent Gardener tier-1 trio while retaining C26's future-only growth and village boundaries."
+      "summary": "Exposes only the existing Fisherman rod geometry as an optional client visual provider while retaining C27's toadstool and Gardener behavior."
       },
       "accepted": {
         "version": "4.1.6+26.2-mynx-canary24",
@@ -228,10 +228,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 33,
-    "activity_at": "2026-09-18T05:47:47Z",
-    "updated_at": "2026-09-18T05:47:47Z",
-    "last_codex_at": "2026-09-18T05:47:47Z",
-    "source_commit": "9fe0bf18b3799e749fdf736a3b330d5bee8e23e2"
+    "revision": 34,
+    "activity_at": "2026-09-20T06:35:47Z",
+    "updated_at": "2026-09-20T06:35:47Z",
+    "last_codex_at": "2026-09-20T06:35:47Z",
+    "source_commit": "5b01f8aebadfe4c019ed09851d9907556790e4f6"
   }
 }
