@@ -15,7 +15,7 @@
       "Generate restrained, Continuity-compatible Enderscape CTM overlays from pinned Enderscape material RGB and verified Matcha alpha topology."
     ],
     "scope": [
-      "Celestial, Veiled, Corrupt, wood, plank, End Stone construction, Mirestone, Veradite, Kurodite, ore, brick, cap, and evidence-backed Void Lachryma transition relationships declared in relationship_manifest.json."
+      "Celestial, Veiled, Corrupt, Void Shale, wood, plank, End Stone construction, Mirestone, Veradite, Kurodite, ore, brick, cap, and evidence-backed Void Lachryma transition relationships declared in relationship_manifest.json."
     ],
     "boundaries": {
       "owned_paths": [
@@ -24,7 +24,7 @@
       "exclusions": [
         "The Enderscape JAR and Matcha Overlays v37 archive under originals are immutable, ignored source inputs and are never changed or redistributed.",
         "Generated derivative tiles remain in ignored local artifacts because Matcha Overlays v37 is CC BY-NC 4.0; the public repository retains only the generator, manifest, and provenance.",
-        "BGE-specific geometry, leaves, lamps, Magnia, Void Shale, Drift Jelly, decorative sources, and deferred construction families are outside this first canary."
+        "BGE-specific geometry, leaves, lamps, Magnia, Drift Jelly, decorative sources, and deferred construction families remain outside the declared canary scope."
       ]
     },
     "dependencies": [
@@ -49,18 +49,18 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is a locally retained, static-validated generator output for the declared high-confidence Enderscape CTM families; Minecraft runtime testing remains outstanding.",
+    "milestone": "Canary 2 is a locally retained, static-validated generator output with a directed natural-terrain hierarchy and singular Celestial-to-Murublight cap seam; Minecraft runtime testing remains outstanding.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
-        "embedded_version": "0.1.0-canary1",
-        "summary": "Generates high-confidence Enderscape terrain, material-family, ore, emissive, and Void Lachryma CTM seams from pinned Matcha v37 alpha topology.",
-        "built_at": "2026-09-20T03:44:16Z",
+        "version": "0.1.0-canary2",
+        "embedded_version": "0.1.0-canary2",
+        "summary": "Adds a deterministic Void Shale > Celestial > Corrupt > Veiled > Mirestone > Veradite > End Stone CTM hierarchy and singular Celestial-to-Murublight cap seam.",
+        "built_at": "2026-09-20T14:19:58Z",
         "artifact": {
-          "filename": "enderscape-overlays-0.1.0-canary1.zip",
-          "sha256": "4fbd16859792830c7ee040bb757d88805941540389e4ef4d9c67509505a472c3"
+          "filename": "enderscape-overlays-0.1.0-canary2.zip",
+          "sha256": "7d6e72e8bba770e88f0fe1d58d25aa3bc9990e16826a355cce0638285415867b"
         },
-        "source_commit": "ef9244de7ce6c6d006d73a4d4425e9c3a220554d",
+        "source_commit": "6d375d74f92aa804c754e28803ad0b93fd664f43",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -78,10 +78,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-20T03:44:16Z",
-    "updated_at": "2026-09-20T03:44:16Z",
-    "last_codex_at": "2026-09-20T03:44:16Z",
-    "source_commit": "ef9244de7ce6c6d006d73a4d4425e9c3a220554d"
+    "revision": 2,
+    "activity_at": "2026-09-20T14:19:58Z",
+    "updated_at": "2026-09-20T14:19:58Z",
+    "last_codex_at": "2026-09-20T14:19:58Z",
+    "source_commit": "6d375d74f92aa804c754e28803ad0b93fd664f43"
   }
 }
