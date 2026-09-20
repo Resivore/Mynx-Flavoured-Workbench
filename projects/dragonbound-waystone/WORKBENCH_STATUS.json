@@ -19,7 +19,7 @@
     ],
     "scope": [
       "Canary 15's selectable-material renderer uses one persistent block-id material component, a two-input dynamic crafting recipe, and client-only baked-model wrappers that retain the accepted four-cuboid Waystone geometry. The supplied runtime observation is limited to that material implementation working as expected; it does not establish a broader runtime pass or owner acceptance.",
-      "Canary 16 replaces only the confirmed post-arrival punctuation with the exact SHA-256-pinned Enderscape 3.0.2 Mirror teleport-success sound and teleport-IN particle presentation. It resolves provider registry identities at runtime only after Dragonbound has teleported, confirmed exact arrival, and confirmed the held source item; it neither adds Enderscape departure choreography nor alters Dragonbound's channel buildup, teleport mechanics, consumption, cooldown, or success message.",
+      "Canary 16's supplied runtime FAIL is limited to its successful-arrival sound lookup crash: its `enderscape:mirror.teleport` lookup was not registered by the exact pinned Enderscape 3.0.2 input. Canary 17 changes only that successful-arrival lookup to Enderscape's effective `enderscape:item.mirror.teleport` registry ID. It retains `enderscape:mirror_teleport_in`, all arrival parameters, and its existing post-teleport, exact-arrival, and held-source-item gates; it neither adds Enderscape departure choreography nor alters Dragonbound's channel buildup, teleport mechanics, consumption, cooldown, or success message.",
       "Preserve the 40-tick default channel, 1,200-tick Staff cooldown, existing primary recipes plus the dynamic material recipe, one-click and mouse-release-independent channel lifecycle, exact arrival at the visible Waystone top, recipe-book and JEI discovery seam, and success-only consumption and cooldown behavior.",
       "Retain exact accepted Canary 5 and focused-runtime-passed Canary 4 rollback artifacts together with the Dragonbound-owned Staff art and the separately licensed Matcha Stable Void snapshot and notice."
     ],
@@ -29,7 +29,7 @@
       ],
       "exclusions": [
         "Multiple destinations, waypoint lists, portals, home commands, arbitrary coordinates, nearby-position fallback, XP costs, durability, charges, pet or group teleport, and other feature or balance changes.",
-        "Changes to Waystone collision/shape, teleport and anchor authority, channel timing, Staff/Pearl behavior, loss protection, existing primary recipes, configuration, art, or unrelated scope beyond Canary 16's confirmed-arrival Mirror audiovisual presentation.",
+        "Changes to Waystone collision/shape, teleport and anchor authority, channel timing, Staff/Pearl behavior, loss protection, existing primary recipes, configuration, art, or unrelated scope beyond Canary 17's corrected confirmed-arrival Mirror sound lookup.",
         "Mod Menu polish and dedicated-server validation remain deferred; the accepted evidence is the recorded client and singleplayer scope only.",
         "Other projects and their source, status, artifacts, dependencies, and ownership records remain outside this project.",
         "Minecraft deployment, either experimental Test Slot, accepted physical-baseline changes, Test Instance Manager mutation, Minecraft launch, and protected gameplay-instance access during this migration.",
@@ -59,7 +59,7 @@
         "type": "MOD",
         "identifier": "enderscape",
         "requirement": "=3.0.2; exact input enderscape-fabric-3.0.2+mc26.2.jar SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b",
-        "reason": "Required runtime provider for Canary 16's registered Mirror teleport-success sound and teleport-IN particle; Dragonbound does not copy or repackage those assets."
+        "reason": "Required runtime provider for Canary 17's registered Mirror teleport-success sound and teleport-IN particle; Dragonbound does not copy or repackage those assets."
       },
       {
         "type": "TOOL",
@@ -88,17 +88,17 @@
     ]
   },
   "state": {
-    "milestone": "The user reports only that Canary 15's current Waystone material implementation now looks good and works as expected; that narrow material-rendering observation does not establish a broader runtime pass or acceptance. Canary 16 succeeds C15 with a statically verified Enderscape Mirror arrival presentation after Dragonbound's existing confirmed-arrival and held-item gates. Canary 12 remains accepted; Canary 16 awaits focused Minecraft runtime verification of its new audiovisual presentation.",
+    "milestone": "The user reports only that Canary 15's current Waystone material implementation now looks good and works as expected; that narrow material-rendering observation does not establish a broader runtime pass or acceptance. The supplied exact Canary 16 runtime FAIL is limited to its successful-arrival crash from looking up unregistered `enderscape:mirror.teleport`; no other failure is inferred. Canary 17 corrects that lookup to the exact pinned Enderscape 3.0.2 effective ID `enderscape:item.mirror.teleport` while preserving the existing confirmed-arrival and held-item gates. Canary 12 remains accepted; Canary 17 awaits focused Minecraft runtime verification.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary16",
+        "version": "0.1.0-canary17",
         "artifact": {
-          "filename": "dragonbound-waystone-0.1.0-canary16.jar",
-          "sha256": "244b102f59c88b92c18d8f12dbd1747c69cd3b5059695837577307ff6e67fb77"
+          "filename": "dragonbound-waystone-0.1.0-canary17.jar",
+          "sha256": "a697300731fe0ae15b01fd0af6ff5800920ffbf4450a68d31f424fdbf3800dd2"
         },
-        "built_at": "2026-09-20T03:28:15.8934059Z",
-        "embedded_version": "0.1.0-canary16",
-        "source_commit": "9c8531975cc83dd973f42e68478bc25ccc13368b",
+        "built_at": "2026-09-20T03:46:04.1992029Z",
+        "embedded_version": "0.1.0-canary17",
+        "source_commit": "1397e10e40d77181f5c98c1d23507a82d99501a2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -107,15 +107,15 @@
               "relationship": "depends",
               "dependency_id": "enderscape",
               "predicate": "=3.0.2",
-              "reason": "Canary 16 resolves Enderscape's Mirror arrival sound and particle registries for the required confirmed-arrival presentation.",
+              "reason": "Canary 17 resolves Enderscape's effective Mirror arrival sound registry ID and teleport-IN particle registry for the required confirmed-arrival presentation.",
               "regression_evidence": [
                 "The build and focused static contracts fail closed unless enderscape-fabric-3.0.2+mc26.2.jar matches SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b.",
-                "The focused contract verifies Enderscape's mirror.teleport sound-event registration and mirror_teleport_in particle registration, exact arrival parameters, success-gate ordering, no mirror_teleport_out use, no Enderman success sound, and no old success-only portal bursts."
+                "The focused contract verifies that Enderscape's item-sound registration prefix resolves the literal mirror.teleport holder argument to final registry ID enderscape:item.mirror.teleport, along with mirror_teleport_in particle registration, exact arrival parameters, success-gate ordering, no mirror_teleport_out use, no Enderman success sound, and no old success-only portal bursts."
               ]
             }
           ]
         },
-        "summary": "Uses Enderscape Mirror arrival sound and teleport-IN particles only after Dragonbound confirms a successful arrival."
+        "summary": "Uses Enderscape's effective Mirror arrival sound ID and teleport-IN particles only after Dragonbound confirms a successful arrival."
       },
       "accepted": {
         "version": "0.1.0-canary12",
@@ -150,10 +150,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 13,
-    "activity_at": "2026-09-20T03:31:14.3265558Z",
-    "updated_at": "2026-09-20T03:31:14.3265558Z",
-    "last_codex_at": "2026-09-20T03:31:14.3265558Z",
-    "source_commit": "9c8531975cc83dd973f42e68478bc25ccc13368b"
+    "revision": 14,
+    "activity_at": "2026-09-20T03:46:04.1992029Z",
+    "updated_at": "2026-09-20T03:46:04.1992029Z",
+    "last_codex_at": "2026-09-20T03:46:04.1992029Z",
+    "source_commit": "1397e10e40d77181f5c98c1d23507a82d99501a2"
   }
 }
