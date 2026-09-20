@@ -81,7 +81,7 @@ function Test-ContainsBytes([byte[]]$Bytes, [byte[]]$Needle) {
 
 function Test-AllowedChangedEntry([string]$Name) {
     return $Name -eq 'fabric.mod.json' -or $Name -eq 'META-INF/MANIFEST.MF' -or
-            $Name -match '^dev/aero/cnmterraincompat/(?:BgeColumnBlock|BgeCornerBlock|BgeLayerSpecializedBlocks|ExternalMaterialCatalog|ExternalMaterialFamilies|InsetModelContract)(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/(?:BgeColumnBlock|BgeCornerBlock|BgeLayerSpecializedBlocks|ExternalMaterialBlocks|ExternalMaterialCatalog|ExternalMaterialFamilies|InsetModelContract)(?:\$.*)?\.class$' -or
             $Name -eq 'dev/aero/cnmterraincompat/BgeBlockItem.class' -or
             $Name -match '^dev/aero/cnmterraincompat/BgeMaterialBindings(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmShapeMapCandidateBridge(?:\$.*)?\.class$' -or
