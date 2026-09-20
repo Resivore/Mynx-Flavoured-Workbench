@@ -13,13 +13,13 @@
     "lifecycle": "ACTIVE",
     "goals": [
       "Keep canonical full leaves entirely provider-owned while making BGE-derived leaf geometry visibly bushy through provider-neutral, additive foliage.",
-      "Use BGE canonical bindings and exact exposed SurfacePatch geometry as the sole authority for material identity, resolved topology, and decorative attachment footprint.",
+      "Use BGE canonical bindings and complete resolved SurfacePatch geometry as the sole authority for material identity and occupied block-space volume.",
       "Capture active final canonical leaf appearance into owned immutable values during public Fabric mesh iteration, without resource-path, registry-name, provider-specific, or renderer-owned-view retention."
     ],
     "scope": [
-      "Canary 5 captures each canonical-root leaf BlockStateModel after ModelModifier.WRAP_LAST_PHASE, retains the clean BGE base model, and appends the existing authored two-sided slanted cards only over merged binding-owned surface patches.",
-      "During MeshView.forEach, C5 copies each selected canonical quad's UVs, colors, lightmaps, layer, emissive, diffuse/AO/shading/foil/animation metadata, tint, and tag into an immutable owned snapshot; card emission sees only that snapshot, explicitly uses the known world block atlas, and never retains or accesses a renderer-owned QuadView after its callback. Non-cull samples remain preferred and ordinary canonical leaf quads remain the fallback.",
-      "The generic path covers BGE horizontal Slabs, resolved Stairs and Walls, Vertical Slabs, Steps, Layers, Corners, and Quarter Columns; a centralized small-support rule scales or omits a motif without geometry-name branches."
+      "Canary 6 captures each canonical-root leaf BlockStateModel after ModelModifier.WRAP_LAST_PHASE, retains the clean BGE base model, reconstructs the supported BGE occupied volume from its complete resolved SurfacePatch boundary, and emits fixed world-axis crossed/slanted foliage planes clipped to that volume rather than to individual faces.",
+      "During MeshView.forEach, C6 copies each selected canonical quad's UVs, colors, lightmaps, layer, emissive, diffuse/AO/shading/foil/animation metadata, tint, and tag into an immutable owned snapshot; card emission sees only that snapshot, explicitly uses the known world block atlas, and never retains or accesses a renderer-owned QuadView after its callback. Non-cull samples remain preferred; an untinted decorative sample inherits a sampled canonical tint index only when the same canonical mesh supplies one, while an entirely untinted mesh remains untinted.",
+      "The generic volume path covers BGE horizontal Slabs, resolved Stairs and Walls, Vertical Slabs, Steps, Layers, Corners, and Quarter Columns without topology-name branches or a whole-cube fallback."
     ],
     "boundaries": {
       "owned_paths": ["projects/bge-bushy-leaves"],
@@ -35,13 +35,13 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": ">=4.2.22-bge.canary78.stair-wall-surface-authority+26.2",
-        "reason": "C78 is the oldest required public BGE SurfacePatch capability that supplies authoritative resolved patches for every requested topology. C5 resolves the current-main BGE artifact solely as SHA-verified controlled build evidence, without a named-release runtime pin."
+        "reason": "C78 is the oldest required public BGE SurfacePatch capability that supplies authoritative resolved patches for every requested topology. C6 resolves the current-main BGE artifact solely as SHA-verified controlled build evidence, without a named-release runtime pin."
       },
       {
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Canary 5 targets Minecraft Java 26.2 public block-model and renderer-quad interfaces."
+        "reason": "Canary 6 targets Minecraft Java 26.2 public block-model and renderer-quad interfaces."
       },
       {
         "type": "MOD",
@@ -53,13 +53,13 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": ">=0.156.0",
-        "reason": "Provides the public model-loading and renderer APIs used by the client-only C5 wrapper."
+        "reason": "Provides the public model-loading and renderer APIs used by the client-only C6 wrapper."
       },
       {
         "type": "RESOURCE_PACK",
         "identifier": "active canonical leaf model",
         "requirement": "optional; sampled at client resource reload",
-        "reason": "Owner runtime evidence confirms Foundation v2 visibly supplies the active full-block bushy leaves in the real stack. C5 samples whichever final canonical baked leaf appearance is active and does not package or depend on Foundation, Matcha, or another provider's resource path."
+        "reason": "Owner runtime evidence confirms Foundation v2 visibly supplies the active full-block bushy leaves in the real stack. C6 samples whichever final canonical baked leaf appearance is active and does not package or depend on Foundation, Matcha, or another provider's resource path."
       },
       {
         "type": "TOOL",
@@ -70,17 +70,17 @@
     ]
   },
   "state": {
-    "milestone": "Canary 5 is the current client-only additive-rendering artifact. It preserves C4's BGE SurfacePatch placement and existing patch-local crossed/slanted cards, but captures immutable appearance values while each canonical QuadView is valid and emits cards only from those snapshots. Exact C4 bge-bushy-leaves-0.2.2-canary4.jar SHA-256 06147c8eb94c43f348da0a2876f1bb71edb9d356d08a28825b77c52bd17a3ac2 is RUNTIME_FAIL: the owner launched Minecraft, entered a world, and began chunk meshing before PatchLocalFoliage.copyAppearance read chunkLayer() from a retained transient QuadView; Sodium QuadViewWrapper/backing quad data was invalid and raised a NullPointerException. Exact C3 bge-bushy-leaves-0.2.1-canary3.jar SHA-256 e68097eb0199778ef2cb99adac1c83df85aa012c835667bc97fd77582fb8214a is RUNTIME_FAIL at the same retained-view root cause through atlas(); exact C2 bge-bushy-leaves-0.2.0-canary2.jar SHA-256 728bb10952642edb37f1c22e9a5514bf1499e4b2c7f97024c09ee88a9c1596eb is RUNTIME_FAIL at Sodium MutableQuadViewImpl.copyFrom; C1 SHA-256 e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf remains RUNTIME_FAIL/no-op. C5 has controlled validation only and remains RUNTIME_UNTESTED.",
+    "milestone": "Canary 6 is the current client-only additive-rendering artifact. It preserves C5's immutable appearance snapshots and replaces per-SurfacePatch foliage with four stable world-axis, crossed/slanted planes clipped to the complete BGE-derived occupied volume. Exact C5 bge-bushy-leaves-0.2.3-canary5.jar SHA-256 13f273c3b4d9555ea09377a003f3977086c9424ed00b0d1dedc9dabab210952e reached in-world visual rendering without immediately reproducing the retained-QuadView crash path, but is RUNTIME_FAIL relative to design intent: its output was many small face-local tufts rather than a coherent partial bushy-leaf volume and did not preserve biome tint correctly. This exact evidence is not a broad runtime PASS. Exact C4 SHA-256 06147c8eb94c43f348da0a2876f1bb71edb9d356d08a28825b77c52bd17a3ac2, C3 SHA-256 e68097eb0199778ef2cb99adac1c83df85aa012c835667bc97fd77582fb8214a, C2 SHA-256 728bb10952642edb37f1c22e9a5514bf1499e4b2c7f97024c09ee88a9c1596eb, and C1 SHA-256 e85262f792638e99b5c1fdac9c48043e5bb461da55ce9a50fbc07cc1a24f7fbf remain RUNTIME_FAIL for their recorded causes. C6 has controlled validation only and remains RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.2.3-canary5",
-        "embedded_version": "0.2.3-canary5",
+        "version": "0.2.4-canary6",
+        "embedded_version": "0.2.4-canary6",
         "artifact": {
-          "filename": "bge-bushy-leaves-0.2.3-canary5.jar",
-          "sha256": "13f273c3b4d9555ea09377a003f3977086c9424ed00b0d1dedc9dabab210952e"
+          "filename": "bge-bushy-leaves-0.2.4-canary6.jar",
+          "sha256": "af52f88d6637b360038b87cbbca97244f64e3af6cb4d7907c480763ab9b5b376"
         },
-        "built_at": "2026-09-20T06:32:28.6395843Z",
-        "source_commit": "b8b1e9ca99d26f6b6305f7101ad07e88498ae8b9",
+        "built_at": "2026-09-20T14:37:53.7966304Z",
+        "source_commit": "3640b9de240c1582ec6e2e212158cdca931977db",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -89,16 +89,16 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "Canary 5 uses Minecraft 26.2's public final model and Fabric renderer-quad seams while consuming BGE's capability-owned SurfacePatch contract rather than a BGE release-name check.",
+              "reason": "Canary 6 uses Minecraft 26.2's public final model and Fabric renderer-quad seams while consuming BGE's capability-owned SurfacePatch contract rather than a BGE release-name check.",
               "regression_evidence": [
-                "Java 25 / Gradle 9.5.1 / Fabric Loom 1.17.19 clean --rerun-tasks check stageCanaryArtifact resolved current-main BGE C87.jar, SHA-256 0f639cd769c0dc4f2efa1247391096c16b286fb399d96b54c3095fd464a5255d, from BGE canonical status and verified those bytes before compiling. It produced bge-bushy-leaves-0.2.3-canary5.jar, 33,807 bytes, SHA-256 13f273c3b4d9555ea09377a003f3977086c9424ed00b0d1dedc9dabab210952e from implementation checkpoint b8b1e9ca99d26f6b6305f7101ad07e88498ae8b9. C87 is controlled compile evidence only, not an exact runtime dependency.",
-                "Twenty-two focused synthetic/unit tests passed, including an instrumented MeshView whose source QuadViews become invalid immediately after each forEach callback. It verifies owned snapshot capture, decorative selection, post-invalidation card emission, copied UV/color/light/layer/emissive/AO/shading/foil/animation/tint/tag metadata, and zero post-invalidation source accesses; semantic, reload, deterministic patch-local, and BGE geometry fixtures also passed.",
-                "Controlled verification passed current-main BGE public-contract and Fabric renderer/model-loader hash gates, JAR metadata/required-class checks, 26-entry archive inspection, and provider-asset exclusion checks; it is not Minecraft visual/runtime evidence."
+                "Java 25 / Gradle 9.5.1 / Fabric Loom 1.17.19 clean --rerun-tasks check stageCanaryArtifact --offline resolved current-main BGE C89.jar, SHA-256 cc1368f48fffcde03997c4d3f1d0e8907236c584d7ae107f35eb4e06e98667f2, from BGE canonical status and verified those bytes before compiling. It produced bge-bushy-leaves-0.2.4-canary6.jar, 36,299 bytes, SHA-256 af52f88d6637b360038b87cbbca97244f64e3af6cb4d7907c480763ab9b5b376 from implementation checkpoint 3640b9de240c1582ec6e2e212158cdca931977db. C89 is controlled compile evidence only, not an exact runtime dependency.",
+                "Fifteen focused synthetic/unit tests passed, including an instrumented MeshView whose source QuadViews become invalid immediately after each forEach callback. They verify owned snapshot capture, decorative selection, post-invalidation emission, copied UV/color/light/layer/emissive/AO/shading/foil/animation/tint/tag metadata, tinted decorative fallback and fully untinted preservation, deterministic block-space motifs, BGE occupancy adaptation for representative forms, and no invented volume from absent surface data.",
+                "Controlled verification passed current-main BGE public-contract and Fabric renderer/model-loader hash gates, JAR metadata/required-class checks, 28-entry archive inspection, and provider-asset exclusion checks; it is not Minecraft visual/runtime evidence."
               ]
             }
           ]
         },
-        "summary": "Eliminates delayed renderer-owned QuadView access by emitting deterministic patch-local foliage from immutable captured appearance values."
+        "summary": "Replaces face-local tufts with a BGE-occupancy-clipped, world-axis bushy foliage volume while preserving immutable appearance snapshots and canonical tint metadata."
       },
       "accepted": null,
       "rollback": null,
@@ -109,10 +109,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-20T06:32:28.6395843Z",
-    "updated_at": "2026-09-20T06:32:28.6395843Z",
-    "last_codex_at": "2026-09-20T06:32:28.6395843Z",
-    "source_commit": "b8b1e9ca99d26f6b6305f7101ad07e88498ae8b9"
+    "revision": 7,
+    "activity_at": "2026-09-20T14:37:53.7966304Z",
+    "updated_at": "2026-09-20T14:37:53.7966304Z",
+    "last_codex_at": "2026-09-20T14:37:53.7966304Z",
+    "source_commit": "3640b9de240c1582ec6e2e212158cdca931977db"
   }
 }
