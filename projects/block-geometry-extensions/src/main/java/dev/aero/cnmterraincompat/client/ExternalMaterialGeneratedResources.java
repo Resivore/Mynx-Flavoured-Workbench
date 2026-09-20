@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static dev.aero.cnmterraincompat.client.CuboidListModelProjection.Bounds;
+import static dev.aero.cnmterraincompat.client.CuboidListModelProjection.Cuboid;
+
 /** Complete client resource projection for the five late forms CNM could not have scanned. */
 public final class ExternalMaterialGeneratedResources {
     private ExternalMaterialGeneratedResources() {}
@@ -55,7 +58,7 @@ public final class ExternalMaterialGeneratedResources {
                             NativeAxisModelContract.slab(profile, nativePolicy);
                     write(blockState(slab), resources.blockState());
                     models += writeModels(resources.models());
-                } else models += writeSlab(profile, slab);
+                } else models += writeSlab(manager, profile, slab);
                 blockStates++;
             }
             if (binding.isGeneratedRole("stairs")) {
@@ -124,7 +127,20 @@ public final class ExternalMaterialGeneratedResources {
         return new GenerationSummary(ExternalMaterialFamilies.all().size(), blockStates, models, items);
     }
 
-    private static int writeSlab(NibaruMaterialProfile profile, Identifier id) {
+    private static int writeSlab(ResourceManager manager, NibaruMaterialProfile profile, Identifier id) {
+        String reference = structuralReference(profile);
+        if (reference != null) {
+            JsonObject state = referenceBlockState(manager, reference + "_slab", id);
+            // Native double selectors point to their full reference material. BGE retains only
+            // its face/UV topology, never that material identity.
+            replaceStrings(state, "minecraft:block/" + reference, model(id) + "_double");
+            write(blockState(id), state);
+            writeReferenceModel(manager, reference + "_slab", id, "", profile);
+            writeReferenceModel(manager, reference + "_slab_top", id, "_top", profile);
+            write(modelResource(id, "_double"), cuboidModel(profile,
+                    List.of(new int[] {0, 0, 0, 16, 16, 16})));
+            return 3;
+        }
         JsonObject variants = new JsonObject();
         variants.add("type=bottom", selection(model(id)));
         variants.add("type=top", selection(model(id) + "_top"));
@@ -144,6 +160,14 @@ public final class ExternalMaterialGeneratedResources {
     }
 
     private static int writeStairs(ResourceManager manager, NibaruMaterialProfile profile, Identifier id) {
+        String reference = structuralReference(profile);
+        if (reference != null) {
+            write(blockState(id), referenceBlockState(manager, reference + "_stairs", id));
+            for (String suffix : List.of("", "_inner", "_outer", "_up", "_inner_up", "_outer_up")) {
+                writeReferenceModel(manager, reference + "_stairs" + suffix, id, suffix, profile);
+            }
+            return 6;
+        }
         JsonObject state = templateBlockState(manager,
                 Identifier.fromNamespaceAndPath("minecraft", "blockstates/oak_stairs.json"),
                 "minecraft:block/oak_stairs", model(id));
@@ -166,6 +190,14 @@ public final class ExternalMaterialGeneratedResources {
     }
 
     private static int writeWall(ResourceManager manager, NibaruMaterialProfile profile, Identifier id) {
+        String reference = structuralReference(profile);
+        if (reference != null) {
+            write(blockState(id), referenceBlockState(manager, reference + "_wall", id));
+            for (String suffix : List.of("_post", "_side", "_side_tall", "_inventory")) {
+                writeReferenceModel(manager, reference + "_wall" + suffix, id, suffix, profile);
+            }
+            return 4;
+        }
         JsonObject state = templateBlockState(manager,
                 Identifier.fromNamespaceAndPath("minecraft", "blockstates/cobblestone_wall.json"),
                 "minecraft:block/cobblestone_wall", model(id));
@@ -218,7 +250,16 @@ public final class ExternalMaterialGeneratedResources {
             rotation += 90;
         }
         write(blockState(id), variants(variants));
-        if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
+        if (structuralReference(profile) != null) {
+            // There is no dedicated native Crimson Nylium/Dirt Path Vertical Slab asset.  Use
+            // the same cuboid projection as BGE's Corner/Quarter geometry so its face frame,
+            // side overlay, and lowered Path surface stay structural rather than merely using
+            // the generic TOP/SIDE/BOTTOM template.
+            write(modelResource(id), projectedModel(profile,
+                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, 16, 8)))));
+            write(modelResource(id, "_double"), projectedModel(profile,
+                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, 16, 16)))));
+        } else if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
             write(modelResource(id), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 16, 8})));
             write(modelResource(id, "_double"), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 16, 16})));
         } else {
@@ -239,7 +280,23 @@ public final class ExternalMaterialGeneratedResources {
             rotation += 90;
         }
         write(blockState(id), variants(variants));
-        if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
+        if (structuralReference(profile) != null) {
+            boolean path = profile.visualProfile()
+                    == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PATH;
+            // Dirt Path's native stair is 0..7 then 7..15, rather than a normal 0..8/8..16
+            // stair.  The terrain route retains its full-height topology while still using the
+            // same typed face/overlay projection as the layer and quarter forms.
+            int low = path ? 7 : 8;
+            int high = path ? 15 : 16;
+            write(modelResource(id), projectedModel(profile, List.of(
+                    Cuboid.world(new Bounds(0, 0, 0, 16, low, 16)),
+                    Cuboid.world(new Bounds(0, low, 8, 16, high, 16)))));
+            write(modelResource(id, "_top"), projectedModel(profile, List.of(
+                    Cuboid.world(new Bounds(0, 0, 0, 16, low, 16)),
+                    Cuboid.world(new Bounds(0, low, 0, 16, high, 8)))));
+            write(modelResource(id, "_double"), projectedModel(profile,
+                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, high, 16)))));
+        } else if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
             write(modelResource(id), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 8, 16, 16, 16})));
             write(modelResource(id, "_top"), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 0, 16, 16, 8})));
             write(modelResource(id, "_double"), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 16, 16})));
@@ -250,6 +307,10 @@ public final class ExternalMaterialGeneratedResources {
             write(modelResource(id, "_double"), template("clutternomore:block/templates/step_double" + tint, profile));
         }
         return 3;
+    }
+
+    private static JsonObject projectedModel(NibaruMaterialProfile profile, List<Cuboid> cuboids) {
+        return CuboidListModelProjection.worldModel(profile, cuboids, null, false);
     }
 
     /** Mirrors CNM's inset Vertical/Step route without assuming CNM owns this namespace. */
@@ -295,6 +356,49 @@ public final class ExternalMaterialGeneratedResources {
         result.addProperty("parent", parent);
         result.add("textures", textures(profile));
         return result;
+    }
+
+    /**
+     * Reuse the exact native BGE face/UV topology, replacing only material variables.  Crimson
+     * Nylium is the terrain reference; Dirt Path is the lowered-path reference.  This is a
+     * structural model contract rather than a registry-name family decision.
+     */
+    private static String structuralReference(NibaruMaterialProfile profile) {
+        if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PATH)
+            return "dirt_path";
+        return profile.textureRoles().overlay().isEmpty() ? null : "crimson_nylium";
+    }
+
+    private static JsonObject referenceBlockState(ResourceManager manager, String reference, Identifier target) {
+        return referenceJson(manager, "blockstates/" + reference + ".json", reference, target);
+    }
+
+    private static void writeReferenceModel(ResourceManager manager, String reference, Identifier target,
+            String targetSuffix, NibaruMaterialProfile profile) {
+        JsonObject model = referenceJson(manager, "models/block/" + reference + ".json", reference, target);
+        JsonObject textures = model.has("textures") ? model.getAsJsonObject("textures") : new JsonObject();
+        textures.addProperty("side", texture(profile.textureRoles().side()));
+        textures.addProperty("top", texture(profile.textureRoles().top()));
+        textures.addProperty("bottom", texture(profile.textureRoles().bottom()));
+        textures.addProperty("particle", texture(profile.textureRoles().particle()));
+        if (!profile.textureRoles().overlay().isEmpty())
+            textures.addProperty("overlay", texture(profile.textureRoles().overlay()));
+        model.add("textures", textures);
+        write(modelResource(target, targetSuffix), model);
+    }
+
+    private static JsonObject referenceJson(ResourceManager manager, String path, String reference,
+            Identifier target) {
+        Identifier resourceId = Identifier.fromNamespaceAndPath("more_slabs_stairs_and_walls", path);
+        Resource resource = manager.getResource(resourceId).orElseThrow(() ->
+                new IllegalStateException("Missing native structural reference " + resourceId));
+        try (var reader = resource.openAsReader()) {
+            JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+            replaceStrings(root, "more_slabs_stairs_and_walls:block/" + reference, model(target));
+            return root;
+        } catch (IOException | RuntimeException exception) {
+            throw new IllegalStateException("Cannot project native structural reference " + resourceId, exception);
+        }
     }
 
     private static JsonObject wallTemplate(String parent, NibaruMaterialProfile profile) {

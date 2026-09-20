@@ -84,7 +84,7 @@ public final class ExternalMaterialFamilies {
                 spec.blockTags(), spec.capabilities(), spec.visual(),
                 NibaruMaterialProfile.VisualSupport.GENERIC_SUPPORTED, spec.tint(), spec.renderLayer(),
                 spec.orientation(), surfaceSampling(spec), doubleFormPolicy(spec),
-                new NibaruMaterialProfile.TextureRoles(spec.side(), spec.top(), spec.bottom(), "", spec.side(),
+                new NibaruMaterialProfile.TextureRoles(spec.side(), spec.top(), spec.bottom(), spec.overlay(), spec.side(),
                         spec.interior()),
                 insetVisualContract(spec), Optional.empty(), false, spec.transitions());
         NibaruMaterialProfiles.registerExternal(profile);

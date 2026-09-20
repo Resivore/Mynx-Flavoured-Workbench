@@ -38,6 +38,13 @@ final class BgeGeneratedResourceWriter {
         Optional<ExternalMaterialStateBridge> bridge = bridgeFor(id);
         if (bridge.isPresent() && bridge.get().requiresBridge()
                 && !bridge.get().materialProperties().isEmpty()) {
+            if (bridge.get().isBlinklamp() && isItem(id)) {
+                // Enderscape's canonical inventory definition explicitly selects luminance 4.
+                // The generic base model is intentionally absent, so an unsuffixed generated
+                // selector icon would otherwise bake as missing before it can be displayed.
+                writeRaw(id, MaterialStateResources.item(bridge.get(), json));
+                return;
+            }
             writeRaw(id, MaterialStateResources.blockState(bridge.get(), id, json));
             if (isModel(id)) {
                 for (MaterialStateResources.StateVariant variant
@@ -80,13 +87,15 @@ final class BgeGeneratedResourceWriter {
                 String root = blockId.getPath();
                 String path = resource.getPath();
                 if (path.equals("blockstates/" + root + ".json")
-                        || path.startsWith("models/block/" + root)) return Optional.of(bridge);
+                        || path.startsWith("models/block/" + root)
+                        || path.equals("items/" + root + ".json")) return Optional.of(bridge);
             }
         }
         return Optional.empty();
     }
 
     private static boolean isModel(Identifier id) { return id.getPath().startsWith("models/block/"); }
+    private static boolean isItem(Identifier id) { return id.getPath().startsWith("items/"); }
 
     private static Identifier modelVariant(Identifier id, String suffix) {
         String path = id.getPath();
@@ -115,6 +124,20 @@ final class BgeGeneratedResourceWriter {
             } else if (bridge.isBlinklamp()) {
                 replace(copy, "enderscape:block/blinklamp",
                         "enderscape:block/blinklamp" + variant.modelSuffix());
+            }
+            return copy;
+        }
+
+        static JsonElement item(ExternalMaterialStateBridge bridge, JsonElement source) {
+            JsonElement copy = source.deepCopy();
+            if (bridge.isBlinklamp() && copy.isJsonObject()) {
+                JsonObject root = copy.getAsJsonObject();
+                if (root.has("model") && root.get("model").isJsonObject()) {
+                    JsonObject model = root.getAsJsonObject("model");
+                    if (model.has("model") && model.get("model").isJsonPrimitive()) {
+                        model.addProperty("model", model.get("model").getAsString() + "_luminance4");
+                    }
+                }
             }
             return copy;
         }

@@ -27,27 +27,70 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Client-resource closure for a truly profile-free CNM component.  ShapeMap has already selected
- * its parent before this writer runs.  Models only read that parent's canonical resource contract;
- * they never use model paths, texture names, or registration names to decide family identity.
+ * Client-resource closure for a truly profile-free CNM component.  Before ShapeMap has selected
+ * its parent, the real admitted CNM source supplies a provisional visual reference so first bake
+ * has complete assets.  Once resolved, models read only the elected parent's canonical resource
+ * contract; neither resource path nor texture name ever decides family identity.
  */
-final class ResolvedCnmCandidateResources {
+public final class ResolvedCnmCandidateResources {
     private static final Direction[] FACES = Direction.values();
 
     private ResolvedCnmCandidateResources() {}
 
     static GenerationSummary generate(ResourceManager manager) {
         Objects.requireNonNull(manager, "manager");
-        List<CnmShapeMapCandidateBridge.ResolvedGenericFamily> families =
-                CnmShapeMapCandidateBridge.resolvedGenericFamilies();
+        // The registered Layer ID is stable from admission through resolution, unlike the
+        // provisional visual source and later elected canonical source.  Key the write plan by
+        // that identity so a resolved family replaces its provisional rendering exactly once.
+        Map<Identifier, FamilyResources> families = new LinkedHashMap<>();
+        for (CnmShapeMapCandidateBridge.ProvisionalGenericFamily family
+                : CnmShapeMapCandidateBridge.provisionalGenericFamilies()) {
+            families.put(family.roles().get(BgeGeometryRole.LAYER),
+                    new FamilyResources(family.visualSource(), family.roles(), family.wall()));
+        }
+        for (CnmShapeMapCandidateBridge.ResolvedGenericFamily family
+                : CnmShapeMapCandidateBridge.resolvedGenericFamilies()) {
+            // The same registered role IDs deliberately replace their provisional visual source.
+            // This is resource reconciliation, never family election.
+            families.put(family.roles().get(BgeGeometryRole.LAYER),
+                    new FamilyResources(family.canonicalParent(), family.roles(), family.wall()));
+        }
         int models = 0;
-        for (CnmShapeMapCandidateBridge.ResolvedGenericFamily family : families) {
-            Textures textures = Textures.resolve(manager, family.canonicalParent());
+        for (FamilyResources family : families.values()) {
+            Textures textures = Textures.resolve(manager, family.visualSource());
+            if (family.wall().isPresent()) models += writeWall(manager, family.wall().orElseThrow(), textures);
             models += writeLayer(family.roles().get(BgeGeometryRole.LAYER), textures);
             models += writeCorner(family.roles().get(BgeGeometryRole.CORNER), textures);
             models += writeColumn(family.roles().get(BgeGeometryRole.QUARTER_COLUMN), textures);
         }
-        if (!families.isEmpty()) writeLanguage(families);
+        if (!families.isEmpty()) writeLanguage(CnmShapeMapCandidateBridge.resolvedGenericFamilies());
+        return new GenerationSummary(families.size(), models);
+    }
+
+    /**
+     * First-bake regression seam. It deliberately uses only admitted visual references, before
+     * a caller relies on any elected parent. A later ordinary generation replaces the same role
+     * resources from the resolved parent without adding another functional family.
+     */
+    public static GenerationSummary generateProvisionalForValidation(ResourceManager manager,
+            Set<Identifier> visualSources) {
+        Objects.requireNonNull(manager, "manager");
+        Objects.requireNonNull(visualSources, "visualSources");
+        Map<Identifier, FamilyResources> families = new LinkedHashMap<>();
+        for (CnmShapeMapCandidateBridge.ProvisionalGenericFamily family
+                : CnmShapeMapCandidateBridge.provisionalGenericFamilies()) {
+            if (!visualSources.contains(family.visualSource())) continue;
+            families.put(family.roles().get(BgeGeometryRole.LAYER),
+                    new FamilyResources(family.visualSource(), family.roles(), family.wall()));
+        }
+        int models = 0;
+        for (FamilyResources family : families.values()) {
+            Textures textures = Textures.resolve(manager, family.visualSource());
+            if (family.wall().isPresent()) models += writeWall(manager, family.wall().orElseThrow(), textures);
+            models += writeLayer(family.roles().get(BgeGeometryRole.LAYER), textures);
+            models += writeCorner(family.roles().get(BgeGeometryRole.CORNER), textures);
+            models += writeColumn(family.roles().get(BgeGeometryRole.QUARTER_COLUMN), textures);
+        }
         return new GenerationSummary(families.size(), models);
     }
 
@@ -66,6 +109,20 @@ final class ResolvedCnmCandidateResources {
         write(blockStateResource(id), variants(variants));
         write(itemResource(id), item(item));
         return count;
+    }
+
+    /** Normal Wall resources are emitted only for the generic carrier CNM did not already own. */
+    private static int writeWall(ResourceManager manager, Identifier id, Textures textures) {
+        JsonObject state = templateBlockState(manager,
+                Identifier.fromNamespaceAndPath("minecraft", "blockstates/cobblestone_wall.json"),
+                "minecraft:block/cobblestone_wall", modelId(id, ""));
+        write(blockStateResource(id), state);
+        write(modelResource(modelId(id, "_post")), wallModel("minecraft:block/template_wall_post", textures));
+        write(modelResource(modelId(id, "_side")), wallModel("minecraft:block/template_wall_side", textures));
+        write(modelResource(modelId(id, "_side_tall")), wallModel("minecraft:block/template_wall_side_tall", textures));
+        write(modelResource(modelId(id, "_inventory")), wallModel("minecraft:block/wall_inventory", textures));
+        write(itemResource(id), item(modelId(id, "_inventory")));
+        return 4;
     }
 
     private static int writeCorner(Identifier id, Textures textures) {
@@ -141,6 +198,16 @@ final class ResolvedCnmCandidateResources {
         JsonArray elements = new JsonArray();
         for (int[] box : boxes) elements.add(element(box));
         result.add("elements", elements);
+        return result;
+    }
+
+    private static JsonObject wallModel(String parent, Textures textures) {
+        JsonObject result = new JsonObject();
+        result.addProperty("parent", parent);
+        JsonObject textureJson = new JsonObject();
+        textureJson.addProperty("wall", textures.side());
+        textureJson.addProperty("particle", textures.side());
+        result.add("textures", textureJson);
         return result;
     }
 
@@ -239,6 +306,33 @@ final class ResolvedCnmCandidateResources {
         return root;
     }
 
+    private static JsonObject templateBlockState(ResourceManager manager, Identifier resourceId,
+            String sourceModel, String targetModel) {
+        Resource resource = manager.getResource(resourceId).orElseThrow(() ->
+                new IllegalStateException("Missing vanilla wall blockstate template " + resourceId));
+        try (var reader = resource.openAsReader()) {
+            JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+            replaceStrings(root, sourceModel, targetModel);
+            return root;
+        } catch (IOException | RuntimeException exception) {
+            throw new IllegalStateException("Cannot project vanilla wall blockstate " + resourceId, exception);
+        }
+    }
+
+    private static void replaceStrings(JsonElement value, String source, String target) {
+        if (value.isJsonObject()) {
+            JsonObject object = value.getAsJsonObject();
+            for (String key : List.copyOf(object.keySet())) {
+                JsonElement child = object.get(key);
+                if (child.isJsonPrimitive() && child.getAsJsonPrimitive().isString()) {
+                    object.addProperty(key, child.getAsString().replace(source, target));
+                } else replaceStrings(child, source, target);
+            }
+        } else if (value.isJsonArray()) {
+            for (JsonElement child : value.getAsJsonArray()) replaceStrings(child, source, target);
+        }
+    }
+
     private static Identifier blockStateResource(Identifier id) {
         return Identifier.fromNamespaceAndPath(id.getNamespace(), "blockstates/" + id.getPath() + ".json");
     }
@@ -270,7 +364,10 @@ final class ResolvedCnmCandidateResources {
         BgeGeneratedResourceWriter.write(id, json);
     }
 
-    record GenerationSummary(int familyCount, int modelCount) {}
+    public record GenerationSummary(int familyCount, int modelCount) {}
+
+    private record FamilyResources(Identifier visualSource, Map<BgeGeometryRole, Identifier> roles,
+            java.util.Optional<Identifier> wall) {}
 
     /** Resolves the final model inheritance chain only after ShapeMap selected the parent. */
     private record Textures(String side, String top, String bottom) {

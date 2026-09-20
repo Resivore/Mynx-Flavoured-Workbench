@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C86.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C87.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
     [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C80.jar')
 )
@@ -162,8 +162,8 @@ Require ((Get-FileSha256 $acceptedPath) -eq '1a4e4d1cd9c8709720ec84975e70caffb55
         'Exact accepted unified BGE C58 boundary hash mismatch'
 Require ((Get-FileSha256 $predecessorPath) -eq '5bc7c23a3724a1e20bc2142459f33d2a45a19295c27d40197c5fc48d6e43b0fc') `
         'Exact BGE C80 predecessor hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C86.jar') `
-        'Distributable artifact filename is not exactly BGE C86.jar'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C87.jar') `
+        'Distributable artifact filename is not exactly BGE C87.jar'
 
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
@@ -179,15 +179,15 @@ try {
     $nestedJars = @($unifiedMap.Keys | Where-Object { $_.EndsWith('.jar', [System.StringComparison]::OrdinalIgnoreCase) })
     Require ($nestedJars.Count -eq 0) "Nested JARs are forbidden: $($nestedJars -join ', ')"
     $cnmClasses = @($unifiedMap.Keys | Where-Object { $_ -match '^dev/tazer/clutternomore/' })
-    Require ($cnmClasses.Count -eq 0) "C86 must retain stock CNM as an external dependency: $($cnmClasses -join ', ')"
+    Require ($cnmClasses.Count -eq 0) "C87 must retain stock CNM as an external dependency: $($cnmClasses -join ', ')"
 
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.30-bge.canary86.ender-layer-facing-binding+26.2') `
-            'Unified Fabric version is not exact C86'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 86 ' + [char]0x2014 + ' Enderscape Layer Facing Binding')) `
-            'Unified Fabric display name is not exact C86'
+    Require ($metadata.version -eq '4.2.31-bge.canary87.cnm-rebuild-closure+26.2') `
+            'Unified Fabric version is not exact C87'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 87 ' + [char]0x2014 + ' CNM Rebuild Closure')) `
+            'Unified Fabric display name is not exact C87'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
+import dev.aero.cnmterraincompat.client.ResolvedCnmCandidateResources;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
@@ -22,6 +23,8 @@ import net.minecraft.world.level.GameType;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,16 +54,15 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
                     Block generated = BuiltInRegistries.BLOCK.getValue(entry.getValue());
                     return entry.getValue().equals(BuiltInRegistries.BLOCK.getKey(generated));
                 }), "C81 did not retain CNM's exact generated role identities for " + candidate.anchor());
-        helper.assertTrue(candidate.injectedRoles().size() == 3
-                        && candidate.injectedRoles().stream().noneMatch(id -> component.contains(
-                                BuiltInRegistries.BLOCK.getValue(id).asItem())),
-                "C81 left a provisional untyped carrier in a resolved canonical family: " + candidate);
-
         Map<BgeGeometryRole, Block> local = Map.of(
                 BgeGeometryRole.LAYER, NibaruProviderAdapter.derived(profile, BgeGeometryRole.LAYER).orElseThrow(),
                 BgeGeometryRole.CORNER, NibaruProviderAdapter.derived(profile, BgeGeometryRole.CORNER).orElseThrow(),
                 BgeGeometryRole.QUARTER_COLUMN,
                 NibaruProviderAdapter.derived(profile, BgeGeometryRole.QUARTER_COLUMN).orElseThrow());
+        helper.assertTrue(candidate.injectedRoles().size() == 3
+                        && candidate.injectedRoles().equals(local.values().stream()
+                                .map(BuiltInRegistries.BLOCK::getKey).collect(java.util.stream.Collectors.toSet())),
+                "C87 diagnostics did not describe this resolved mapping pass: " + candidate);
         for (Map.Entry<BgeGeometryRole, Block> role : local.entrySet()) {
             helper.assertTrue(java.util.Collections.frequency(component, role.getValue().asItem()) == 1
                             && BgeMaterialBindings.fromBlock(role.getValue()).orElseThrow().canonicalMaterial()
@@ -104,6 +106,67 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
         helper.succeed();
     }
 
+    /** C87 generic Wall fixture: slab/stair admission has no Wall until BGE closes the component. */
+    @GameTest(maxTicks = 40)
+    public void genericSlabStairComponentWithoutWallGetsOneNormalWall(GameTestHelper helper) {
+        List<ShapeMap.Mapping> slabAndStairs = List.of(
+                new ShapeMap.Mapping(Items.STONE, Items.STONE_SLAB, 100, TEST_SOURCE),
+                new ShapeMap.Mapping(Items.STONE, Items.STONE_STAIRS, 100, TEST_SOURCE));
+        helper.assertTrue(!CnmShapeMapCandidateBridge.componentHasWall(slabAndStairs, Items.STONE),
+                "Generic slab/stair fixture unexpectedly supplied a provider Wall");
+        Block provider = BuiltInRegistries.BLOCK.getValue(Identifier.parse("ribbits:mossy_oak_planks"));
+        List<Item> resolved = ShapeMap.getShapes(provider.asItem());
+        long walls = resolved.stream().filter(item -> Block.byItem(item)
+                instanceof net.minecraft.world.level.block.WallBlock).count();
+        helper.assertTrue(walls == 1 && resolved.stream().filter(item -> Block.byItem(item)
+                        instanceof net.minecraft.world.level.block.WallBlock).allMatch(item ->
+                        CnmTerrainCompat.MOD_ID.equals(BuiltInRegistries.ITEM.getKey(item).getNamespace())),
+                "Generic CNM slab/stair family did not resolve exactly one BGE-owned normal Wall: "
+                        + resolved.stream().map(BuiltInRegistries.ITEM::getKey).toList());
+        helper.succeed();
+    }
+
+    /**
+     * C87 regression: CNM gives setMappings a new list on reload/reconstruction.  Preserve the
+     * live graph, execute two independent fresh-list passes, and prove the second pass receives
+     * the same BGE closure rather than stale roles retained from the first graph.
+     */
+    @GameTest(maxTicks = 80)
+    public void twoFreshShapeMapBuildsRetainEveryAutomaticBgeTail(GameTestHelper helper) {
+        Map<Item, List<Item>> savedShapes = new LinkedHashMap<>();
+        ShapeMap.shapesView().forEach((parent, component) -> savedShapes.put(parent, new ArrayList<>(component)));
+        Map<Item, Item> savedInverse = new LinkedHashMap<>(ShapeMap.inverseView());
+        try {
+            List<ShapeMap.Mapping> fresh = freshMappings(savedShapes);
+            for (int pass = 1; pass <= 2; pass++) {
+                ShapeMap.setMappings(new ArrayList<>(fresh), false);
+                assertEveryResolvedTail(helper, "fresh ShapeMap pass " + pass);
+            }
+        } finally {
+            ShapeMap.setShapeMaps(savedShapes, savedInverse);
+        }
+        helper.succeed();
+    }
+
+    /** First-bake resources use a real admitted visual source and are byte-stable on regeneration. */
+    @GameTest(maxTicks = 80)
+    public void provisionalGenericResourcesExistBeforeAndAfterResolvedGeneration(GameTestHelper helper) {
+        var manager = ExternalMaterialFamilyGameTests.clientFixtureManagerForCnmRegression();
+        var visualSources = CnmShapeMapCandidateBridge.provisionalGenericFamilies().stream()
+                .map(CnmShapeMapCandidateBridge.ProvisionalGenericFamily::visualSource)
+                .collect(java.util.stream.Collectors.toSet());
+        var first = ResolvedCnmCandidateResources.generateProvisionalForValidation(manager,
+                visualSources);
+        helper.assertTrue(first.familyCount() == visualSources.size() && first.familyCount() > 0,
+                "First-bake generic resource plan lost admitted CNM samples: " + first);
+        Map<Identifier, String> before = genericResourceBytes();
+        var second = ResolvedCnmCandidateResources.generateProvisionalForValidation(manager,
+                visualSources);
+        helper.assertTrue(second.equals(first) && genericResourceBytes().equals(before),
+                "Repeated provisional CNM resource generation was not deterministic");
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void bgeGeneratedGeometryCannotRecursivelySeedAnotherCandidate(GameTestHelper helper) {
         NibaruMaterialProfile profile = NibaruMaterialProfiles.all().getFirst();
@@ -139,6 +202,56 @@ public final class CnmShapeMapCandidateGameTests implements CustomTestMethodInvo
                         + ", expected=" + expected);
         System.out.println("REAL_CNM_FAMILY|material=" + BuiltInRegistries.BLOCK.getKey(source)
                 + "|roles=" + actual.stream().map(BuiltInRegistries.ITEM::getKey).toList());
+    }
+
+    private static List<ShapeMap.Mapping> freshMappings(Map<Item, List<Item>> shapes) {
+        List<ShapeMap.Mapping> result = new ArrayList<>();
+        for (Map.Entry<Item, List<Item>> entry : shapes.entrySet()) {
+            for (Item member : entry.getValue()) if (member != entry.getKey()) {
+                result.add(new ShapeMap.Mapping(entry.getKey(), member, 100, TEST_SOURCE));
+            }
+        }
+        return result;
+    }
+
+    private static void assertEveryResolvedTail(GameTestHelper helper, String pass) {
+        for (CnmShapeMapCandidateBridge.Snapshot candidate : CnmShapeMapCandidateBridge.snapshots()) {
+            if (candidate.phase() != CnmShapeMapCandidateBridge.Phase.BOUND) continue;
+            Item parent = BuiltInRegistries.ITEM.getValue(candidate.resolvedParent().orElseThrow());
+            List<Item> component = ShapeMap.getShapes(parent);
+            NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(Block.byItem(parent)).orElse(null);
+            if (profile != null) {
+                for (BgeGeometryRole role : List.of(BgeGeometryRole.CORNER,
+                        BgeGeometryRole.QUARTER_COLUMN, BgeGeometryRole.LAYER)) {
+                    Item expected = NibaruProviderAdapter.derived(profile, role).orElseThrow().asItem();
+                    helper.assertTrue(java.util.Collections.frequency(component, expected) == 1,
+                            pass + " lost or duplicated " + role + " for " + candidate.resolvedParent());
+                }
+            }
+        }
+        for (CnmShapeMapCandidateBridge.ResolvedGenericFamily family
+                : CnmShapeMapCandidateBridge.resolvedGenericFamilies()) {
+            List<Item> component = ShapeMap.getShapes(BuiltInRegistries.ITEM.getValue(family.canonicalParent()));
+            for (Identifier role : family.roles().values()) helper.assertTrue(
+                    java.util.Collections.frequency(component, BuiltInRegistries.BLOCK.getValue(role).asItem()) == 1,
+                    pass + " lost or duplicated generic BGE role " + role + " for " + family.canonicalParent());
+            family.wall().ifPresent(wall -> helper.assertTrue(java.util.Collections.frequency(component,
+                    BuiltInRegistries.BLOCK.getValue(wall).asItem()) == 1,
+                    pass + " lost or duplicated generic BGE Wall " + wall + " for " + family.canonicalParent()));
+        }
+    }
+
+    private static Map<Identifier, String> genericResourceBytes() {
+        Map<Identifier, String> result = new LinkedHashMap<>();
+        for (CnmShapeMapCandidateBridge.ProvisionalGenericFamily family
+                : CnmShapeMapCandidateBridge.provisionalGenericFamilies()) {
+            family.roles().values().forEach(id -> result.put(id, generated(
+                    net.minecraft.server.packs.PackType.CLIENT_RESOURCES,
+                    Identifier.fromNamespaceAndPath(id.getNamespace(), "blockstates/" + id.getPath() + ".json")).toString()));
+            family.wall().ifPresent(id -> result.put(id, generated(net.minecraft.server.packs.PackType.CLIENT_RESOURCES,
+                    Identifier.fromNamespaceAndPath(id.getNamespace(), "blockstates/" + id.getPath() + ".json")).toString()));
+        }
+        return result;
     }
 
     /**

@@ -28,11 +28,11 @@ import java.util.Set;
  *
  * <p>Phase A records only CNM's real Vertical-Slab/Step admission and registers a BGE tail before
  * registry freeze. Phase B observes the resolved ShapeMap graph, elects one candidate per actual
- * component, and attaches Corner, Quarter Column, and Layer to the component CNM selected. A
+ * component, and attaches the missing normal Wall plus Corner, Quarter Column, and Layer to the component CNM selected. A
  * temporary admission source is never treated as a material parent.</p>
  */
 public final class CnmShapeMapCandidateBridge {
-    public static final String PROFILE_VERSION = "bge-c82-cnm-generic-resource-closure-v1";
+    public static final String PROFILE_VERSION = "bge-c87-cnm-rebuild-closure-v1";
     private static final Identifier SHAPE_MAP_SOURCE = Identifier.fromNamespaceAndPath(
             CnmTerrainCompat.MOD_ID, "cnm_resolved_candidate_roles");
     private static final int INJECTION_PRIORITY = Integer.MIN_VALUE;
@@ -62,7 +62,7 @@ public final class CnmShapeMapCandidateBridge {
      */
     public static synchronized void finishRegistryAdmission() {
         for (Candidate candidate : orderedCandidates()) {
-            if (candidate.phase != Phase.REGISTRY_ADMITTED) continue;
+            if (candidate.registryReady) continue;
             candidate.profile = NibaruMaterialProfiles.fromBlock(candidate.source).orElse(null);
             if (candidate.profile != null) {
                 for (BgeGeometryRole role : TAIL) {
@@ -81,7 +81,13 @@ public final class CnmShapeMapCandidateBridge {
                     CnmTerrainCompat.registerDeferredCandidate(id, block);
                     candidate.bgeRoles.put(role, block);
                 }
+                Identifier wallId = deferredWallId(candidate.sourceId);
+                candidate.deferredWall = new DeferredCnmWallBlock(BlockBehaviour.Properties
+                        .ofFullCopy(candidate.source)
+                        .setId(ResourceKey.create(Registries.BLOCK, wallId)));
+                CnmTerrainCompat.registerDeferredCandidate(wallId, candidate.deferredWall);
             }
+            candidate.registryReady = true;
             candidate.phase = Phase.REGISTRY_READY;
         }
     }
@@ -89,10 +95,10 @@ public final class CnmShapeMapCandidateBridge {
     /** Captures actual CNM mapping membership before BGE adds its deliberately low-priority edges. */
     public static synchronized void observeCnmMappings(List<ShapeMap.Mapping> mappings) {
         for (Candidate candidate : orderedCandidates()) {
-            if (candidate.phase == Phase.REGISTRY_READY
-                    && mappingMentions(mappings, candidate.source.asItem())) {
-                candidate.cnmMappingPresent = true;
-            }
+            if (!candidate.registryReady) continue;
+            // ShapeMap.setMappings receives a new graph on every legitimate reconstruction.
+            // Admission is permanent, but every contribution below belongs only to this graph.
+            candidate.beginMappingPass(mappingMentions(mappings, candidate.source.asItem()));
         }
     }
 
@@ -108,20 +114,19 @@ public final class CnmShapeMapCandidateBridge {
      */
     public static synchronized void injectMappedRoles(List<ShapeMap.Mapping> mappings) {
         for (Candidate candidate : orderedCandidates()) {
-            if (candidate.phase != Phase.REGISTRY_READY) continue;
+            if (!candidate.registryReady || candidate.phase != Phase.REGISTRY_READY) continue;
             if (!candidate.cnmMappingPresent) {
                 candidate.phase = Phase.DORMANT_UNMAPPED;
                 candidate.exemptDeferredRoles("CNM did not retain the Phase-A admission in its mapping graph.");
                 continue;
             }
-            for (Block block : candidate.bgeRoles.values()) {
-                Item role = block.asItem();
-                if (!mappingMentions(mappings, role)) {
-                    mappings.add(new ShapeMap.Mapping(candidate.source.asItem(), role,
-                            INJECTION_PRIORITY, SHAPE_MAP_SOURCE));
-                    candidate.added.add(role);
-                }
-                candidate.injected.add(role);
+            candidate.bgeRoles.values().forEach(block -> candidate.inject(mappings, block));
+            // A normal profile already owns a Wall at registry time. A profile-free component
+            // gets a carrier only when this fresh CNM graph has no provider/stock Wall anywhere
+            // in the anchor component; no registry path or name participates in that decision.
+            if (candidate.deferredWall != null && !componentHasWall(mappings, candidate.source.asItem())) {
+                candidate.inject(mappings, candidate.deferredWall);
+                candidate.contributesDeferredWall = true;
             }
             candidate.phase = Phase.MAPPING_INJECTED;
         }
@@ -193,6 +198,27 @@ public final class CnmShapeMapCandidateBridge {
         }
     }
 
+    /** Identity-graph check used before CNM resolves its real parent; never a name heuristic. */
+    static boolean componentHasWall(List<ShapeMap.Mapping> mappings, Item anchor) {
+        Map<Item, Set<Item>> graph = new IdentityHashMap<>();
+        for (ShapeMap.Mapping mapping : mappings) {
+            graph.computeIfAbsent(mapping.parent(), ignored -> Collections.newSetFromMap(new IdentityHashMap<>()))
+                    .add(mapping.shape());
+            graph.computeIfAbsent(mapping.shape(), ignored -> Collections.newSetFromMap(new IdentityHashMap<>()))
+                    .add(mapping.parent());
+        }
+        Set<Item> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        List<Item> pending = new ArrayList<>();
+        pending.add(anchor);
+        while (!pending.isEmpty()) {
+            Item item = pending.removeLast();
+            if (!visited.add(item)) continue;
+            if (Block.byItem(item) instanceof net.minecraft.world.level.block.WallBlock) return true;
+            pending.addAll(graph.getOrDefault(item, Set.of()));
+        }
+        return false;
+    }
+
     private static void reportResolvedFamilies() {
         for (Candidate candidate : orderedCandidates()) {
             if (candidate.phase != Phase.BOUND) continue;
@@ -260,6 +286,18 @@ public final class CnmShapeMapCandidateBridge {
                 .toList();
     }
 
+    /**
+     * First-bake visual closure.  The admitted CNM source is a real registered carrier and is
+     * therefore safe as a temporary resource reference, but it is never a canonical parent.
+     * ShapeMap resolution replaces this with {@link #resolvedGenericFamilies()} on later passes.
+     */
+    public static synchronized List<ProvisionalGenericFamily> provisionalGenericFamilies() {
+        return orderedCandidates().stream()
+                .filter(candidate -> candidate.registryReady && candidate.deferred)
+                .map(Candidate::provisionalGenericFamily)
+                .toList();
+    }
+
     private static List<Candidate> orderedCandidates() {
         return CANDIDATES.values().stream().sorted(java.util.Comparator.comparing(candidate -> candidate.sourceId))
                 .toList();
@@ -274,6 +312,11 @@ public final class CnmShapeMapCandidateBridge {
         };
         return Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
                 "deferred/" + anchor.getNamespace() + "/" + anchor.getPath() + "_" + suffix);
+    }
+
+    private static Identifier deferredWallId(Identifier anchor) {
+        return Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
+                "deferred/" + anchor.getNamespace() + "/" + anchor.getPath() + "_wall");
     }
 
     private static Identifier registeredBlockId(Block block) {
@@ -314,13 +357,28 @@ public final class CnmShapeMapCandidateBridge {
 
     /** A post-resolution resource/data contract for one otherwise-untyped CNM component. */
     public record ResolvedGenericFamily(Identifier canonicalParent,
-            Map<BgeGeometryRole, Identifier> roles) {
+            Map<BgeGeometryRole, Identifier> roles, Optional<Identifier> wall) {
         public ResolvedGenericFamily {
             Objects.requireNonNull(canonicalParent, "canonicalParent");
             roles = Map.copyOf(roles);
+            wall = wall == null ? Optional.empty() : wall;
             if (!roles.keySet().containsAll(TAIL)) {
                 throw new IllegalArgumentException("Resolved generic CNM family is missing a BGE tail: "
                         + canonicalParent + " " + roles);
+            }
+        }
+    }
+
+    /** Resource-only pre-resolution contract; {@code visualSource} is not family identity. */
+    public record ProvisionalGenericFamily(Identifier visualSource,
+            Map<BgeGeometryRole, Identifier> roles, Optional<Identifier> wall) {
+        public ProvisionalGenericFamily {
+            Objects.requireNonNull(visualSource, "visualSource");
+            roles = Map.copyOf(roles);
+            wall = wall == null ? Optional.empty() : wall;
+            if (!roles.keySet().containsAll(TAIL)) {
+                throw new IllegalArgumentException("Provisional CNM family is missing a BGE tail: "
+                        + visualSource + " " + roles);
             }
         }
     }
@@ -335,8 +393,12 @@ public final class CnmShapeMapCandidateBridge {
         private Phase phase = Phase.REGISTRY_ADMITTED;
         private NibaruMaterialProfile profile;
         private boolean deferred;
+        private boolean registryReady;
         private boolean cnmMappingPresent;
+        /** Persistent resolved-family fact; diagnostics themselves remain per mapping pass. */
+        private boolean contributesDeferredWall;
         private Item resolvedParent;
+        private DeferredCnmWallBlock deferredWall;
 
         private Candidate(Block source, Identifier sourceId) {
             this.source = source;
@@ -357,6 +419,23 @@ public final class CnmShapeMapCandidateBridge {
             }
         }
 
+        private void beginMappingPass(boolean mappingPresent) {
+            cnmMappingPresent = mappingPresent;
+            injected.clear();
+            added.clear();
+            phase = Phase.REGISTRY_READY;
+        }
+
+        private void inject(List<ShapeMap.Mapping> mappings, Block block) {
+            Item role = block.asItem();
+            if (!mappingMentions(mappings, role)) {
+                mappings.add(new ShapeMap.Mapping(source.asItem(), role,
+                        INJECTION_PRIORITY, SHAPE_MAP_SOURCE));
+                added.add(role);
+            }
+            injected.add(role);
+        }
+
         private void bind(Item parent, List<Item> component, Map<Item, Item> inverse,
                 Set<Item> rejected) {
             Block canonical = Block.byItem(parent);
@@ -366,6 +445,7 @@ public final class CnmShapeMapCandidateBridge {
                 // now owns the same roles, so withdraw the temporary carrier instead of creating
                 // a parallel family. The component, not a namespace or name heuristic, decides.
                 for (Block deferredBlock : bgeRoles.values()) rejected.add(deferredBlock.asItem());
+                if (deferredWall != null) rejected.add(deferredWall.asItem());
                 exemptDeferredRoles("CNM candidate: a resolved BGE/provider material profile owns this component.");
                 bgeRoles.clear();
                 for (BgeGeometryRole role : TAIL) {
@@ -373,6 +453,7 @@ public final class CnmShapeMapCandidateBridge {
                     bgeRoles.put(role, block);
                 }
                 deferred = false;
+                deferredWall = null;
             }
             for (Block block : bgeRoles.values()) ensureComponentMember(component, inverse, parent, block.asItem());
             requireExactlyOne(component, itemId(parent), bgeRoles.values().stream().map(Block::asItem).toList());
@@ -380,6 +461,15 @@ public final class CnmShapeMapCandidateBridge {
                 for (Map.Entry<BgeGeometryRole, Block> entry : bgeRoles.entrySet()) {
                     BgeMaterialBindings.bindResolvedCnmCandidate(entry.getValue(), canonical, entry.getKey());
                 }
+                if (deferredWall != null && contributesDeferredWall) {
+                    ensureComponentMember(component, inverse, parent, deferredWall.asItem());
+                    requireExactlyOne(component, itemId(parent), List.of(deferredWall.asItem()));
+                    BgeMaterialBindings.bindResolvedCnmWallCandidate(deferredWall, canonical);
+                }
+            }
+            if (resolvedParent != null && resolvedParent != parent) {
+                throw new IllegalStateException("CNM elected a different parent on a ShapeMap rebuild for "
+                        + sourceId + ": " + itemId(resolvedParent) + " then " + itemId(parent));
             }
             resolvedParent = parent;
             phase = Phase.BOUND;
@@ -387,7 +477,15 @@ public final class CnmShapeMapCandidateBridge {
 
         private void exemptDeferredRoles(String reason) {
             if (!deferred) return;
-            for (Block block : bgeRoles.values()) BgeMaterialBindings.registerExemption(block, reason);
+            for (Block block : bgeRoles.values()) exemptIfUnbound(block, reason);
+            if (deferredWall != null) exemptIfUnbound(deferredWall, reason);
+        }
+
+        private static void exemptIfUnbound(Block block, String reason) {
+            // A later map may legitimately omit an already-resolved component. Its immutable
+            // canonical binding remains valid; only never-bound dormant carriers need exemption.
+            if (BgeMaterialBindings.fromBlock(block).isEmpty() && !BgeMaterialBindings.isValidated())
+                BgeMaterialBindings.registerExemption(block, reason);
         }
 
         private Snapshot snapshot() {
@@ -403,7 +501,21 @@ public final class CnmShapeMapCandidateBridge {
             }
             Map<BgeGeometryRole, Identifier> roles = new EnumMap<>(BgeGeometryRole.class);
             bgeRoles.forEach((role, block) -> roles.put(role, registeredBlockId(block)));
-            return new ResolvedGenericFamily(itemId(resolvedParent), roles);
+            return new ResolvedGenericFamily(itemId(resolvedParent), roles,
+                    deferredWall == null || !contributesDeferredWall ? Optional.empty()
+                            : Optional.of(registeredBlockId(deferredWall)));
+        }
+
+        private ProvisionalGenericFamily provisionalGenericFamily() {
+            Map<BgeGeometryRole, Identifier> roles = new EnumMap<>(BgeGeometryRole.class);
+            bgeRoles.forEach((role, block) -> roles.put(role, registeredBlockId(block)));
+            // The wall carrier is a preregistered visual candidate at first bake.  Emitting its
+            // resources here is harmless when CNM later supplies a Wall, and prevents a genuine
+            // no-Wall component from reaching the initial model bake without its eventual item
+            // or blockstate assets.  Its functional ShapeMap membership remains governed only by
+            // contributesDeferredWall after resolution.
+            return new ProvisionalGenericFamily(sourceId, roles,
+                    deferredWall == null ? Optional.empty() : Optional.of(registeredBlockId(deferredWall)));
         }
     }
 }

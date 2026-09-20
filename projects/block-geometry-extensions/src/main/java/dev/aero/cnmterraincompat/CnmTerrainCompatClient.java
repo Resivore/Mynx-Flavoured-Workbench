@@ -44,17 +44,29 @@ public final class CnmTerrainCompatClient implements ClientModInitializer {
      * render time so custom world and inventory colors remain exact without linking to provider
      * implementation classes or embedding a guessed color.
      */
-    private static BlockTintSource sourceProvider(BlockState source) {
+    static BlockTintSource sourceProvider(BlockState source) {
         return new BlockTintSource() {
+            private BlockTintSource sourceTint() {
+                return Minecraft.getInstance().getBlockColors().getTintSource(source, 0);
+            }
+
             @Override public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-                return Minecraft.getInstance().getBlockColors().getTintSource(source, 0)
-                        .colorInWorld(source, level, pos);
+                return sourceProviderTint(sourceTint()).colorInWorld(source, level, pos);
             }
 
             @Override public int color(BlockState state) {
-                return Minecraft.getInstance().getBlockColors().getTintSource(source, 0).color(source);
+                return sourceProviderTint(sourceTint()).color(source);
             }
         };
+    }
+
+    /**
+     * A model-owned provider tint has no {@code BlockColors} registration.  In that case the
+     * renderer needs the ordinary identity multiplier, not a guessed foliage color and never a
+     * null callback. Kept package-visible for the no-provider-tint regression seam.
+     */
+    static BlockTintSource sourceProviderTint(BlockTintSource tint) {
+        return tint == null ? BlockTintSources.constant(SourceProviderTintFallback.IDENTITY_MULTIPLIER) : tint;
     }
 
     private static void registerNativeClientBindings() {

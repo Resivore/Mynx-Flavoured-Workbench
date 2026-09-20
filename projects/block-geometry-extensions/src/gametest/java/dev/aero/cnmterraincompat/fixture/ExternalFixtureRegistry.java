@@ -108,7 +108,9 @@ public final class ExternalFixtureRegistry {
     public static void registerEnderscape() {
         for (String path : new String[] {"veiled_log", "veiled_wood", "celestial_stem",
                 "celestial_hyphae", "murublight_stem", "murublight_hyphae", "shadoline_pillar",
-                "dusk_purpur_pillar"}) {
+                "dusk_purpur_pillar", "stripped_veiled_log", "stripped_veiled_wood",
+                "stripped_celestial_stem", "stripped_celestial_hyphae",
+                "stripped_murublight_stem", "stripped_murublight_hyphae"}) {
             register("enderscape", path, Blocks.OAK_LOG, true);
         }
         register("enderscape", "nebulite_block", new NebuliteBlock(enderscapeProperties("nebulite_block")));

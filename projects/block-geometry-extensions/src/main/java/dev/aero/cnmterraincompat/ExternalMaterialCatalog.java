@@ -21,7 +21,7 @@ import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c84-enderscape-material-state-bridge-v1";
+    public static final String PROFILE_VERSION = "bge-c87-enderscape-visual-contract-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -210,10 +210,15 @@ public final class ExternalMaterialCatalog {
                 "chiseled_purpur", "nebulite_block", "chiseled_shadoline", "chiseled_veradite",
                 "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
                 "alluring_magnia", "repulsive_magnia", "chiseled_dusk_purpur",
-                "blistered_magnia", "void_shale", "celestial_cap", "murublight_cap",
+                "blistered_magnia", "celestial_cap", "murublight_cap",
                 "end_lamp", "blinklamp")) {
             result.add(uniform("enderscape:" + path, Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Map.of()));
         }
+
+        // The source's stress/shatter state remains provider-only.  BGE's ordinary geometry uses
+        // the real stress-0 side/end contract and never invents block/void_shale.
+        result.add(topSideBottom("enderscape:void_shale", "enderscape:block/void_shale_side",
+                "enderscape:block/void_shale_end", "enderscape:block/void_shale_end"));
 
         result.add(leaves("enderscape:veiled_leaves", TintProfile.SOURCE_PROVIDER));
         result.add(fullBlock("enderscape:drift_jelly_block", VisualProfile.SLIME_INSET,
@@ -223,14 +228,14 @@ public final class ExternalMaterialCatalog {
                 NibaruMaterialProfile.RenderLayer.TRANSLUCENT, Set.of(),
                 Set.of(BehaviorCapability.SLIME_INTERACTION)));
 
-        // These source models are cube-bottom-top families, not a copied grass overlay. Their
-        // side/top/bottom roles preserve grass/mycelium/nylium-style surface UV placement.
-        result.add(topSideBottom("enderscape:veiled_end_stone", "enderscape:block/veiled_end_stone_side",
+        // Match Crimson Nylium's BGE face/UV family: its exposed side overlay is structural, not
+        // a provider behavior claim.  Only the material textures differ.
+        result.add(nylium("enderscape:veiled_end_stone", "enderscape:block/veiled_end_stone_side",
                 "enderscape:block/veiled_end_stone_top", "minecraft:block/end_stone"));
-        result.add(topSideBottom("enderscape:celestial_overgrowth",
+        result.add(nylium("enderscape:celestial_overgrowth",
                 "enderscape:block/celestial_overgrowth_side", "enderscape:block/celestial_overgrowth_top",
                 "minecraft:block/end_stone"));
-        result.add(topSideBottom("enderscape:corrupt_overgrowth",
+        result.add(nylium("enderscape:corrupt_overgrowth",
                 "enderscape:block/corrupt_overgrowth_side", "enderscape:block/corrupt_overgrowth_top",
                 "enderscape:block/mirestone"));
 
@@ -238,6 +243,21 @@ public final class ExternalMaterialCatalog {
                 "enderscape:block/celestial_path_top", "minecraft:block/end_stone"));
         result.add(path("enderscape:corrupt_path", "enderscape:block/corrupt_path_side",
                 "enderscape:block/corrupt_path_top", "enderscape:block/mirestone"));
+
+        // Exact stripped provider sources, with their own cube-column side/end contracts.  Do
+        // not create stripping transitions beyond the canonical stripped source blocks.
+        result.add(pillar("enderscape:stripped_veiled_log", "enderscape:block/stripped_veiled_log",
+                "enderscape:block/stripped_veiled_log_top"));
+        result.add(pillar("enderscape:stripped_veiled_wood", "enderscape:block/stripped_veiled_log",
+                "enderscape:block/stripped_veiled_log"));
+        result.add(pillar("enderscape:stripped_celestial_stem", "enderscape:block/stripped_celestial_stem",
+                "enderscape:block/stripped_celestial_stem_top"));
+        result.add(pillar("enderscape:stripped_celestial_hyphae", "enderscape:block/stripped_celestial_stem",
+                "enderscape:block/stripped_celestial_stem"));
+        result.add(pillar("enderscape:stripped_murublight_stem", "enderscape:block/stripped_murublight_stem",
+                "enderscape:block/stripped_murublight_stem_top"));
+        result.add(pillar("enderscape:stripped_murublight_hyphae", "enderscape:block/stripped_murublight_stem",
+                "enderscape:block/stripped_murublight_stem"));
         return List.copyOf(result);
     }
 
@@ -255,6 +275,15 @@ public final class ExternalMaterialCatalog {
                 NibaruMaterialProfile.OrientationPolicy.UNIFORM, side, top, bottom,
                 TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                 Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Set.of());
+    }
+
+    private static Spec nylium(String id, String side, String top, String bottom) {
+        Identifier key = Identifier.parse(id);
+        return new Spec(key, key.getNamespace(), key, key, Map.of(), ExternalMaterialStateBridge.NONE,
+                VisualProfile.TOP_SIDE_BOTTOM, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
+                side, top, bottom, side, "", TintProfile.NONE,
+                NibaruMaterialProfile.RenderLayer.SOLID, Set.of(BlockTags.MINEABLE_WITH_PICKAXE),
+                Set.of(), List.of());
     }
 
     private static Spec path(String id, String side, String top, String bottom) {
@@ -276,7 +305,7 @@ public final class ExternalMaterialCatalog {
             Identifier generatedIdentity, Map<String, Identifier> providerRoles,
             ExternalMaterialStateBridge materialStateBridge, VisualProfile visual,
             NibaruMaterialProfile.OrientationPolicy orientation,
-            String side, String top, String bottom, String interior,
+            String side, String top, String bottom, String overlay, String interior,
             TintProfile tint, NibaruMaterialProfile.RenderLayer renderLayer,
             Set<TagKey<Block>> blockTags, Set<BehaviorCapability> capabilities,
             List<MaterialTransition> transitions) {
@@ -299,6 +328,20 @@ public final class ExternalMaterialCatalog {
             transitions = List.copyOf(transitions);
         }
 
+        /** Existing declaration shape with no explicit overlay. */
+        public Spec(Identifier id, String provider, Identifier providerReference,
+                Identifier generatedIdentity, Map<String, Identifier> providerRoles,
+                ExternalMaterialStateBridge materialStateBridge, VisualProfile visual,
+                NibaruMaterialProfile.OrientationPolicy orientation,
+                String side, String top, String bottom, String interior,
+                TintProfile tint, NibaruMaterialProfile.RenderLayer renderLayer,
+                Set<TagKey<Block>> blockTags, Set<BehaviorCapability> capabilities,
+                List<MaterialTransition> transitions) {
+            this(id, provider, providerReference, generatedIdentity, providerRoles, materialStateBridge,
+                    visual, orientation, side, top, bottom, "", interior, tint, renderLayer,
+                    blockTags, capabilities, transitions);
+        }
+
         /** Source-compatible constructor for ordinary external profiles with no material bridge. */
         public Spec(Identifier id, String provider, Identifier providerReference,
                 Identifier generatedIdentity, Map<String, Identifier> providerRoles, VisualProfile visual,
@@ -309,7 +352,7 @@ public final class ExternalMaterialCatalog {
                 List<MaterialTransition> transitions) {
             this(id, provider, providerReference, generatedIdentity, providerRoles,
                     ExternalMaterialStateBridge.forSource(id), visual, orientation,
-                    side, top, bottom, interior, tint, renderLayer, blockTags, capabilities, transitions);
+                    side, top, bottom, "", interior, tint, renderLayer, blockTags, capabilities, transitions);
         }
     }
 

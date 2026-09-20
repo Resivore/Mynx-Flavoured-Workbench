@@ -278,6 +278,11 @@ public final class BgeMaterialBindings {
         }
     }
 
+    /** Rebuild paths may inspect dormant candidates after the one-time binding audit froze. */
+    static synchronized boolean isValidated() {
+        return validated;
+    }
+
     /**
      * Derives the normal nine-role catalog from the authoritative material profiles and provider
      * adapter. This method is called only after CNM has completed generated registration.
@@ -338,6 +343,7 @@ public final class BgeMaterialBindings {
      */
     static synchronized void bindResolvedCnmCandidate(Block block, Block canonical,
             BgeGeometryRole geometry) {
+        if (alreadyResolvedBinding(block, canonical, Role.from(geometry))) return;
         requireMutable();
         Role role = Role.from(geometry);
         bind(new Binding(block, canonical, Optional.empty(), role, Ownership.SPECIAL,
@@ -346,6 +352,30 @@ public final class BgeMaterialBindings {
                 BgeSurfaceGeometry.provider(topology(role), false), false, false,
                 block.asItem() != Items.AIR,
                 Optional.of("Deferred CNM candidate bound only after CNM resolved its ShapeMap parent.")));
+    }
+
+    /** Same post-resolution binding contract for the optional generic normal-Wall carrier. */
+    static synchronized void bindResolvedCnmWallCandidate(Block block, Block canonical) {
+        if (alreadyResolvedBinding(block, canonical, Role.WALL)) return;
+        requireMutable();
+        bind(new Binding(block, canonical, Optional.empty(), Role.WALL, Ownership.SPECIAL,
+                CatalogMembership.SPECIAL_CANONICAL_BOUND,
+                state -> Optional.of(canonical.defaultBlockState()), Topology.WALL,
+                BgeSurfaceGeometry.provider(Topology.WALL, false), false, false,
+                block.asItem() != Items.AIR,
+                Optional.of("Deferred CNM Wall candidate bound only after CNM resolved its ShapeMap parent.")));
+    }
+
+    /** ShapeMap may rebuild after the catalog has frozen; identical resolved facts are immutable. */
+    private static boolean alreadyResolvedBinding(Block block, Block canonical, Role role) {
+        Binding existing = BY_BLOCK.get(block);
+        if (existing == null) return false;
+        if (existing.canonicalMaterial() != canonical || existing.role() != role
+                || existing.ownership() != Ownership.SPECIAL
+                || existing.membership() != CatalogMembership.SPECIAL_CANONICAL_BOUND) {
+            throw new IllegalStateException("Resolved CNM binding drifted for " + id(block));
+        }
+        return true;
     }
 
     /** Adds a validated role exclusion only for a demonstrated technical incompatibility. */

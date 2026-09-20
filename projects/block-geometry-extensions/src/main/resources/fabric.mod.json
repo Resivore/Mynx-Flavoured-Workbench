@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 86 — Enderscape Layer Facing Binding",
-  "description": "Preserves Enderscape DirectionalBlock facing during full BGE Layer canonicalization.",
+  "name": "Block Geometry Extensions Canary 87 — CNM Rebuild Closure",
+  "description": "Rebuilds deterministic CNM-family geometry and first-bake resources across ShapeMap reloads.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

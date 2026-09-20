@@ -173,20 +173,20 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 112,
-                "External source allowlist is not exactly 112");
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 118,
+                "External source allowlist is not exactly 118");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
                         && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
                         && ExternalMaterialCatalog.sourceCount("ribbits") == 4
                         && ExternalMaterialCatalog.sourceCount("bbb") == 12
-                        && ExternalMaterialCatalog.sourceCount("enderscape") == 33,
-                "Provider source partition is not 57/6/4/12/33");
-        helper.assertTrue(ExternalMaterialFamilies.all().size() == 112,
-                "Provider completion did not register all 112 allowlisted families: "
+                        && ExternalMaterialCatalog.sourceCount("enderscape") == 39,
+                "Provider source partition is not 57/6/4/12/39");
+        helper.assertTrue(ExternalMaterialFamilies.all().size() == 118,
+                "Provider completion did not register all 118 allowlisted families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 314
                         && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null
-                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 112,
+                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 118,
                 "External append changed the frozen native inventory or lost an external source");
 
         Set<Identifier> actual = new LinkedHashSet<>();
@@ -198,8 +198,8 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C84_INVENTORY|sources=112|mcwpaths=57"
-                + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=33|relations=1008");
+        System.out.println("EXTERNAL_C87_INVENTORY|sources=118|mcwpaths=57"
+                + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=39|relations=1062");
         helper.succeed();
     }
 
@@ -209,7 +209,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 Identifier.parse("enderscape:veiled_wood"), Identifier.parse("enderscape:celestial_stem"),
                 Identifier.parse("enderscape:celestial_hyphae"), Identifier.parse("enderscape:murublight_stem"),
                 Identifier.parse("enderscape:murublight_hyphae"), Identifier.parse("enderscape:shadoline_pillar"),
-                Identifier.parse("enderscape:dusk_purpur_pillar"), Identifier.parse("enderscape:chiseled_end_stone"),
+                Identifier.parse("enderscape:dusk_purpur_pillar"), Identifier.parse("enderscape:stripped_veiled_log"),
+                Identifier.parse("enderscape:stripped_veiled_wood"), Identifier.parse("enderscape:stripped_celestial_stem"),
+                Identifier.parse("enderscape:stripped_celestial_hyphae"), Identifier.parse("enderscape:stripped_murublight_stem"),
+                Identifier.parse("enderscape:stripped_murublight_hyphae"), Identifier.parse("enderscape:chiseled_end_stone"),
                 Identifier.parse("enderscape:cracked_end_stone_bricks"), Identifier.parse("enderscape:chiseled_purpur"),
                 Identifier.parse("enderscape:nebulite_block"), Identifier.parse("enderscape:chiseled_shadoline"),
                 Identifier.parse("enderscape:chiseled_veradite"), Identifier.parse("enderscape:chiseled_mirestone"),
@@ -225,7 +228,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         Set<Identifier> actual = new LinkedHashSet<>();
         ExternalMaterialFamilies.all().stream().filter(binding -> binding.spec().provider().equals("enderscape"))
                 .forEach(binding -> actual.add(binding.spec().id()));
-        helper.assertTrue(actual.equals(expected) && actual.size() == 33,
+        helper.assertTrue(actual.equals(expected) && actual.size() == 39,
                 "Enderscape source allowlist drifted: " + actual);
         helper.assertTrue(ExternalMaterialCatalog.requestedEnderscapeExclusions().size() == 1
                         && ExternalMaterialCatalog.requestedEnderscapeExclusions().getFirst().requestedId()
@@ -239,7 +242,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 Identifier.parse("enderscape:veiled_wood"), Identifier.parse("enderscape:celestial_stem"),
                 Identifier.parse("enderscape:celestial_hyphae"), Identifier.parse("enderscape:murublight_stem"),
                 Identifier.parse("enderscape:murublight_hyphae"), Identifier.parse("enderscape:shadoline_pillar"),
-                Identifier.parse("enderscape:dusk_purpur_pillar"))) {
+                Identifier.parse("enderscape:dusk_purpur_pillar"), Identifier.parse("enderscape:stripped_veiled_log"),
+                Identifier.parse("enderscape:stripped_veiled_wood"), Identifier.parse("enderscape:stripped_celestial_stem"),
+                Identifier.parse("enderscape:stripped_celestial_hyphae"), Identifier.parse("enderscape:stripped_murublight_stem"),
+                Identifier.parse("enderscape:stripped_murublight_hyphae"))) {
             ExternalMaterialFamilies.Binding binding = ExternalMaterialFamilies.fromSource(id).orElseThrow();
             helper.assertTrue(binding.profile().visualProfile() == VisualProfile.PILLAR
                             && binding.profile().orientationPolicy()
@@ -252,8 +258,11 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 Identifier.parse("enderscape:celestial_overgrowth"),
                 Identifier.parse("enderscape:corrupt_overgrowth"))) {
             helper.assertTrue(ExternalMaterialFamilies.fromSource(id).orElseThrow().profile().visualProfile()
-                            == VisualProfile.TOP_SIDE_BOTTOM,
-                    "Enderscape terrain family lost its top/side/bottom texture contract: " + id);
+                            == VisualProfile.TOP_SIDE_BOTTOM
+                            && ExternalMaterialFamilies.fromSource(id).orElseThrow().profile().textureRoles()
+                                    .overlay().equals(ExternalMaterialFamilies.fromSource(id).orElseThrow()
+                                            .profile().textureRoles().side()),
+                    "Enderscape terrain family lost the Crimson Nylium face/UV overlay contract: " + id);
         }
         for (Identifier id : List.of(Identifier.parse("enderscape:celestial_path"),
                 Identifier.parse("enderscape:corrupt_path"))) {
@@ -266,6 +275,13 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(ExternalMaterialFamilies.fromSource(Identifier.parse("enderscape:drift_jelly_block"))
                         .orElseThrow().profile().visualProfile() == VisualProfile.SLIME_INSET,
                 "Drift Jelly Block must retain the slime-style inset visual contract");
+        ExternalMaterialFamilies.Binding voidShale = external("enderscape:void_shale");
+        helper.assertTrue(voidShale.profile().orientationPolicy()
+                        == games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile.OrientationPolicy.UNIFORM
+                        && voidShale.profile().textureRoles().side().equals("enderscape:block/void_shale_side")
+                        && voidShale.profile().textureRoles().top().equals("enderscape:block/void_shale_end")
+                        && voidShale.profile().textureRoles().bottom().equals("enderscape:block/void_shale_end"),
+                "Void Shale must remain non-directional while using its real side/end textures");
         helper.assertTrue(ExternalMaterialFamilies.fromSource(Identifier.parse("enderscape:corrupt_overgrowth"))
                         .orElseThrow().profile().textureRoles().bottom().equals("enderscape:block/mirestone")
                         && ExternalMaterialFamilies.fromSource(Identifier.parse("enderscape:corrupt_path"))
@@ -414,6 +430,54 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
+    /** C87: every Blinklamp selector and inventory route targets a real luminance model. */
+    @GameTest(maxTicks = 80)
+    public void blinklampGeneratedModelsAndItemsUseOnlyRealLuminanceResources(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        ExternalMaterialGeneratedResources.generate(manager);
+        LayerGeneratedResources.generateExternalForValidation(manager);
+        QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
+        ExternalMaterialFamilies.Binding blinklamp = external("enderscape:blinklamp");
+        int checked = 0;
+        for (Map.Entry<String, Block> role : blinklamp.roles().entrySet()) {
+            if (role.getKey().equals("block") || !blinklamp.isGeneratedRole(role.getKey())) continue;
+            JsonObject item = generatedClientJson(itemResource(role.getValue()));
+            Set<String> models = new LinkedHashSet<>();
+            collectModelReferences(generatedClientJson(blockStateResource(role.getValue())), models);
+            collectModelReferences(item, models);
+            helper.assertTrue(models.stream().allMatch(model -> model.matches(".*_luminance[0-4]$")),
+                    "Blinklamp generated selector/item retained a nonexistent base model for "
+                            + role.getKey() + ": " + models);
+            for (String model : models) {
+                JsonObject generated = generatedClientJson(modelResource(model));
+                helper.assertTrue(!generated.toString().contains("\"enderscape:block/blinklamp\""),
+                        "Blinklamp generated model refers to nonexistent base texture: " + model);
+                checked++;
+            }
+            helper.assertTrue(item.getAsJsonObject("model").get("model").getAsString()
+                            .endsWith("_luminance4"),
+                    "Blinklamp inventory route did not retain canonical luminance 4: " + role.getKey());
+        }
+        helper.assertTrue(checked >= 8, "Did not inspect every generated Blinklamp geometry route");
+        helper.succeed();
+    }
+
+    /** C87: terrain/path resources retain the selected native BGE topology while changing textures only. */
+    @GameTest(maxTicks = 80)
+    public void enderscapeTerrainAndPathModelsProjectReferenceUvContracts(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        ExternalMaterialGeneratedResources.generate(manager);
+        LayerGeneratedResources.generateExternalForValidation(manager);
+        QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
+        for (String source : List.of("veiled_end_stone", "celestial_overgrowth", "corrupt_overgrowth")) {
+            assertStructuralReferenceFamily(helper, external("enderscape:" + source), "crimson_nylium", true);
+        }
+        for (String source : List.of("celestial_path", "corrupt_path")) {
+            assertStructuralReferenceFamily(helper, external("enderscape:" + source), "dirt_path", false);
+        }
+        helper.succeed();
+    }
+
     /** C85: Enderscape Veiled Leaves has a canonical model-only item definition. */
     @GameTest(maxTicks = 40)
     public void enderscapeModelOnlyItemDefinitionKeepsBlockTintAndValidInheritance(GameTestHelper helper) {
@@ -437,6 +501,26 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(inheritedSilverBirch.getAsJsonArray("tints").get(0).getAsJsonObject()
                         .get("value").getAsInt() == -8034015,
                 "Generated Silver Birch Layer stopped inheriting its explicit canonical item tint");
+        helper.succeed();
+    }
+
+    /** C87: a model-tinted source can omit BlockColors without changing its item/model route. */
+    @GameTest(maxTicks = 40)
+    public void sourceProviderWithoutBlockColorsUsesIdentityTintAndKeepsModelOwnedAppearance(
+            GameTestHelper helper) {
+        helper.assertTrue(SourceProviderTintFallback.IDENTITY_MULTIPLIER == -1,
+                "A model-owned source tint fell through to a null BlockColors callback");
+        ExternalMaterialFamilies.Binding leaves = external("enderscape:veiled_leaves");
+        helper.assertTrue(leaves.profile().tintProfile()
+                        == games.twinhead.moreslabsstairsandwalls.api.material.TintProfile.SOURCE_PROVIDER,
+                "Veiled Leaves stopped using the provider tint route");
+        ResourceManager manager = clientFixtureManager();
+        LayerGeneratedResources.generateExternalForValidation(manager);
+        JsonObject item = generatedClientJson(itemResource(leaves.layer())).getAsJsonObject("model");
+        Identifier layer = BuiltInRegistries.BLOCK.getKey(leaves.layer());
+        helper.assertTrue(!item.has("tints") && item.get("model").getAsString()
+                        .startsWith(layer.getNamespace() + ":block/" + layer.getPath() + "_"),
+                "Veiled Leaves model-owned item route was replaced by a synthetic tint");
         helper.succeed();
     }
 
@@ -480,10 +564,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             relations += roles.size();
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
-        helper.assertTrue(relations == 1008 && canonicalDerived.size() == 896 && bgeGenerated.size() == 778,
-                "C84 relation/canonical/generated identity count mismatch: " + relations + "/"
+        helper.assertTrue(relations == 1062 && canonicalDerived.size() == 944 && bgeGenerated.size() == 826,
+                "C87 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
-        helper.assertTrue(audit.variantCount() == 112 && audit.missing().isEmpty()
+        helper.assertTrue(audit.variantCount() == 118 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
                 "Live ShapeMap canonical variant/role audit failed: " + audit);
         helper.succeed();
@@ -705,15 +789,15 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             }
         }
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
-        helper.assertTrue(walls.getAsJsonArray("values").size() == 112,
+        helper.assertTrue(walls.getAsJsonArray("values").size() == 118,
                 "External wall classification does not contain every scoped full-parent family");
-        helper.assertTrue(loot == 442, "Expected 442 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C84_SERVER_RESOURCES|standardLoot=442|wallTags=112|materialFamilies=112");
+        helper.assertTrue(loot == 472, "Expected 472 BGE-owned external loot tables, found " + loot);
+        System.out.println("EXTERNAL_C87_SERVER_RESOURCES|standardLoot=472|wallTags=118|materialFamilies=118");
         helper.succeed();
     }
 
     @GameTest(maxTicks = 80)
-    public void actualClientWritersCloseAll778BgeOwnedGeometryResources(GameTestHelper helper) {
+    public void actualClientWritersCloseAll826BgeOwnedGeometryResources(GameTestHelper helper) {
         ResourceManager manager = clientFixtureManager();
         LayerGeneratedResources.GenerationSummary layers =
                 LayerGeneratedResources.generateExternalForValidation(manager);
@@ -721,12 +805,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.GenerationSummary standard =
                 ExternalMaterialGeneratedResources.generate(manager);
-        helper.assertTrue(layers.familyCount() == 112
-                        && quarters.cornerFamilyCount() == 112
-                        && quarters.columnFamilyCount() == 112
-                        && standard.familyCount() == 112
-                        && standard.blockStateCount() == 442
-                        && standard.itemCount() == 442,
+        helper.assertTrue(layers.familyCount() == 118
+                        && quarters.cornerFamilyCount() == 118
+                        && quarters.columnFamilyCount() == 118
+                        && standard.familyCount() == 118
+                        && standard.blockStateCount() == 472
+                        && standard.itemCount() == 472,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
@@ -746,17 +830,17 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 helper.assertTrue(!models.isEmpty(), "No generated model reference for " + block);
                 for (String model : models) {
                     Identifier modelId = Identifier.parse(model);
-                    generatedClientJson(Identifier.fromNamespaceAndPath(modelId.getNamespace(),
+                    generatedOrFixtureJson(manager, Identifier.fromNamespaceAndPath(modelId.getNamespace(),
                             "models/" + modelId.getPath() + ".json"));
                     resolvedModelReferences++;
                 }
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 778 && resolvedModelReferences >= 778,
+        helper.assertTrue(generatedRelations == 826 && resolvedModelReferences >= 826,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C84_CLIENT_RESOURCES|generatedRelations=778|blockstates=778|items=778"
+        System.out.println("EXTERNAL_C87_CLIENT_RESOURCES|generatedRelations=826|blockstates=826|items=826"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }
@@ -1214,6 +1298,19 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         }
     }
 
+    /** A selector may intentionally reference one pre-existing native full model. */
+    private static JsonObject generatedOrFixtureJson(ResourceManager manager, Identifier id) {
+        var supplier = ClutterNoMore.RESOURCES.getResource(PackType.CLIENT_RESOURCES, id);
+        if (supplier != null) {
+            try (var input = supplier.get(); var reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+                return JsonParser.parseReader(reader).getAsJsonObject();
+            } catch (Exception exception) {
+                throw new IllegalStateException("Cannot inspect generated client resource " + id, exception);
+            }
+        }
+        return resourceJson(manager, id);
+    }
+
     private static void assertOnlyAssignedToadstoolTexture(GameTestHelper helper, JsonObject model,
             String assignedTexture, String label) {
         String encoded = model.toString();
@@ -1225,6 +1322,76 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                                 entry.getValue().isJsonPrimitive()
                                         && entry.getValue().getAsString().equals(assignedTexture)),
                 "Generated Ribbits model has a non-source texture binding: " + label + " " + textures);
+    }
+
+    private static void assertStructuralReferenceFamily(GameTestHelper helper,
+            ExternalMaterialFamilies.Binding binding, String reference, boolean requiresOverlay) {
+        Identifier slab = BuiltInRegistries.BLOCK.getKey(binding.slab());
+        Identifier stairs = BuiltInRegistries.BLOCK.getKey(binding.stairs());
+        Identifier wall = BuiltInRegistries.BLOCK.getKey(binding.wall());
+        for (Map.Entry<Identifier, String> target : Map.of(
+                slab, "_slab", stairs, "_stairs", wall, "_wall_post").entrySet()) {
+            String generatedSuffix = target.getKey().equals(wall) ? "_post" : "";
+            JsonObject model = generatedClientJson(Identifier.fromNamespaceAndPath(target.getKey().getNamespace(),
+                    "models/block/" + target.getKey().getPath() + generatedSuffix + ".json"));
+            String expectedParent = "more_slabs_stairs_and_walls:block/template_" + reference
+                    + target.getValue();
+            helper.assertTrue(model.get("parent").getAsString().equals(expectedParent)
+                            && model.toString().contains("[1,2,15,14]"),
+                    "Generated " + binding.spec().id() + " lost native " + reference
+                            + " topology/UV marker for " + target.getKey());
+            JsonObject textures = model.getAsJsonObject("textures");
+            helper.assertTrue(textures.get("side").getAsString()
+                            .equals(binding.profile().textureRoles().side())
+                            && textures.get("top").getAsString()
+                                    .equals(binding.profile().textureRoles().top()),
+                    "Generated " + binding.spec().id() + " retained the reference material instead of its own textures");
+        }
+
+        Identifier vertical = BuiltInRegistries.BLOCK.getKey(binding.verticalSlab());
+        Identifier step = BuiltInRegistries.BLOCK.getKey(binding.step());
+        Identifier layer = BuiltInRegistries.BLOCK.getKey(binding.layer());
+        Identifier corner = BuiltInRegistries.BLOCK.getKey(binding.corner());
+        JsonObject verticalModel = generatedClientJson(Identifier.fromNamespaceAndPath(vertical.getNamespace(),
+                "models/block/" + vertical.getPath() + ".json"));
+        JsonObject stepModel = generatedClientJson(Identifier.fromNamespaceAndPath(step.getNamespace(),
+                "models/block/" + step.getPath() + ".json"));
+        JsonObject layerModel = generatedClientJson(Identifier.fromNamespaceAndPath(layer.getNamespace(),
+                "models/block/" + layer.getPath() + "_4_full.json"));
+        JsonObject cornerModel = generatedClientJson(Identifier.fromNamespaceAndPath(corner.getNamespace(),
+                "models/block/" + corner.getPath() + "_south_west.json"));
+        if (requiresOverlay) {
+            helper.assertTrue(verticalModel.toString().contains("#overlay")
+                            && stepModel.toString().contains("#overlay")
+                            && layerModel.toString().contains("#overlay")
+                            && cornerModel.toString().contains("#overlay"),
+                    "Crimson Nylium structural overlay did not reach every BGE geometry for "
+                            + binding.spec().id());
+        } else {
+            helper.assertTrue(modelHasBounds(verticalModel, 0, 0, 0, 16, 15, 8)
+                            && modelHasBounds(stepModel, 0, 0, 0, 16, 7, 16)
+                            && modelHasBounds(stepModel, 0, 7, 8, 16, 15, 16)
+                            && modelHasTop(layerModel, 15)
+                            && modelHasTop(cornerModel, 15),
+                    "Dirt Path lowered geometry/UV contract did not reach every BGE geometry for "
+                            + binding.spec().id());
+        }
+    }
+
+    private static boolean modelHasBounds(JsonObject model, int x0, int y0, int z0,
+            int x1, int y1, int z1) {
+        return model.getAsJsonArray("elements").asList().stream().map(JsonElement::getAsJsonObject)
+                .anyMatch(element -> element.getAsJsonArray("from").get(0).getAsInt() == x0
+                        && element.getAsJsonArray("from").get(1).getAsInt() == y0
+                        && element.getAsJsonArray("from").get(2).getAsInt() == z0
+                        && element.getAsJsonArray("to").get(0).getAsInt() == x1
+                        && element.getAsJsonArray("to").get(1).getAsInt() == y1
+                        && element.getAsJsonArray("to").get(2).getAsInt() == z1);
+    }
+
+    private static boolean modelHasTop(JsonObject model, int top) {
+        return model.getAsJsonArray("elements").asList().stream().map(JsonElement::getAsJsonObject)
+                .anyMatch(element -> element.getAsJsonArray("to").get(1).getAsInt() == top);
     }
 
     private static void collectModelReferences(com.google.gson.JsonElement value, Set<String> result) {
@@ -1239,6 +1406,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
     }
 
     private static ResourceManager clientFixtureManager() {
+        return clientFixtureManager(false);
+    }
+
+    private static ResourceManager clientFixtureManager(boolean genericCnmModelFallback) {
         Map<Identifier, String> json = new HashMap<>();
         json.put(Identifier.parse("minecraft:blockstates/oak_stairs.json"),
                 "{\"variants\":{\"facing=north,half=bottom,shape=straight\":"
@@ -1254,6 +1425,8 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                         + "\"apply\":{\"model\":\"minecraft:block/cobblestone_wall_side\"}},"
                         + "{\"when\":{\"north\":\"tall\"},"
                         + "\"apply\":{\"model\":\"minecraft:block/cobblestone_wall_side_tall\"}}]}");
+        addStructuralReferenceFixtures(json, "crimson_nylium");
+        addStructuralReferenceFixtures(json, "dirt_path");
         for (String path : List.of("wisteria_log", "wisteria_wood",
                 "silver_birch_log", "silver_birch_wood")) {
             Identifier source = Identifier.fromNamespaceAndPath("mynx_trees", path);
@@ -1265,7 +1438,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         }
         for (String path : List.of("veiled_log", "veiled_wood", "celestial_stem",
                 "celestial_hyphae", "murublight_stem", "murublight_hyphae", "shadoline_pillar",
-                "dusk_purpur_pillar")) {
+                "dusk_purpur_pillar", "stripped_veiled_log", "stripped_veiled_wood",
+                "stripped_celestial_stem", "stripped_celestial_hyphae",
+                "stripped_murublight_stem", "stripped_murublight_hyphae")) {
             String model = "enderscape:block/" + path;
             json.put(Identifier.fromNamespaceAndPath("enderscape", "blockstates/" + path + ".json"),
                     "{\"variants\":{\"axis=x\":{\"model\":\"" + model
@@ -1317,7 +1492,20 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         return (ResourceManager) Proxy.newProxyInstance(
                 ExternalMaterialFamilyGameTests.class.getClassLoader(),
                 new Class<?>[] {ResourceManager.class}, (proxy, method, args) -> switch (method.getName()) {
-                    case "getResource" -> Optional.ofNullable(resources.get((Identifier) args[0]));
+                    case "getResource" -> {
+                        Identifier requested = (Identifier) args[0];
+                        Resource resource = resources.get(requested);
+                        // Generic CNM candidates can be admitted from any provider namespace.
+                        // Their first-bake test needs a real model response while remaining
+                        // independent of provider texture bytes.
+                        if (resource == null && genericCnmModelFallback
+                                && requested.getPath().startsWith("models/block/")) {
+                            String fallback = "{\"textures\":{\"all\":\"minecraft:block/stone\"}}";
+                            resource = new Resource(pack, () -> new ByteArrayInputStream(
+                                    fallback.getBytes(StandardCharsets.UTF_8)));
+                        }
+                        yield Optional.ofNullable(resource);
+                    }
                     case "getResourceStack" -> Optional.ofNullable(resources.get((Identifier) args[0]))
                             .map(List::of).orElseGet(List::of);
                     case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb", "ribbits", "enderscape");
@@ -1332,6 +1520,42 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected ResourceManager call " + method);
                 });
+    }
+
+    /** Shared fixture seam for the generic-CNM first-bake resource regression. */
+    static ResourceManager clientFixtureManagerForCnmRegression() {
+        return clientFixtureManager(true);
+    }
+
+    /** Small native-resource fixture with distinguishable topology/UV data for C87 copying tests. */
+    private static void addStructuralReferenceFixtures(Map<Identifier, String> json, String reference) {
+        String namespace = "more_slabs_stairs_and_walls";
+        String model = namespace + ":block/" + reference;
+        json.put(Identifier.fromNamespaceAndPath(namespace, "blockstates/" + reference + "_slab.json"),
+                "{\"variants\":{\"type=bottom\":{\"model\":\"" + model + "_slab\"},"
+                        + "\"type=top\":{\"model\":\"" + model + "_slab_top\"},"
+                        + "\"type=double\":{\"model\":\"" + model + "\"}}}");
+        json.put(Identifier.fromNamespaceAndPath(namespace, "blockstates/" + reference + "_stairs.json"),
+                "{\"variants\":{\"facing=north,half=bottom,shape=straight\":{\"model\":\""
+                        + model + "_stairs\",\"uvlock\":true}}}");
+        json.put(Identifier.fromNamespaceAndPath(namespace, "blockstates/" + reference + "_wall.json"),
+                "{\"multipart\":[{\"when\":{\"up\":\"true\"},\"apply\":{\"model\":\""
+                        + model + "_wall_post\",\"uvlock\":true}}]}");
+        for (String suffix : List.of("_slab", "_slab_top", "_stairs", "_stairs_inner",
+                "_stairs_outer", "_stairs_up", "_stairs_inner_up", "_stairs_outer_up",
+                "_wall_post", "_wall_side", "_wall_side_tall", "_wall_inventory")) {
+            json.put(Identifier.fromNamespaceAndPath(namespace, "models/block/" + reference + suffix + ".json"),
+                    "{\"parent\":\"" + namespace + ":block/template_" + reference + suffix
+                            + "\",\"textures\":{\"side\":\"minecraft:block/" + reference
+                            + "_side\",\"top\":\"minecraft:block/" + reference
+                            + "_top\",\"bottom\":\"minecraft:block/" + reference
+                            + "_bottom\",\"particle\":\"minecraft:block/" + reference
+                            + "_side\"},\"elements\":[{\"from\":[0,0,0],\"to\":[16,16,16],"
+                            + "\"faces\":{\"north\":{\"texture\":\"#side\",\"uv\":[1,2,15,14]}}}]}");
+        }
+        json.put(Identifier.fromNamespaceAndPath(namespace, "models/block/" + reference + ".json"),
+                "{\"parent\":\"minecraft:block/block\",\"textures\":{\"all\":\"minecraft:block/"
+                        + reference + "_full\"}}");
     }
 
     private static List<String> bbbBeamMaterials() {

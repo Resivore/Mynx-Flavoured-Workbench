@@ -27,8 +27,11 @@ final class ResolvedCnmCandidateData {
         for (CnmShapeMapCandidateBridge.ResolvedGenericFamily family : families) {
             family.roles().values().forEach(role -> DataGenerator.writeServerData(lootResource(role),
                     canonicalDrop(family.canonicalParent())));
+            family.wall().ifPresent(wall -> DataGenerator.writeServerData(lootResource(wall),
+                    canonicalDrop(family.canonicalParent())));
         }
-        return new GenerationSummary(families.size(), families.size() * 3);
+        int walls = (int) families.stream().filter(family -> family.wall().isPresent()).count();
+        return new GenerationSummary(families.size(), families.size() * 3 + walls);
     }
 
     static JsonObject canonicalDrop(Identifier canonical) {
