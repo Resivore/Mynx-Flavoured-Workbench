@@ -54,3 +54,14 @@
 - Artifact: `bge-bushy-leaves-0.2.2-canary4.jar`, 31,958 bytes, SHA-256 `06147c8eb94c43f348da0a2876f1bb71edb9d356d08a28825b77c52bd17a3ac2`, finalized at `2026-09-20T04:44:43.2222287Z` from implementation checkpoint `20d85767d311eff9b08ee9801998daa8a0f7358b`.
 - Result: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED` — no acceptance, rollback, or blocker.
 - Next state: Under explicit runtime ownership, run the C4 matrix in `TESTING.md`, including visible-chunk Sodium meshing of BGE leaf cards, and record only direct observations bound to this exact JAR and SHA-256.
+
+## 2026-09-20T06:32:28.6395843Z — Eliminate Bushy Leaves retained-QuadView crash path
+
+- Revision: 6
+- Source checkpoint: `b8b1e9ca99d26f6b6305f7101ad07e88498ae8b9`
+- Runtime: Recorded the owner-supplied exact C4 `RUNTIME_FAIL`: `bge-bushy-leaves-0.2.2-canary4.jar` SHA-256 `06147c8eb94c43f348da0a2876f1bb71edb9d356d08a28825b77c52bd17a3ac2` launched and entered a world, then chunk meshing crashed when `PatchLocalFoliage.copyAppearance` read `chunkLayer()` from a retained transient `QuadView` whose Sodium/FRAPI backing data had expired. C5 has no owner runtime observation and remains `RUNTIME_UNTESTED`.
+- Changes: Preserved C4 geometry, merged BGE `SurfacePatch` placement, semantic eligibility, reload behavior, and provider-neutral selection. `CanonicalFoliageAppearance` now copies only immutable UV/color/light and required world-render metadata during `MeshView.forEach`; `PatchLocalFoliage.emitCard` accepts that owned snapshot only. The regression invalidates every source quad immediately after its callback and proves decorative selection, full snapshot emission, and zero later source access. The build now resolves and SHA-256 verifies the artifact named by current BGE canonical status instead of a hard-coded BGE Canary; that input is build evidence only, not a runtime pin.
+- Build/static: Java 25 / Gradle 9.5.1 / Fabric Loom 1.17.19 `clean check stageCanaryArtifact --rerun-tasks --offline` passed, with 22/22 focused tests and controlled API, metadata, archive, and provider-asset checks. The controlled input was `BGE C87.jar`, SHA-256 `0f639cd769c0dc4f2efa1247391096c16b286fb399d96b54c3095fd464a5255d`; this is not Minecraft runtime evidence.
+- Artifact: `bge-bushy-leaves-0.2.3-canary5.jar`, 33,807 bytes, SHA-256 `13f273c3b4d9555ea09377a003f3977086c9424ed00b0d1dedc9dabab210952e`, finalized at `2026-09-20T06:32:28.6395843Z` from the implementation checkpoint above.
+- Result: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`; no acceptance, rollback, or blocker.
+- Next state: Run only the C5 smoke gate first, then the visual matrix after it succeeds; record owner-supplied runtime observations only when bound to these exact C5 bytes and SHA-256.
