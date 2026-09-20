@@ -1,0 +1,87 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 2,
+  "identity": {
+    "uuid": "b35bd259-b6c4-4a04-8957-1b3b8d751d56",
+    "name": "Enderscape Overlays",
+    "project_id": "enderscape-overlays",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Generate restrained, Continuity-compatible Enderscape CTM overlays from pinned Enderscape material RGB and verified Matcha alpha topology."
+    ],
+    "scope": [
+      "Celestial, Veiled, Corrupt, wood, plank, End Stone construction, Mirestone, Veradite, Kurodite, ore, brick, cap, and evidence-backed Void Lachryma transition relationships declared in relationship_manifest.json."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "resourcepacks/enderscape-overlays"
+      ],
+      "exclusions": [
+        "The Enderscape JAR and Matcha Overlays v37 archive under originals are immutable, ignored source inputs and are never changed or redistributed.",
+        "Generated derivative tiles remain in ignored local artifacts because Matcha Overlays v37 is CC BY-NC 4.0; the public repository retains only the generator, manifest, and provenance.",
+        "BGE-specific geometry, leaves, lamps, Magnia, Void Shale, Drift Jelly, decorative sources, and deferred construction families are outside this first canary."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "enderscape",
+        "requirement": "3.0.2+mc26.2 exact generator input",
+        "reason": "Provides the target block IDs, models, material textures, emissive companions, and Void Lachryma relationship data."
+      },
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "Matcha Overlays",
+        "requirement": "v37 exact generator input",
+        "reason": "Provides the inspected Continuity overlay topology and CC BY-NC 4.0-derived alpha masks."
+      },
+      {
+        "type": "MOD",
+        "identifier": "continuity",
+        "requirement": "OptiFine CTM and emissive capability provider",
+        "reason": "Consumes the generated OptiFine-style overlay properties and _e emissive companion convention."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 is a locally retained, static-validated generator output for the declared high-confidence Enderscape CTM families; Minecraft runtime testing remains outstanding.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "embedded_version": "0.1.0-canary1",
+        "summary": "Generates high-confidence Enderscape terrain, material-family, ore, emissive, and Void Lachryma CTM seams from pinned Matcha v37 alpha topology.",
+        "built_at": "2026-09-20T03:44:16Z",
+        "artifact": {
+          "filename": "enderscape-overlays-0.1.0-canary1.zip",
+          "sha256": "4fbd16859792830c7ee040bb757d88805941540389e4ef4d9c67509505a472c3"
+        },
+        "source_commit": "ef9244de7ce6c6d006d73a4d4425e9c3a220554d",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-20T03:44:16Z",
+    "updated_at": "2026-09-20T03:44:16Z",
+    "last_codex_at": "2026-09-20T03:44:16Z",
+    "source_commit": "ef9244de7ce6c6d006d73a4d4425e9c3a220554d"
+  }
+}
