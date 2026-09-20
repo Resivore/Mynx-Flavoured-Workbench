@@ -26,7 +26,7 @@
           "relationship": "depends",
           "dependency_id": "minecraft",
           "predicate": "~26.2",
-          "reason": "Canary 2 consumes Minecraft 26.2's public final model, renderer-quad, and BGE surface-contract seams.",
+          "reason": "Canary 4 consumes Minecraft 26.2's public final model, renderer-quad, and BGE surface-contract seams.",
           "regression_evidence": [
             "Controlled verification hashes BGE C84 plus the Fabric Renderer and model-loading APIs used by the client-only patch-local foliage bridge."
           ]
