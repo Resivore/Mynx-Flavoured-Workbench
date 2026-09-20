@@ -11,7 +11,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.block.EndRodBlock;
 import net.minecraft.world.level.block.HugeMushroomBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -167,7 +167,7 @@ public final class ExternalFixtureRegistry {
 
     private static Block registerDirectional(String namespace, String path) {
         Identifier id = Identifier.fromNamespaceAndPath(namespace, path);
-        return register(namespace, path, new DirectionalBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.END_STONE)
+        return register(namespace, path, new EndRodBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.END_STONE)
                 .setId(ResourceKey.create(Registries.BLOCK, id))));
     }
 
