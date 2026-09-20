@@ -7,6 +7,8 @@ import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
@@ -72,6 +74,45 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
         System.out.println("CANONICAL_BINDING_CLOSURE|profiles=" + profiles
                 + "|primary=" + primary + "|owned=" + BgeMaterialBindings.ownedBlocks().size()
                 + "|aliases=3|special=2|dormantCnmCandidates=" + exemptions.size());
+        helper.succeed();
+    }
+
+    /**
+     * A complete canonical binding classifies every geometry role as derived. That leaves CNM's
+     * initial unbound Slab/Stair admission intact, while preventing a subsequent scan from
+     * treating a completed family member as a new material root and registering combinations
+     * such as {@code material_slab_wall}.
+     */
+    @GameTest(maxTicks = 40)
+    public void boundFamilyGeometryCannotRecursivelySeedCnmAutopopulation(GameTestHelper helper) {
+        List<BgeMaterialBindings.Binding> bindings = BgeMaterialBindings.all();
+        helper.assertTrue(bindings.stream().filter(binding -> binding.role()
+                        != BgeMaterialBindings.Role.CANONICAL_BLOCK)
+                        .allMatch(binding -> CanonicalGeometryRegistry.contains(binding.physicalBlock())),
+                "A canonical-bound geometry role was still eligible as a CNM material root");
+
+        BgeMaterialBindings.Binding slab = bindings.stream()
+                .filter(binding -> binding.role() == BgeMaterialBindings.Role.HORIZONTAL_SLAB)
+                .filter(binding -> binding.physicalBlock() instanceof SlabBlock)
+                .findFirst().orElseThrow();
+        BgeMaterialBindings.Binding stair = bindings.stream()
+                .filter(binding -> binding.role() == BgeMaterialBindings.Role.STAIR)
+                .findFirst().orElseThrow();
+        int candidatesBefore = CnmShapeMapCandidateBridge.snapshots().size();
+
+        CnmShapeMapCandidateBridge.admit(slab.physicalBlock(), BgeGeometryRole.VERTICAL_SLAB,
+                slab.physicalBlock(), BuiltInRegistries.BLOCK.getKey(slab.physicalBlock()));
+        CnmShapeMapCandidateBridge.admit(stair.physicalBlock(), BgeGeometryRole.STEP,
+                stair.physicalBlock(), BuiltInRegistries.BLOCK.getKey(stair.physicalBlock()));
+
+        Identifier slabId = BuiltInRegistries.BLOCK.getKey(slab.physicalBlock());
+        Identifier recursiveWall = Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
+                "deferred/" + slabId.getNamespace() + "/" + slabId.getPath() + "_wall");
+        helper.assertTrue(CnmShapeMapCandidateBridge.rejectedRecursiveSource(slab.physicalBlock())
+                        && CnmShapeMapCandidateBridge.rejectedRecursiveSource(stair.physicalBlock())
+                        && CnmShapeMapCandidateBridge.snapshots().size() == candidatesBefore
+                        && !BuiltInRegistries.BLOCK.containsKey(recursiveWall),
+                "A derived BGE slab/stair became a second CNM family or created " + recursiveWall);
         helper.succeed();
     }
 

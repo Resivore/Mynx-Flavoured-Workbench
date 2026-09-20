@@ -90,9 +90,11 @@ abstract class ClutterNoMoreVariantScanMixin {
     }
 
     /**
-     * CNM's first BlockItem#getBlock call feeds its SlabBlock discovery branch.
-     * Hide only project-declared canonical geometries from that branch; the
-     * second call (the stair/step branch) and every ordinary source are intact.
+     * CNM's two BlockItem#getBlock calls feed its Slab/Vertical-Slab and Stair/Step discovery
+     * branches. A BGE-bound non-root role is already a member of a canonical family, not a new
+     * family source. First-pass unbound slab/stair inputs remain visible so normal CNM
+     * autopopulation can complete a material family; the typed binding prevents a later scan
+     * from recursively deriving combinations such as {@code material_slab_wall}.
      */
     @Redirect(
             method = "registerVariants",
@@ -101,7 +103,22 @@ abstract class ClutterNoMoreVariantScanMixin {
                     target = "Lnet/minecraft/world/item/BlockItem;getBlock()Lnet/minecraft/world/level/block/Block;",
                     ordinal = 0),
             require = 1)
-    private static Block cnmTerrainCompat$skipCanonicalSlabRoots(BlockItem item) {
+    private static Block cnmTerrainCompat$skipDerivedSlabRoots(BlockItem item) {
+        return cnmTerrainCompat$familyRoot(item);
+    }
+
+    @Redirect(
+            method = "registerVariants",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/item/BlockItem;getBlock()Lnet/minecraft/world/level/block/Block;",
+                    ordinal = 1),
+            require = 1)
+    private static Block cnmTerrainCompat$skipDerivedStairRoots(BlockItem item) {
+        return cnmTerrainCompat$familyRoot(item);
+    }
+
+    private static Block cnmTerrainCompat$familyRoot(BlockItem item) {
         Block block = item.getBlock();
         return CanonicalGeometryRegistry.contains(block) ? Blocks.AIR : block;
     }

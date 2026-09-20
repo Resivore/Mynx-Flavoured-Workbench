@@ -262,8 +262,21 @@ public final class BgeMaterialBindings {
         DERIVED_GEOMETRY.add(block);
     }
 
+    /**
+     * Returns whether this block is a geometry member rather than a material root.
+     *
+     * <p>{@link #DERIVED_GEOMETRY} is populated while BGE creates its tail roles, before the
+     * normal binding audit can run. Once that audit has named every normal role, its binding is
+     * the broader authority: a horizontal slab, stair, wall, Vertical Slab, Step, Layer, Corner,
+     * or Quarter Column is still derived even when it was supplied by a provider or retained for
+     * compatibility. CNM may use an unbound first-pass slab/stair as the direct input required to
+     * complete that family, but a later scan must never promote an already bound geometry member
+     * into a new material root.</p>
+     */
     static synchronized boolean isDerivedGeometry(Block block) {
-        return DERIVED_GEOMETRY.contains(block);
+        if (DERIVED_GEOMETRY.contains(block)) return true;
+        Binding binding = BY_BLOCK.get(block);
+        return binding != null && binding.role() != Role.CANONICAL_BLOCK;
     }
 
     /** Structured escape hatch for a truly non-material BGE block. No current block uses it. */
