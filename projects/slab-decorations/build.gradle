@@ -30,6 +30,11 @@ configurations {
         canBeResolved = true
         transitive = false
     }
+    enderscapeReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
 }
 
 def workbenchRoot = providers.gradleProperty('workbench_root')
@@ -42,6 +47,9 @@ def bgeReferenceJar = new File(workbenchRoot, 'projects/block-geometry-extension
 def cnmUpstreamReferenceJar = new File(referenceLibraryRoot, 'originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
 def terrainSlabsReferenceJar = new File(providers.gradleProperty('terrain_slabs_reference_jar')
         .orElse(new File(referenceLibraryRoot, 'originals/mods/Terrain Slabs v3.3.2-26.2.jar').absolutePath)
+        .get())
+def enderscapeReferenceJar = new File(providers.gradleProperty('enderscape_reference_jar')
+        .orElse(new File(referenceLibraryRoot, 'originals/mods/enderscape-fabric-3.0.2+mc26.2.jar').absolutePath)
         .get())
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -57,10 +65,13 @@ dependencies {
     bgeReference files(bgeReferenceJar)
     cnmUpstreamReference files(cnmUpstreamReferenceJar)
     terrainSlabsReference files(terrainSlabsReferenceJar)
+    enderscapeReference files(enderscapeReferenceJar)
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Read-only test input only. Production code retains no Enderscape linkage or dependency.
+    testImplementation files(enderscapeReferenceJar)
 }
 
 fabricApi {
@@ -89,12 +100,14 @@ test {
     inputs.files(
             configurations.bgeReference,
             configurations.cnmUpstreamReference,
-            configurations.terrainSlabsReference
+            configurations.terrainSlabsReference,
+            configurations.enderscapeReference
     )
     doFirst {
         systemProperty 'bgeReferenceJar', configurations.bgeReference.singleFile.absolutePath
         systemProperty 'cnmUpstreamReferenceJar', configurations.cnmUpstreamReference.singleFile.absolutePath
         systemProperty 'terrainSlabsReferenceJar', configurations.terrainSlabsReference.singleFile.absolutePath
+        systemProperty 'enderscapeReferenceJar', configurations.enderscapeReference.singleFile.absolutePath
     }
 }
 

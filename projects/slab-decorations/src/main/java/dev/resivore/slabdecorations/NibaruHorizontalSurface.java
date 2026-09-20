@@ -137,7 +137,9 @@ public final class NibaruHorizontalSurface {
         if (family == null) return Optional.empty();
 
         return switch (family) {
-            case UPWARD_VEGETATION, SURFACE_FOLIAGE -> mossyCarpetAttachment(state, level, pos);
+            case UPWARD_VEGETATION, SURFACE_FOLIAGE, SURFACE_LAYER -> surfaceAttachment(state, level, pos);
+            case DIRECTIONAL_VEGETATION -> directionalVegetationAttachment(state, level, pos);
+            case PURUBERRY_CHAIN -> puruberryAttachment(state, level, pos);
             case DOUBLE_HEIGHT_VEGETATION -> doublePlantAttachment(state, level, pos);
             case DRIPLEAF_COLUMN -> dripleafAttachment(state, level, pos);
             case CEILING_FOLIAGE -> Optional.of(
@@ -177,7 +179,7 @@ public final class NibaruHorizontalSurface {
         return Optional.empty();
     }
 
-    private static Optional<Attachment> mossyCarpetAttachment(
+    private static Optional<Attachment> surfaceAttachment(
             BlockState state,
             BlockGetter level,
             BlockPos pos) {
@@ -198,6 +200,66 @@ public final class NibaruHorizontalSurface {
             return Optional.of(new Attachment(lowerPos, lower, AttachmentOrientation.UPWARD));
         }
         return Optional.empty();
+    }
+
+    /** Resolves the physical root of Enderscape's vertical-only directional vegetation. */
+    private static Optional<Attachment> directionalVegetationAttachment(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos) {
+        Direction facing = OptionalSurfaceAdapters.enderscapeDirectionalFacing(state).orElse(null);
+        if (facing != Direction.UP && facing != Direction.DOWN) return Optional.empty();
+
+        BlockPos rootPos = pos;
+        BlockState rootState = state;
+        Direction towardSupport = facing.getOpposite();
+        while (!level.isOutsideBuildHeight(rootPos.relative(towardSupport).getY())) {
+            BlockPos nextPos = rootPos.relative(towardSupport);
+            BlockState next = level.getBlockState(nextPos);
+            if (!next.is(state.getBlock())
+                    || OptionalSurfaceAdapters.enderscapeDirectionalFacing(next).orElse(null) != facing) {
+                break;
+            }
+            rootPos = nextPos;
+            rootState = next;
+        }
+        return Optional.of(new Attachment(rootPos, rootState,
+                facing == Direction.UP ? AttachmentOrientation.UPWARD : AttachmentOrientation.CEILING));
+    }
+
+    /**
+     * A Puruberry flower or fruit is projected only while it is structurally attached to a vine.
+     * Detached ripe fruit therefore resumes Enderscape's normal falling presentation.
+     */
+    private static Optional<Attachment> puruberryAttachment(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos) {
+        OptionalSurfaceAdapters.PuruberryPart part = OptionalSurfaceAdapters.puruberryPart(state).orElse(null);
+        if (part == null) return Optional.empty();
+
+        BlockPos anchorPos = pos;
+        BlockState anchorState = state;
+        if (part != OptionalSurfaceAdapters.PuruberryPart.VINE) {
+            anchorPos = pos.above();
+            anchorState = level.getBlockState(anchorPos);
+            if (OptionalSurfaceAdapters.puruberryPart(anchorState).orElse(null)
+                    != OptionalSurfaceAdapters.PuruberryPart.VINE) {
+                return Optional.empty();
+            }
+        }
+
+        while (!level.isOutsideBuildHeight(anchorPos.getY() + 1)) {
+            BlockPos nextPos = anchorPos.above();
+            BlockState next = level.getBlockState(nextPos);
+            if (OptionalSurfaceAdapters.puruberryPart(next).orElse(null)
+                    != OptionalSurfaceAdapters.PuruberryPart.VINE) {
+                break;
+            }
+            anchorPos = nextPos;
+            anchorState = next;
+        }
+        return Optional.of(new Attachment(anchorPos, anchorState, AttachmentOrientation.CEILING));
     }
 
     private static Optional<Attachment> dripleafAttachment(

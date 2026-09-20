@@ -10,6 +10,7 @@ import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -30,7 +31,9 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.PitcherCropBlock;
 import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
@@ -483,6 +486,118 @@ public final class SystemicSurfaceGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(!grown && level.getBlockState(support).equals(original)
                         && level.getBlockState(source).equals(sourceState),
                 "failed optional huge-toadstool transaction did not retain Ribbits' recovered source/slab");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void snowLayersKeepNativeStackingAndGeometryOnEveryEligibleSlabType(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos support = helper.absolutePos(new BlockPos(3, 2, 3));
+        BlockPos snowPos = support.above();
+
+        for (SlabType type : SlabType.values()) {
+            clearVertical(level, support, 1, 3);
+            level.setBlock(support, slab(Blocks.STONE, type), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+            ItemStack snow = new ItemStack(Items.SNOW, 2);
+            player.setItemInHand(InteractionHand.MAIN_HAND, snow);
+
+            InteractionResult first = snow.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND,
+                    new BlockHitResult(Vec3.atCenterOf(support), net.minecraft.core.Direction.UP,
+                            support, false)));
+            InteractionResult second = snow.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND,
+                    new BlockHitResult(Vec3.atCenterOf(snowPos), net.minecraft.core.Direction.UP,
+                            snowPos, false)));
+            BlockState stacked = level.getBlockState(snowPos);
+            double expectedOffset = type == SlabType.BOTTOM
+                    ? NibaruHorizontalSurface.BOTTOM_OFFSET : 0.0D;
+            BlockState fullLayers = stacked.setValue(SnowLayerBlock.LAYERS, 8);
+            level.setBlock(support, Blocks.STONE.defaultBlockState(), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            VoxelShape twoLayerCanonical = Blocks.SNOW.defaultBlockState()
+                    .setValue(SnowLayerBlock.LAYERS, 2).getShape(level, snowPos);
+            VoxelShape canonicalCollision = fullLayers.getCollisionShape(level, snowPos);
+            level.setBlock(support, slab(Blocks.STONE, type), Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+
+            helper.assertTrue(first.consumesAction() && second.consumesAction()
+                            && stacked.is(Blocks.SNOW)
+                            && stacked.getValue(SnowLayerBlock.LAYERS) == 2
+                            && stacked.canSurvive(level, snowPos)
+                            && snow.getCount() == 0
+                            && NibaruHorizontalSurface.visibleOffset(stacked, level, snowPos)
+                            == expectedOffset,
+                    "Snow Layers did not retain native two-layer stacking on BGE " + type);
+            assertShapeOffset(helper, stacked.getShape(level, snowPos), twoLayerCanonical, expectedOffset,
+                    "snow layer outline " + type);
+
+            level.setBlock(snowPos, fullLayers, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            assertShapeOffset(helper, level.getBlockState(snowPos).getCollisionShape(level, snowPos),
+                    canonicalCollision, expectedOffset, "snow layer collision " + type);
+            player.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void generatedPillarTransactionsConsumeOnlyMatchingDirectionalHalfSlabs(
+            GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos floorSupport = helper.absolutePos(new BlockPos(3, 2, 3));
+        BlockPos upwardPrecursor = floorSupport.above();
+        BlockPos ceilingSupport = helper.absolutePos(new BlockPos(8, 6, 3));
+        BlockPos downwardPrecursor = ceilingSupport.below();
+        BlockState exactStem = SystemicFixtureInitializer.ENDERSCAPE_PILLAR.defaultBlockState()
+                .setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
+
+        for (SlabType type : SlabType.values()) {
+            clearVertical(level, floorSupport, 2, 3);
+            BlockState floorSlab = slab(Blocks.DIRT, type);
+            level.setBlock(floorSupport, floorSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            level.setBlock(upwardPrecursor, Blocks.OAK_SAPLING.defaultBlockState(),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            boolean upward = StructureGrowthTransaction.runEnderscapeGrowth(
+                    level, upwardPrecursor, Blocks.OAK_SAPLING.defaultBlockState(), () -> {
+                        level.setBlock(upwardPrecursor, exactStem, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+                        return true;
+                    });
+            helper.assertTrue(upward && level.getBlockState(floorSupport)
+                            .equals(type == SlabType.BOTTOM ? exactStem : floorSlab),
+                    "upward generated pillar consumed a non-BOTTOM or lost its exact axis on " + type);
+
+            clearVertical(level, ceilingSupport, 3, 2);
+            BlockState ceilingSlab = slab(Blocks.STONE, type);
+            level.setBlock(ceilingSupport, ceilingSlab, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            level.setBlock(downwardPrecursor, Blocks.HANGING_ROOTS.defaultBlockState(),
+                    Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+            boolean downward = StructureGrowthTransaction.runEnderscapeGrowth(
+                    level, downwardPrecursor, Blocks.HANGING_ROOTS.defaultBlockState(), () -> {
+                        level.setBlock(downwardPrecursor, exactStem, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+                        return true;
+                    });
+            helper.assertTrue(downward && level.getBlockState(ceilingSupport)
+                            .equals(type == SlabType.TOP ? exactStem : ceilingSlab),
+                    "downward generated pillar consumed a non-TOP or lost its exact axis on " + type);
+        }
+
+        BlockState original = slab(Blocks.DIRT, SlabType.BOTTOM);
+        level.setBlock(floorSupport, original, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(upwardPrecursor, Blocks.OAK_SAPLING.defaultBlockState(),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        helper.assertTrue(!StructureGrowthTransaction.runEnderscapeGrowth(
+                        level, upwardPrecursor, Blocks.OAK_SAPLING.defaultBlockState(), () -> false)
+                        && level.getBlockState(floorSupport).equals(original)
+                        && level.getBlockState(upwardPrecursor).is(Blocks.OAK_SAPLING),
+                "failed Enderscape-style generation did not restore the exact slab and precursor");
+
+        BlockState originalCeiling = slab(Blocks.STONE, SlabType.TOP);
+        level.setBlock(ceilingSupport, originalCeiling, Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        level.setBlock(downwardPrecursor, Blocks.HANGING_ROOTS.defaultBlockState(),
+                Block.UPDATE_SKIP_ALL_SIDEEFFECTS);
+        helper.assertTrue(!StructureGrowthTransaction.runEnderscapeGrowth(
+                        level, downwardPrecursor, Blocks.HANGING_ROOTS.defaultBlockState(), () -> false)
+                        && level.getBlockState(ceilingSupport).equals(originalCeiling)
+                        && level.getBlockState(downwardPrecursor).is(Blocks.HANGING_ROOTS),
+                "failed downward Enderscape-style generation did not restore the exact top slab and precursor");
         helper.succeed();
     }
 

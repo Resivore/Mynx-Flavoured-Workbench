@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.CeilingHangingSignBlock;
 import net.minecraft.world.level.block.TorchBlock;
 import net.minecraft.world.level.block.RedstoneTorchBlock;
 import net.minecraft.world.level.block.SmallDripleafBlock;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.SporeBlossomBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SugarCaneBlock;
@@ -77,6 +78,26 @@ public final class PlantFamilyEligibility {
                 && state.getValue(MangrovePropaguleBlock.HANGING)) {
             return Optional.empty();
         }
+
+        // Enderscape's directional superclass is a vertical-support contract, not an ordinary
+        // floor-vegetation contract.  Its horizontal states deliberately remain unsupported.
+        if (OptionalSurfaceAdapters.isEnderscapeDirectionalVegetation(state)) {
+            return OptionalSurfaceAdapters.enderscapeDirectionalFacing(state)
+                    .filter(direction -> direction == Direction.UP || direction == Direction.DOWN)
+                    .map(ignored -> Family.DIRECTIONAL_VEGETATION);
+        }
+
+        // These independently stack to eight layers but retain their native layer, replacement,
+        // collision, pathfinding, and drop rules.  Only their real supporting surface is
+        // projected; no alternate state is manufactured.
+        if (block instanceof SnowLayerBlock || OptionalSurfaceAdapters.isEnderscapeVeiledLeafPile(state)) {
+            return Optional.of(Family.SURFACE_LAYER);
+        }
+
+        if (OptionalSurfaceAdapters.puruberryPart(state).isPresent()) {
+            return Optional.of(Family.PURUBERRY_CHAIN);
+        }
+
         if (block instanceof SaplingBlock) return Optional.of(Family.UPWARD_VEGETATION);
 
         // Minecraft 26.2 has no shared hanging-foliage superclass for these two single-block
@@ -146,6 +167,9 @@ public final class PlantFamilyEligibility {
         }
         if (block instanceof StandingSignBlock) return Optional.of(Family.STANDING_SIGN);
         if (block instanceof CeilingHangingSignBlock) return Optional.of(Family.CEILING_HANGING_SIGN);
+        if (OptionalSurfaceAdapters.isEnderscapeVoidTorch(state)) {
+            return Optional.of(Family.FLOOR_TORCH);
+        }
         if (block instanceof TorchBlock && !(block instanceof RedstoneTorchBlock)) {
             return Optional.of(Family.FLOOR_TORCH);
         }
@@ -161,9 +185,12 @@ public final class PlantFamilyEligibility {
 
     public enum Family {
         UPWARD_VEGETATION,
+        DIRECTIONAL_VEGETATION,
         DOUBLE_HEIGHT_VEGETATION,
         DRIPLEAF_COLUMN,
         SURFACE_FOLIAGE,
+        SURFACE_LAYER,
+        PURUBERRY_CHAIN,
         CEILING_FOLIAGE,
         UPWARD_GROWING_COLUMN,
         DOWNWARD_GROWING_COLUMN,

@@ -7,6 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /** Test-only registration of the exact optional continuation identity, with no Ribbits linkage. */
@@ -15,10 +16,16 @@ public final class SystemicFixtureInitializer implements ModInitializer {
             Identifier.fromNamespaceAndPath("ribbits", "toadstool_stem");
     public static final Block TOADSTOOL_STEM = new Block(BlockBehaviour.Properties.of()
             .setId(ResourceKey.create(Registries.BLOCK, TOADSTOOL_STEM_ID)));
+    public static final Identifier ENDERSCAPE_PILLAR_ID =
+            Identifier.fromNamespaceAndPath("slab_decorations_fixtures", "enderscape_generated_stem");
+    public static final Block ENDERSCAPE_PILLAR = new RotatedPillarBlock(BlockBehaviour.Properties.of()
+            .setId(ResourceKey.create(Registries.BLOCK, ENDERSCAPE_PILLAR_ID)));
 
     @Override
     public void onInitialize() {
         Registry.register(BuiltInRegistries.BLOCK,
                 ResourceKey.create(Registries.BLOCK, TOADSTOOL_STEM_ID), TOADSTOOL_STEM);
+        Registry.register(BuiltInRegistries.BLOCK,
+                ResourceKey.create(Registries.BLOCK, ENDERSCAPE_PILLAR_ID), ENDERSCAPE_PILLAR);
     }
 }

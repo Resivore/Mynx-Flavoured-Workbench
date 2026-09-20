@@ -6,6 +6,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /** Executes ordinary state survival against a read-only, one-position canonical support view. */
 public final class CanonicalSurvivalProjection {
@@ -64,6 +65,25 @@ public final class CanonicalSurvivalProjection {
     public static boolean isEvaluating() {
         Integer depth = EVALUATION_DEPTH.get();
         return depth != null && depth != 0;
+    }
+
+    /**
+     * Runs an upstream read-only placement or bonemeal predicate against the same one-cell
+     * canonical support view used for survival.  This preserves distinct upstream target tags
+     * rather than substituting a broad canSurvive approximation for them.
+     */
+    public static Optional<Boolean> evaluateWithCanonicalSupport(
+            BlockState state,
+            LevelReader level,
+            BlockPos pos,
+            Predicate<LevelReader> predicate) {
+        NibaruHorizontalSurface.Surface surface =
+                NibaruHorizontalSurface.candidate(state, level, pos).orElse(null);
+        if (surface == null) return Optional.empty();
+        LevelReader projected = new CanonicalSupportLevelReader(
+                level, pos, state, level.getFluidState(pos),
+                surface.supportPos(), surface.canonicalParentState());
+        return Optional.of(predicate.test(projected));
     }
 
     private static void enter() {

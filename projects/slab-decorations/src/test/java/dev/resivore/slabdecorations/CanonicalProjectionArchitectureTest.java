@@ -139,6 +139,11 @@ final class CanonicalProjectionArchitectureTest {
                 "outline/collision alignment seam is not registered");
         assertTrue(commonMixins.contains("CropBlockFertilityMixin"),
                 "exact BGE Farmland crop-fertility projection seam is not registered");
+        assertTrue(commonMixins.contains("EnderscapeVeiledSaplingGrowthMixin")
+                        && commonMixins.contains("EnderscapeChanterelleGrowthMixin")
+                        && commonMixins.contains("EnderscapeVoidTorchParticleMixin")
+                        && commonMixins.contains("EnderscapeBulbLanternParticleMixin"),
+                "Enderscape's optional growth and particle seams are not registered");
         assertTrue(commonMixins.contains("GrowingPlantBlockAccessor"),
                 "generic growing-column contract seam is not registered");
         assertTrue(commonMixins.contains("RibbitsToadstoolGrowthMixin"),
@@ -184,6 +189,34 @@ final class CanonicalProjectionArchitectureTest {
                 "only the exact Ribbits toadstool stem may continue a successful transaction");
         assertFalse(metadata.contains("\"ribbits\""),
                 "Ribbits must remain an optional compatibility target, not a production dependency");
+
+        String enderscapeGrowth = classFile(Class.forName(
+                "dev.resivore.slabdecorations.mixin.EnderscapeChanterelleGrowthMixin", false,
+                CanonicalProjectionArchitectureTest.class.getClassLoader()));
+        String enderscapeSapling = classFile(Class.forName(
+                "dev.resivore.slabdecorations.mixin.EnderscapeVeiledSaplingGrowthMixin", false,
+                CanonicalProjectionArchitectureTest.class.getClassLoader()));
+        String voidTorchParticles = classFile(Class.forName(
+                "dev.resivore.slabdecorations.mixin.EnderscapeVoidTorchParticleMixin", false,
+                CanonicalProjectionArchitectureTest.class.getClassLoader()));
+        String bulbLanternParticles = classFile(Class.forName(
+                "dev.resivore.slabdecorations.mixin.EnderscapeBulbLanternParticleMixin", false,
+                CanonicalProjectionArchitectureTest.class.getClassLoader()));
+        assertTrue(enderscapeGrowth.contains("MurublightChanterelleBlock")
+                        && enderscapeGrowth.contains("CelestialChanterelleBlock")
+                        && enderscapeSapling.contains("VeiledSaplingBlock")
+                        && enderscapeGrowth.contains("isValidBonemealTarget")
+                        && enderscapeSapling.contains("isValidBonemealTarget")
+                        && enderscapeGrowth.contains("evaluateWithCanonicalSupport")
+                        && enderscapeSapling.contains("evaluateWithCanonicalSupport")
+                        && transaction.contains("RotatedPillarBlock")
+                        && transaction.contains("CEILING"),
+                "Enderscape vertical growth must use the shared, bidirectional transaction");
+        assertTrue(voidTorchParticles.contains("addParticle") && voidTorchParticles.contains("visibleOffset")
+                        && bulbLanternParticles.contains("addParticle") && bulbLanternParticles.contains("visibleOffset"),
+                "Enderscape decoration particles must use the resolved surface translation");
+        assertFalse(metadata.contains("\"enderscape\""),
+                "Enderscape remains an optional compatibility target, not a production dependency");
     }
 
     private static String classFile(Class<?> type) throws IOException {

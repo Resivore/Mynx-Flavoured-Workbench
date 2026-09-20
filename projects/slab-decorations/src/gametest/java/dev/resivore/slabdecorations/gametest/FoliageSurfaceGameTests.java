@@ -79,6 +79,8 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 PlantFamilyEligibility.Family.SURFACE_FOLIAGE);
         assertFamily(helper, Blocks.PALE_MOSS_CARPET.defaultBlockState(),
                 PlantFamilyEligibility.Family.SURFACE_FOLIAGE);
+        assertFamily(helper, Blocks.SNOW.defaultBlockState(),
+                PlantFamilyEligibility.Family.SURFACE_LAYER);
         assertFamily(helper, Blocks.HANGING_ROOTS.defaultBlockState(),
                 PlantFamilyEligibility.Family.CEILING_FOLIAGE);
         assertFamily(helper, Blocks.SPORE_BLOSSOM.defaultBlockState(),
@@ -156,7 +158,13 @@ public final class FoliageSurfaceGameTests implements CustomTestMethodInvoker {
                 PlantFamilyEligibility.family(state).ifPresent(discovered::add);
             }
         }
-        helper.assertTrue(discovered.equals(EnumSet.allOf(PlantFamilyEligibility.Family.class)),
+        EnumSet<PlantFamilyEligibility.Family> requiredVanillaFamilies = EnumSet.allOf(
+                PlantFamilyEligibility.Family.class);
+        // These two families are intentionally supplied only when Enderscape is present; this
+        // controlled baseline does not install that optional runtime dependency.
+        requiredVanillaFamilies.remove(PlantFamilyEligibility.Family.DIRECTIONAL_VEGETATION);
+        requiredVanillaFamilies.remove(PlantFamilyEligibility.Family.PURUBERRY_CHAIN);
+        helper.assertTrue(discovered.equals(requiredVanillaFamilies),
                 "registry-driven structural discovery did not exercise every root/segment family: "
                         + discovered);
         helper.succeed();
