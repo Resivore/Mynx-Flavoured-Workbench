@@ -11,7 +11,7 @@ import net.minecraft.core.Holder;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-/** Exact C1 ownership boundary. Registry IDs remain present; only future paths are filtered. */
+/** Exact C2 ownership boundary. Registry IDs remain present; only future paths are filtered. */
 public final class PruningContract {
     public static final String ENDERSCAPE_SHA256 =
             "9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b";
@@ -23,7 +23,8 @@ public final class PruningContract {
             "enderscape:shadoline_boots",
             "enderscape:dagger",
             "enderscape:rubble_shield",
-            "enderscape:mirror");
+            "enderscape:mirror",
+            "enderscape:rubble_chitin");
     public static final Set<String> SUPPRESSED_ENCHANTMENT_IDS = Set.of(
             "enderscape:bundling",
             "enderscape:stun_burst",

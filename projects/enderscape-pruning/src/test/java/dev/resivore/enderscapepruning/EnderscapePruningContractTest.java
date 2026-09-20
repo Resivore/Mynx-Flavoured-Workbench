@@ -44,7 +44,8 @@ final class EnderscapePruningContractTest {
             "minecraft/loot_table/food/carrot.json", "3a835cbbbb03bd1f44c6ab69b321746527f9d22308a95f8075f7299cd05f80d4",
             "minecraft/loot_table/food/golden_apple.json", "e0bc60586726b342e6e588dccebe4b1970c39618cc6dcfc1e12d6fbed1ae0563",
             "minecraft/loot_table/food/enchanted_golden_apple.json", "98cd922eb2666c0235072eab4fc9cf4a1ad2e8834da44dff17da86bdac1dfa44",
-            "minecraft/loot_table/blocks/chorus_plant.json", "9e3bf88454f5badccadda87d962913df073776b35b64d4731856e8b87b849a4e");
+            "minecraft/loot_table/blocks/chorus_plant.json", "9e3bf88454f5badccadda87d962913df073776b35b64d4731856e8b87b849a4e",
+            "crafting/recipe/beacon_kindling.json", "e2a91a3d1f9f29c183561bf720967bc41b87e8be1693d6918d07462181ba1fb1");
 
     @Test
     void exactInputsAndMatchaIdentityAuthoritiesRemainPinned() throws Exception {
@@ -55,6 +56,7 @@ final class EnderscapePruningContractTest {
         String build = Files.readString(projectRoot().resolve("build.gradle"));
         MATCHA_SOURCE_HASHES.forEach((path, hash) -> assertTrue(build.contains(hash), path));
         assertTrue(build.contains("No Matcha component identity"));
+        assertTrue(build.contains("Matcha Kindling identity changed"));
     }
 
     @Test
@@ -139,6 +141,91 @@ final class EnderscapePruningContractTest {
         assertTrue(cake.contains("remap = false"));
         assertTrue(source("client/EnderscapePruningClient.java").contains("getSearchTabStacks"));
         assertTrue(source("client/EnderscapePruningJeiPlugin.java").contains("getAllIngredients"));
+        assertTrue(PruningContract.SUPPRESSED_ITEM_IDS.contains("enderscape:rubble_chitin"));
+    }
+
+    @Test
+    void c2RubbleChitinIsReplacedOnlyAtItsAuditedNormalSource() throws Exception {
+        try (ZipFile source = new ZipFile(enderscapeJar().toFile()); ZipFile jar = new ZipFile(packagedJar().toFile())) {
+            assertEquals(Set.of(
+                            "data/enderscape/advancement/recipes/combat/rubble_shield_end_stone.json",
+                            "data/enderscape/advancement/recipes/combat/rubble_shield_kurodite.json",
+                            "data/enderscape/advancement/recipes/combat/rubble_shield_mirestone.json",
+                            "data/enderscape/advancement/recipes/combat/rubble_shield_veradite.json",
+                            "data/enderscape/loot_table/entities/rubblemite.json",
+                            "data/enderscape/recipe/rubble_shield_end_stone.json",
+                            "data/enderscape/recipe/rubble_shield_kurodite.json",
+                            "data/enderscape/recipe/rubble_shield_mirestone.json",
+                            "data/enderscape/recipe/rubble_shield_veradite.json",
+                            "data/enderscape/recipe/shadoline_boots.json",
+                            "data/enderscape/recipe/shadoline_chestplate.json",
+                            "data/enderscape/recipe/shadoline_helmet.json",
+                            "data/enderscape/recipe/shadoline_leggings.json",
+                            "data/enderscape/tags/item/repairs_rubble_shields.json",
+                            "data/enderscape/tags/item/void_immune.json"),
+                    zipEntriesContaining(source, "data/", "enderscape:rubble_chitin"));
+            assertTrue(PruningContract.SUPPRESSED_ITEM_IDS.contains("enderscape:rubble_chitin"));
+            assertTrue(source("client/EnderscapePruningClient.java").contains("isSuppressedItem"));
+            assertTrue(source("client/EnderscapePruningJeiPlugin.java").contains("isSuppressedItem"));
+
+            JsonObject upstream = json(source, "data/enderscape/loot_table/entities/rubblemite.json");
+            JsonObject generated = json(jar, PACK_PREFIX + "data/enderscape/loot_table/entities/rubblemite.json");
+            assertEquals(1, itemEntries(upstream, Set.of("enderscape:rubble_chitin")).size());
+            assertEquals(1, itemEntries(generated, Set.of("enderscape:nebulite_shards")).size());
+            replaceItemName(upstream, "enderscape:rubble_chitin", "enderscape:nebulite_shards");
+            assertEquals(upstream, generated, "C2 changes only the Rubblemite reward identity");
+            assertFalse(generated.toString().contains("enderscape:rubble_chitin"));
+        }
+    }
+
+    @Test
+    void c2VoidCampfireUsesExactMatchaKindlingAndNotTheUpstreamStickRecipe() throws Exception {
+        JsonObject kindling = parse(matchaDataRoot().resolve("crafting/recipe/beacon_kindling.json"));
+        JsonObject result = kindling.getAsJsonObject("result");
+        assertEquals("minecraft:chicken_spawn_egg", result.get("id").getAsString());
+        JsonObject components = result.getAsJsonObject("components");
+        assertEquals("minecraft:beacon_kindling", components.get("minecraft:item_model").getAsString());
+        assertTrue(components.getAsJsonObject("minecraft:entity_data").getAsJsonArray("Tags")
+                .asList().stream().anyMatch(tag -> "beacon_kindling".equals(tag.getAsString())));
+
+        try (ZipFile source = new ZipFile(enderscapeJar().toFile()); ZipFile jar = new ZipFile(packagedJar().toFile())) {
+            assertTrue(json(source, "data/enderscape/recipe/void_campfire.json").toString().contains("minecraft:stick"));
+            JsonObject generated = json(jar, PACK_PREFIX + "data/enderscape/recipe/void_campfire.json");
+            assertEquals("enderscape_pruning:matcha_void_campfire", generated.get("type").getAsString());
+            assertFalse(generated.toString().contains("minecraft:stick"));
+            assertEquals(1, jar.stream().filter(entry -> entry.getName().equals(
+                    PACK_PREFIX + "data/enderscape/recipe/void_campfire.json")).count());
+        }
+        String recipe = source("recipe/MatchaVoidCampfireRecipe.java");
+        assertTrue(recipe.contains("Items.CHICKEN_SPAWN_EGG"));
+        assertTrue(recipe.contains("MATCHA_KINDLING_MODEL"));
+        assertTrue(recipe.contains("enderscape:void_shale"));
+        assertTrue(recipe.contains("enderscape:void_campfire"));
+        assertTrue(recipe.contains("ingredientCount() != 2"));
+        assertTrue(recipe.contains("isMatchaKindling"));
+    }
+
+    @Test
+    void c2VeiledLeavesKeepDirectLeafAcquisitionButNeverPassivelyDropSaplings() throws Exception {
+        try (ZipFile source = new ZipFile(enderscapeJar().toFile()); ZipFile jar = new ZipFile(packagedJar().toFile())) {
+            JsonObject upstream = json(source, "data/enderscape/loot_table/blocks/veiled_leaves.json");
+            JsonObject generated = json(jar, PACK_PREFIX + "data/enderscape/loot_table/blocks/veiled_leaves.json");
+            assertEquals(1, itemEntries(upstream, Set.of("enderscape:veiled_sapling")).size());
+            assertEquals(1, itemEntries(upstream, Set.of("enderscape:veiled_leaves")).size());
+            suppressItem(upstream, "enderscape:veiled_sapling");
+            assertEquals(upstream, generated, "C2 changes only the passive Veiled Sapling entry");
+            assertFalse(generated.toString().contains("enderscape:veiled_sapling"));
+            assertEquals(1, itemEntries(generated, Set.of("enderscape:veiled_leaves")).size());
+            assertTrue(generated.toString().contains("minecraft:shears"));
+            assertTrue(generated.toString().contains("minecraft:silk_touch"));
+
+            JsonObject saplingRecipe = json(jar, PACK_PREFIX + "data/enderscape/recipe/veiled_sapling.json");
+            assertEquals("minecraft:crafting_shapeless", saplingRecipe.get("type").getAsString());
+            assertEquals(1, saplingRecipe.getAsJsonArray("ingredients").size());
+            assertEquals("enderscape:veiled_leaves", saplingRecipe.getAsJsonArray("ingredients").get(0).getAsString());
+            assertEquals("enderscape:veiled_sapling", saplingRecipe.getAsJsonObject("result").get("id").getAsString());
+            assertFalse(saplingRecipe.getAsJsonObject("result").has("count"));
+        }
     }
 
     @Test
@@ -177,6 +264,10 @@ final class EnderscapePruningContractTest {
             expectedOverlay.add(PACK_PREFIX + "pack.mcmeta");
             LOOT_TABLES.forEach(table -> expectedOverlay.add(PACK_PREFIX + "data/enderscape/loot_table/" + table + ".json"));
             expectedOverlay.add(PACK_PREFIX + "data/enderscape/advancement/explore_end.json");
+            expectedOverlay.add(PACK_PREFIX + "data/enderscape/loot_table/entities/rubblemite.json");
+            expectedOverlay.add(PACK_PREFIX + "data/enderscape/loot_table/blocks/veiled_leaves.json");
+            expectedOverlay.add(PACK_PREFIX + "data/enderscape/recipe/void_campfire.json");
+            expectedOverlay.add(PACK_PREFIX + "data/enderscape/recipe/veiled_sapling.json");
             Set<String> actualOverlay = new LinkedHashSet<>();
             jar.stream().map(ZipEntry::getName)
                     .filter(name -> name.startsWith(PACK_PREFIX) && !name.endsWith("/"))
@@ -195,6 +286,19 @@ final class EnderscapePruningContractTest {
             }
         }
         return tables;
+    }
+
+    private static Set<String> zipEntriesContaining(ZipFile source, String prefix, String text) throws IOException {
+        Set<String> entries = new LinkedHashSet<>();
+        for (ZipEntry entry : Collections.list(source.entries())) {
+            if (!entry.getName().startsWith(prefix) || !entry.getName().endsWith(".json")) continue;
+            try (InputStream input = source.getInputStream(entry)) {
+                if (new String(input.readAllBytes(), StandardCharsets.UTF_8).contains(text)) {
+                    entries.add(entry.getName());
+                }
+            }
+        }
+        return entries;
     }
 
     private static String pathAfterNamespace(String id) {
@@ -244,6 +348,38 @@ final class EnderscapePruningContractTest {
             object.entrySet().forEach(entry -> collectEmpty(entry.getValue(), matches));
         } else if (node.isJsonArray()) {
             node.getAsJsonArray().forEach(child -> collectEmpty(child, matches));
+        }
+    }
+
+    private static void replaceItemName(JsonElement node, String from, String to) {
+        if (node.isJsonObject()) {
+            JsonObject object = node.getAsJsonObject();
+            if (object.has("type") && "minecraft:item".equals(object.get("type").getAsString())
+                    && object.has("name") && from.equals(object.get("name").getAsString())) {
+                object.addProperty("name", to);
+            }
+            object.entrySet().forEach(entry -> replaceItemName(entry.getValue(), from, to));
+        } else if (node.isJsonArray()) {
+            node.getAsJsonArray().forEach(child -> replaceItemName(child, from, to));
+        }
+    }
+
+    private static void suppressItem(JsonElement node, String item) {
+        if (node.isJsonObject()) {
+            JsonObject object = node.getAsJsonObject();
+            if (object.has("type") && "minecraft:item".equals(object.get("type").getAsString())
+                    && object.has("name") && item.equals(object.get("name").getAsString())) {
+                JsonObject preserved = new JsonObject();
+                for (String key : List.of("weight", "quality", "conditions")) {
+                    if (object.has(key)) preserved.add(key, object.get(key));
+                }
+                object.entrySet().removeIf(entry -> true);
+                object.addProperty("type", "minecraft:empty");
+                preserved.entrySet().forEach(entry -> object.add(entry.getKey(), entry.getValue()));
+            }
+            object.entrySet().forEach(entry -> suppressItem(entry.getValue(), item));
+        } else if (node.isJsonArray()) {
+            node.getAsJsonArray().forEach(child -> suppressItem(child, item));
         }
     }
 
