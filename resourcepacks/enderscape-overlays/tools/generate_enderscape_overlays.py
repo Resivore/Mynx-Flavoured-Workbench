@@ -18,6 +18,17 @@ from datetime import datetime
 TILE_COUNT = 17
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 FIXED_ZIP_TIME = (1980, 1, 1, 0, 0, 0)
+ALL_FACES = frozenset(("bottom", "top", "north", "south", "east", "west"))
+FACE_SETS = {
+    "all": ALL_FACES,
+    "sides": frozenset(("north", "south", "east", "west")),
+    "bottom": frozenset(("bottom",)),
+    "top": frozenset(("top",)),
+    "north": frozenset(("north",)),
+    "south": frozenset(("south",)),
+    "east": frozenset(("east",)),
+    "west": frozenset(("west",)),
+}
 
 
 class GenerationError(RuntimeError):
@@ -197,6 +208,163 @@ def check_alpha_equivalence(manifest: dict, matcha: zipfile.ZipFile) -> None:
                 raise GenerationError(f"Matcha alpha topology differs for {check['name']}: {member}")
 
 
+def check_required_donor_sets(manifest: dict, matcha: zipfile.ZipFile) -> None:
+    """Verify the named Matcha donor sets before using their alpha masks."""
+    prefix = manifest["inputs"]["matcha_overlays"]["tile_prefix"]
+    for check in manifest.get("required_donor_sets", []):
+        donor = check["donor"]
+        properties_path = f"{prefix}{donor}/{check['properties']}"
+        properties_text = read_entry(matcha, properties_path).decode("utf-8")
+        property_lines = {line.rstrip("\r") for line in properties_text.splitlines()}
+        if "method=overlay" not in property_lines or "tiles=0-16" not in property_lines:
+            raise GenerationError(f"Matcha donor set is not a usable 17-tile overlay: {donor}")
+        for tile in range(TILE_COUNT):
+            _, _, pixels = png_rgba(read_entry(matcha, f"{prefix}{donor}/{tile}.png"), f"{donor}/{tile}.png")
+            mask = alpha(pixels)
+            if not any(mask) or all(value == 255 for value in mask):
+                raise GenerationError(f"Matcha donor alpha is unusable: {donor}/{tile}.png")
+
+
+def check_asset_evidence(manifest: dict, enderscape: zipfile.ZipFile) -> None:
+    """Keep block-ID/model/texture evidence tied to the pinned Enderscape JAR."""
+    for check in manifest.get("asset_evidence_checks", []):
+        blockstate_path = check["blockstate"]
+        blockstate = json.loads(read_entry(enderscape, blockstate_path))
+        for state, model in check["variants"].items():
+            actual = blockstate.get("variants", {}).get(state, {}).get("model")
+            if actual != model:
+                raise GenerationError(
+                    f"{check['block_id']} does not resolve {state} to {model}: {actual!r}"
+                )
+        for model_check in check["models"]:
+            model = json.loads(read_entry(enderscape, model_check["path"]))
+            if model.get("parent") != model_check["parent"]:
+                raise GenerationError(f"unexpected parent for {model_check['path']}")
+            if model.get("textures") != model_check["textures"]:
+                raise GenerationError(f"unexpected texture map for {model_check['path']}")
+            if "face_textures" in model_check:
+                try:
+                    actual_faces = {
+                        face: definition["texture"]
+                        for face, definition in model["elements"][0]["faces"].items()
+                    }
+                except (KeyError, IndexError, TypeError) as error:
+                    raise GenerationError(f"missing face evidence in {model_check['path']}") from error
+                if actual_faces != model_check["face_textures"]:
+                    raise GenerationError(f"unexpected face textures for {model_check['path']}")
+        for texture_path in check["required_textures"]:
+            width, height, _ = png_rgba(read_entry(enderscape, texture_path), texture_path)
+            if width <= 0 or height <= 0:
+                raise GenerationError(f"empty required texture: {texture_path}")
+
+
+def relationship_faces(relationship: dict, template: dict) -> frozenset[str]:
+    value = relationship.get("faces_override", template["faces"])
+    if value is None:
+        return ALL_FACES
+    try:
+        return FACE_SETS[value]
+    except KeyError as error:
+        raise GenerationError(f"unsupported faces setting for {relationship['id']}: {value!r}") from error
+
+
+def pair_relationships(manifest: dict, source: str, target: str) -> list[dict]:
+    return [
+        relationship
+        for relationship in manifest["relationships"]
+        if relationship["source_blocks"] == [source] and target in relationship["target_blocks"]
+    ]
+
+
+def check_declared_exclusions(manifest: dict, by_id: dict[str, dict]) -> None:
+    for relationship in manifest["relationships"]:
+        for excluded_id in relationship.get("excludes", []):
+            excluded = by_id.get(excluded_id)
+            if excluded is None:
+                raise GenerationError(f"{relationship['id']} excludes unknown relationship {excluded_id}")
+            if excluded["source_blocks"] != relationship["source_blocks"]:
+                raise GenerationError(f"{relationship['id']} exclusion {excluded_id} has a different source")
+            overlap = set(relationship["target_blocks"]) & set(excluded["target_blocks"])
+            if overlap:
+                joined = ", ".join(sorted(overlap))
+                raise GenerationError(
+                    f"{relationship['id']} still overlaps excluded relationship {excluded_id}: {joined}"
+                )
+
+
+def check_no_double_overlays(manifest: dict) -> None:
+    """A source/target pair may partition faces, but it may never stack rules."""
+    pair_faces: dict[tuple[str, str], list[tuple[str, frozenset[str]]]] = {}
+    for relationship in manifest["relationships"]:
+        template = manifest["templates"][relationship["template"]]
+        if len(relationship["source_blocks"]) != 1:
+            raise GenerationError(f"{relationship['id']} must have exactly one source block")
+        source = relationship["source_blocks"][0]
+        faces = relationship_faces(relationship, template)
+        for target in relationship["target_blocks"]:
+            key = (source, target)
+            for other_id, other_faces in pair_faces.get(key, []):
+                if faces & other_faces:
+                    raise GenerationError(
+                        f"duplicate effective overlay for {source} -> {target}: "
+                        f"{other_id} and {relationship['id']} overlap on {', '.join(sorted(faces & other_faces))}"
+                    )
+            pair_faces.setdefault(key, []).append((relationship["id"], faces))
+
+
+def check_directed_pair_checks(manifest: dict) -> None:
+    for check in manifest.get("directed_pair_checks", []):
+        source = check["source"]
+        target = check["target"]
+        actual = {relationship["id"] for relationship in pair_relationships(manifest, source, target)}
+        expected = set(check["relationship_ids"])
+        if actual != expected:
+            raise GenerationError(
+                f"{check['id']} has wrong owner rules: expected {sorted(expected)}, got {sorted(actual)}"
+            )
+        reverse = pair_relationships(manifest, target, source)
+        if reverse:
+            raise GenerationError(
+                f"{check['id']} has reverse owner rules: {[relationship['id'] for relationship in reverse]}"
+            )
+
+
+def check_priority_chains(manifest: dict) -> None:
+    for chain in manifest.get("priority_chains", []):
+        members = chain["members"]
+        source_rule_ids = chain["source_rule_ids"]
+        if len(members) != len(set(members)):
+            raise GenerationError(f"{chain['id']} has duplicate priority-chain members")
+        for index, source in enumerate(members[:-1]):
+            expected = set(source_rule_ids[source])
+            for target in members[index + 1:]:
+                actual = {relationship["id"] for relationship in pair_relationships(manifest, source, target)}
+                if actual != expected:
+                    raise GenerationError(
+                        f"{chain['id']} lacks its sole directed owner for {source} -> {target}: "
+                        f"expected {sorted(expected)}, got {sorted(actual)}"
+                    )
+                reverse = pair_relationships(manifest, target, source)
+                if reverse:
+                    raise GenerationError(
+                        f"{chain['id']} has a reverse rule for {target} -> {source}: "
+                        f"{[relationship['id'] for relationship in reverse]}"
+                    )
+
+
+def validate_relationship_semantics(manifest: dict) -> None:
+    by_id = {relationship["id"]: relationship for relationship in manifest["relationships"]}
+    if len(by_id) != len(manifest["relationships"]):
+        raise GenerationError("relationship IDs must be unique")
+    for relationship in manifest["relationships"]:
+        if relationship["template"] not in manifest["templates"]:
+            raise GenerationError(f"unknown template for {relationship['id']}")
+    check_declared_exclusions(manifest, by_id)
+    check_no_double_overlays(manifest)
+    check_directed_pair_checks(manifest)
+    check_priority_chains(manifest)
+
+
 def properties(relationship: dict, template: dict) -> bytes:
     source = relationship["source_blocks"]
     if len(source) != 1:
@@ -252,12 +420,15 @@ def merged_metadata(material: bytes | None, donor: bytes | None, label: str) -> 
 
 
 def generated_entries(root: pathlib.Path, manifest: dict, source_commit: str, built_at: str) -> dict[str, bytes]:
+    validate_relationship_semantics(manifest)
     enderscape_path = verified_input(root, manifest["inputs"]["enderscape"], "Enderscape")
     matcha_path = verified_input(root, manifest["inputs"]["matcha_overlays"], "Matcha Overlays")
     project = manifest["project"]
     entries: dict[str, bytes] = {}
     with zipfile.ZipFile(enderscape_path) as enderscape, zipfile.ZipFile(matcha_path) as matcha:
         check_alpha_equivalence(manifest, matcha)
+        check_required_donor_sets(manifest, matcha)
+        check_asset_evidence(manifest, enderscape)
         texture_prefix = manifest["inputs"]["enderscape"]["texture_prefix"]
         tile_prefix = manifest["inputs"]["matcha_overlays"]["tile_prefix"]
         for relationship in manifest["relationships"]:
