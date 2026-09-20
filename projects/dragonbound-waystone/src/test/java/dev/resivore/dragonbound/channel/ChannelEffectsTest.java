@@ -2,9 +2,11 @@ package dev.resivore.dragonbound.channel;
 
 import org.junit.jupiter.api.Test;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ChannelEffectsTest {
@@ -104,6 +106,8 @@ final class ChannelEffectsTest {
                 ChannelEffects.MIRROR_TELEPORT_SOUND_ID);
         assertEquals(Identifier.fromNamespaceAndPath("enderscape", "mirror_teleport_in"),
                 ChannelEffects.MIRROR_TELEPORT_IN_PARTICLE_ID);
+        assertEquals(Identifier.fromNamespaceAndPath("enderscape", "item.mirror.transdimensional_travel"),
+                ChannelEffects.MIRROR_TRANSDIMENSIONAL_TRAVEL_SOUND_ID);
         assertEquals(50, ChannelEffects.MIRROR_ARRIVAL_PARTICLE_COUNT);
         assertEquals(0.5D, ChannelEffects.MIRROR_ARRIVAL_Y_OFFSET);
         assertEquals(0.5D, ChannelEffects.MIRROR_ARRIVAL_HORIZONTAL_SPREAD);
@@ -111,5 +115,12 @@ final class ChannelEffectsTest {
         assertEquals(0.1D, ChannelEffects.MIRROR_ARRIVAL_SPEED);
         assertEquals(0.65F, ChannelEffects.MIRROR_ARRIVAL_SOUND_VOLUME);
         assertEquals(1.0F, ChannelEffects.MIRROR_ARRIVAL_SOUND_PITCH);
+    }
+
+    @Test
+    void crossDimensionClassificationOnlySelectsTheAdditionalPresentationForDifferentDimensions() {
+        assertTrue(DragonboundChannelManager.isCrossDimensionReturn(Level.OVERWORLD, Level.NETHER));
+        assertTrue(DragonboundChannelManager.isCrossDimensionReturn(Level.NETHER, Level.OVERWORLD));
+        assertFalse(DragonboundChannelManager.isCrossDimensionReturn(Level.OVERWORLD, Level.OVERWORLD));
     }
 }

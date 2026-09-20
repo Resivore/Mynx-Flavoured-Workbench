@@ -200,7 +200,7 @@ final class ArchitectureContractTest {
         int channelTick = manager.indexOf("ChannelEffects.channelTick(player, gameTime - channel.startTick(), config.channelTicks())");
         int confirmed = manager.indexOf("ChannelRules.shouldApplySuccessEffect(confirmed)");
         int heldItemConfirmed = manager.indexOf("if (!heldItemConfirmed)");
-        int completionBurst = manager.indexOf("ChannelEffects.successfulTeleport(arrived)");
+        int completionBurst = manager.indexOf("ChannelEffects.successfulTeleport(arrived,");
         int pearlConsumption = manager.indexOf("arrivedHeld.shrink(1)");
         int staffCooldown = manager.indexOf("addCooldown(arrivedHeld, channel.staffCooldownTicks())");
 
@@ -215,6 +215,9 @@ final class ArchitectureContractTest {
 
         assertTrue(effects.contains("MIRROR_TELEPORT_SOUND_ID"));
         assertTrue(effects.contains("MIRROR_TELEPORT_IN_PARTICLE_ID"));
+        assertTrue(effects.contains("MIRROR_TRANSDIMENSIONAL_TRAVEL_SOUND_ID"));
+        assertTrue(effects.contains("LodestoneTeleportationVisuals.DEFAULT"));
+        assertTrue(effects.contains("ClientboundTransdimensionalTravelSoundPayload"));
         assertTrue(effects.contains("BuiltInRegistries.SOUND_EVENT.getOptional"));
         assertTrue(effects.contains("BuiltInRegistries.PARTICLE_TYPE.getOptional"));
         assertTrue(effects.contains("ParticleTypes.PORTAL"));
@@ -225,6 +228,7 @@ final class ArchitectureContractTest {
         assertFalse(effects.contains("portalBurst("));
         assertFalse(effects.contains("foregroundPortalBurst("));
         assertFalse(effects.contains("mirror_teleport_out"));
+        assertFalse(effects.contains("doPreTeleportEffects"));
         assertTrue(effects.contains("CHANNEL_PARTICLES_AT_START = 1"));
         assertTrue(effects.contains("CHANNEL_PARTICLES_AT_COMPLETION = 4"));
         assertTrue(effects.contains("channelParticleCount(elapsedTicks, channelTicks)"));

@@ -1,5 +1,6 @@
 package dev.resivore.dragonbound.channel;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -9,11 +10,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
+import net.penumbra.enderscape.item.component.value.LodestoneTeleportationVisuals;
+import net.penumbra.enderscape.network.ClientboundTransdimensionalTravelSoundPayload;
+import net.penumbra.enderscape.registry.server.EnderscapeServerNetworking;
 
 /** Server-owned visual feedback for valid Dragonbound channels and confirmed arrivals. */
 final class ChannelEffects {
     static final Identifier MIRROR_TELEPORT_SOUND_ID =
             Identifier.fromNamespaceAndPath("enderscape", "item.mirror.teleport");
+    static final Identifier MIRROR_TRANSDIMENSIONAL_TRAVEL_SOUND_ID =
+            Identifier.fromNamespaceAndPath("enderscape", "item.mirror.transdimensional_travel");
     static final Identifier MIRROR_TELEPORT_IN_PARTICLE_ID =
             Identifier.fromNamespaceAndPath("enderscape", "mirror_teleport_in");
     static final int MIRROR_ARRIVAL_PARTICLE_COUNT = 50;
@@ -37,7 +43,11 @@ final class ChannelEffects {
     private ChannelEffects() {
     }
 
-    static void successfulTeleport(ServerPlayer player) {
+    /**
+     * Emits the unchanged C17 arrival punctuation, then layers Enderscape's own
+     * transdimensional presentation only for an already-confirmed cross-dimension arrival.
+     */
+    static void successfulTeleport(ServerPlayer player, boolean crossDimension) {
         ServerLevel level = (ServerLevel) player.level();
         Vec3 position = player.position();
         level.sendParticles(
@@ -61,6 +71,9 @@ final class ChannelEffects {
                 MIRROR_ARRIVAL_SOUND_VOLUME,
                 MIRROR_ARRIVAL_SOUND_PITCH
         );
+        if (crossDimension) {
+            successfulInterdimensionalReturn(player);
+        }
     }
 
     static void channelStarted(ServerPlayer player, int channelTicks) {
@@ -151,6 +164,30 @@ final class ChannelEffects {
         return BuiltInRegistries.SOUND_EVENT.getOptional(MIRROR_TELEPORT_SOUND_ID)
                 .orElseThrow(() -> new IllegalStateException(
                         "Required Enderscape Mirror teleport sound is unavailable: " + MIRROR_TELEPORT_SOUND_ID));
+    }
+
+    /**
+     * Uses Enderscape's registered packets, visual defaults, and client-side duration instead of
+     * reproducing its overlay, vignette, or local transdimensional sound playback.
+     */
+    private static void successfulInterdimensionalReturn(ServerPlayer player) {
+        EnderscapeServerNetworking.sendLodestoneTeleportationInfoPayload(
+                player,
+                true,
+                LodestoneTeleportationVisuals.DEFAULT
+        );
+        ServerPlayNetworking.send(
+                player,
+                new ClientboundTransdimensionalTravelSoundPayload(mirrorTransdimensionalTravelSoundId())
+        );
+    }
+
+    private static Identifier mirrorTransdimensionalTravelSoundId() {
+        return BuiltInRegistries.SOUND_EVENT.getOptional(MIRROR_TRANSDIMENSIONAL_TRAVEL_SOUND_ID)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Required Enderscape Mirror transdimensional sound is unavailable: "
+                                + MIRROR_TRANSDIMENSIONAL_TRAVEL_SOUND_ID))
+                .location();
     }
 
     private static SimpleParticleType mirrorTeleportInParticle() {

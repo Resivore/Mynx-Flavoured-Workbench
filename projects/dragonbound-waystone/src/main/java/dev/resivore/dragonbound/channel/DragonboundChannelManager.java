@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -17,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -312,7 +314,8 @@ public final class DragonboundChannelManager {
             return;
         }
 
-        ChannelEffects.successfulTeleport(arrived);
+        ChannelEffects.successfulTeleport(arrived,
+                isCrossDimensionReturn(channel.startDimension(), channel.anchor().dimension()));
         if (channel.source() == ReturnSource.IMBUED_VOID_PEARL) {
             arrivedHeld.shrink(1);
         } else {
@@ -352,6 +355,12 @@ public final class DragonboundChannelManager {
         return source == ReturnSource.IMBUED_VOID_PEARL
                 ? stack.is(DragonboundContent.IMBUED_VOID_PEARL)
                 : stack.is(DragonboundContent.DRAGONBOUND_STAFF);
+    }
+
+    static boolean isCrossDimensionReturn(
+            ResourceKey<Level> startDimension,
+            ResourceKey<Level> destinationDimension) {
+        return !startDimension.equals(destinationDimension);
     }
 
     private static boolean containsLava(ServerLevel level, AABB box) {
