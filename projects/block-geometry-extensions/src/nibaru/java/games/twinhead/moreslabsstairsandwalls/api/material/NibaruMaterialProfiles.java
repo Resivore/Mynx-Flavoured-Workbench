@@ -21,6 +21,7 @@ import games.twinhead.moreslabsstairsandwalls.block.spreadable.SpreadableSlab;
 import games.twinhead.moreslabsstairsandwalls.block.strippable.StrippableGeometry;
 import games.twinhead.moreslabsstairsandwalls.block.terracotta.GlazedTerracottaSlab;
 import games.twinhead.moreslabsstairsandwalls.block.translucent.TranslucentSlab;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
@@ -68,6 +69,26 @@ public final class NibaruMaterialProfiles {
     }
 
     /**
+     * Exact standard-role identities which supersede Nibaru's legacy duplicate registrations
+     * whenever Enderscape is present. An absent provider registration never falls back to the
+     * old MSSW identity; the Enderscape entrypoint adoption pass supplies the completed profile.
+     */
+    public static Optional<Identifier> externalStandardRoleId(ModBlocks family, ModBlocks.BlockType type) {
+        if (!FabricLoader.getInstance().isModLoaded("enderscape")) return Optional.empty();
+        if (family == ModBlocks.END_STONE) {
+            return Optional.of(switch (type) {
+                case SLAB -> Identifier.parse("enderscape:end_stone_slab");
+                case STAIRS -> Identifier.parse("enderscape:end_stone_stairs");
+                case WALL -> Identifier.parse("enderscape:end_stone_wall");
+            });
+        }
+        if (family == ModBlocks.PURPUR && type == ModBlocks.BlockType.WALL) {
+            return Optional.of(Identifier.parse("enderscape:purpur_wall"));
+        }
+        return Optional.empty();
+    }
+
+    /**
      * The complete current-26.2 vanilla family set eligible for BGE's three
      * additional geometries.  Eligibility is intentionally structural: a
      * canonical Minecraft BlockFamily must own all of its slab, stair, and
@@ -91,23 +112,27 @@ public final class NibaruMaterialProfiles {
     public static synchronized void registerExternal(NibaruMaterialProfile profile) {
         Inventory current = inventory();
         NibaruMaterialProfile existing = current.byBlock.get(profile.canonicalParent());
-        if (existing == profile || (existing != null
-                && existing.canonicalParentId().equals(profile.canonicalParentId()))) return;
-        if (existing != null) throw new IllegalStateException("External material collides with profile: "
-                + profile.canonicalParentId());
+        if (existing == profile) return;
+        if (existing != null && !existing.canonicalParentId().equals(profile.canonicalParentId())) {
+            throw new IllegalStateException("External material collides with profile: "
+                    + profile.canonicalParentId());
+        }
 
         List<NibaruMaterialProfile> profiles = new ArrayList<>(current.profiles);
-        profiles.add(profile);
+        Map<ModBlocks, NibaruMaterialProfile> byFamily = new LinkedHashMap<>(current.byFamily);
         Map<Block, NibaruMaterialProfile> byBlock = new IdentityHashMap<>(current.byBlock);
-        putGeometry(byBlock, profile.canonicalParent(), profile);
-        profile.nativeSlab().ifPresent(block -> putGeometry(byBlock, block, profile));
-        profile.nativeStair().ifPresent(block -> putGeometry(byBlock, block, profile));
-        profile.nativeWall().ifPresent(block -> putGeometry(byBlock, block, profile));
-        profile.effectiveSlabSource().filter(block -> block != profile.nativeSlab().orElse(null))
-                .ifPresent(block -> putGeometry(byBlock, block, profile));
-        profile.effectiveStairSource().filter(block -> block != profile.nativeStair().orElse(null))
-                .ifPresent(block -> putGeometry(byBlock, block, profile));
-        inventory = new Inventory(List.copyOf(profiles), current.byFamily,
+        if (existing == null) {
+            profiles.add(profile);
+        } else {
+            int index = profiles.indexOf(existing);
+            if (index < 0) throw new IllegalStateException("Profile inventory lost canonical material: "
+                    + profile.canonicalParentId());
+            profiles.set(index, profile);
+            byFamily.replaceAll((family, candidate) -> candidate == existing ? profile : candidate);
+            byBlock.entrySet().removeIf(entry -> entry.getValue() == existing);
+        }
+        putProfileGeometry(byBlock, profile);
+        inventory = new Inventory(List.copyOf(profiles), Collections.unmodifiableMap(byFamily),
                 Collections.unmodifiableMap(byBlock));
     }
 
@@ -138,8 +163,8 @@ public final class NibaruMaterialProfiles {
                     PROFILE_VERSION, family, family.parentBlock, BuiltInRegistries.BLOCK.getKey(family.parentBlock),
                     Optional.ofNullable(slab), Optional.ofNullable(stair), Optional.ofNullable(wall),
                     Optional.ofNullable(effectiveSlab), Optional.ofNullable(effectiveStair),
-                    id(family, ModBlocks.BlockType.SLAB), id(family, ModBlocks.BlockType.STAIRS),
-                    id(family, ModBlocks.BlockType.WALL), Set.copyOf(family.blockTags), capabilities, visual,
+                    id(family, ModBlocks.BlockType.SLAB, slab), id(family, ModBlocks.BlockType.STAIRS, stair),
+                    id(family, ModBlocks.BlockType.WALL, wall), Set.copyOf(family.blockTags), capabilities, visual,
                     visualSupport(visual), tint(family), renderLayer(visual), orientation(visual), sampling(family),
                     doubleForm(visual), textureRoles(family, visual), insetVisualContract(visual),
                     oxidationStage(family), isWaxedCopper(family),
@@ -208,7 +233,24 @@ public final class NibaruMaterialProfiles {
         if (map.put(block, profile) != null) throw new IllegalStateException("Nibaru geometry belongs to two profiles: " + block);
     }
 
+    private static void putProfileGeometry(Map<Block, NibaruMaterialProfile> map,
+            NibaruMaterialProfile profile) {
+        putGeometry(map, profile.canonicalParent(), profile);
+        profile.nativeSlab().ifPresent(block -> putGeometry(map, block, profile));
+        profile.nativeStair().ifPresent(block -> putGeometry(map, block, profile));
+        profile.nativeWall().ifPresent(block -> putGeometry(map, block, profile));
+        profile.effectiveSlabSource().filter(block -> block != profile.nativeSlab().orElse(null))
+                .ifPresent(block -> putGeometry(map, block, profile));
+        profile.effectiveStairSource().filter(block -> block != profile.nativeStair().orElse(null))
+                .ifPresent(block -> putGeometry(map, block, profile));
+    }
+
     private static Block geometry(ModBlocks family, ModBlocks.BlockType type) {
+        Optional<Identifier> adopted = externalStandardRoleId(family, type);
+        if (adopted.isPresent()) {
+            Block block = BuiltInRegistries.BLOCK.getValue(adopted.orElseThrow());
+            return adopted.orElseThrow().equals(BuiltInRegistries.BLOCK.getKey(block)) ? block : null;
+        }
         if (!family.hasBlock(type)) return null;
         Block block = family.getBlock(type);
         if (block == Blocks.AIR) throw new IllegalStateException("Missing registered Nibaru geometry: "
@@ -224,7 +266,9 @@ public final class NibaruMaterialProfiles {
         return variant == BlockFamily.Variant.SLAB ? EXACT_VANILLA_SLAB_SOURCES.get(family) : null;
     }
 
-    private static Optional<Identifier> id(ModBlocks family, ModBlocks.BlockType type) {
+    private static Optional<Identifier> id(ModBlocks family, ModBlocks.BlockType type, Block geometry) {
+        Optional<Identifier> adopted = externalStandardRoleId(family, type);
+        if (adopted.isPresent()) return geometry == null ? Optional.empty() : adopted;
         return family.hasBlock(type) ? Optional.of(family.getId(type)) : Optional.empty();
     }
 

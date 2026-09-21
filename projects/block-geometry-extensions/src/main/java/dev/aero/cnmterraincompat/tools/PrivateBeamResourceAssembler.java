@@ -16,7 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Local-only C92 texture assembly. It reads the exact retained provider artifacts and produces only
+ * Local-only C93 texture assembly. It reads the exact retained provider artifacts and produces only
  * ignored build output; no upstream image/model bytes are present in source resources.
  */
 public final class PrivateBeamResourceAssembler {

@@ -17,6 +17,9 @@ public final class BgeGeneratedResources {
         ExternalMaterialGeneratedResources.GenerationSummary external =
                 ExternalMaterialGeneratedResources.generate(manager);
         PrivateBeamGeneratedResources.generate(manager);
+        // Run last: this item-only pass sees the complete explicit catalog and cannot affect any
+        // already-written blockstate or placed-state model rotation.
+        CatalogPreviewGeneratedResources.generate(manager);
         return new GenerationSummary(layer, quarter, external);
     }
 

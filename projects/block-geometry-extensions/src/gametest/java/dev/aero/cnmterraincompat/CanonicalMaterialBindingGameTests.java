@@ -79,7 +79,7 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
 
     @GameTest(maxTicks = 40)
     public void unknownCnmFamilyRemainsUntouchedByBge(GameTestHelper helper) {
-        Identifier unknownId = Identifier.parse("enderscape:mirestone");
+        Identifier unknownId = Identifier.parse("bge_unknown:untouched_material");
         Block unknown = BuiltInRegistries.BLOCK.getValue(unknownId);
         helper.assertTrue(unknownId.equals(BuiltInRegistries.BLOCK.getKey(unknown))
                         && NibaruMaterialProfiles.fromBlock(unknown).isEmpty(),

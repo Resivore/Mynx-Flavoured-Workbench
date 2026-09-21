@@ -83,6 +83,23 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
         for (ModBlocks family : ModBlocks.values()) {
             for (ModBlocks.BlockType type : ModBlocks.BlockType.values()) {
                 if (!family.hasBlock(type)) continue;
+                var adoptedId = NibaruMaterialProfiles.externalStandardRoleId(family, type);
+                if (adoptedId.isPresent()) {
+                    NibaruMaterialProfile adoptedProfile = NibaruMaterialProfiles.fromFamily(family)
+                            .orElseThrow();
+                    Block adopted = switch (type) {
+                        case SLAB -> adoptedProfile.nativeSlab().orElseThrow();
+                        case STAIRS -> adoptedProfile.nativeStair().orElseThrow();
+                        case WALL -> adoptedProfile.nativeWall().orElseThrow();
+                    };
+                    helper.assertTrue(BuiltInRegistries.BLOCK.getKey(adopted)
+                                    .equals(adoptedId.orElseThrow())
+                                    && !family.getId(type).equals(
+                                            BuiltInRegistries.BLOCK.getKey(family.getBlock(type))),
+                            "Externally superseded native role was not adopted/suppressed: "
+                                    + family + "/" + type);
+                    continue;
+                }
                 Block block = family.getBlock(type);
                 Identifier blockId = BuiltInRegistries.BLOCK.getKey(block);
                 helper.assertTrue(blockId != null && blockId.equals(family.getId(type)),
@@ -133,10 +150,10 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
                         && "oak_log".equals(oak.textureRoles().side())
                         && "oak_log_top".equals(oak.textureRoles().top()),
                 "Canonical pillar resolver diverged between Purpur, Quartz, and a working log");
-        helper.assertTrue(roles == 875 && visitedModels.size() >= roles,
+        helper.assertTrue(roles == 871 && visitedModels.size() >= roles,
                 "Native production resource closure inventory drifted: roles=" + roles
                         + ", models=" + visitedModels.size());
-        System.out.println("NATIVE_C81_PRODUCTION_RESOURCE_CLOSURE|roles=" + roles
+        System.out.println("NATIVE_C93_PRODUCTION_RESOURCE_CLOSURE|roles=" + roles
                 + "|models=" + visitedModels.size() + "|families=" + ModBlocks.values().length);
         helper.succeed();
     }
@@ -197,10 +214,10 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(axisSlabs == 57 && axisStairs == 57,
                 "Expected exact 57/57 native axis slab/stair subset, found "
                         + axisSlabs + "/" + axisStairs);
-        helper.assertTrue(nativeSlabs == 279 && nativeStairs == 282 && nativeWalls == 314,
+        helper.assertTrue(nativeSlabs == 280 && nativeStairs == 283 && nativeWalls == 314,
                 "Native geometry inventory changed: slabs=" + nativeSlabs + ", stairs=" + nativeStairs
                         + ", walls=" + nativeWalls);
-        helper.assertTrue(nonAxisSlabs == 222 && nonAxisStairs == 225,
+        helper.assertTrue(nonAxisSlabs == 223 && nonAxisStairs == 226,
                 "Non-axis native geometry exclusion changed: slabs=" + nonAxisSlabs
                         + ", stairs=" + nonAxisStairs);
 

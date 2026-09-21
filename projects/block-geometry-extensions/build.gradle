@@ -193,9 +193,25 @@ processResources {
                         if (value.contains(sourceName)) values.add(value.replace(sourceName, targetName))
                     }
                 }
+                def enderscapeFallbacks = [
+                        'more_slabs_stairs_and_walls:end_stone_slab',
+                        'more_slabs_stairs_and_walls:end_stone_stairs',
+                        'more_slabs_stairs_and_walls:end_stone_wall',
+                        'more_slabs_stairs_and_walls:purpur_wall'
+                ] as Set
+                def normalizedValues = []
+                values.each { value ->
+                    def id = value instanceof String ? value : value.id
+                    def normalized = enderscapeFallbacks.contains(id)
+                            ? [id: id, required: false] : value
+                    if (!normalizedValues.any { existing ->
+                        def existingId = existing instanceof String ? existing : existing.id
+                        existingId == id
+                    }) normalizedValues.add(normalized)
+                }
                 def merged = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([
                         replace: false,
-                        values: values as List
+                        values: normalizedValues
                 ])).replace('\r\n', '\n').replace('\r', '\n').replace('\n', '\r\n')
                 target.setText(merged, 'UTF-8')
             }

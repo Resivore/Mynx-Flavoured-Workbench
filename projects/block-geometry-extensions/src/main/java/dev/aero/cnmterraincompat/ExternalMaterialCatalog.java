@@ -21,7 +21,7 @@ import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c92-explicit-family-reconstruction-v1";
+    public static final String PROFILE_VERSION = "bge-c93-provider-role-completion-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -38,6 +38,10 @@ public final class ExternalMaterialCatalog {
 
     public static List<Spec> specs() {
         List<Spec> result = new ArrayList<>(List.of(
+                uniform("mossy_stone:mossy_stone", Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Map.of(
+                        "slab", Identifier.parse("mossy_stone:mossy_stone_slab"),
+                        "stairs", Identifier.parse("mossy_stone:mossy_stone_stairs"),
+                        "wall", Identifier.parse("mossy_stone:mossy_stone_wall"))),
                 uniform("ribbits:mossy_oak_planks", Set.of(BlockTags.MINEABLE_WITH_AXE),
                         standardRoles("ribbits:mossy_oak_planks")),
                 hugeMushroom("ribbits:red_toadstool", "ribbits:block/red_toadstool"),
@@ -162,6 +166,36 @@ public final class ExternalMaterialCatalog {
                 "stairs", Identifier.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_stairs"));
     }
 
+    /** Enderscape's registry paths are not consistently derivable from their family roots. */
+    private static Spec enderscapeUniform(String source, String slab, String stairs, String wall) {
+        return uniform(source, Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Map.of(
+                "slab", Identifier.parse(slab),
+                "stairs", Identifier.parse(stairs),
+                "wall", Identifier.parse(wall)));
+    }
+
+    /** Exact provider roles for an Enderscape family which genuinely has no provider wall. */
+    private static Spec enderscapeUniform(String source, String slab, String stairs) {
+        return uniform(source, Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Map.of(
+                "slab", Identifier.parse(slab),
+                "stairs", Identifier.parse(stairs)));
+    }
+
+    /**
+     * Enderscape completes these vanilla roots. Their canonical vanilla block remains both the
+     * material source and visual reference; {@link #registerProvider(String)} supplies the exact
+     * provider-entrypoint timing gate before any Enderscape role is resolved.
+     */
+    private static Spec enderscapeVanilla(String source, Map<String, Identifier> providerRoles) {
+        Identifier key = Identifier.parse(source);
+        String texture = key.getNamespace() + ":block/" + key.getPath();
+        return new Spec(key, "enderscape", key, key, providerRoles,
+                ExternalMaterialStateBridge.forSource(key), VisualProfile.UNIFORM,
+                NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture, "",
+                TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
+                Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Set.of(), List.of());
+    }
+
     /**
      * BBB's beam parent is directional, but its provider slab is keyed by {@code facing,type}
      * and its provider stair only by normal stair geometry. Neither can retain an independent
@@ -207,9 +241,19 @@ public final class ExternalMaterialCatalog {
         result.add(pillar("enderscape:dusk_purpur_pillar", "enderscape:block/dusk_purpur_pillar",
                 "enderscape:block/dusk_purpur_pillar_top"));
 
-        // These three ordinary families were explicitly requested. Their provider-owned standard
-        // forms are selected by exact registry identity; Mirestone Bricks intentionally uses the
-        // provider's singular role paths.
+        // Enderscape owns the missing standard forms for these two vanilla roots. Purpur keeps
+        // vanilla's slab/stairs and adopts only Enderscape's wall.
+        result.add(enderscapeVanilla("minecraft:end_stone", Map.of(
+                "slab", Identifier.parse("enderscape:end_stone_slab"),
+                "stairs", Identifier.parse("enderscape:end_stone_stairs"),
+                "wall", Identifier.parse("enderscape:end_stone_wall"))));
+        result.add(enderscapeVanilla("minecraft:purpur_block", Map.of(
+                "slab", Identifier.parse("minecraft:purpur_slab"),
+                "stairs", Identifier.parse("minecraft:purpur_stairs"),
+                "wall", Identifier.parse("enderscape:purpur_wall"))));
+
+        // C92's three existing ordinary families remain exact. Mirestone Bricks intentionally
+        // uses the provider's singular role paths.
         result.add(uniform("enderscape:polished_end_stone", Set.of(BlockTags.MINEABLE_WITH_PICKAXE),
                 Map.of("slab", Identifier.parse("enderscape:polished_end_stone_slab"),
                         "stairs", Identifier.parse("enderscape:polished_end_stone_stairs"),
@@ -223,6 +267,60 @@ public final class ExternalMaterialCatalog {
                         "stairs", Identifier.parse("enderscape:mirestone_brick_stairs"),
                         "wall", Identifier.parse("enderscape:mirestone_brick_wall"))));
 
+        // Exact 3.0.2 BlockFamily ownership for the 17 newly requested incomplete roots.
+        result.add(enderscapeUniform("enderscape:shadoline_block",
+                "enderscape:shadoline_block_slab", "enderscape:shadoline_block_stairs",
+                "enderscape:shadoline_block_wall"));
+        result.add(enderscapeUniform("enderscape:cut_shadoline",
+                "enderscape:cut_shadoline_slab", "enderscape:cut_shadoline_stairs",
+                "enderscape:cut_shadoline_wall"));
+        result.add(enderscapeUniform("enderscape:overgrown_end_stone_bricks",
+                "enderscape:overgrown_end_stone_brick_slab",
+                "enderscape:overgrown_end_stone_brick_stairs",
+                "enderscape:overgrown_end_stone_brick_wall"));
+        result.add(enderscapeUniform("enderscape:veradite",
+                "enderscape:veradite_slab", "enderscape:veradite_stairs",
+                "enderscape:veradite_wall"));
+        result.add(enderscapeUniform("enderscape:veradite_bricks",
+                "enderscape:veradite_brick_slab", "enderscape:veradite_brick_stairs",
+                "enderscape:veradite_brick_wall"));
+        result.add(enderscapeUniform("enderscape:mirestone",
+                "enderscape:mirestone_slab", "enderscape:mirestone_stairs",
+                "enderscape:mirestone_wall"));
+        result.add(enderscapeUniform("enderscape:polished_mirestone",
+                "enderscape:polished_mirestone_slab", "enderscape:polished_mirestone_stairs",
+                "enderscape:polished_mirestone_wall"));
+        result.add(enderscapeUniform("enderscape:overgrown_mirestone_bricks",
+                "enderscape:overgrown_mirestone_brick_slab",
+                "enderscape:overgrown_mirestone_brick_stairs",
+                "enderscape:overgrown_mirestone_brick_wall"));
+        result.add(enderscapeUniform("enderscape:kurodite",
+                "enderscape:kurodite_slab", "enderscape:kurodite_stairs",
+                "enderscape:kurodite_wall"));
+        result.add(enderscapeUniform("enderscape:polished_kurodite",
+                "enderscape:polished_kurodite_slab", "enderscape:polished_kurodite_stairs",
+                "enderscape:polished_kurodite_wall"));
+        result.add(enderscapeUniform("enderscape:kurodite_bricks",
+                "enderscape:kurodite_brick_slab", "enderscape:kurodite_brick_stairs",
+                "enderscape:kurodite_brick_wall"));
+        result.add(enderscapeUniform("enderscape:etched_alluring_magnia",
+                "enderscape:etched_alluring_magnia_slab", "enderscape:etched_alluring_magnia_stairs",
+                "enderscape:etched_alluring_magnia_wall"));
+        result.add(enderscapeUniform("enderscape:etched_repulsive_magnia",
+                "enderscape:etched_repulsive_magnia_slab", "enderscape:etched_repulsive_magnia_stairs",
+                "enderscape:etched_repulsive_magnia_wall"));
+        result.add(enderscapeUniform("enderscape:dusk_purpur_block",
+                "enderscape:dusk_purpur_slab", "enderscape:dusk_purpur_stairs",
+                "enderscape:dusk_purpur_wall"));
+        result.add(enderscapeUniform("enderscape:purpur_tiles",
+                "enderscape:purpur_tile_slab", "enderscape:purpur_tile_stairs"));
+        result.add(enderscapeUniform("enderscape:celestial_bricks",
+                "enderscape:celestial_brick_slab", "enderscape:celestial_brick_stairs",
+                "enderscape:celestial_brick_wall"));
+        result.add(enderscapeUniform("enderscape:murublight_bricks",
+                "enderscape:murublight_brick_slab", "enderscape:murublight_brick_stairs",
+                "enderscape:murublight_brick_wall"));
+
         for (String path : List.of("chiseled_end_stone", "cracked_end_stone_bricks",
                 "chiseled_purpur", "nebulite_block", "chiseled_shadoline", "chiseled_veradite",
                 "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
@@ -232,13 +330,18 @@ public final class ExternalMaterialCatalog {
             result.add(uniform("enderscape:" + path, Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Map.of()));
         }
 
-        // These exact Enderscape plank parents keep their provider Slab/Stairs while BGE owns
-        // the Wall and tail forms.  Their private Beam variants are linked into the same selector
-        // family below, never registered as a second public provider source.
-        for (String plank : List.of("veiled", "celestial", "murublight")) {
-            result.add(uniform("enderscape:" + plank + "_planks", Set.of(BlockTags.MINEABLE_WITH_AXE),
-                    standardRoles("enderscape:" + plank + "_planks")));
-        }
+        // These exact Enderscape plank parents keep their unusually named provider Slab/Stairs
+        // while BGE owns the genuinely absent Wall and tail forms. Their private Beam variants
+        // remain linked into the same selector family below.
+        result.add(uniform("enderscape:veiled_planks", Set.of(BlockTags.MINEABLE_WITH_AXE), Map.of(
+                "slab", Identifier.parse("enderscape:veiled_slab"),
+                "stairs", Identifier.parse("enderscape:veiled_stairs"))));
+        result.add(uniform("enderscape:celestial_planks", Set.of(BlockTags.MINEABLE_WITH_AXE), Map.of(
+                "slab", Identifier.parse("enderscape:celestial_slab"),
+                "stairs", Identifier.parse("enderscape:celestial_stairs"))));
+        result.add(uniform("enderscape:murublight_planks", Set.of(BlockTags.MINEABLE_WITH_AXE), Map.of(
+                "slab", Identifier.parse("enderscape:murublight_slab"),
+                "stairs", Identifier.parse("enderscape:murublight_stairs"))));
 
         // The source's stress/shatter state remains provider-only.  BGE's ordinary geometry uses
         // the real stress-0 side/end contract and never invents block/void_shale.
@@ -346,8 +449,10 @@ public final class ExternalMaterialCatalog {
             Set<TagKey<Block>> blockTags, Set<BehaviorCapability> capabilities,
             List<MaterialTransition> transitions) {
         public Spec {
-            if (!provider.equals(providerReference.getNamespace())) {
-                throw new IllegalArgumentException("Provider reference must be owned by " + provider);
+            if (!provider.equals(providerReference.getNamespace())
+                    && !id.getNamespace().equals(providerReference.getNamespace())) {
+                throw new IllegalArgumentException("Reference must be owned by " + provider
+                        + " or the canonical source namespace " + id.getNamespace());
             }
             providerRoles = Map.copyOf(providerRoles);
             materialStateBridge = materialStateBridge == null ? ExternalMaterialStateBridge.NONE : materialStateBridge;
@@ -355,8 +460,10 @@ public final class ExternalMaterialCatalog {
                 if (!Set.of("slab", "stairs", "wall").contains(role.getKey())) {
                     throw new IllegalArgumentException("Unsupported provider geometry role " + role.getKey());
                 }
-                if (!provider.equals(role.getValue().getNamespace())) {
-                    throw new IllegalArgumentException("Provider geometry must be owned by " + provider);
+                if (!provider.equals(role.getValue().getNamespace())
+                        && !id.getNamespace().equals(role.getValue().getNamespace())) {
+                    throw new IllegalArgumentException("Standard geometry must be owned by " + provider
+                            + " or the canonical source namespace " + id.getNamespace());
                 }
             }
             blockTags = Set.copyOf(blockTags);

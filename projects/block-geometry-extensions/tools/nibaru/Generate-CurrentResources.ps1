@@ -164,6 +164,61 @@ Get-ChildItem -LiteralPath $minecraftTagRoot -Recurse -Filter '*.json' -File | F
         [System.Text.UTF8Encoding]::new($false))
 }
 
+# Enderscape supersedes these four legacy Nibaru standard roles when loaded. Keep each tag
+# reference optional so the fallback remains classified when it is registered, while an
+# Enderscape-present runtime never rejects the whole Minecraft tag because the fallback ID is
+# intentionally absent.
+$enderscapeFallbackIds = [System.Collections.Generic.HashSet[string]]::new(
+    [System.StringComparer]::Ordinal)
+foreach ($id in @(
+    "$namespace`:end_stone_slab",
+    "$namespace`:end_stone_stairs",
+    "$namespace`:end_stone_wall",
+    "$namespace`:purpur_wall"
+)) { [void]$enderscapeFallbackIds.Add($id) }
+
+Get-ChildItem -LiteralPath $minecraftTagRoot -Recurse -Filter '*.json' -File | ForEach-Object {
+    $json = Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json
+    if ($null -eq $json.values) { return }
+    $changed = $false
+    $values = foreach ($value in @($json.values)) {
+        if ($value -is [string] -and $enderscapeFallbackIds.Contains($value)) {
+            $changed = $true
+            [ordered]@{ id = $value; required = $false }
+        } else {
+            $value
+        }
+    }
+    if (-not $changed) { return }
+    $json.values = @($values)
+    [System.IO.File]::WriteAllText(
+        $_.FullName,
+        ($json | ConvertTo-Json -Depth 100),
+        [System.Text.UTF8Encoding]::new($false))
+}
+
+# Loot tables cannot reference an intentionally unregistered fallback block/item. Fabric's
+# resource condition retains the table only in the exact Enderscape-absent mode where that
+# fallback registration is active.
+foreach ($fallbackId in $enderscapeFallbackIds) {
+    $path = $fallbackId.Substring($fallbackId.IndexOf(':') + 1)
+    $lootPath = Join-Path $resolvedOutput "data\$namespace\loot_table\blocks\$path.json"
+    if (-not (Test-Path -LiteralPath $lootPath -PathType Leaf)) { continue }
+    $loot = Get-Content -LiteralPath $lootPath -Raw | ConvertFrom-Json
+    $condition = [ordered]@{
+        condition = 'fabric:not'
+        value = [ordered]@{
+            condition = 'fabric:all_mods_loaded'
+            values = @('enderscape')
+        }
+    }
+    $loot | Add-Member -NotePropertyName 'fabric:load_conditions' -NotePropertyValue $condition -Force
+    [System.IO.File]::WriteAllText(
+        $lootPath,
+        ($loot | ConvertTo-Json -Depth 100),
+        [System.Text.UTF8Encoding]::new($false))
+}
+
 # Clone localized names while retaining the exact new registry identifiers.
 $langPath = Join-Path $resolvedOutput "assets\$namespace\lang\en_us.json"
 $lang = Get-Content -LiteralPath $langPath -Raw | ConvertFrom-Json

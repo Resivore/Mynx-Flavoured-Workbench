@@ -95,14 +95,14 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
                 "Fabric Loader did not resolve the legacy Nibaru alias to the unified BGE container");
         helper.assertTrue(primary.getMetadata().getId().equals("cnm_terrain_slabs_compat"),
                 "Unified container primary identity changed");
-        helper.assertTrue(version.getFriendlyString().equals("4.2.36-bge.canary92.explicit-family-reconstruction+26.2"),
+        helper.assertTrue(version.getFriendlyString().equals("4.2.37-bge.canary93.provider-role-completion+26.2"),
                 "Unified container version changed: " + version.getFriendlyString());
         try {
             helper.assertTrue(VersionPredicate.parse(">=4.2.0 <4.3.0-").test(version),
                     "Legacy Nibaru dependency range rejected the unified version");
             helper.assertTrue(VersionPredicate.parse(">=0.8.0-bge-canary56-vertical-stairs-catalog").test(version),
                     "Forward BGE dependency range rejected the unified version");
-            helper.assertTrue(VersionPredicate.parse("=4.2.36-bge.canary92.explicit-family-reconstruction+26.2").test(version),
+            helper.assertTrue(VersionPredicate.parse("=4.2.37-bge.canary93.provider-role-completion+26.2").test(version),
                     "Exact unified dependency rejected the unified version");
             helper.assertTrue(!VersionPredicate.parse("=4.2.0+26.2-port-canary46-bge-layer-contract").test(version),
                     "Exact predecessor Nibaru dependency falsely accepted the unified version");
@@ -147,7 +147,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
             }
         }
 
-        helper.assertTrue(names.size() == 627 && providerPaths == 560 && ordinaryAliases == 67,
+        helper.assertTrue(names.size() == 627 && providerPaths == 558 && ordinaryAliases == 69,
                 "Generated Nibaru English inventory changed: total=" + names.size()
                         + ", provider=" + providerPaths + ", ordinary=" + ordinaryAliases);
         helper.assertTrue("Oak Log Step".equals(names.get(
@@ -156,7 +156,7 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         helper.assertTrue("Vertical Oak Log Slab".equals(names.get(
                         "block.clutternomore.more_slabs_stairs_and_walls.vertical_oak_log_slab")),
                 "Vertical Oak Log Slab no longer follows CNM's normal generated naming");
-        System.out.println("PROVIDER_ENGLISH_TRANSLATIONS|generated=627|providerPaths=560|ordinaryAliases=67");
+        System.out.println("PROVIDER_ENGLISH_TRANSLATIONS|generated=627|providerPaths=558|ordinaryAliases=69");
         helper.succeed();
     }
 
@@ -1055,9 +1055,9 @@ public final class LeafSemanticsGameTests implements CustomTestMethodInvoker {
         long walls = profiles.stream().filter(profile -> profile.nativeWall().isPresent()).count();
         var sparse = profiles.stream().filter(profile -> profile.nativeSlab().isEmpty()
                 || profile.nativeStair().isEmpty() || profile.nativeWall().isEmpty()).toList();
-        helper.assertTrue(slabs == 279 && stairs == 282 && walls == 314,
+        helper.assertTrue(slabs == 280 && stairs == 283 && walls == 314,
                 "Native catalog changed: " + slabs + "/" + stairs + "/" + walls);
-        helper.assertTrue(sparse.size() == 35, "Expected 35 sparse profiles, found " + sparse.size());
+        helper.assertTrue(sparse.size() == 34, "Expected 34 sparse profiles, found " + sparse.size());
 
         NibaruMaterialProfile stone = NibaruMaterialProfiles.fromFamily(ModBlocks.STONE).orElseThrow();
         NibaruMaterialProfile oak = NibaruMaterialProfiles.fromFamily(ModBlocks.OAK_PLANKS).orElseThrow();

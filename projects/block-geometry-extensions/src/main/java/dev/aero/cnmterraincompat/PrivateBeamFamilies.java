@@ -55,8 +55,10 @@ public final class PrivateBeamFamilies {
     }
 
     static boolean usesWoodenWall(ExternalMaterialCatalog.Spec spec) {
-        return DEFINITIONS.stream().anyMatch(definition -> definition.root().equals(spec.id())
-                || definition.planks().equals(spec.id()));
+        // BBB's Pale Oak Beam wall and Nibaru's Pale Oak Planks wall are deliberately
+        // different contracts.  Only the private Beam roots use BBB's thin post/arm wall;
+        // Enderscape planks retain the ordinary vanilla WallBlock topology.
+        return DEFINITIONS.stream().anyMatch(definition -> definition.root().equals(spec.id()));
     }
 
     public static boolean isPrivateBeam(Identifier source) {

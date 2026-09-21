@@ -65,7 +65,7 @@ public final class ExternalMaterialFamilies {
                         spec.materialStateBridge()));
         RoleSelection stairs = selectStandardRole(spec, "stairs", stairsId, StairBlock.class,
                 () -> ExternalMaterialBlocks.createStairs(source, properties(stairsId, source), leaves, hugeMushroom,
-                        spec.materialStateBridge()));
+                        spec.materialStateBridge(), spec.visual() == VisualProfile.PATH));
         RoleSelection wall = selectStandardRole(spec, "wall", wallId, WallBlock.class,
                 () -> ExternalMaterialBlocks.createWall(source,
                         wallProperties(wallId, source, spec.materialStateBridge()), leaves, hugeMushroom,
@@ -76,7 +76,9 @@ public final class ExternalMaterialFamilies {
         if (wall.generated()) generatedStandardRoles.add("wall");
 
         NibaruMaterialProfile profile = new NibaruMaterialProfile(
-                ExternalMaterialCatalog.PROFILE_VERSION, null, source, spec.id(),
+                ExternalMaterialCatalog.PROFILE_VERSION,
+                NibaruMaterialProfiles.fromBlock(source).map(NibaruMaterialProfile::family).orElse(null),
+                source, spec.id(),
                 Optional.of(slab.block()), Optional.of(stairs.block()), Optional.of(wall.block()),
                 Optional.of(slab.block()), Optional.of(stairs.block()),
                 Optional.of(registeredId(slab.block())), Optional.of(registeredId(stairs.block())),
@@ -107,7 +109,7 @@ public final class ExternalMaterialFamilies {
                     NibaruProviderAdapter.derived(profile, BgeGeometryRole.CORNER).orElseThrow(),
                     NibaruProviderAdapter.derived(profile, BgeGeometryRole.QUARTER_COLUMN).orElseThrow(),
                     NibaruProviderAdapter.derived(profile, BgeGeometryRole.LAYER).orElseThrow(),
-                    generatedRoles(pending.generatedStandardRoles()));
+                    generatedRoles(pending.generatedStandardRoles(), profile.family() == null));
             pending.spec().materialStateBridge().validateDerived(pending.spec().id(), binding.roles());
             BY_SOURCE.put(pending.spec().id(), binding);
             copyFireToAll(binding);
@@ -166,13 +168,15 @@ public final class ExternalMaterialFamilies {
         Identifier providerId = spec.providerRoles().get(role);
         if (providerId != null) {
             Block candidate = BuiltInRegistries.BLOCK.getValue(providerId);
-            if (providerId.equals(BuiltInRegistries.BLOCK.getKey(candidate))) {
-                if (!expectedType.isInstance(candidate)) {
-                    throw new IllegalStateException("Provider role has incompatible block type: "
-                            + providerId + " expected " + expectedType.getSimpleName());
-                }
-                return new RoleSelection(candidate, false);
+            if (!providerId.equals(BuiltInRegistries.BLOCK.getKey(candidate))) {
+                throw new IllegalStateException("Declared provider role is absent after provider registration: "
+                        + spec.id() + " " + role + "=" + providerId);
             }
+            if (!expectedType.isInstance(candidate)) {
+                throw new IllegalStateException("Provider role has incompatible block type: "
+                        + providerId + " expected " + expectedType.getSimpleName());
+            }
+            return new RoleSelection(candidate, false);
         }
         Block block = generated.get();
         CnmTerrainCompat.register(generatedId, block);
@@ -187,9 +191,14 @@ public final class ExternalMaterialFamilies {
         return id;
     }
 
-    private static Set<String> generatedRoles(Set<String> standard) {
+    private static Set<String> generatedRoles(Set<String> standard, boolean generatedTail) {
         LinkedHashSet<String> result = new LinkedHashSet<>(standard);
-        result.addAll(List.of("vertical_slab", "step", "corner", "quarter_column", "layer"));
+        // A provider-only profile causes CNM/BGE to create all five tail roles. When an external
+        // provider completes an existing native family (End Stone or Purpur), those tail blocks
+        // already exist and must remain native rather than being relabeled as newly generated.
+        if (generatedTail) {
+            result.addAll(List.of("vertical_slab", "step", "corner", "quarter_column", "layer"));
+        }
         return Set.copyOf(result);
     }
 

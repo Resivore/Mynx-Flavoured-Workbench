@@ -12,7 +12,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** Thin wooden post-and-arm wall topology used by plank and Beam families. */
+/** Exact BBB Pale Oak Beam thin post-and-arm wall topology used by private Beam families. */
 public final class WoodenPlankWallBlock extends WallBlock {
     private static final EnumProperty<WallSide> EAST = BlockStateProperties.EAST_WALL;
     private static final EnumProperty<WallSide> NORTH = BlockStateProperties.NORTH_WALL;
@@ -52,12 +52,20 @@ public final class WoodenPlankWallBlock extends WallBlock {
     }
 
     private static VoxelShape initial(BlockState state, BlockGetter level, BlockPos pos, VoxelShape post) {
-        boolean northSouth = state.getValue(NORTH) != WallSide.NONE && state.getValue(SOUTH) != WallSide.NONE;
-        boolean eastWest = state.getValue(EAST) != WallSide.NONE && state.getValue(WEST) != WallSide.NONE;
-        if (northSouth && eastWest) return Shapes.empty();
-        if (!state.getValue(UP)) return post;
+        boolean north = state.getValue(NORTH) != WallSide.NONE;
+        boolean east = state.getValue(EAST) != WallSide.NONE;
+        boolean south = state.getValue(SOUTH) != WallSide.NONE;
+        boolean west = state.getValue(WEST) != WallSide.NONE;
+        VoxelShape result = post;
+        // Match BBB's authored Pale Oak wall exactly: pure straight runs and the four-way
+        // cross omit the post, while corners and T junctions retain it.
+        if (north && south && !east && !west) result = Shapes.empty();
+        if (!north && !south && east && west) result = Shapes.empty();
+        if (north && south && east && west) result = Shapes.empty();
         BlockState above = level.getBlockState(pos.above());
-        return above.getBlock() instanceof WallBlock && above.getValue(WallBlock.UP) ? post
-                : (northSouth || eastWest ? Shapes.empty() : post);
+        if (above.getBlock() instanceof WallBlock && above.getValue(WallBlock.UP)
+                && state.getValue(UP)) result = post;
+        if (!state.getValue(UP)) result = post;
+        return result;
     }
 }

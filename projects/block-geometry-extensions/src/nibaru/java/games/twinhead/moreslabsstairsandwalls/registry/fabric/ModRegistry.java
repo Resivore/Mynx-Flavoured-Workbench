@@ -1,6 +1,7 @@
 package games.twinhead.moreslabsstairsandwalls.registry.fabric;
 
 import games.twinhead.moreslabsstairsandwalls.MoreSlabsStairsAndWalls;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import games.twinhead.moreslabsstairsandwalls.block.ModBlocks;
 import games.twinhead.moreslabsstairsandwalls.block.entity.FallingSlabBlockEntity;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
@@ -55,6 +56,7 @@ public class ModRegistry {
         for (ModBlocks block: ModBlocks.values()) {
             for (ModBlocks.BlockType type : ModBlocks.BlockType.values()) {
                 if (!block.hasBlock(type)) continue;
+                if (NibaruMaterialProfiles.externalStandardRoleId(block, type).isPresent()) continue;
                 Block geometry = block.getBlock(type);
                 if (emittedItems.add(geometry.asItem())) entries.accept(geometry);
             }
@@ -69,6 +71,9 @@ public class ModRegistry {
             {
                 if (modBlock.hasBlock(type))
                 {
+                    // Enderscape owns these exact standard forms. Suppress both the legacy block
+                    // and item identity; NibaruMaterialProfiles adopts the provider registration.
+                    if (NibaruMaterialProfiles.externalStandardRoleId(modBlock, type).isPresent()) continue;
                     Block block = games.twinhead.moreslabsstairsandwalls.registry.ModRegistry.getBlock(modBlock, type);
                     REGISTERED_BLOCKS.put(modBlock.getId(type), block);
                     Registry.register(BuiltInRegistries.BLOCK, ResourceKey.create(Registries.BLOCK, modBlock.getId(type)), block);

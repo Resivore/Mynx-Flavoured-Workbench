@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
   "id": "zz_bge_external_fixtures",
-  "provides": ["mcwpaths", "mynx_trees", "ribbits", "bbb", "enderscape"],
+  "provides": ["mcwpaths", "mynx_trees", "ribbits", "bbb", "enderscape", "mossy_stone"],
   "version": "1.0.0",
   "name": "CNM Nibaru Runtime Tests",
   "environment": "*",
   "entrypoints": {
     "main": [
       "com.mcwpaths.kikoz.MacawsPaths",
+      "dev.resivore.mossystone.MossyStoneMod",
       "dev.resivore.mynxtrees.MynxTrees",
       "com.yungnickyoung.minecraft.ribbits.fabric.RibbitsFabric",
       "com.starfish_studios.bbb.BuildingButBetter",
@@ -25,7 +26,10 @@
       "dev.aero.cnmterraincompat.CornerColumnResourceGameTests",
       "dev.aero.cnmterraincompat.client.GlassCornerUvResourceGameTests",
       "dev.aero.cnmterraincompat.ExternalMaterialFamilyGameTests",
+      "dev.aero.cnmterraincompat.MossyStoneCatalogGameTests",
+      "dev.aero.cnmterraincompat.EnderscapeProviderOwnershipGameTests",
       "dev.aero.cnmterraincompat.CanonicalMaterialBindingGameTests",
+      "dev.aero.cnmterraincompat.RenderingContractGameTests",
       "dev.aero.cnmterraincompat.BgeSurfaceGeometryGameTests"
     ]
   },

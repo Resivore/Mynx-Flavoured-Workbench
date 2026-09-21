@@ -24,6 +24,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.SlabType;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -48,8 +50,6 @@ public final class ExternalMaterialGeneratedResources {
             Identifier wall = id(binding.wall());
             Identifier vertical = id(binding.verticalSlab());
             Identifier step = id(binding.step());
-            String verticalItemModel = model(vertical);
-            String stepItemModel = model(step);
 
             if (binding.isGeneratedRole("slab")) {
                 if (profile.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED) {
@@ -80,32 +80,38 @@ public final class ExternalMaterialGeneratedResources {
                 blockStates++;
             }
 
-            if (profile.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED) {
-                // CNM's normal Vertical Slab and Step templates are the established item-preview
-                // contract: their display transforms centre the Vertical Slab and present the Step
-                // horizontally. AxisModelContract only produces placed-state signature models.
-                // Keep that state-model collection out of the item-preview decision.
-                models += writeAxisItemPreviewModels(profile, vertical, step);
-                AxisModelContract.AxisUvPolicy policy = AxisGeneratedResources.policy(
-                        manager, profile.canonicalParentId());
-                Map<String, JsonObject> verticalModels =
-                        AxisModelContract.verticalGeneratedModels(profile, vertical, policy);
-                verticalModels.forEach((modelId, model) -> write(modelResource(modelId), model));
-                write(blockState(vertical), AxisModelContract.verticalBlockState(vertical, policy));
-                models += verticalModels.size();
-                Map<String, JsonObject> stepModels =
-                        AxisModelContract.stepGeneratedModels(profile, step, policy);
-                stepModels.forEach((modelId, model) -> write(modelResource(modelId), model));
-                write(blockState(step), AxisModelContract.stepBlockState(step, policy));
-                models += stepModels.size();
-            } else if (profile.insetVisualContract().isPresent()) {
-                models += writeInsetVertical(profile, vertical);
-                models += writeInsetStep(profile, step);
-            } else {
-                models += writeVertical(profile, vertical);
-                models += writeStep(profile, step);
+            boolean generatedVertical = binding.isGeneratedRole("vertical_slab");
+            boolean generatedStep = binding.isGeneratedRole("step");
+            if (generatedVertical != generatedStep) {
+                throw new IllegalStateException("External tail ownership split for "
+                        + profile.canonicalParentId());
             }
-            blockStates += 2;
+            if (generatedVertical) {
+                if (profile.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED) {
+                    // AxisModelContract produces only placed-state signature models. Keep a neutral
+                    // base geometry for the final catalog-wide item-only preview wrapper.
+                    models += writeAxisItemBaseModels(profile, vertical, step);
+                    AxisModelContract.AxisUvPolicy policy = AxisGeneratedResources.policy(
+                            manager, profile.canonicalParentId());
+                    Map<String, JsonObject> verticalModels =
+                            AxisModelContract.verticalGeneratedModels(profile, vertical, policy);
+                    verticalModels.forEach((modelId, model) -> write(modelResource(modelId), model));
+                    write(blockState(vertical), AxisModelContract.verticalBlockState(vertical, policy));
+                    models += verticalModels.size();
+                    Map<String, JsonObject> stepModels =
+                            AxisModelContract.stepGeneratedModels(profile, step, policy);
+                    stepModels.forEach((modelId, model) -> write(modelResource(modelId), model));
+                    write(blockState(step), AxisModelContract.stepBlockState(step, policy));
+                    models += stepModels.size();
+                } else if (profile.insetVisualContract().isPresent()) {
+                    models += writeInsetVertical(profile, vertical);
+                    models += writeInsetStep(profile, step);
+                } else {
+                    models += writeVertical(profile, vertical);
+                    models += writeStep(manager, profile, step);
+                }
+                blockStates += 2;
+            }
 
             if (binding.isGeneratedRole("slab")) {
                 write(item(slab), GeneratedItemModelSupport.itemDefinition(manager, profile, model(slab)));
@@ -116,12 +122,16 @@ public final class ExternalMaterialGeneratedResources {
                 items++;
             }
             if (binding.isGeneratedRole("wall")) {
-                write(item(wall), GeneratedItemModelSupport.itemDefinition(manager, profile, model(wall) + "_inventory"));
+                String itemModel = dev.aero.cnmterraincompat.PrivateBeamFamilies.isPrivateBeam(binding.spec().id())
+                        ? model(wall) + "_post" : model(wall) + "_inventory";
+                write(item(wall), GeneratedItemModelSupport.itemDefinition(manager, profile, itemModel));
                 items++;
             }
-            write(item(vertical), GeneratedItemModelSupport.itemDefinition(manager, profile, verticalItemModel));
-            write(item(step), GeneratedItemModelSupport.itemDefinition(manager, profile, stepItemModel));
-            items += 2;
+            if (generatedVertical) {
+                write(item(vertical), GeneratedItemModelSupport.itemDefinition(manager, profile, model(vertical)));
+                write(item(step), GeneratedItemModelSupport.itemDefinition(manager, profile, model(step)));
+                items += 2;
+            }
         }
         write(Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID + "_generated", "lang/en_us.json"),
                 combinedLanguage());
@@ -221,22 +231,21 @@ public final class ExternalMaterialGeneratedResources {
             }
             return 4;
         }
+        if (dev.aero.cnmterraincompat.PrivateBeamFamilies.isPrivateBeam(binding.spec().id())) {
+            write(blockState(id), woodenBeamWallBlockState(id));
+            write(modelResource(id, "_post"), woodenBeamWallPost(profile));
+            write(modelResource(id, "_side"), woodenBeamWallSide(profile));
+            // Retain deterministic compatibility aliases while the production blockstate and
+            // item follow BBB's exact two-model/post-only topology.
+            write(modelResource(id, "_side_tall"), parentModel(model(id) + "_side"));
+            write(modelResource(id, "_inventory"), parentModel(model(id) + "_post"));
+            return 4;
+        }
         JsonObject state = templateBlockState(manager,
                 Identifier.fromNamespaceAndPath("minecraft", "blockstates/cobblestone_wall.json"),
                 "minecraft:block/cobblestone_wall", model(id));
         write(blockState(id), state);
-        if (dev.aero.cnmterraincompat.ExternalMaterialCatalog.usesWoodenWall(binding.spec())) {
-            write(modelResource(id, "_post"), woodenWallModel(profile,
-                    List.of(new int[] {4, 0, 4, 12, 16, 12})));
-            write(modelResource(id, "_side"), woodenWallModel(profile,
-                    List.of(new int[] {4, 0, 0, 12, 16, 4})));
-            write(modelResource(id, "_side_tall"), woodenWallModel(profile,
-                    List.of(new int[] {4, 0, 0, 12, 16, 4})));
-            write(modelResource(id, "_inventory"), woodenWallModel(profile, List.of(
-                    new int[] {4, 0, 4, 12, 16, 12}, new int[] {4, 0, 0, 12, 16, 4},
-                    new int[] {12, 0, 4, 16, 16, 12}, new int[] {4, 0, 12, 12, 16, 16},
-                    new int[] {0, 0, 4, 4, 16, 12})));
-        } else if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PILLAR) {
+        if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PILLAR) {
             write(modelResource(id, "_post"), columnWallTemplate(
                     "more_slabs_stairs_and_walls:block/template_column_wall_post", profile));
             write(modelResource(id, "_side"), columnWallTemplate(
@@ -304,7 +313,7 @@ public final class ExternalMaterialGeneratedResources {
         return 2;
     }
 
-    private static int writeStep(NibaruMaterialProfile profile, Identifier id) {
+    private static int writeStep(ResourceManager manager, NibaruMaterialProfile profile, Identifier id) {
         JsonObject variants = new JsonObject();
         int rotation = 0;
         for (String facing : List.of("north", "east", "south", "west")) {
@@ -314,20 +323,23 @@ public final class ExternalMaterialGeneratedResources {
             rotation += 90;
         }
         write(blockState(id), variants(variants));
-        if (structuralReference(profile) != null) {
+        if (profile.visualProfile()
+                == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PATH) {
+            // Reuse Dirt Path Step's authored UV topology exactly.  Its one-pixel vertical
+            // side crop cannot be reconstructed by merely lowering a generic cuboid.
+            writePathStepTemplate(manager, "path_step.json", id, "", profile);
+            writePathStepTemplate(manager, "path_step_top.json", id, "_top", profile);
+            writePathStepTemplate(manager, "path_step_double.json", id, "_double", profile);
+        } else if (structuralReference(profile) != null) {
             // A Step is one half-depth member, never a full-depth Slab or a two-tier Stair.
             // Its double form combines the upper facing half with the lower opposite half.
-            boolean path = profile.visualProfile()
-                    == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PATH;
-            int split = path ? 7 : 8;
-            int top = path ? 15 : 16;
             write(modelResource(id), projectedModel(profile,
-                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, split, 8)))));
+                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, 8, 8)))));
             write(modelResource(id, "_top"), projectedModel(profile,
-                    List.of(Cuboid.world(new Bounds(0, split, 0, 16, top, 8)))));
+                    List.of(Cuboid.world(new Bounds(0, 8, 0, 16, 16, 8)))));
             write(modelResource(id, "_double"), projectedModel(profile,
-                    List.of(Cuboid.world(new Bounds(0, split, 0, 16, top, 8)),
-                            Cuboid.world(new Bounds(0, 0, 8, 16, split, 16)))));
+                    List.of(Cuboid.world(new Bounds(0, 8, 0, 16, 16, 8)),
+                            Cuboid.world(new Bounds(0, 0, 8, 16, 8, 16)))));
         } else if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
             write(modelResource(id), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16})));
             write(modelResource(id, "_top"), cuboidModel(profile, List.of(new int[] {0, 8, 0, 16, 16, 16})));
@@ -372,10 +384,10 @@ public final class ExternalMaterialGeneratedResources {
     }
 
     /**
-     * Writes only the normal CNM preview models for an axis-aligned late family. These models
+     * Writes only the normal CNM base models for an axis-aligned late family. These models
      * intentionally remain absent from the axis-aware placed-state selectors.
      */
-    private static int writeAxisItemPreviewModels(
+    private static int writeAxisItemBaseModels(
             NibaruMaterialProfile profile, Identifier vertical, Identifier step) {
         String tint = profile.tintProfile() == TintProfile.NONE ? "" : "_tinted";
         write(modelResource(vertical), template("clutternomore:block/templates/vertical_slab" + tint, profile));
@@ -423,6 +435,29 @@ public final class ExternalMaterialGeneratedResources {
         model.add("textures", textures);
         sanitizeCullfaces(model);
         write(modelResource(target, targetSuffix), model);
+    }
+
+    private static void writePathStepTemplate(ResourceManager manager, String template,
+            Identifier target, String targetSuffix, NibaruMaterialProfile profile) {
+        Identifier resourceId = Identifier.fromNamespaceAndPath("clutternomore",
+                "models/block/templates/provider/" + template);
+        Resource resource = manager.getResource(resourceId).orElse(null);
+        try (var reader = resource != null ? resource.openAsReader() : classpathReader(resourceId)) {
+            JsonObject model = JsonParser.parseReader(reader).getAsJsonObject();
+            model.add("textures", textures(profile));
+            write(modelResource(target, targetSuffix), model);
+        } catch (IOException | RuntimeException exception) {
+            throw new IllegalStateException("Cannot project Dirt Path Step template " + resourceId,
+                    exception);
+        }
+    }
+
+    private static InputStreamReader classpathReader(Identifier resourceId) {
+        var stream = ExternalMaterialGeneratedResources.class.getClassLoader().getResourceAsStream(
+                "assets/" + resourceId.getNamespace() + "/" + resourceId.getPath());
+        if (stream == null) throw new IllegalStateException(
+                "Missing authored Dirt Path Step template " + resourceId);
+        return new InputStreamReader(stream, StandardCharsets.UTF_8);
     }
 
     /** Removes inherited cull hints unless the model really fills the complete boundary plane. */
@@ -508,8 +543,116 @@ public final class ExternalMaterialGeneratedResources {
         return result;
     }
 
-    private static JsonObject woodenWallModel(NibaruMaterialProfile profile, List<int[]> cuboids) {
-        return cuboidModel(profile, cuboids);
+    private static JsonObject woodenBeamWallBlockState(Identifier id) {
+        JsonArray multipart = new JsonArray();
+        JsonObject post = new JsonObject();
+        post.add("apply", selection(model(id) + "_post", 0, 0, true));
+        multipart.add(post);
+        int rotation = 0;
+        for (String direction : List.of("north", "east", "south", "west")) {
+            for (String height : List.of("low", "tall")) {
+                JsonObject part = new JsonObject();
+                JsonObject when = new JsonObject();
+                when.addProperty(direction, height);
+                part.add("when", when);
+                part.add("apply", selection(model(id) + "_side", 0, rotation, true));
+                multipart.add(part);
+            }
+            rotation += 90;
+        }
+        JsonObject root = new JsonObject();
+        root.add("multipart", multipart);
+        return root;
+    }
+
+    private static JsonObject woodenBeamWallPost(NibaruMaterialProfile profile) {
+        JsonObject root = new JsonObject();
+        root.addProperty("credit", "Made with Blockbench");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("top", texture(profile.textureRoles().top()));
+        textures.addProperty("particle", texture(profile.textureRoles().side()));
+        textures.addProperty("sides", texture(profile.textureRoles().side()));
+        root.add("textures", textures);
+        JsonObject faces = new JsonObject();
+        for (String direction : List.of("north", "east", "south", "west")) {
+            faces.add(direction, texturedFace("#sides", 8, 0, 16, 16));
+        }
+        faces.add("up", texturedFace("#top", 8, 8, 16, 16));
+        faces.add("down", texturedFace("#top", 16, 16, 8, 8));
+        root.add("elements", elements(4, 0, 4, 12, 16, 12, faces));
+        root.add("display", woodenBeamDisplay());
+        return root;
+    }
+
+    private static JsonObject woodenBeamWallSide(NibaruMaterialProfile profile) {
+        JsonObject root = new JsonObject();
+        root.addProperty("credit", "Made with Blockbench");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("particle", texture(profile.textureRoles().side()));
+        // These aliases intentionally match BBB's authored Pale Oak side model: its vertical
+        // faces are beam side grain and its horizontal faces expose the beam end grain.
+        textures.addProperty("top", texture(profile.textureRoles().side()));
+        textures.addProperty("sides", texture(profile.textureRoles().top()));
+        root.add("textures", textures);
+        JsonObject faces = new JsonObject();
+        faces.add("north", texturedFace("#top", 8, 0, 16, 16));
+        faces.add("east", texturedFace("#top", 8, 0, 12, 16));
+        faces.add("south", texturedFace("#top", 8, 0, 16, 16));
+        faces.add("west", texturedFace("#top", 12, 0, 16, 16));
+        faces.add("up", texturedFace("#sides", 8, 12, 16, 16));
+        faces.add("down", texturedFace("#sides", 16, 12, 8, 8));
+        root.add("elements", elements(4, 0, 0, 12, 16, 4, faces));
+        return root;
+    }
+
+    private static JsonArray elements(int x0, int y0, int z0, int x1, int y1, int z1,
+            JsonObject faces) {
+        JsonObject element = new JsonObject();
+        element.add("from", numbers(x0, y0, z0));
+        element.add("to", numbers(x1, y1, z1));
+        element.add("faces", faces);
+        JsonArray elements = new JsonArray();
+        elements.add(element);
+        return elements;
+    }
+
+    private static JsonObject texturedFace(String texture, int... uv) {
+        JsonObject face = new JsonObject();
+        face.add("uv", numbers(uv));
+        face.addProperty("texture", texture);
+        return face;
+    }
+
+    private static JsonObject woodenBeamDisplay() {
+        JsonObject display = new JsonObject();
+        display.add("thirdperson_righthand", displayTransform(
+                new int[] {75, 45, 0}, new double[] {0, 2.5, 0}, new double[] {.375, .375, .375}));
+        display.add("thirdperson_lefthand", displayTransform(
+                new int[] {75, 45, 0}, new double[] {0, 2.5, 0}, new double[] {.375, .375, .375}));
+        display.add("firstperson_righthand", displayTransform(
+                new int[] {0, 45, 0}, null, new double[] {.4, .4, .4}));
+        display.add("firstperson_lefthand", displayTransform(
+                new int[] {0, 225, 0}, null, new double[] {.4, .4, .4}));
+        display.add("ground", displayTransform(
+                null, new double[] {0, 3, 0}, new double[] {.25, .25, .25}));
+        display.add("gui", displayTransform(
+                new int[] {30, 225, 0}, null, new double[] {.625, .625, .625}));
+        display.add("fixed", displayTransform(null, null, new double[] {.5, .5, .5}));
+        return display;
+    }
+
+    private static JsonObject displayTransform(int[] rotation, double[] translation, double[] scale) {
+        JsonObject transform = new JsonObject();
+        if (rotation != null) transform.add("rotation", numbers(rotation));
+        if (translation != null) transform.add("translation", decimals(translation));
+        if (scale != null) transform.add("scale", decimals(scale));
+        return transform;
+    }
+
+    private static JsonObject parentModel(String parent) {
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", parent);
+        return model;
     }
 
     /** Complete tinted geometry for the standard forms whose vanilla parents have no tint index. */
@@ -633,6 +776,7 @@ public final class ExternalMaterialGeneratedResources {
         if (uvlock) value.addProperty("uvlock", true); return value;
     }
     private static JsonArray numbers(int... values) { JsonArray result = new JsonArray(); for (int value : values) result.add(value); return result; }
+    private static JsonArray decimals(double... values) { JsonArray result = new JsonArray(); for (double value : values) result.add(value); return result; }
     private static String texture(String path) { return path.contains(":") ? path : "minecraft:block/" + path; }
     private static String translation(Identifier id) { return "block." + id.getNamespace() + "." + id.getPath().replace('/', '.'); }
     private static String model(Identifier id) { return id.getNamespace() + ":block/" + id.getPath(); }

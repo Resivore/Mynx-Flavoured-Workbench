@@ -38,6 +38,15 @@ final class BgeGeneratedResourceWriter {
         Optional<ExternalMaterialStateBridge> bridge = bridgeFor(id);
         if (bridge.isPresent() && bridge.get().requiresBridge()
                 && !bridge.get().materialProperties().isEmpty()) {
+            if (isPreviewModel(id)) {
+                writeRaw(id, json);
+                for (MaterialStateResources.StateVariant variant
+                        : MaterialStateResources.modelVariants(bridge.get())) {
+                    writeRaw(modelVariant(id, variant.modelSuffix()),
+                            MaterialStateResources.previewModel(variant, json));
+                }
+                return;
+            }
             if (bridge.get().isBlinklamp() && isItem(id)) {
                 // Enderscape's canonical inventory definition explicitly selects luminance 4.
                 // The generic base model is intentionally absent, so an unsuffixed generated
@@ -95,6 +104,9 @@ final class BgeGeneratedResourceWriter {
     }
 
     private static boolean isModel(Identifier id) { return id.getPath().startsWith("models/block/"); }
+    private static boolean isPreviewModel(Identifier id) {
+        return isModel(id) && id.getPath().endsWith("_bge_preview.json");
+    }
     private static boolean isItem(Identifier id) { return id.getPath().startsWith("items/"); }
 
     private static Identifier modelVariant(Identifier id, String suffix) {
@@ -124,6 +136,18 @@ final class BgeGeneratedResourceWriter {
             } else if (bridge.isBlinklamp()) {
                 replace(copy, "enderscape:block/blinklamp",
                         "enderscape:block/blinklamp" + variant.modelSuffix());
+            }
+            return copy;
+        }
+
+        static JsonElement previewModel(StateVariant variant, JsonElement source) {
+            JsonElement copy = source.deepCopy();
+            if (copy.isJsonObject() && variant.modelSuffix() != null) {
+                JsonObject root = copy.getAsJsonObject();
+                if (root.has("parent") && root.get("parent").isJsonPrimitive()) {
+                    root.addProperty("parent", root.get("parent").getAsString()
+                            + variant.modelSuffix());
+                }
             }
             return copy;
         }

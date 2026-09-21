@@ -132,6 +132,10 @@ public final class NibaruProviderAdapter {
         } else if (profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION)) {
             result = new PathVerticalSlabBlock(properties, () -> transitionGeometry(profile,
                     MaterialTransition.Type.PATH_REVERSION, BgeGeometryRole.VERTICAL_SLAB));
+        } else if (profile.surfaceSamplingPolicy()
+                == NibaruMaterialProfile.SurfaceSamplingPolicy.PATH_LOWERED_SURFACE) {
+            // Preserve lowered Dirt Path geometry/occlusion without inventing its lifecycle.
+            result = new LoweredPathVerticalSlabBlock(properties);
         } else if (isSpreadableSurface(profile)) {
             result = new GrassVerticalSlab(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.SPREADABLE)) {
@@ -187,6 +191,9 @@ public final class NibaruProviderAdapter {
         } else if (profile.capabilities().contains(BehaviorCapability.PATH_CONVERSION)) {
             result = new PathStepBlock(properties, () -> transitionGeometry(profile,
                     MaterialTransition.Type.PATH_REVERSION, BgeGeometryRole.STEP));
+        } else if (profile.surfaceSamplingPolicy()
+                == NibaruMaterialProfile.SurfaceSamplingPolicy.PATH_LOWERED_SURFACE) {
+            result = new LoweredPathStepBlock(properties);
         } else if (isSpreadableSurface(profile)) {
             result = new GrassStepBlock(properties);
         } else if (profile.capabilities().contains(BehaviorCapability.FLATTENABLE_TO_PATH)) {

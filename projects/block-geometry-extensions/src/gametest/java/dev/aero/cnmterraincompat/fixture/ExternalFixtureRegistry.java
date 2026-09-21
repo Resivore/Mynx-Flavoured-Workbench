@@ -123,19 +123,34 @@ public final class ExternalFixtureRegistry {
                         .mapColor(BlisteredMagniaBlock::getMapColor)));
         register("enderscape", "blinklamp", new BlinklampBlock(enderscapeProperties("blinklamp")));
 
-        // Plain Mirestone is intentionally not an ExternalMaterialCatalog entry. It remains a
-        // CNM-only negative fixture: BGE must neither complete it nor create deferred identities.
-        Block mirestone = register("enderscape", "mirestone", Blocks.END_STONE, false);
-        registerSlab("enderscape", "mirestone_slab", mirestone);
-        registerStairs("enderscape", "mirestone_stairs", mirestone);
-        register("enderscape", "mirestone_wall", new WallBlock(BlockBehaviour.Properties
-                .ofFullCopy(Blocks.END_STONE)
-                .setId(ResourceKey.create(Registries.BLOCK,
-                        Identifier.fromNamespaceAndPath("enderscape", "mirestone_wall")))));
+        // Enderscape completes these vanilla roots without claiming a second source block.
+        registerEnderscapeStandardRoles(Blocks.END_STONE, "end_stone", true);
+        registerWall("enderscape", "purpur_wall", Blocks.PURPUR_BLOCK);
 
+        // C92's existing provider-complete ordinary families.
         registerEnderscapeOrdinary("polished_end_stone", "polished_end_stone");
         registerEnderscapeOrdinary("polished_veradite", "polished_veradite");
         registerEnderscapeOrdinary("mirestone_bricks", "mirestone_brick");
+
+        // Exact roots and role paths from Enderscape 3.0.2's BlockFamily declarations.
+        registerEnderscapeOrdinary("shadoline_block", "shadoline_block");
+        registerEnderscapeOrdinary("cut_shadoline", "cut_shadoline");
+        registerEnderscapeOrdinary("overgrown_end_stone_bricks", "overgrown_end_stone_brick");
+        registerEnderscapeOrdinary("veradite", "veradite");
+        registerEnderscapeOrdinary("veradite_bricks", "veradite_brick");
+        registerEnderscapeOrdinary("mirestone", "mirestone");
+        registerEnderscapeOrdinary("polished_mirestone", "polished_mirestone");
+        registerEnderscapeOrdinary("overgrown_mirestone_bricks", "overgrown_mirestone_brick");
+        registerEnderscapeOrdinary("kurodite", "kurodite");
+        registerEnderscapeOrdinary("polished_kurodite", "polished_kurodite");
+        registerEnderscapeOrdinary("kurodite_bricks", "kurodite_brick");
+        registerEnderscapeOrdinary("etched_alluring_magnia", "etched_alluring_magnia");
+        registerEnderscapeOrdinary("etched_repulsive_magnia", "etched_repulsive_magnia");
+        registerEnderscapeOrdinary("dusk_purpur_block", "dusk_purpur");
+        Block purpurTiles = register("enderscape", "purpur_tiles", Blocks.PURPUR_BLOCK, false);
+        registerEnderscapeStandardRoles(purpurTiles, "purpur_tile", false);
+        registerEnderscapeOrdinary("celestial_bricks", "celestial_brick");
+        registerEnderscapeOrdinary("murublight_bricks", "murublight_brick");
 
         for (String path : new String[] {"chiseled_end_stone", "cracked_end_stone_bricks",
                 "chiseled_purpur", "chiseled_shadoline", "chiseled_veradite",
@@ -146,8 +161,7 @@ public final class ExternalFixtureRegistry {
         }
         for (String family : new String[] {"veiled", "celestial", "murublight"}) {
             Block planks = register("enderscape", family + "_planks", Blocks.OAK_PLANKS, false);
-            registerSlab("enderscape", family + "_planks_slab", planks);
-            registerStairs("enderscape", family + "_planks_stairs", planks);
+            registerEnderscapeStandardRoles(planks, family, false);
         }
         // The five concrete 3.0.2 terrain/path classes inherit DirectionalBlock. Their canonical
         // FACING is the same property instance that BGE Layers use for exposed geometry, which is
@@ -157,6 +171,13 @@ public final class ExternalFixtureRegistry {
             registerDirectional("enderscape", path);
         }
         register("enderscape", "veiled_leaves", Blocks.OAK_LEAVES, false);
+
+        // A complete but deliberately unlisted family retains the unknown-family regression now
+        // that Mirestone itself is an explicit supported source.
+        Block unknown = register("bge_unknown", "untouched_material", Blocks.STONE, false);
+        registerSlab("bge_unknown", "untouched_material_slab", unknown);
+        registerStairs("bge_unknown", "untouched_material_stairs", unknown);
+        registerWall("bge_unknown", "untouched_material_wall", unknown);
     }
 
     private static BlockBehaviour.Properties enderscapeProperties(String path) {
@@ -167,12 +188,13 @@ public final class ExternalFixtureRegistry {
 
     private static void registerEnderscapeOrdinary(String rootPath, String rolePrefix) {
         Block source = register("enderscape", rootPath, Blocks.END_STONE, false);
+        registerEnderscapeStandardRoles(source, rolePrefix, true);
+    }
+
+    private static void registerEnderscapeStandardRoles(Block source, String rolePrefix, boolean wall) {
         registerSlab("enderscape", rolePrefix + "_slab", source);
         registerStairs("enderscape", rolePrefix + "_stairs", source);
-        Identifier wallId = Identifier.fromNamespaceAndPath("enderscape", rolePrefix + "_wall");
-        register("enderscape", rolePrefix + "_wall", new WallBlock(BlockBehaviour.Properties
-                .ofFullCopy(Blocks.END_STONE)
-                .setId(ResourceKey.create(Registries.BLOCK, wallId))));
+        if (wall) registerWall("enderscape", rolePrefix + "_wall", source);
     }
 
     private static Block registerBbbSlab(String material, Block beam) {
@@ -213,6 +235,12 @@ public final class ExternalFixtureRegistry {
         return register(namespace, path, new StairBlock(source.defaultBlockState(),
                 BlockBehaviour.Properties.ofFullCopy(source)
                         .setId(ResourceKey.create(Registries.BLOCK, id))));
+    }
+
+    private static Block registerWall(String namespace, String path, Block source) {
+        Identifier id = Identifier.fromNamespaceAndPath(namespace, path);
+        return register(namespace, path, new WallBlock(BlockBehaviour.Properties.ofFullCopy(source)
+                .setId(ResourceKey.create(Registries.BLOCK, id))));
     }
 
     private static Block register(String namespace, String path, Block block) {
