@@ -72,16 +72,16 @@
     ]
   },
   "state": {
-    "milestone": "The retained VWR history documents prior Fisherman and Shepherd observations. Exact supplied C20 screenshot testing is a C20-only runtime FAIL: the Ribbits rod rendered around/above the Frog Villager head and upper torso rather than at its visible folded hands, its angle/placement did not match the supplied Blockbench reference, and VWR's line was detached from the visible outer shaft tip toward an incorrect distant/high world-space point. C21 inspects the active Frog Villager resource and follows its live replacement `arms` part through the real `arms_rotation` child before applying the user-authored unrotated `[0,-7,-6]` group. It keeps Ribbits C27 exact, adds no guessed rod rotation, suppresses source `fishing_rod_2`/`fishing_rod_3`, and transforms VWR's sole 16-segment line origin through that same final rod pose matrix. Fisherman scheduling, navigation, casting/retrieval, float behavior, fish generation/deposit, sounds/cleanup, and Shepherd remain unchanged. C21 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; no C21 Minecraft observation is claimed.",
+    "milestone": "The retained VWR history documents prior Fisherman and Shepherd observations. Exact supplied C20 screenshot testing remains a C20-only runtime FAIL: the Ribbits rod rendered around/above the Frog Villager head and upper torso rather than at its visible folded hands, its angle/placement did not match the supplied Blockbench reference, and VWR's line was detached from the visible outer shaft tip toward an incorrect distant/high world-space point. The owner's exact C21 runtime observation is limited to: the rod was not visibly present. No cause or other C21 runtime result is inferred. C22 restores the exact C20 rod/render and existing line behavior from source checkpoint 6d13248d030dc0673623032915e5d384faad9382 and adds throttled live diagnostics for the resolved Ribbits C27 resources and Geo bone chain, the actual runtime VillagerModel arms hierarchy, incoming/C20/Geo transform checkpoints, the physical rod pivot/outer tip, and the discrepancy between the existing C20 line start and rendered physical tip, with small distinguishable VWR-owned markers/axes. C22 deliberately applies no pose correction and does not move the line start to the calculated point; Fisherman nonvisual behavior and Shepherd remain unchanged. C22 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary21",
+        "version": "0.1.0-canary22",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary21.jar",
-          "sha256": "e50df0a79df2b778e1a4ce79237b02a5c472254359e7f4b13b5b918f3cfaa288"
+          "filename": "villager-work-routines-0.1.0-canary22.jar",
+          "sha256": "ea84e98021ec599699a22676697e1cd837ada3953c74e6546598af16f7625a51"
         },
-        "built_at": "2026-09-21T03:39:54.4764644Z",
-        "source_commit": "8fd51b904af0506cae19efbe20bb315c523f7036",
+        "built_at": "2026-09-21T05:44:55.3575856Z",
+        "source_commit": "b874aad7388d7f29e325f9886549c69269c3f949",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +98,7 @@
             }
           ]
         },
-        "summary": "Follows the active Frog Villager CEM folded arms and transforms VWR's line start through the same final C27 rod pose."
+        "summary": "Restores C20 rod and line rendering and adds throttled live transform diagnostics and visual markers for a focused Fisherman evidence-collection trial."
       },
       "accepted": null,
       "rollback": null,
@@ -112,10 +112,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 21,
-    "activity_at": "2026-09-21T03:39:54Z",
-    "updated_at": "2026-09-21T03:39:54Z",
-    "last_codex_at": "2026-09-21T03:39:54Z",
-    "source_commit": "8fd51b904af0506cae19efbe20bb315c523f7036"
+    "revision": 22,
+    "activity_at": "2026-09-21T05:45:02Z",
+    "updated_at": "2026-09-21T05:45:02Z",
+    "last_codex_at": "2026-09-21T05:45:02Z",
+    "source_commit": "b874aad7388d7f29e325f9886549c69269c3f949"
   }
 }
