@@ -19,16 +19,18 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Maintain the curated Fabric-only port of Building But Better 2.0pre4 for Minecraft Java 26.2 without redistributing upstream All Rights Reserved resources.",
-      "Preserve the retained building families and their original stateful behavior through an explicit, testable registry and resource-closure contract."
+      "Preserve the retained building families and their original stateful behavior through an explicit, testable registry and resource-closure contract.",
+      "Provide Veiled, Celestial, and Murublight as explicit optional Enderscape-backed complete BBB wood families without changing standalone BBB or inferring families from registry names."
     ],
     "scope": [
-      "Maintain exactly 171 retained blocks and 172 retained items: the historical eleven wood families plus the Minecraft 26.2-native complete Pale Oak eleven-form family, seven stone families, braziers, rope, iron fence, and the Hammer.",
+      "Maintain exactly 171 blocks and 172 items without Enderscape: the historical eleven wood families plus the Minecraft 26.2-native complete Pale Oak eleven-form family, seven stone families, braziers, rope, iron fence, and the Hammer.",
+      "When Enderscape 3.0.2 or newer provides the six exact audited source-plank and stripped axial blocks, append exactly three complete eleven-form Veiled, Celestial, and Murublight families—33 blocks and block items—for exact provider-present totals of 204 blocks and 205 items.",
       "Maintain BBB-owned state-aware rope behavior: only vertical bbb:rope is climbable, and its non-sneaking main-hand interaction pays out or reels in exactly one bottom segment of its contiguous vertical column while preserving ordinary ChainBlock placement and breaking.",
       "Preserve the retained rotation, waterlogging, connectivity, collision, lighting, Hammer, lattice-plant, urn, model, texture, tag, language, recipe, advancement, loot, and drop contracts implemented by legacy source 4ddbd2a7b39cb33653f9ddacf9bca0a419cc500d and finalized at legacy branch head 08cba03bc6b19d43a484e7500ca8b366a254e671.",
-      "Stage only the exact audited dependency closure from the hash-verified pristine BBB 2.0pre4 input into ignored generated build output."
+      "Preserve the accepted dev.6 resource closure byte-for-byte as the hash-verified standalone input, and generate the optional Enderscape closure from the exact audited 3.0.2+mc26.2 provider only in ignored local build output."
     ],
     "boundaries": {
       "owned_paths": [
@@ -37,7 +39,7 @@
       "exclusions": [
         "BBB layers, BBB ladders (including Pale Oak Layer and Ladder), the small-stone-block system, Chisel and related removed tools, and any silently restored registry content.",
         "Inventory Bridge Framework changes, Clutter No More changes, or unrelated compatibility implementation.",
-        "Upstream models, textures, recipes, data, translations, loot tables, tags, or other All Rights Reserved resources in tracked source, retained artifacts, or redistributed combined development JARs.",
+        "Raw upstream BBB or Enderscape models, textures, recipes, data, translations, loot tables, tags, classes, or other protected content in tracked source or redistributed combined development JARs; ARR-derived generated closure is confined to ignored build output and the ignored locally retained artifact.",
         "Architectury and MidnightLib dependencies removed by the direct Fabric port.",
         "Runtime deployment, Test Slot or Test Instance Manager changes, accepted-stack mutation, dedicated Workbench access, and protected gameplay-profile access during this migration."
       ]
@@ -62,6 +64,12 @@
         "reason": "Exact Fabric API build input and minimum runtime API declared by the imported project."
       },
       {
+        "type": "MOD",
+        "identifier": "enderscape",
+        "requirement": "optional runtime >=3.0.2",
+        "reason": "Explicit optional provider for the Veiled, Celestial, and Murublight families; BBB retains its exact standalone registry when this provider is absent."
+      },
+      {
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
@@ -77,19 +85,25 @@
         "type": "TOOL",
         "identifier": "fabric-loom",
         "requirement": "1.17-SNAPSHOT",
-        "reason": "Retained Fabric Loom selector from the imported build; the 2026-08-31 verification resolved and reported Fabric Loom 1.17.20."
+        "reason": "Retained Fabric Loom selector from the imported build; the revision-9 verification resolved and reported Fabric Loom 1.17.21."
       },
       {
         "type": "OTHER",
         "identifier": "org.junit:junit-bom",
         "requirement": "5.11.4",
-        "reason": "Exact imported focused-test platform for the 17 curated registry, implementation, and resource-staging tests."
+        "reason": "Exact focused-test platform for the 31 passing curated-registry, implementation, resource-staging, and rope contract tests."
       },
       {
         "type": "OTHER",
-        "identifier": "bbb-fabric-2.0pre4.jar",
-        "requirement": "1,701,505 bytes; SHA-256 1e7ae114aaec53475133e11c607fc65dce493bba5897eaf0044d53959b508fc0",
-        "reason": "Exact pristine read-only BBB 2.0pre4 input; its curated ARR resource closure may be staged only into ignored generated build output."
+        "identifier": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar",
+        "requirement": "1,149,534 bytes; SHA-256 0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a",
+        "reason": "Exact accepted read-only BBB baseline and rollback input; its complete standalone resource closure is copied byte-for-byte only into ignored generated build output."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "enderscape-fabric-3.0.2+mc26.2.jar",
+        "requirement": "104,162,822 bytes; SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b; LICENSE_enderscape SHA-256 8d141b1f4e73ffbdd5cdc2b73f4a20931e0d57b7e8989ec7dc777c8814ad729a",
+        "reason": "Exact provider and license input for static registry/resource inspection and local-only generated BBB resources; provider code is MIT, while packaged assets are All Rights Reserved and are neither copied raw nor redistributed."
       },
       {
         "type": "OTHER",
@@ -100,21 +114,21 @@
     ]
   },
   "state": {
-    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
+    "milestone": "The dev.7 Enderscape-family successor is the current controlled-validated candidate and awaits explicit owner acceptance. Exact dev.6 remains the accepted rollback; the real Enderscape provider was statically/hash/resource audited only, so no gameplay runtime result is inferred.",
     "releases": {
       "current": {
-        "version": "2.0pre4+26.2-pale-oak-dev.6",
+        "version": "2.0pre4+26.2-enderscape-dev.7",
         "artifact": {
-          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar",
-          "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a"
+          "filename": "bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar",
+          "sha256": "57ddb5dfe62f2eb9f4a2ce22fbeeb5cce4386bbd93aab3f7df0dd8e6d19ddaf0"
         },
-        "built_at": "2026-09-08T05:09:02.7766733Z",
-        "source_commit": "22aaf2fcddea47a388d2a2ba06228716e7d4e562",
+        "built_at": "2026-09-21T20:21:08.3914151Z",
+        "source_commit": "1e64edc51af2582197af6eb18dea3314965fc1c7",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Maintains the curated Fabric port of Building But Better for Minecraft 26.2."
+        "summary": "Adds complete optional Veiled, Celestial, and Murublight BBB families from exact Enderscape materials while preserving standalone BBB and the accepted dev.6 rollback."
       },
       "accepted": {
         "version": "2.0pre4+26.2-pale-oak-dev.6",
@@ -130,21 +144,34 @@
         },
         "summary": "Maintains the curated Fabric port of Building But Better for Minecraft 26.2."
       },
-      "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
-      "accepted_rollback": "NO_ROLLBACK"
+      "rollback": {
+        "version": "2.0pre4+26.2-pale-oak-dev.6",
+        "artifact": {
+          "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar",
+          "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a"
+        },
+        "built_at": "2026-09-08T05:09:02.7766733Z",
+        "source_commit": "22aaf2fcddea47a388d2a2ba06228716e7d4e562",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        },
+        "summary": "Maintains the curated Fabric port of Building But Better for Minecraft 26.2."
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
-      "build": "STATIC_PASS",
+      "build": "CONTROLLED_VALIDATION_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-14T08:09:29Z",
-    "updated_at": "2026-09-14T08:09:29Z",
-    "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
+    "revision": 9,
+    "activity_at": "2026-09-21T20:21:08.3914151Z",
+    "updated_at": "2026-09-21T20:21:08.3914151Z",
+    "last_codex_at": "2026-09-21T20:21:08.3914151Z",
+    "source_commit": "1e64edc51af2582197af6eb18dea3314965fc1c7"
   }
 }

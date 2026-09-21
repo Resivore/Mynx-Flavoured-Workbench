@@ -1,33 +1,51 @@
 # Testing
 
-The current `2.0pre4+26.2-pale-oak-dev.6` candidate is `ACTIVE` with `STATIC_PASS / NOT_DEPLOYED / RUNTIME_UNTESTED`. It has not been deployed by the Test Instance Manager, assigned a Test Slot, launched in Minecraft, or accepted. Its combined JAR stages audited upstream ARR resources and is therefore locally retained, ignored, and not redistributed.
+The current `2.0pre4+26.2-enderscape-dev.7` candidate is `ACTIVE` with `CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`. Its exact local-only artifact is `bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar`, 1,363,575 bytes, SHA-256 `57ddb5dfe62f2eb9f4a2ce22fbeeb5cce4386bbd93aab3f7df0dd8e6d19ddaf0`, finalized at `2026-09-21T20:21:08.3914151Z` from source checkpoint `1e64edc51af2582197af6eb18dea3314965fc1c7`.
 
-C5 (`2.0pre4+26.2-pale-oak-dev.5`, canonical SHA-256 `b86c90226cb5082aba5329116633705f0bcd5141754ff50f509a5582b4eff7d4`) has user-reported/external manual evidence only: vertical-rope extension passed for the observed interaction; empty-main-hand retraction failed because it did nothing and returned no rope. That manual test neither establishes the external file's exact SHA-256 nor represents a managed deployment or slot result. It must not be read as a complete C5 pass.
+The exact accepted release remains `2.0pre4+26.2-pale-oak-dev.6`, filename `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar`, SHA-256 `0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a`. It is both the accepted baseline and rollback; dev.7 is not accepted. Both artifacts contain ARR-bound resource closure and remain ignored, locally retained, and non-redistributable.
 
-C6 keeps the Y-only rope mechanic and normal ChainBlock behavior. For an unhandled `useItemOn`, it delegates to the resolved Minecraft 26.2 superclass, whose default result is `TRY_WITH_EMPTY_HAND`; that allows a non-sneaking empty-main-hand click to reach `useWithoutItem`. Retraction resolves the common contiguous-column bottom, removes exactly one segment, restores water when appropriate, and returns one rope only in Survival. A successful custom extension still delegates placement to `BlockItem.place`; after that success it emits `Blocks.HAY_BLOCK.defaultBlockState().getSoundType().getPlaceSound()` with vanilla BlockItem placement volume `(volume + 1) / 2` and pitch `pitch * 0.8`. Failed extension emits no added Hay Bale sound. Ordinary rope placement remains wool-sounded.
+## Observed controlled validation
 
-## Static verification
-
-From this project directory, Temurin Java `25.0.4.1+1`, Gradle `9.5.1`, and Fabric Loom `1.17.20` completed:
+Temurin Java 25, Gradle 9.5.1, and Fabric Loom 1.17.21 completed the following from this project directory with the exact accepted baseline and exact Enderscape provider inputs:
 
 ```powershell
-$env:JAVA_HOME = '<temurin-java-25-home>'
-.\gradlew.bat clean check build verifyProductionMixinContract productionLivingEntityMixinTest --console=plain "-PbbbOriginalJar=originals/mods/bbb-fabric-2.0pre4.jar"
+$env:JAVA_HOME = '<java-25-home>'
+.\gradlew.bat clean check build --stacktrace `
+  -PbbbBaselineJar='<workbench>/projects/building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar' `
+  -PenderscapeJar='<workbench>/originals/mods/enderscape-fabric-3.0.2+mc26.2.jar'
 ```
 
-The C6 run was `BUILD SUCCESSFUL` with 27 focused JUnit tests passing. It validated the exact pristine input (`bbb-fabric-2.0pre4.jar`, 1,701,505 bytes, SHA-256 `1e7ae114aaec53475133e11c607fc65dce493bba5897eaf0044d53959b508fc0`), 171 blocks, 172 items, 1,132 models, 248 texture/sidecar files (244 PNGs; 112 transparent), 224 recipes, 140 advancements, 171 loot tables, and 44 tags. The new rope regressions verify the resolved default `TRY_WITH_EMPTY_HAND` contract, BBB's superclass fallback, bounded bottom retraction/Survival/Creative/water/offhand/sneaking/horizontal contracts, successful Hay Bale sound scaling, and failure-before-sound ordering. The packaged official-namespace JAR was inspected and the Fabric Knot production harness successfully transformed `LivingEntity` with `LivingEntityRopeClimbMixin`. This is static/build validation, not runtime validation.
+`BUILD SUCCESSFUL` included 31/31 focused JUnit tests, the production `LivingEntityRopeClimbMixin` application harness, exact resource verification, production-JAR inspection, and six required headless server GameTests using a synthetic provider fixture with the exact six Enderscape block IDs. Observed closure was:
 
-The locally retained C6 artifact is `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar`, SHA-256 `0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a`.
+- unchanged standalone registry: 171 blocks, 172 items, and 12 complete wood families;
+- provider-present BBB registry: 204 blocks, 205 items, and 15 complete wood families;
+- optional delta: exactly three families, 33 blocks, 33 block items, and eleven forms per family;
+- 1,132 accepted-base plus 177 optional models, 244 accepted-base plus 42 optional PNGs, and 224 accepted-base plus 39 optional recipes;
+- exact source-plank and stripped axial identities, stable BBB IDs, form classes/state properties, Hammer and waterlogging parity, lattice/wall/beam/slab/lantern specializations, fuel value 100, loaded recipes, loot, and tag parity;
+- a 2,768-entry production JAR with exactly 409 optional-pack entries, no Enderscape classes, no raw `assets/enderscape` or `data/enderscape` namespace, no nested JAR, and no foreign class.
 
-## Required Minecraft runtime matrix
+The build verified the size and SHA-256 of `enderscape-fabric-3.0.2+mc26.2.jar` (104,162,822 bytes, SHA-256 `9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b`) and its exact embedded license before inspecting registrations, models, and textures. The provider's real plank sheets are opaque 16-by-16 textures. Generated BBB sheets use only inspected provider-palette colors while retaining audited BBB geometry, alpha, and non-wood details; the Veiled and Murublight seven-rank mappings do not claim to reproduce all ten source colors or the provider's plank grain. Every generated model and texture reference resolved statically without a missing-resource fallback.
 
-Obtain explicit Test Instance Manager ownership before touching the dedicated 26.2 Workbench. Never access the protected 26.1.2 gameplay profile. Test the exact retained C6 artifact in one serialized slot transition and record each result independently.
+The separate provider-absent path was run with:
 
-1. Launch C6 and verify no BBB Mixin, resource, registry, recipe, advancement, or loot failure.
-2. Verify dry and waterlogged Y rope is climbable; X/Z rope is not.
-3. From top, middle, and bottom, use a rope in the non-sneaking main hand; each successful use adds exactly one vertical bottom segment, consumes one Survival rope and no Creative rope, and emits the Hay Bale placement sound once. Verify blocked/full/lava/unsupported-fluid targets add no segment and emit no added Hay Bale placement sound.
-4. From top, middle, and bottom, right-click with an empty non-sneaking main hand; each removes only the common bottom. Verify one Survival return or one safe inventory-full drop, no Creative return, and water restoration for a waterlogged bottom.
-5. Verify offhand cannot produce a second extension or retraction; sneaking retains ordinary axis-aware ChainBlock behavior. Break a middle rope normally and test the split columns independently.
-6. Confirm no regression to Pale Oak, Hammer, ordinary rope placement/breaking/walking, or excluded BBB content.
+```powershell
+.\gradlew.bat runGameTest --stacktrace -PbbbAbsentGameTest=true `
+  -PbbbBaselineJar='<workbench>/projects/building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar' `
+  -PenderscapeJar='<workbench>/originals/mods/enderscape-fabric-3.0.2+mc26.2.jar'
+```
 
-Stop at a confirmed defect with `RUNTIME_FAIL`, or record `INCONCLUSIVE` for environment ambiguity. Do not accept or promote C6 without runtime evidence.
+Its one required headless server GameTest passed. With no `enderscape` provider identity, BBB retained exactly 171 blocks/172 items/12 wood families, registered no optional IDs, and loaded none of the 39 optional recipes.
+
+These GameTests are controlled exact-ID fixture evidence. They did not load the real 104 MB Enderscape runtime or its dependency stack, launch a client, render the generated resources, exercise a real save/reload cycle, or constitute owner-supplied gameplay validation. No Minecraft testing profile was inspected or changed.
+
+## Required owner runtime matrix
+
+Test the exact dev.7 filename and SHA-256 in an owner-controlled Minecraft 26.2 environment; Codex must not inspect or manipulate a testing profile.
+
+1. With actual Enderscape `3.0.2+mc26.2` present, launch both client and server paths and confirm all 33 expected `bbb:veiled_*`, `bbb:celestial_*`, and `bbb:murublight_*` IDs register without registry, built-in-pack, model, texture, recipe, advancement, loot, or tag errors.
+2. Place and inspect all eleven forms for each family. Confirm the real material appearance, no missing-resource fallback, correct item models, drops, recipes, creative-tab entries, and fuel behavior.
+3. Exercise form-specific behavior against the accepted family equivalents: placement and rotation, beam X/Y/Z orientation, directional beam slabs and stairs, wall connectivity, lattice facing/plant/connectivity, support/pallet/frame/trim Hammer interactions, lantern luminance 15, collision, and dry/waterlogged states.
+4. Launch the same dev.7 artifact without Enderscape. Confirm clean startup, the exact existing vanilla/Pale Oak/stone registry, absence of all 33 optional IDs and recipes, and no invalid optional resource load.
+5. Recheck the accepted BBB behavior surface, especially Pale Oak and vertical rope pay-out/reel-in, and confirm Layers, Ladders, Chisel, the small-stone system, and other pruned content remain absent.
+
+Record only observations actually made against the exact candidate identity. A defect is `RUNTIME_FAIL`; environment ambiguity is `INCONCLUSIVE`. Acceptance remains an explicit owner decision.
