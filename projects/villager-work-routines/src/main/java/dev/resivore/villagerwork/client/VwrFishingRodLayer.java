@@ -1,6 +1,9 @@
 package dev.resivore.villagerwork.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.resivore.villagerwork.FishingFloat;
+import dev.resivore.villagerwork.FrogVillagerRodPose;
+import dev.resivore.villagerwork.ShearingToolMarker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -10,11 +13,12 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import dev.resivore.villagerwork.FishingFloat;
-import dev.resivore.villagerwork.ShearingToolMarker;
 import net.minecraft.world.item.Items;
+import org.joml.Matrix4f;
 
 /**
  * A single client-only Fisherman prop posed at crossed villager arms while this villager owns a
@@ -38,21 +42,36 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         if (Minecraft.getInstance().level == null) return;
         Entity entity = Minecraft.getInstance().level.getEntity(presentation.villagerWork$entityId());
         if (!(entity instanceof Villager villager)) return;
-        FishingFloat fishingFloat = activeFloat(villager);
+        FishingFloat fishingFloat = liveFloat(villager);
         boolean fishing = fishingFloat != null;
         boolean shearing = hasLiveShears(villager);
         if (!fishing && !shearing) return;
 
         if (fishing) {
             poseStack.pushPose();
-            if (FrogVillagerCemRodPose.apply(getParentModel(), state, poseStack)
-                    && RibbitsFishermanRodRenderer.submit(poseStack, collector, light)) {
-                // The line origin is transformed through this exact pose stack, after the live
-                // CEM folded arms and the same authored group used for rod submission.
-                FishingFloatRenderer.submitLineFromSharedRodPose(poseStack, collector,
-                        fishingFloat.getPosition(presentation.villagerWork$partialTick()));
+            try {
+                Matrix4f incomingEntityLayer = new Matrix4f(poseStack.last().pose());
+                getParentModel().translateToArms(state, poseStack);
+                Matrix4f afterTranslateToArms = new Matrix4f(poseStack.last().pose());
+                FrogVillagerRodPose.applyReferenceGrip(poseStack);
+                Matrix4f afterAuthoredGrip = new Matrix4f(poseStack.last().pose());
+
+                // These observations only copy the matrices used by the restored C20 path. They
+                // never select, gate, or alter rod submission or C20's independent line endpoint.
+                RibbitsFishermanRodRenderer.Inspection inspection =
+                        RibbitsFishermanRodRenderer.submit(poseStack, collector, light);
+                try {
+                    VwrRodDiagnostics.observeRenderPath(villager, fishingFloat.getId(), getParentModel(),
+                            inspection.submitted(), incomingEntityLayer, afterTranslateToArms,
+                            afterAuthoredGrip, inspection);
+                    RodDiagnosticMarkers.submit(collector, incomingEntityLayer, afterTranslateToArms,
+                            afterAuthoredGrip, inspection);
+                } catch (RuntimeException | LinkageError ignored) {
+                    // Diagnostic geometry/logging is never allowed to suppress the C20 rod.
+                }
+            } finally {
+                poseStack.popPose();
             }
-            poseStack.popPose();
         }
         if (shearing) {
             poseStack.pushPose();
@@ -73,16 +92,28 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         poseStack.popPose();
     }
 
-    private static FishingFloat activeFloat(Villager villager) {
+    private static FishingFloat liveFloat(Villager villager) {
         return villager.level().getEntitiesOfClass(FishingFloat.class,
-                        villager.getBoundingBox().inflate(18.0),
-                        floatEntity -> floatEntity.owner() == villager)
+                villager.getBoundingBox().inflate(18.0), floatEntity -> floatEntity.owner() == villager)
                 .stream().findFirst().orElse(null);
     }
 
     private static boolean hasLiveShears(Villager villager) {
         return !villager.level().getEntitiesOfClass(ShearingToolMarker.class,
                 villager.getBoundingBox().inflate(18.0), marker -> marker.owner() == villager).isEmpty();
+    }
+
+    /**
+     * Restores C20's analytical outer-tip calculation unchanged. It intentionally does not use
+     * the live layer/GeoLib matrices; C22 logs both endpoints so a later canary can correct the
+     * mismatch from runtime evidence rather than hiding it here.
+     */
+    static Vec3 ribbitsRodTip(Villager villager, float partialTick) {
+        Vec3 position = villager.getPosition(partialTick);
+        float bodyYaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
+        FrogVillagerRodPose.Point worldTip = FrogVillagerRodPose.outerShaftTip(position.x, position.y,
+                position.z, bodyYaw);
+        return worldTip.isFinite() ? new Vec3(worldTip.x(), worldTip.y(), worldTip.z()) : null;
     }
 
 }

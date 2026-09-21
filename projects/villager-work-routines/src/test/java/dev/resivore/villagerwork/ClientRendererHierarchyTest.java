@@ -2,7 +2,10 @@ package dev.resivore.villagerwork;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Map;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.VillagerRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -38,5 +41,11 @@ class ClientRendererHierarchyTest {
                 dev.resivore.villagerwork.client.VwrFishingRodLayer.class));
         assertEquals(VillagerRenderState.class,
                 VillagerRenderer.class.getDeclaredMethod("createRenderState").getReturnType());
+    }
+
+    @Test
+    void diagnosticAccessorsTargetActualMappedRuntimeFields() throws NoSuchFieldException {
+        assertEquals(ModelPart.class, VillagerModel.class.getDeclaredField("arms").getType());
+        assertEquals(Map.class, ModelPart.class.getDeclaredField("children").getType());
     }
 }

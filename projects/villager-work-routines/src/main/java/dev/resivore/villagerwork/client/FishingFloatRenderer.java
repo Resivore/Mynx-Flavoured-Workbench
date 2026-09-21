@@ -13,6 +13,8 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.phys.Vec3;
 
 /** Isolated bobber and line drawing; no villager renderer, model part, or texture hook. */
@@ -25,9 +27,41 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
 
     @Override public void extractRenderState(FishingFloat entity, FloatState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
+        Entity owner = entity.owner();
+        if (owner instanceof Villager villager) {
+            Vec3 ribbitsTip = VwrFishingRodLayer.ribbitsRodTip(villager, partialTick);
+            if (ribbitsTip != null) {
+                // C22 deliberately restores C20's independent analytical endpoint unchanged.
+                state.line = ribbitsTip.subtract(entity.getPosition(partialTick));
+                try {
+                    VwrRodDiagnostics.observeLinePath(entity.getId(), villager.getId(), ribbitsTip,
+                            entity.getPosition(partialTick), state.line);
+                } catch (RuntimeException | LinkageError ignored) {
+                    // A diagnostic failure must not suppress C20's line or float renderer.
+                }
+            } else {
+                // A required C27 visual resource failure must not invent a second fallback line.
+                state.line = null;
+            }
+        } else state.line = null;
     }
 
     @Override public void submit(FloatState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+        if (state.line != null) {
+            var segments = FishingLineGeometry.segments((float) state.line.x, (float) state.line.y, (float) state.line.z);
+            if (!segments.isEmpty()) {
+                // 26.2's LINES vertex format is position, color, normal, and line width. Match
+                // the vanilla FishingHookRenderer contract rather than relying on default elements.
+                float lineWidth = Minecraft.getInstance().gameRenderer.gameRenderState()
+                        .windowRenderState.appropriateLineWidth;
+                collector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, vertices) -> {
+                    for (FishingLineGeometry.Segment segment : segments) {
+                        lineVertex(vertices, pose, segment.start(), lineWidth);
+                        lineVertex(vertices, pose, segment.end(), lineWidth);
+                    }
+                });
+            }
+        }
         poseStack.pushPose();
         poseStack.mulPose(camera.orientation);
         collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(TEXTURE), (pose, vertices) -> {
@@ -38,35 +72,6 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
         });
         poseStack.popPose();
         super.submit(state, poseStack, collector, camera);
-    }
-
-    /**
-     * Emits VWR's sole 16-segment line from the physical shaft tip obtained from the same final
-     * pose matrix that just rendered the rod. Camera position is used only to express the float
-     * in that renderer's camera-relative coordinate system; it never supplies a line endpoint.
-     */
-    static void submitLineFromSharedRodPose(PoseStack rodPose, SubmitNodeCollector collector,
-                                            Vec3 floatWorldPosition) {
-        Vec3 rodTip = FrogVillagerCemRodPose.outerShaftTipInRenderSpace(rodPose);
-        Vec3 cameraPosition = Minecraft.getInstance().gameRenderer.gameRenderState()
-                .levelRenderState.cameraRenderState.pos;
-        Vec3 floatRenderPosition = floatWorldPosition.subtract(cameraPosition);
-        var segments = FishingLineGeometry.segmentsBetween(
-                (float) floatRenderPosition.x, (float) floatRenderPosition.y, (float) floatRenderPosition.z,
-                (float) rodTip.x, (float) rodTip.y, (float) rodTip.z);
-        if (segments.isEmpty()) return;
-
-        // The endpoints are already camera-relative world coordinates, so this intentionally
-        // begins from identity instead of inventing another arm/world transform chain.
-        PoseStack linePose = new PoseStack();
-        float lineWidth = Minecraft.getInstance().gameRenderer.gameRenderState()
-                .windowRenderState.appropriateLineWidth;
-        collector.submitCustomGeometry(linePose, RenderTypes.lines(), (pose, vertices) -> {
-            for (FishingLineGeometry.Segment segment : segments) {
-                lineVertex(vertices, pose, segment.start(), lineWidth);
-                lineVertex(vertices, pose, segment.end(), lineWidth);
-            }
-        });
     }
 
     private static void vertex(com.mojang.blaze3d.vertex.VertexConsumer vertices, PoseStack.Pose pose,
@@ -85,5 +90,5 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
                 .setLineWidth(lineWidth);
     }
 
-    public static final class FloatState extends EntityRenderState {}
+    public static final class FloatState extends EntityRenderState { Vec3 line; }
 }

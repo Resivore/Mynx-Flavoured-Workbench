@@ -8,15 +8,8 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(VillagerRenderState.class)
 abstract class VillagerRenderStateMixin implements VwrFishingRodPresentation {
     @Unique private int villagerWork$entityId = -1;
-    @Unique private float villagerWork$partialTick;
 
     @Override public int villagerWork$entityId() { return villagerWork$entityId; }
 
     @Override public void villagerWork$setEntityId(int entityId) { villagerWork$entityId = entityId; }
-
-    @Override public float villagerWork$partialTick() { return villagerWork$partialTick; }
-
-    @Override public void villagerWork$setPartialTick(float partialTick) {
-        villagerWork$partialTick = partialTick;
-    }
 }
