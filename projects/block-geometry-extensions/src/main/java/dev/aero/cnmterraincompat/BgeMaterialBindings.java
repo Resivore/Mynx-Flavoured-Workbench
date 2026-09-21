@@ -262,21 +262,8 @@ public final class BgeMaterialBindings {
         DERIVED_GEOMETRY.add(block);
     }
 
-    /**
-     * Returns whether this block is a geometry member rather than a material root.
-     *
-     * <p>{@link #DERIVED_GEOMETRY} is populated while BGE creates its tail roles, before the
-     * normal binding audit can run. Once that audit has named every normal role, its binding is
-     * the broader authority: a horizontal slab, stair, wall, Vertical Slab, Step, Layer, Corner,
-     * or Quarter Column is still derived even when it was supplied by a provider or retained for
-     * compatibility. CNM may use an unbound first-pass slab/stair as the direct input required to
-     * complete that family, but a later scan must never promote an already bound geometry member
-     * into a new material root.</p>
-     */
     static synchronized boolean isDerivedGeometry(Block block) {
-        if (DERIVED_GEOMETRY.contains(block)) return true;
-        Binding binding = BY_BLOCK.get(block);
-        return binding != null && binding.role() != Role.CANONICAL_BLOCK;
+        return DERIVED_GEOMETRY.contains(block);
     }
 
     /** Structured escape hatch for a truly non-material BGE block. No current block uses it. */
@@ -289,11 +276,6 @@ public final class BgeMaterialBindings {
         if (previous != null && !previous.equals(reason)) {
             throw new IllegalStateException("Conflicting BGE exemption for " + id(block));
         }
-    }
-
-    /** Rebuild paths may inspect dormant candidates after the one-time binding audit froze. */
-    static synchronized boolean isValidated() {
-        return validated;
     }
 
     /**
@@ -346,49 +328,6 @@ public final class BgeMaterialBindings {
                 Topology.FARMLAND_SLAB, BgeSurfaceGeometry.provider(Topology.FARMLAND_SLAB, true),
                 false, false, false,
                 Optional.of("State-only horizontal farmland form created by tilling; no other catalog geometry is intentional.")));
-    }
-
-    /**
-     * Binds a registry-time CNM candidate only after CNM has selected its real ShapeMap parent.
-     * These blocks are intentionally special canonical bindings rather than synthetic Nibaru
-     * profiles: no registry name, admission anchor, or temporary model is ever promoted to a
-     * material authority.
-     */
-    static synchronized void bindResolvedCnmCandidate(Block block, Block canonical,
-            BgeGeometryRole geometry) {
-        if (alreadyResolvedBinding(block, canonical, Role.from(geometry))) return;
-        requireMutable();
-        Role role = Role.from(geometry);
-        bind(new Binding(block, canonical, Optional.empty(), role, Ownership.SPECIAL,
-                CatalogMembership.SPECIAL_CANONICAL_BOUND,
-                state -> Optional.of(canonical.defaultBlockState()), topology(role),
-                BgeSurfaceGeometry.provider(topology(role), false), false, false,
-                block.asItem() != Items.AIR,
-                Optional.of("Deferred CNM candidate bound only after CNM resolved its ShapeMap parent.")));
-    }
-
-    /** Same post-resolution binding contract for the optional generic normal-Wall carrier. */
-    static synchronized void bindResolvedCnmWallCandidate(Block block, Block canonical) {
-        if (alreadyResolvedBinding(block, canonical, Role.WALL)) return;
-        requireMutable();
-        bind(new Binding(block, canonical, Optional.empty(), Role.WALL, Ownership.SPECIAL,
-                CatalogMembership.SPECIAL_CANONICAL_BOUND,
-                state -> Optional.of(canonical.defaultBlockState()), Topology.WALL,
-                BgeSurfaceGeometry.provider(Topology.WALL, false), false, false,
-                block.asItem() != Items.AIR,
-                Optional.of("Deferred CNM Wall candidate bound only after CNM resolved its ShapeMap parent.")));
-    }
-
-    /** ShapeMap may rebuild after the catalog has frozen; identical resolved facts are immutable. */
-    private static boolean alreadyResolvedBinding(Block block, Block canonical, Role role) {
-        Binding existing = BY_BLOCK.get(block);
-        if (existing == null) return false;
-        if (existing.canonicalMaterial() != canonical || existing.role() != role
-                || existing.ownership() != Ownership.SPECIAL
-                || existing.membership() != CatalogMembership.SPECIAL_CANONICAL_BOUND) {
-            throw new IllegalStateException("Resolved CNM binding drifted for " + id(block));
-        }
-        return true;
     }
 
     /** Adds a validated role exclusion only for a demonstrated technical incompatibility. */

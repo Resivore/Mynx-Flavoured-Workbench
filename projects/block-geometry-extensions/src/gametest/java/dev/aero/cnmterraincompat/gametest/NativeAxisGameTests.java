@@ -216,7 +216,8 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void nativeAxisWallItemsKeepNormalWallInventoryPresentation(GameTestHelper helper) {
+    public void nativeAxisWallItemsPreserveColumnEndGrainPresentation(GameTestHelper helper) {
+        int distinctEndGrainPreviews = 0;
         for (Identifier parent : expectedAxisParents()) {
             NibaruMaterialProfile profile = profile(parent);
             Block wall = profile.nativeWall().orElseThrow();
@@ -227,15 +228,37 @@ public final class NativeAxisGameTests implements CustomTestMethodInvoker {
                 helper.assertTrue(input != null, "Missing generated native axis wall item model: " + resource);
                 JsonObject json = JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8))
                         .getAsJsonObject();
-                helper.assertTrue("minecraft:block/wall_inventory".equals(json.get("parent").getAsString())
-                                && json.getAsJsonObject("textures").get("wall").getAsString().equals(
-                                        NativeAxisModelContract.semanticTextures(profile).get("side")),
-                        "Axis wall item did not preserve ordinary wall silhouette/bark role: " + wallId);
+                Map<String, String> expected = NativeAxisModelContract.semanticTextures(profile);
+                JsonObject textures = json.getAsJsonObject("textures");
+                helper.assertTrue("more_slabs_stairs_and_walls:block/template_column_wall_inventory"
+                                .equals(json.get("parent").getAsString())
+                                && textures.size() == expected.size()
+                                && expected.entrySet().stream().allMatch(entry ->
+                                        textures.has(entry.getKey())
+                                                && textures.get(entry.getKey()).getAsString()
+                                                        .equals(entry.getValue())),
+                        "Axis wall item did not preserve the column silhouette and side/end roles: "
+                                + wallId + " expected=" + expected + " actual=" + textures);
+                if (!expected.get("side").equals(expected.get("top"))) distinctEndGrainPreviews++;
+
+                if (parent.equals(id("minecraft:oak_log"))) {
+                    helper.assertTrue("minecraft:block/oak_log".equals(textures.get("side").getAsString())
+                                    && "minecraft:block/oak_log_top".equals(
+                                            textures.get("top").getAsString())
+                                    && "minecraft:block/oak_log_top".equals(
+                                            textures.get("bottom").getAsString())
+                                    && "minecraft:block/oak_log".equals(
+                                            textures.get("particle").getAsString()),
+                            "Oak Log wall preview no longer exposes bark sides and end-grain caps: "
+                                    + textures);
+                }
             } catch (Exception exception) {
                 throw new IllegalStateException("Cannot inspect generated axis wall item model " + resource,
                         exception);
             }
         }
+        helper.assertTrue(distinctEndGrainPreviews > 0,
+                "Native axis wall preview audit never exercised a distinct end-grain material");
         helper.succeed();
     }
 

@@ -41,6 +41,7 @@ public final class ExternalMaterialGeneratedResources {
         int models = 0;
         int items = 0;
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
+            validateKnownProviderIndirection(manager, binding);
             NibaruMaterialProfile profile = binding.profile();
             Identifier slab = id(binding.slab());
             Identifier stairs = id(binding.stairs());
@@ -125,6 +126,26 @@ public final class ExternalMaterialGeneratedResources {
         write(Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID + "_generated", "lang/en_us.json"),
                 combinedLanguage());
         return new GenerationSummary(ExternalMaterialFamilies.all().size(), blockStates, models, items);
+    }
+
+    /** C88 behavior retained narrowly for the twelve explicitly supported BBB Beam families. */
+    private static void validateKnownProviderIndirection(ResourceManager manager,
+            ExternalMaterialFamilies.Binding binding) {
+        Identifier source = binding.spec().id();
+        if (!source.getNamespace().equals("bbb") || !source.getPath().endsWith("_beam")) return;
+        Identifier stairs = Identifier.fromNamespaceAndPath("bbb", source.getPath() + "_stairs");
+        Identifier state = Identifier.fromNamespaceAndPath("bbb", "blockstates/" + stairs.getPath() + ".json");
+        if (manager.getResource(state).isPresent()) {
+            ProviderModelTextureResolver.Textures resolved = ProviderModelTextureResolver.resolve(manager, stairs);
+            ProviderModelTextureResolver.Textures expected = new ProviderModelTextureResolver.Textures(
+                    texture(binding.profile().textureRoles().side()),
+                    texture(binding.profile().textureRoles().top()),
+                    texture(binding.profile().textureRoles().bottom()));
+            if (!resolved.equals(expected)) {
+                throw new IllegalStateException("BBB indirect model texture contract drifted for "
+                        + stairs + ": expected=" + expected + " resolved=" + resolved);
+            }
+        }
     }
 
     private static int writeSlab(ResourceManager manager, NibaruMaterialProfile profile, Identifier id) {
@@ -222,10 +243,10 @@ public final class ExternalMaterialGeneratedResources {
                     "more_slabs_stairs_and_walls:block/template_column_wall_side", profile));
             write(modelResource(id, "_side_tall"), columnWallTemplate(
                     "more_slabs_stairs_and_walls:block/template_column_wall_side_tall", profile));
-            // An axis belongs to the material faces, never the WallBlock topology.  Keep the
-            // placed post/arms on their column route, but use vanilla's ordinary wall inventory
-            // silhouette so an item preview cannot look like an axis-bearing cross wall.
-            write(modelResource(id, "_inventory"), wallTemplate("minecraft:block/wall_inventory", profile));
+            // The Wall remains non-axis geometry, while its preview preserves the same material
+            // face roles as the placed wall: bark/side vertically and end grain horizontally.
+            write(modelResource(id, "_inventory"), columnWallTemplate(
+                    "more_slabs_stairs_and_walls:block/template_column_wall_inventory", profile));
         } else if (profile.visualProfile()
                 == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.LEAVES_CUTOUT_TINTED) {
             write(modelResource(id, "_post"), leafWallTemplate(
@@ -294,16 +315,19 @@ public final class ExternalMaterialGeneratedResources {
         }
         write(blockState(id), variants(variants));
         if (structuralReference(profile) != null) {
-            // A Step is a flat half-depth form, not a re-skinned Stair.  Terrain keeps the
-            // lowered seven-pixel Path surface while all face/overlay roles remain profile based.
-            int height = profile.visualProfile()
-                    == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PATH ? 7 : 8;
+            // A Step is one half-depth member, never a full-depth Slab or a two-tier Stair.
+            // Its double form combines the upper facing half with the lower opposite half.
+            boolean path = profile.visualProfile()
+                    == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PATH;
+            int split = path ? 7 : 8;
+            int top = path ? 15 : 16;
             write(modelResource(id), projectedModel(profile,
-                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, height, 16)))));
+                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, split, 8)))));
             write(modelResource(id, "_top"), projectedModel(profile,
-                    List.of(Cuboid.world(new Bounds(0, 16 - height, 0, 16, 16, 16)))));
+                    List.of(Cuboid.world(new Bounds(0, split, 0, 16, top, 8)))));
             write(modelResource(id, "_double"), projectedModel(profile,
-                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, 16, 16)))));
+                    List.of(Cuboid.world(new Bounds(0, split, 0, 16, top, 8)),
+                            Cuboid.world(new Bounds(0, 0, 8, 16, split, 16)))));
         } else if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
             write(modelResource(id), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16})));
             write(modelResource(id, "_top"), cuboidModel(profile, List.of(new int[] {0, 8, 0, 16, 16, 16})));
@@ -397,7 +421,49 @@ public final class ExternalMaterialGeneratedResources {
             textures.addProperty("layer1", texture(profile.textureRoles().overlay()));
         }
         model.add("textures", textures);
+        sanitizeCullfaces(model);
         write(modelResource(target, targetSuffix), model);
+    }
+
+    /** Removes inherited cull hints unless the model really fills the complete boundary plane. */
+    private static void sanitizeCullfaces(JsonObject model) {
+        if (!model.has("elements") || !model.get("elements").isJsonArray()) return;
+        List<Cuboid> cuboids = new java.util.ArrayList<>();
+        for (JsonElement value : model.getAsJsonArray("elements")) {
+            if (!value.isJsonObject()) continue;
+            JsonObject element = value.getAsJsonObject();
+            if (!element.has("from") || !element.has("to")) continue;
+            JsonArray from = element.getAsJsonArray("from");
+            JsonArray to = element.getAsJsonArray("to");
+            cuboids.add(Cuboid.world(new Bounds(from.get(0).getAsDouble(), from.get(1).getAsDouble(),
+                    from.get(2).getAsDouble(), to.get(0).getAsDouble(), to.get(1).getAsDouble(),
+                    to.get(2).getAsDouble())));
+        }
+        for (JsonElement value : model.getAsJsonArray("elements")) {
+            if (!value.isJsonObject()) continue;
+            JsonObject element = value.getAsJsonObject();
+            JsonObject faces = element.getAsJsonObject("faces");
+            if (faces == null) continue;
+            Bounds elementBounds = null;
+            if (element.has("from") && element.has("to")) {
+                JsonArray from = element.getAsJsonArray("from");
+                JsonArray to = element.getAsJsonArray("to");
+                elementBounds = new Bounds(from.get(0).getAsDouble(), from.get(1).getAsDouble(),
+                        from.get(2).getAsDouble(), to.get(0).getAsDouble(), to.get(1).getAsDouble(),
+                        to.get(2).getAsDouble());
+            }
+            for (Map.Entry<String, JsonElement> entry : faces.entrySet()) {
+                if (!entry.getValue().isJsonObject()) continue;
+                JsonObject face = entry.getValue().getAsJsonObject();
+                if (!face.has("cullface")) continue;
+                Direction direction = Direction.valueOf(face.get("cullface").getAsString()
+                        .toUpperCase(Locale.ROOT));
+                if (elementBounds == null || !elementBounds.onBoundary(direction)
+                        || !CuboidListModelProjection.coversFullBoundaryPlane(cuboids, direction)) {
+                    face.remove("cullface");
+                }
+            }
+        }
     }
 
     private static JsonObject referenceJson(ResourceManager manager, String path, String reference,

@@ -1,6 +1,7 @@
 package dev.aero.cnmterraincompat;
 
 import dev.tazer.clutternomore.common.blocks.VerticalSlabBlock;
+import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
@@ -37,12 +38,11 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
             GameTestHelper helper) {
         BgeMaterialBindings.requireValid();
         Map<Block, String> exemptions = BgeMaterialBindings.exemptions();
-        helper.assertTrue(exemptions.entrySet().stream().allMatch(entry -> entry.getValue()
-                        .startsWith("CNM") || entry.getValue().startsWith("A resolved BGE/provider")),
-                "Only dormant CNM Phase-A candidates may be unbound: " + exemptions);
+        helper.assertTrue(exemptions.isEmpty(),
+                "The explicit BGE catalog must not retain unbound/deferred candidates: " + exemptions);
         for (Block owned : BgeMaterialBindings.ownedBlocks()) {
-            helper.assertTrue(BgeMaterialBindings.fromBlock(owned).isPresent() || exemptions.containsKey(owned),
-                    "BGE-owned block has no canonical classification or dormant CNM status: " + owned);
+            helper.assertTrue(BgeMaterialBindings.fromBlock(owned).isPresent(),
+                    "BGE-owned block has no explicit canonical classification: " + owned);
         }
 
         int profiles = 0;
@@ -73,46 +73,25 @@ public final class CanonicalMaterialBindingGameTests implements CustomTestMethod
                 "Nine-role closure count mismatch: profiles=" + profiles + ", primary=" + primary);
         System.out.println("CANONICAL_BINDING_CLOSURE|profiles=" + profiles
                 + "|primary=" + primary + "|owned=" + BgeMaterialBindings.ownedBlocks().size()
-                + "|aliases=3|special=2|dormantCnmCandidates=" + exemptions.size());
+                + "|aliases=3|special=2|deferredCandidates=0");
         helper.succeed();
     }
 
-    /**
-     * A complete canonical binding classifies every geometry role as derived. That leaves CNM's
-     * initial unbound Slab/Stair admission intact, while preventing a subsequent scan from
-     * treating a completed family member as a new material root and registering combinations
-     * such as {@code material_slab_wall}.
-     */
     @GameTest(maxTicks = 40)
-    public void boundFamilyGeometryCannotRecursivelySeedCnmAutopopulation(GameTestHelper helper) {
-        List<BgeMaterialBindings.Binding> bindings = BgeMaterialBindings.all();
-        helper.assertTrue(bindings.stream().filter(binding -> binding.role()
-                        != BgeMaterialBindings.Role.CANONICAL_BLOCK)
-                        .allMatch(binding -> CanonicalGeometryRegistry.contains(binding.physicalBlock())),
-                "A canonical-bound geometry role was still eligible as a CNM material root");
-
-        BgeMaterialBindings.Binding slab = bindings.stream()
-                .filter(binding -> binding.role() == BgeMaterialBindings.Role.HORIZONTAL_SLAB)
-                .filter(binding -> binding.physicalBlock() instanceof SlabBlock)
-                .findFirst().orElseThrow();
-        BgeMaterialBindings.Binding stair = bindings.stream()
-                .filter(binding -> binding.role() == BgeMaterialBindings.Role.STAIR)
-                .findFirst().orElseThrow();
-        int candidatesBefore = CnmShapeMapCandidateBridge.snapshots().size();
-
-        CnmShapeMapCandidateBridge.admit(slab.physicalBlock(), BgeGeometryRole.VERTICAL_SLAB,
-                slab.physicalBlock(), BuiltInRegistries.BLOCK.getKey(slab.physicalBlock()));
-        CnmShapeMapCandidateBridge.admit(stair.physicalBlock(), BgeGeometryRole.STEP,
-                stair.physicalBlock(), BuiltInRegistries.BLOCK.getKey(stair.physicalBlock()));
-
-        Identifier slabId = BuiltInRegistries.BLOCK.getKey(slab.physicalBlock());
-        Identifier recursiveWall = Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
-                "deferred/" + slabId.getNamespace() + "/" + slabId.getPath() + "_wall");
-        helper.assertTrue(CnmShapeMapCandidateBridge.rejectedRecursiveSource(slab.physicalBlock())
-                        && CnmShapeMapCandidateBridge.rejectedRecursiveSource(stair.physicalBlock())
-                        && CnmShapeMapCandidateBridge.snapshots().size() == candidatesBefore
-                        && !BuiltInRegistries.BLOCK.containsKey(recursiveWall),
-                "A derived BGE slab/stair became a second CNM family or created " + recursiveWall);
+    public void unknownCnmFamilyRemainsUntouchedByBge(GameTestHelper helper) {
+        Identifier unknownId = Identifier.parse("enderscape:mirestone");
+        Block unknown = BuiltInRegistries.BLOCK.getValue(unknownId);
+        helper.assertTrue(unknownId.equals(BuiltInRegistries.BLOCK.getKey(unknown))
+                        && NibaruMaterialProfiles.fromBlock(unknown).isEmpty(),
+                "Negative CNM-only fixture accidentally entered the explicit BGE catalog");
+        List<Identifier> component = ShapeMap.getShapes(unknown.asItem()).stream()
+                .map(BuiltInRegistries.ITEM::getKey).toList();
+        helper.assertTrue(component.stream().noneMatch(id -> id.getNamespace().equals(CnmTerrainCompat.MOD_ID))
+                        && BuiltInRegistries.BLOCK.keySet().stream().noneMatch(id ->
+                                id.getPath().startsWith("deferred/")
+                                        || id.getPath().endsWith("_slab_wall")
+                                        || id.getPath().endsWith("_wall_slab")),
+                "Unknown CNM family was silently completed or gained a deferred identity: " + component);
         helper.succeed();
     }
 

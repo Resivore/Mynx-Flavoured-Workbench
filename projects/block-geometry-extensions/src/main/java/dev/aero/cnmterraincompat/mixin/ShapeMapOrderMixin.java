@@ -1,7 +1,6 @@
 package dev.aero.cnmterraincompat.mixin;
 
 import dev.aero.cnmterraincompat.CanonicalShapeMapAudit;
-import dev.aero.cnmterraincompat.CnmShapeMapCandidateBridge;
 import dev.aero.cnmterraincompat.NibaruProviderAdapter;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,15 +15,12 @@ abstract class ShapeMapOrderMixin {
     @Inject(method = "setMappings", at = @At("HEAD"), require = 1)
     private static void cnmTerrainCompat$addExactProviderFamilies(List<ShapeMap.Mapping> mappings,
             boolean logCircular, CallbackInfo ci) {
-        CnmShapeMapCandidateBridge.observeCnmMappings(mappings);
         NibaruProviderAdapter.addExactShapeMapEdges(mappings);
-        CnmShapeMapCandidateBridge.injectMappedRoles(mappings);
     }
 
     @Inject(method = "setMappings", at = @At("TAIL"), require = 1)
     private static void cnmTerrainCompat$orderProviderGeometryRoles(List<?> mappings, boolean logCircular, CallbackInfo ci) {
-        CnmShapeMapCandidateBridge.bindResolvedFamilies();
         NibaruProviderAdapter.applyProviderParentSegmentOrder();
-        CanonicalShapeMapAudit.requireExternalFamilies();
+        CanonicalShapeMapAudit.requireExplicitFamilies();
     }
 }

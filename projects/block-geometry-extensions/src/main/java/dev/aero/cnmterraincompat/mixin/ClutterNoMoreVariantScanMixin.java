@@ -1,8 +1,6 @@
 package dev.aero.cnmterraincompat.mixin;
 
 import dev.aero.cnmterraincompat.CanonicalGeometryRegistry;
-import dev.aero.cnmterraincompat.BgeGeometryRole;
-import dev.aero.cnmterraincompat.CnmShapeMapCandidateBridge;
 import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.aero.cnmterraincompat.NibaruProviderAdapter;
 import games.twinhead.moreslabsstairsandwalls.api.material.DerivedGeometrySupport;
@@ -29,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 abstract class ClutterNoMoreVariantScanMixin {
     @Inject(method = "registerVariants", at = @At("HEAD"), require = 1)
     private static void cnmTerrainCompat$initializeUnifiedNativeCatalog(CallbackInfo ci) {
-        CnmTerrainCompat.registerCnmBridgeFamilies();
+        CnmTerrainCompat.initializeNativeCatalog();
     }
 
     @Inject(method = "registerVariants", at = @At("TAIL"), require = 1)
@@ -53,10 +51,7 @@ abstract class ClutterNoMoreVariantScanMixin {
             require = 1)
     private static VerticalSlabBlock cnmTerrainCompat$createVerticalSlab(
             BlockBehaviour.Properties properties, SlabBlock source, String registryPath) {
-        VerticalSlabBlock generated = NibaruProviderAdapter.createVertical(properties, source);
-        CnmShapeMapCandidateBridge.admit(source, BgeGeometryRole.VERTICAL_SLAB, generated,
-                ClutterNoMore.location(registryPath));
-        return generated;
+        return NibaruProviderAdapter.createVertical(properties, source);
     }
 
     @Redirect(
@@ -65,36 +60,27 @@ abstract class ClutterNoMoreVariantScanMixin {
             require = 1)
     private static StepBlock cnmTerrainCompat$createStep(
             BlockBehaviour.Properties properties, StairBlock source, String registryPath) {
-        StepBlock generated = NibaruProviderAdapter.createStep(properties, source);
-        CnmShapeMapCandidateBridge.admit(source, BgeGeometryRole.STEP, generated,
-                ClutterNoMore.location(registryPath));
-        return generated;
+        return NibaruProviderAdapter.createStep(properties, source);
     }
 
     @Inject(method = "lambda$registerVariants$0", at = @At("RETURN"), require = 1)
     private static void cnmTerrainCompat$bindWeatheringVertical(SlabBlock source, String registryPath,
             WeatheringCopperSlabBlock weatheringSource, CallbackInfoReturnable<Block> cir) {
-        Block generated = NibaruProviderAdapter.bindGenerated(source,
+        NibaruProviderAdapter.bindGenerated(source,
                 DerivedGeometrySupport.Geometry.VERTICAL_SLAB, cir.getReturnValue());
-        CnmShapeMapCandidateBridge.admit(source, BgeGeometryRole.VERTICAL_SLAB, generated,
-                ClutterNoMore.location(registryPath));
     }
 
     @Inject(method = "lambda$registerVariants$2", at = @At("RETURN"), require = 1)
     private static void cnmTerrainCompat$bindWeatheringStep(StairBlock source, String registryPath,
             WeatheringCopperStairBlock weatheringSource, CallbackInfoReturnable<Block> cir) {
-        Block generated = NibaruProviderAdapter.bindGenerated(source,
+        NibaruProviderAdapter.bindGenerated(source,
                 DerivedGeometrySupport.Geometry.STEP, cir.getReturnValue());
-        CnmShapeMapCandidateBridge.admit(source, BgeGeometryRole.STEP, generated,
-                ClutterNoMore.location(registryPath));
     }
 
     /**
-     * CNM's two BlockItem#getBlock calls feed its Slab/Vertical-Slab and Stair/Step discovery
-     * branches. A BGE-bound non-root role is already a member of a canonical family, not a new
-     * family source. First-pass unbound slab/stair inputs remain visible so normal CNM
-     * autopopulation can complete a material family; the typed binding prevents a later scan
-     * from recursively deriving combinations such as {@code material_slab_wall}.
+     * CNM's first BlockItem#getBlock call feeds its SlabBlock discovery branch. Hide only
+     * project-declared canonical geometry from that branch; ordinary and unknown CNM sources
+     * remain entirely CNM-owned.
      */
     @Redirect(
             method = "registerVariants",
@@ -103,22 +89,7 @@ abstract class ClutterNoMoreVariantScanMixin {
                     target = "Lnet/minecraft/world/item/BlockItem;getBlock()Lnet/minecraft/world/level/block/Block;",
                     ordinal = 0),
             require = 1)
-    private static Block cnmTerrainCompat$skipDerivedSlabRoots(BlockItem item) {
-        return cnmTerrainCompat$familyRoot(item);
-    }
-
-    @Redirect(
-            method = "registerVariants",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/BlockItem;getBlock()Lnet/minecraft/world/level/block/Block;",
-                    ordinal = 1),
-            require = 1)
-    private static Block cnmTerrainCompat$skipDerivedStairRoots(BlockItem item) {
-        return cnmTerrainCompat$familyRoot(item);
-    }
-
-    private static Block cnmTerrainCompat$familyRoot(BlockItem item) {
+    private static Block cnmTerrainCompat$skipCanonicalSlabRoots(BlockItem item) {
         Block block = item.getBlock();
         return CanonicalGeometryRegistry.contains(block) ? Blocks.AIR : block;
     }

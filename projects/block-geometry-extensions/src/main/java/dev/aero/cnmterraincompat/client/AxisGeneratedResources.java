@@ -47,7 +47,7 @@ public final class AxisGeneratedResources {
 
     /** Reads the canonical parent's actual axis selectors; missing/unknown data is a hard failure. */
     public static AxisUvPolicy policy(ResourceManager manager, Identifier canonicalParent) {
-        // C91 Beam roots are BGE-owned and their tiny source model is emitted in this same
+        // Private Beam roots are BGE-owned and their tiny source model is emitted in this same
         // generated-resource pass. The BBB-derived texture bytes remain private build output;
         // their normal rotated-pillar topology is known from the validated local source model.
         if (PrivateBeamFamilies.isPrivateBeam(canonicalParent)) return AxisUvPolicy.STANDARD_ROTATED;

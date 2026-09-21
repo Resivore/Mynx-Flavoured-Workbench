@@ -17,12 +17,11 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c91-private-beam-visual-contract-v1";
+    public static final String PROFILE_VERSION = "bge-c92-explicit-family-reconstruction-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -208,6 +207,22 @@ public final class ExternalMaterialCatalog {
         result.add(pillar("enderscape:dusk_purpur_pillar", "enderscape:block/dusk_purpur_pillar",
                 "enderscape:block/dusk_purpur_pillar_top"));
 
+        // These three ordinary families were explicitly requested. Their provider-owned standard
+        // forms are selected by exact registry identity; Mirestone Bricks intentionally uses the
+        // provider's singular role paths.
+        result.add(uniform("enderscape:polished_end_stone", Set.of(BlockTags.MINEABLE_WITH_PICKAXE),
+                Map.of("slab", Identifier.parse("enderscape:polished_end_stone_slab"),
+                        "stairs", Identifier.parse("enderscape:polished_end_stone_stairs"),
+                        "wall", Identifier.parse("enderscape:polished_end_stone_wall"))));
+        result.add(uniform("enderscape:polished_veradite", Set.of(BlockTags.MINEABLE_WITH_PICKAXE),
+                Map.of("slab", Identifier.parse("enderscape:polished_veradite_slab"),
+                        "stairs", Identifier.parse("enderscape:polished_veradite_stairs"),
+                        "wall", Identifier.parse("enderscape:polished_veradite_wall"))));
+        result.add(uniform("enderscape:mirestone_bricks", Set.of(BlockTags.MINEABLE_WITH_PICKAXE),
+                Map.of("slab", Identifier.parse("enderscape:mirestone_brick_slab"),
+                        "stairs", Identifier.parse("enderscape:mirestone_brick_stairs"),
+                        "wall", Identifier.parse("enderscape:mirestone_brick_wall"))));
+
         for (String path : List.of("chiseled_end_stone", "cracked_end_stone_bricks",
                 "chiseled_purpur", "nebulite_block", "chiseled_shadoline", "chiseled_veradite",
                 "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
@@ -272,16 +287,8 @@ public final class ExternalMaterialCatalog {
         return List.copyOf(result);
     }
 
-    static Optional<Identifier> selectorParent(Identifier source) {
-        return PrivateBeamFamilies.selectorParent(source);
-    }
-
     public static boolean usesWoodenWall(Spec spec) {
         return PrivateBeamFamilies.usesWoodenWall(spec);
-    }
-
-    static String selectorOrderKey(Identifier canonicalParent) {
-        return PrivateBeamFamilies.selectorOrderKey(canonicalParent);
     }
 
     public static String displayNameBase(Spec spec) {

@@ -41,7 +41,6 @@ public final class CnmTerrainCompat implements ModInitializer {
     private static boolean nativeCatalogRegistered;
     private static boolean bgeBaseRegistered;
     private static boolean bgeGeometryRegistered;
-    private static boolean resolvedFamilyDataGenerated;
 
     @Override
     public void onInitialize() {
@@ -93,12 +92,6 @@ public final class CnmTerrainCompat implements ModInitializer {
         validateBindingsWhenComplete();
     }
 
-    /** Called at CNM's scan boundary after optional providers have registered their sources. */
-    public static synchronized void registerCnmBridgeFamilies() {
-        initializeNativeCatalog();
-        registerBgeBase();
-    }
-
     /** Called from CNM's registry-bootstrap tail before the built-in registries freeze. */
     public static synchronized void registerLayers() {
         initializeNativeCatalog();
@@ -118,16 +111,13 @@ public final class CnmTerrainCompat implements ModInitializer {
         }
         ExternalMaterialFamilies.finalizeGeneratedBindings();
         BgeMaterialBindings.bindNormalCatalog();
-        // Existing catalog data is consumed by CNM's server-data bootstrap before ShapeMap
-        // performs its final parent election. Keep this established pass early; the small
-        // profile-free supplement is emitted later once a canonical source is available.
+        // Existing explicit catalog data is consumed by CNM's server-data bootstrap before
+        // ShapeMap builds its final selector presentation. Keep this established pass early.
         LayerGeneratedData.generate();
         QuarterGeometryGeneratedData.generate();
         ExternalMaterialGeneratedData.generate();
         bgeGeometryRegistered = true;
-        // ShapeMap chooses CNM's actual parent after this registry-tail callback.  Keep the
-        // material registry mutable until that decision has bound any deferred candidates.
-        CnmShapeMapCandidateBridge.finishRegistryAdmission();
+        validateBindingsWhenComplete();
     }
 
     /**
@@ -187,28 +177,6 @@ public final class CnmTerrainCompat implements ModInitializer {
                 ? new BgeBlockItem(block, properties)
                 : new BlockItem(block, properties);
         Registry.register(BuiltInRegistries.ITEM, ResourceKey.create(Registries.ITEM, id), item);
-    }
-
-    /**
-     * Registers a Phase-A CNM tail block whose material parent is intentionally not known yet.
-     * The identity is derived from CNM's admitted horizontal source, never from a guessed family
-     * path.  {@link CnmShapeMapCandidateBridge} gives it its canonical binding only after CNM
-     * resolves the ShapeMap component.
-     */
-    static void registerDeferredCandidate(Identifier id, Block block) {
-        register(id, block);
-    }
-
-    /** Called at ShapeMap resolution tail, after every deferred candidate is either bound or dormant. */
-    static synchronized void finalizeResolvedCnmFamilies() {
-        if (!resolvedFamilyDataGenerated) {
-            // ShapeMap resolution is the first point at which a profile-free admission can name
-            // its canonical source. The catalog data was already emitted at CNM's normal
-            // bootstrap point; append only the otherwise-untypable supplement here.
-            ResolvedCnmCandidateData.generate();
-            resolvedFamilyDataGenerated = true;
-        }
-        validateBindingsWhenComplete();
     }
 
     /** Registers state-only blocks such as Farmland Slab without an obtainable BlockItem. */

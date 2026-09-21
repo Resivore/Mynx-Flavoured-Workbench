@@ -89,7 +89,7 @@ tasks.register('generateNativeMaterialResources', JavaExec) {
     outputs.upToDateWhen { false }
 }
 
-// C91: source code is redistributable, but the Beam PNG derivatives are assembled only from the
+// Source code is redistributable, but the Beam PNG derivatives are assembled only from the
 // exact local BBB input into ignored build output and therefore never enter tracked resources.
 tasks.register('generatePrivateBeamResources', JavaExec) {
     dependsOn compileJava

@@ -341,8 +341,8 @@ public final class CuboidListModelProjection {
             int rotation = faceRotation(face, materialFrame);
             if (rotation != 0) encoded.addProperty("rotation", rotation);
             if (!bottomOnly && tintBaseFace(profile, face)) encoded.addProperty("tintindex", 0);
-            if (cullBoundary && profile.visualProfile() != VisualProfile.PATH
-                    && cuboid.geometry().onBoundary(face)) {
+            if (cullBoundary && cuboid.geometry().onBoundary(face)
+                    && coversFullBoundaryPlane(peers, face)) {
                 encoded.addProperty("cullface", face.getSerializedName());
             }
             faces.add(face.getSerializedName(), encoded);
@@ -382,7 +382,8 @@ public final class CuboidListModelProjection {
                 JsonObject encoded = new JsonObject();
                 encoded.addProperty("texture", "#side");
                 encoded.add("uv", glassUv(face, uv, rims));
-                if (cullBoundary && cuboid.geometry().onBoundary(face)) {
+                if (cullBoundary && cuboid.geometry().onBoundary(face)
+                        && coversFullBoundaryPlane(peers, face)) {
                     encoded.addProperty("cullface", face.getSerializedName());
                 }
                 faces.add(face.getSerializedName(), encoded);
@@ -461,7 +462,7 @@ public final class CuboidListModelProjection {
                 Direction.EAST, Direction.WEST, cuboid.uv(), "#side");
         for (Direction face : FACES) {
             if (!faceCovered(cuboid, face, peers)) {
-                addRootShell(model, cuboid, face, cullBoundary);
+                addRootShell(model, cuboid, peers, face, cullBoundary);
             }
         }
     }
@@ -480,7 +481,8 @@ public final class CuboidListModelProjection {
         model.getAsJsonArray("elements").add(element);
     }
 
-    private static void addRootShell(JsonObject model, Cuboid cuboid, Direction surface,
+    private static void addRootShell(JsonObject model, Cuboid cuboid, List<Cuboid> peers,
+            Direction surface,
             boolean cullBoundary) {
         final double epsilon = 0.002;
         Bounds outer = cuboid.geometry();
@@ -501,7 +503,8 @@ public final class CuboidListModelProjection {
             JsonObject encoded = new JsonObject();
             encoded.addProperty("texture", texture);
             encoded.add("uv", defaultUv(face, cuboid.uv()));
-            if (cullBoundary && cuboid.geometry().onBoundary(surface)) {
+            if (face == surface && cullBoundary && cuboid.geometry().onBoundary(surface)
+                    && coversFullBoundaryPlane(peers, surface)) {
                 encoded.addProperty("cullface", surface.getSerializedName());
             }
             faces.add(face.getSerializedName(), encoded);
@@ -521,8 +524,8 @@ public final class CuboidListModelProjection {
             encoded.addProperty("texture", "#overlay");
             encoded.addProperty("tintindex", 0);
             encoded.add("uv", overlayUv(face, cuboid.uv()));
-            if (cullBoundary && profile.visualProfile() != VisualProfile.PATH
-                    && cuboid.geometry().onBoundary(face)) {
+            if (cullBoundary && cuboid.geometry().onBoundary(face)
+                    && coversFullBoundaryPlane(peers, face)) {
                 encoded.addProperty("cullface", face.getSerializedName());
             }
             faces.add(face.getSerializedName(), encoded);
@@ -565,6 +568,69 @@ public final class CuboidListModelProjection {
     private static boolean contains(double outerMin, double outerMax,
             double innerMin, double innerMax) {
         return outerMin <= innerMin && outerMax >= innerMax;
+    }
+
+    /**
+     * Returns true only when the union of boundary cuboid faces covers the complete 16x16 plane.
+     * Merely touching a block boundary is not sufficient for Minecraft's directional culling.
+     */
+    public static boolean coversFullBoundaryPlane(List<Cuboid> cuboids, Direction face) {
+        List<Bounds> boundary = cuboids.stream().map(Cuboid::geometry)
+                .filter(bounds -> bounds.onBoundary(face)).toList();
+        if (boundary.isEmpty()) return false;
+        TreeSet<Double> uCuts = new TreeSet<>(List.of(0.0, 16.0));
+        TreeSet<Double> vCuts = new TreeSet<>(List.of(0.0, 16.0));
+        for (Bounds bounds : boundary) {
+            uCuts.add(firstMin(bounds, face));
+            uCuts.add(firstMax(bounds, face));
+            vCuts.add(secondMin(bounds, face));
+            vCuts.add(secondMax(bounds, face));
+        }
+        List<Double> us = List.copyOf(uCuts);
+        List<Double> vs = List.copyOf(vCuts);
+        for (int ui = 0; ui + 1 < us.size(); ui++) {
+            double u0 = us.get(ui), u1 = us.get(ui + 1);
+            if (u1 <= 0 || u0 >= 16 || u1 <= u0) continue;
+            double u = (Math.max(0, u0) + Math.min(16, u1)) / 2.0;
+            for (int vi = 0; vi + 1 < vs.size(); vi++) {
+                double v0 = vs.get(vi), v1 = vs.get(vi + 1);
+                if (v1 <= 0 || v0 >= 16 || v1 <= v0) continue;
+                double v = (Math.max(0, v0) + Math.min(16, v1)) / 2.0;
+                boolean covered = boundary.stream().anyMatch(bounds ->
+                        firstMin(bounds, face) <= u && firstMax(bounds, face) >= u
+                                && secondMin(bounds, face) <= v && secondMax(bounds, face) >= v);
+                if (!covered) return false;
+            }
+        }
+        return true;
+    }
+
+    private static double firstMin(Bounds bounds, Direction face) {
+        return switch (face.getAxis()) {
+            case X -> bounds.z0();
+            case Y, Z -> bounds.x0();
+        };
+    }
+
+    private static double firstMax(Bounds bounds, Direction face) {
+        return switch (face.getAxis()) {
+            case X -> bounds.z1();
+            case Y, Z -> bounds.x1();
+        };
+    }
+
+    private static double secondMin(Bounds bounds, Direction face) {
+        return switch (face.getAxis()) {
+            case Y -> bounds.z0();
+            case X, Z -> bounds.y0();
+        };
+    }
+
+    private static double secondMax(Bounds bounds, Direction face) {
+        return switch (face.getAxis()) {
+            case Y -> bounds.z1();
+            case X, Z -> bounds.y1();
+        };
     }
 
     private static JsonArray overlayUv(Direction face, Bounds bounds) {

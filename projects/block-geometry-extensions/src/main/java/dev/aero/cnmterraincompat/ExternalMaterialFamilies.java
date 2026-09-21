@@ -95,7 +95,7 @@ public final class ExternalMaterialFamilies {
         registerStandardSemantics(pending);
     }
 
-    /** Resolves CNM-created Vertical/Step and BGE-tail forms after the deferred registry scan. */
+    /** Resolves CNM-created Vertical/Step and BGE-tail forms after CNM's explicit registration pass. */
     public static synchronized void finalizeGeneratedBindings() {
         for (Pending pending : PENDING.values()) {
             if (BY_SOURCE.containsKey(pending.spec().id())) continue;

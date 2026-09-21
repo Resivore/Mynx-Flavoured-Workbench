@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 90 — CNM Resolved Wall Supersession",
-  "description": "Retires superseded provisional CNM Walls after ShapeMap resolves a family with a real Wall.",
+  "name": "Block Geometry Extensions Canary 92 — Explicit Family Reconstruction",
+  "description": "Provides exact, explicitly cataloged block-geometry families without arbitrary CNM family completion.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

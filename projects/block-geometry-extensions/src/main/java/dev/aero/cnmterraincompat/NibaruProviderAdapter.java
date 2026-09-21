@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -405,62 +404,13 @@ public final class NibaruProviderAdapter {
             for (BgeGeometryCatalog.Descriptor geometry : BgeGeometryCatalog.ordered()) {
                 add(mappings, parent, geometry.resolveItem(profile));
             }
-            ExternalMaterialCatalog.selectorParent(profile.canonicalParentId()).ifPresent(selectorParent -> {
-                Block plank = BuiltInRegistries.BLOCK.getValue(selectorParent);
-                if (!selectorParent.equals(BuiltInRegistries.BLOCK.getKey(plank))) {
-                    throw new IllegalStateException("Missing Beam selector parent " + selectorParent);
-                }
-                add(mappings, plank.asItem(), Optional.of(parent));
-            });
         }
+        ExplicitShapeMapFamilies.addDeclaredGroupEdges(mappings);
     }
 
-    /** Reorders presentation only; ShapeMap graph membership and inverse ownership remain untouched. */
+    /** Replaces supported components with the exact declared nine-role selector sequences. */
     public static void applyProviderParentSegmentOrder() {
-        Set<List<Item>> visited = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (List<Item> component : ShapeMap.shapesView().values()) {
-            if (!visited.add(component)) continue;
-            List<Item> before = List.copyOf(component);
-            List<NibaruMaterialProfile> profiles = new ArrayList<>();
-            Set<NibaruMaterialProfile> seenProfiles = Collections.newSetFromMap(new IdentityHashMap<>());
-            for (Item item : before) providerProfile(item).filter(seenProfiles::add).ifPresent(profiles::add);
-
-            List<Item> providerOrder = new ArrayList<>();
-            profiles.sort(java.util.Comparator.comparing(profile ->
-                    ExternalMaterialCatalog.selectorOrderKey(profile.canonicalParentId())));
-            for (NibaruMaterialProfile profile : profiles) {
-                addIfPresent(providerOrder, before, profile.canonicalParent().asItem());
-                profile.effectiveSlabSource().map(Block::asItem)
-                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
-                profile.effectiveStairSource().map(Block::asItem)
-                        .ifPresent(item -> addIfPresent(providerOrder, before, item));
-                profile.nativeWall().map(Block::asItem).ifPresent(item -> addIfPresent(providerOrder, before, item));
-                for (BgeGeometryCatalog.Descriptor geometry : BgeGeometryCatalog.ordered()) {
-                    geometry.resolveItem(profile)
-                            .ifPresent(item -> addIfPresent(providerOrder, before, item));
-                }
-            }
-            if (providerOrder.isEmpty()) continue;
-
-            int next = 0;
-            for (int index = 0; index < component.size(); index++) {
-                if (providerProfile(before.get(index)).isPresent()) component.set(index, providerOrder.get(next++));
-            }
-            if (next != providerOrder.size() || component.size() != before.size()
-                    || !new LinkedHashSet<>(component).equals(new LinkedHashSet<>(before))) {
-                throw new IllegalStateException("Provider ShapeMap presentation reorder changed component membership");
-            }
-        }
-    }
-
-    private static Optional<NibaruMaterialProfile> providerProfile(Item item) {
-        Block block = Block.byItem(item);
-        Optional<NibaruMaterialProfile> nativeProfile = NibaruMaterialProfiles.fromBlock(block);
-        return nativeProfile.isPresent() ? nativeProfile : runtimeBinding(block).map(RuntimeBinding::profile);
-    }
-
-    private static void addIfPresent(List<Item> ordered, List<Item> component, Item item) {
-        if (component.contains(item) && !ordered.contains(item)) ordered.add(item);
+        ExplicitShapeMapFamilies.rebuildExactPresentation();
     }
 
     public static List<UnsupportedEntry> unsupportedMatrix() {

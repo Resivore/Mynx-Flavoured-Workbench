@@ -13,11 +13,10 @@ import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
- * The three C91 Beam roots are BGE code identities whose texture bytes are assembled only into a
+ * The three private Beam roots are BGE code identities whose texture bytes are assembled only into a
  * local private build.  This class intentionally contains identifiers and generation policy, not
  * any BBB model or texture bytes.
  */
@@ -55,23 +54,9 @@ public final class PrivateBeamFamilies {
                 Set.of(BlockTags.MINEABLE_WITH_AXE, BlockTags.LOGS), Set.of(), List.of())).toList();
     }
 
-    static Optional<Identifier> selectorParent(Identifier source) {
-        return DEFINITIONS.stream().filter(definition -> definition.root().equals(source))
-                .map(Definition::planks).findFirst();
-    }
-
     static boolean usesWoodenWall(ExternalMaterialCatalog.Spec spec) {
         return DEFINITIONS.stream().anyMatch(definition -> definition.root().equals(spec.id())
                 || definition.planks().equals(spec.id()));
-    }
-
-    /** Keeps each private Beam immediately after its corresponding public plank family. */
-    static String selectorOrderKey(Identifier canonicalParent) {
-        for (Definition definition : DEFINITIONS) {
-            if (definition.planks().equals(canonicalParent)) return definition.planks() + "/0";
-            if (definition.root().equals(canonicalParent)) return definition.planks() + "/1";
-        }
-        return canonicalParent.toString() + "/0";
     }
 
     public static boolean isPrivateBeam(Identifier source) {

@@ -120,11 +120,15 @@ public final class NativeMaterialResourceGenerator {
                 ? NAMESPACE + ":block/template_column_wall_side" : "minecraft:block/template_wall_side", textures));
         writeIfAbsent(blockModel(assets, id, "_side_tall"), template(pillar
                 ? NAMESPACE + ":block/template_column_wall_side_tall" : "minecraft:block/template_wall_side_tall", textures));
-        JsonObject inventory = new JsonObject();
-        inventory.addProperty("parent", "minecraft:block/wall_inventory");
-        JsonObject wallTexture = new JsonObject();
-        wallTexture.addProperty("wall", textures.get("side"));
-        inventory.add("textures", wallTexture);
+        JsonObject inventory = pillar
+                ? template(NAMESPACE + ":block/template_column_wall_inventory", textures)
+                : new JsonObject();
+        if (!pillar) {
+            inventory.addProperty("parent", "minecraft:block/wall_inventory");
+            JsonObject wallTexture = new JsonObject();
+            wallTexture.addProperty("wall", textures.get("side"));
+            inventory.add("textures", wallTexture);
+        }
         writeIfAbsent(blockModel(assets, id, "_inventory"), inventory);
         writeItem(assets, id, model(id) + "_inventory");
         writeLoot(data, id, false);

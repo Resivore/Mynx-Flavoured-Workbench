@@ -303,8 +303,8 @@ public final class CornerColumnResourceGameTests implements CustomTestMethodInvo
         helper.assertTrue(cutFaces.has("north") && cutFaces.has("west")
                         && !cutFaces.getAsJsonObject("north").has("cullface")
                         && !cutFaces.getAsJsonObject("west").has("cullface")
-                        && cutFaces.getAsJsonObject("up").get("cullface").getAsString().equals("up")
-                        && cutFaces.getAsJsonObject("down").get("cullface").getAsString().equals("down"),
+                        && !cutFaces.getAsJsonObject("up").has("cullface")
+                        && !cutFaces.getAsJsonObject("down").has("cullface"),
                 "Glass Quarter Column treated cut rims as full-block boundaries");
         assertNumbers(helper, cutFaces.getAsJsonObject("north").getAsJsonArray("uv"),
                 15, 0, 16, 16);

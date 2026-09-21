@@ -159,16 +159,16 @@ public final class NativeAxisResourceGenerator {
         }
     }
 
-    /** Preserves the normal WallBlock item silhouette while placed column walls retain all faces. */
+    /** Preserves normal WallBlock geometry and the placed wall's semantic material face roles. */
     private static void writeNormalWallInventory(Path providerAssets, ModBlocks family) throws IOException {
         if (!family.hasBlock(ModBlocks.BlockType.WALL)) {
             throw new IllegalStateException("Applicable canonical parent lacks native wall: " + family);
         }
         Identifier wall = family.getId(ModBlocks.BlockType.WALL);
         JsonObject model = new JsonObject();
-        model.addProperty("parent", "minecraft:block/wall_inventory");
+        model.addProperty("parent", "more_slabs_stairs_and_walls:block/template_column_wall_inventory");
         JsonObject textures = new JsonObject();
-        textures.addProperty("wall", NativeAxisModelContract.semanticTextures(family).get("side"));
+        NativeAxisModelContract.semanticTextures(family).forEach(textures::addProperty);
         model.add("textures", textures);
         Path target = providerAssets.resolve("models").resolve("block")
                 .resolve(wall.getPath() + "_inventory.json").normalize();

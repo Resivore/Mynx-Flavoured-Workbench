@@ -221,11 +221,11 @@ public final class LayerModelProjection {
             // Lowered Paths have cropped faces. Explicit block-space UVs prevent side stretching
             // at every Layer height and orientation.
             if (materialAxis == null && profile.visualProfile() == VisualProfile.PATH) {
-                encoded.add("uv", defaultUv(face, bounds));
+                encoded.add("uv", pathUv(face, bounds));
             }
             if (rotation != 0) encoded.addProperty("rotation", rotation);
             if (!bottomOnly && tintBaseFace(profile, face)) encoded.addProperty("tintindex", 0);
-            if (cullBoundary && profile.visualProfile() != VisualProfile.PATH && bounds.onBoundary(face)) {
+            if (cullBoundary && fullBoundaryFace(bounds, face)) {
                 encoded.addProperty("cullface", face.getSerializedName());
             }
             faces.add(face.getSerializedName(), encoded);
@@ -242,16 +242,17 @@ public final class LayerModelProjection {
      */
     private static void addGlassEdge(JsonObject model, Bounds bounds, Direction exposed) {
         if (bounds.isFullCube()) {
-            addGlassPart(model, bounds, exposed, null, false);
+            addGlassPart(model, bounds, bounds, exposed, null, false);
             return;
         }
         Bounds rim = exposedSlice(bounds, exposed, 1);
         Bounds body = withoutExposedSlice(bounds, exposed, 1);
-        addGlassPart(model, body, exposed, exposed, false);
-        addGlassPart(model, rim, exposed, exposed.getOpposite(), true);
+        addGlassPart(model, body, bounds, exposed, exposed, false);
+        addGlassPart(model, rim, bounds, exposed, exposed.getOpposite(), true);
     }
 
-    private static void addGlassPart(JsonObject model, Bounds bounds, Direction exposed,
+    private static void addGlassPart(JsonObject model, Bounds bounds, Bounds boundaryAuthority,
+            Direction exposed,
             Direction omittedFace, boolean rim) {
         JsonObject element = element(bounds);
         JsonObject faces = new JsonObject();
@@ -261,7 +262,9 @@ public final class LayerModelProjection {
             encoded.addProperty("texture", "#side");
             encoded.add("uv", rim && face.getAxis() != exposed.getAxis()
                     ? rimUv(face, exposed, bounds) : defaultUv(face, bounds));
-            if (bounds.onBoundary(face)) encoded.addProperty("cullface", face.getSerializedName());
+            if (bounds.onBoundary(face) && fullBoundaryFace(boundaryAuthority, face)) {
+                encoded.addProperty("cullface", face.getSerializedName());
+            }
             faces.add(face.getSerializedName(), encoded);
         }
         element.add("faces", faces);
@@ -312,7 +315,9 @@ public final class LayerModelProjection {
             JsonObject encoded = new JsonObject();
             encoded.addProperty("texture", texture);
             encoded.add("uv", defaultUv(face, bounds));
-            if (bounds.onBoundary(surface)) encoded.addProperty("cullface", surface.getSerializedName());
+            if (face == surface && fullBoundaryFace(bounds, surface)) {
+                encoded.addProperty("cullface", surface.getSerializedName());
+            }
             faces.add(face.getSerializedName(), encoded);
         }
         element.add("faces", faces);
@@ -386,6 +391,16 @@ public final class LayerModelProjection {
         };
     }
 
+    /** Path sides sample downward from the texture's authored one-pixel top inset. */
+    private static JsonArray pathUv(Direction face, Bounds bounds) {
+        JsonArray ordinary = defaultUv(face, bounds);
+        if (face.getAxis() == Direction.Axis.Y) return ordinary;
+        int height = bounds.y1() - bounds.y0();
+        ordinary.set(1, new JsonPrimitive(1));
+        ordinary.set(3, new JsonPrimitive(1 + height));
+        return ordinary;
+    }
+
     /**
      * Keeps axis-material texture sampling one-to-one after the face rotation is applied.
      *
@@ -450,7 +465,9 @@ public final class LayerModelProjection {
             encoded.addProperty("texture", "#overlay");
             encoded.addProperty("tintindex", 0);
             encoded.add("uv", overlayUv(face, bounds));
-            if (bounds.onBoundary(face)) encoded.addProperty("cullface", face.getSerializedName());
+            if (fullBoundaryFace(bounds, face)) {
+                encoded.addProperty("cullface", face.getSerializedName());
+            }
             faces.add(face.getSerializedName(), encoded);
         }
         element.add("faces", faces);
@@ -469,6 +486,19 @@ public final class LayerModelProjection {
         }
         return new Bounds(physical.x0(), physical.y0(), physical.z0(),
                 physical.x1(), Math.min(physical.y1(), 15), physical.z1());
+    }
+
+    /** A single Layer cuboid is cullable only when its face spans the complete block plane. */
+    static boolean fullBoundaryFace(Bounds bounds, Direction face) {
+        if (!bounds.onBoundary(face)) return false;
+        return switch (face.getAxis()) {
+            case X -> bounds.y0() == 0 && bounds.y1() == 16
+                    && bounds.z0() == 0 && bounds.z1() == 16;
+            case Y -> bounds.x0() == 0 && bounds.x1() == 16
+                    && bounds.z0() == 0 && bounds.z1() == 16;
+            case Z -> bounds.x0() == 0 && bounds.x1() == 16
+                    && bounds.y0() == 0 && bounds.y1() == 16;
+        };
     }
 
     /** Samples a grass-side overlay from its canonical top band regardless of cuboid height. */

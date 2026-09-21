@@ -1,5 +1,6 @@
 package dev.aero.cnmterraincompat;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -7,11 +8,13 @@ import com.mojang.serialization.JsonOps;
 import dev.aero.cnmterraincompat.AxisModelContract.AxisUvPolicy;
 import dev.aero.cnmterraincompat.client.ExternalMaterialGeneratedResources;
 import dev.aero.cnmterraincompat.client.LayerGeneratedResources;
+import dev.aero.cnmterraincompat.client.ProviderModelTextureResolver;
 import dev.aero.cnmterraincompat.client.QuarterGeometryGeneratedResources;
 import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.NativeAxisModelContract;
+import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import games.twinhead.moreslabsstairsandwalls.block.leaves.LeafDistanceCarrier;
@@ -60,10 +63,12 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -173,20 +178,20 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 125,
-                "External source allowlist is not exactly 125");
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 128,
+                "External source allowlist is not exactly 128");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
                         && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
                         && ExternalMaterialCatalog.sourceCount("ribbits") == 4
                         && ExternalMaterialCatalog.sourceCount("bbb") == 12
-                        && ExternalMaterialCatalog.sourceCount("enderscape") == 46,
-                "Provider source partition is not 57/6/4/12/46");
-        helper.assertTrue(ExternalMaterialFamilies.all().size() == 125,
-                "Provider completion did not register all 125 allowlisted families: "
+                        && ExternalMaterialCatalog.sourceCount("enderscape") == 49,
+                "Provider source partition is not 57/6/4/12/49");
+        helper.assertTrue(ExternalMaterialFamilies.all().size() == 128,
+                "Provider completion did not register all 128 allowlisted families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 314
                         && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null
-                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 125,
+                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 128,
                 "External append changed the frozen native inventory or lost an external source");
 
         Set<Identifier> actual = new LinkedHashSet<>();
@@ -198,8 +203,8 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C91_INVENTORY|sources=125|mcwpaths=57"
-                + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=46|relations=1125");
+        System.out.println("EXTERNAL_C92_INVENTORY|sources=128|mcwpaths=57"
+                + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=49|relations=1152");
         helper.succeed();
     }
 
@@ -226,6 +231,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 Identifier.parse("enderscape:celestial_overgrowth"), Identifier.parse("enderscape:corrupt_overgrowth"),
                 Identifier.parse("enderscape:celestial_path"), Identifier.parse("enderscape:corrupt_path"));
         expected = new LinkedHashSet<>(expected);
+        expected.add(Identifier.parse("enderscape:polished_end_stone"));
+        expected.add(Identifier.parse("enderscape:polished_veradite"));
+        expected.add(Identifier.parse("enderscape:mirestone_bricks"));
         expected.add(Identifier.parse("enderscape:raw_shadoline_block"));
         for (String family : List.of("veiled", "celestial", "murublight")) {
             expected.add(Identifier.parse("enderscape:" + family + "_planks"));
@@ -235,7 +243,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         Set<Identifier> actual = new LinkedHashSet<>();
         ExternalMaterialFamilies.all().stream().filter(binding -> binding.spec().provider().equals("enderscape"))
                 .forEach(binding -> actual.add(binding.spec().id()));
-        helper.assertTrue(actual.equals(expected) && actual.size() == 46,
+        helper.assertTrue(actual.equals(expected) && actual.size() == 49,
                 "Enderscape source allowlist drifted: " + actual);
         helper.assertTrue(ExternalMaterialCatalog.requestedEnderscapeExclusions().size() == 1
                         && ExternalMaterialCatalog.requestedEnderscapeExclusions().getFirst().requestedId()
@@ -294,7 +302,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             && !beam.wall().defaultBlockState().hasProperty(BlockStateProperties.AXIS)
                             && beam.wall() instanceof WoodenPlankWallBlock
                             && plank.wall() instanceof WoodenPlankWallBlock,
-                    "C91 Beam/plank wooden-wall or axis contract drifted for " + definition.family());
+                    "C92 Beam/plank wooden-wall or axis contract drifted for " + definition.family());
             List<Item> component = ShapeMap.getShapes(plank.source().asItem());
             List<Item> beamFamily = beam.roles().values().stream().map(Block::asItem).toList();
             helper.assertTrue(component.indexOf(beam.source().asItem()) > component.indexOf(plank.source().asItem())
@@ -507,6 +515,84 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
+    @GameTest(maxTicks = 80)
+    public void finalEnderscapePathLayerModelsCropSidesFromTopBand(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        LayerGeneratedResources.generateExternalForValidation(manager);
+        for (String source : List.of("celestial_path", "corrupt_path")) {
+            ExternalMaterialFamilies.Binding binding = external("enderscape:" + source);
+            Identifier layer = BuiltInRegistries.BLOCK.getKey(binding.layer());
+            for (Direction facing : Direction.values()) {
+                for (int layers = 1; layers <= 3; layers++) {
+                    JsonObject model = generatedClientJson(Identifier.fromNamespaceAndPath(
+                            layer.getNamespace(), "models/block/" + layer.getPath() + "_"
+                                    + layers + "_" + facing.getSerializedName() + ".json"));
+                    assertPathLayerTopBandUvs(helper, model,
+                            binding.spec().id() + " " + facing + " layers=" + layers);
+                }
+            }
+            JsonObject full = generatedClientJson(Identifier.fromNamespaceAndPath(layer.getNamespace(),
+                    "models/block/" + layer.getPath() + "_4_full.json"));
+            assertPathLayerTopBandUvs(helper, full, binding.spec().id() + " full");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void finalVeraditeAndMirestoneCornersMatchOrientationTopology(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
+        for (String source : List.of("polished_veradite", "mirestone_bricks")) {
+            assertFinalCorner(helper, external("enderscape:" + source), "south_west", "west",
+                    Set.of("0,0,0/8,16,8", "0,0,8/8,16,16", "8,0,8/16,16,16"),
+                    Set.of(Direction.SOUTH, Direction.WEST));
+            assertFinalCorner(helper, external("enderscape:" + source), "north_west", "north",
+                    Set.of("0,0,0/8,16,8", "8,0,0/16,16,8", "0,0,8/8,16,16"),
+                    Set.of(Direction.NORTH, Direction.WEST));
+            assertFinalCorner(helper, external("enderscape:" + source), "north_east", "east",
+                    Set.of("0,0,0/8,16,8", "8,0,0/16,16,8", "8,0,8/16,16,16"),
+                    Set.of(Direction.NORTH, Direction.EAST));
+            assertFinalCorner(helper, external("enderscape:" + source), "south_east", "south",
+                    Set.of("8,0,0/16,16,8", "0,0,8/8,16,16", "8,0,8/16,16,16"),
+                    Set.of(Direction.SOUTH, Direction.EAST));
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void representativeFinalGeneratedCullfacesRequireFullBoundaryCoverage(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        LayerGeneratedResources.generateExternalForValidation(manager);
+        QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
+        ExternalMaterialGeneratedResources.generate(manager);
+
+        ExternalMaterialFamilies.Binding polished = external("enderscape:polished_veradite");
+        Identifier polishedLayer = BuiltInRegistries.BLOCK.getKey(polished.layer());
+        JsonObject fullLayer = generatedClientJson(Identifier.fromNamespaceAndPath(
+                polishedLayer.getNamespace(), "models/block/" + polishedLayer.getPath() + "_4_full.json"));
+        assertCullfacesLegal(helper, fullLayer, Set.copyOf(Arrays.asList(Direction.values())),
+                "Polished Veradite full Layer");
+
+        Identifier column = BuiltInRegistries.BLOCK.getKey(polished.quarterColumn());
+        JsonObject quarterColumn = generatedClientJson(Identifier.fromNamespaceAndPath(column.getNamespace(),
+                "models/block/" + column.getPath() + "_north_west.json"));
+        assertCullfacesLegal(helper, quarterColumn, Set.of(),
+                "Polished Veradite north-west Quarter Column");
+
+        ExternalMaterialFamilies.Binding path = external("enderscape:celestial_path");
+        Identifier pathLayer = BuiltInRegistries.BLOCK.getKey(path.layer());
+        JsonObject thinPathLayer = generatedClientJson(Identifier.fromNamespaceAndPath(
+                pathLayer.getNamespace(), "models/block/" + pathLayer.getPath() + "_1_up.json"));
+        assertCullfacesLegal(helper, thinPathLayer, Set.of(Direction.DOWN),
+                "Celestial Path one-layer model");
+
+        Identifier step = BuiltInRegistries.BLOCK.getKey(path.step());
+        JsonObject pathStep = generatedClientJson(Identifier.fromNamespaceAndPath(step.getNamespace(),
+                "models/block/" + step.getPath() + ".json"));
+        assertCullfacesLegal(helper, pathStep, Set.of(), "Celestial Path bottom Step");
+        helper.succeed();
+    }
+
     /** C85: Enderscape Veiled Leaves has a canonical model-only item definition. */
     @GameTest(maxTicks = 40)
     public void enderscapeModelOnlyItemDefinitionKeepsBlockTintAndValidInheritance(GameTestHelper helper) {
@@ -593,12 +679,54 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             relations += roles.size();
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
-        helper.assertTrue(relations == 1125 && canonicalDerived.size() == 1000 && bgeGenerated.size() == 876,
-                "C91 relation/canonical/generated identity count mismatch: " + relations + "/"
+        CanonicalShapeMapAudit.ExactReport exact = CanonicalShapeMapAudit.inspectExplicitFamilies();
+        helper.assertTrue(relations == 1152 && canonicalDerived.size() == 1024 && bgeGenerated.size() == 891,
+                "C92 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
-        helper.assertTrue(audit.variantCount() == 125 && audit.missing().isEmpty()
+        helper.assertTrue(audit.variantCount() == 128 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
                 "Live ShapeMap canonical variant/role audit failed: " + audit);
+        helper.assertTrue(exact.variationCount() == NibaruMaterialProfiles.all().size()
+                        && exact.failures().isEmpty(),
+                "Final selector components differ from the exact declared sequences: " + exact);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void declaredMultiVariationSelectorsAreExactConcatenations(GameTestHelper helper) {
+        Set<Identifier> withoutBbb = NibaruMaterialProfiles.all().stream()
+                .map(NibaruMaterialProfile::canonicalParentId)
+                .filter(id -> !id.getNamespace().equals("bbb"))
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        helper.assertTrue(ExplicitShapeMapFamilies.activeMultiGroups(withoutBbb).stream()
+                        .flatMap(List::stream).noneMatch(id -> id.getNamespace().equals("bbb")),
+                "Absent optional BBB provider did not leave vanilla Planks standalone");
+        for (String material : List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+                "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak")) {
+            assertExactSelector(helper, "minecraft:" + material + "_planks",
+                    "bbb:" + material + "_beam");
+            for (String suffix : List.of("_slab", "_stairs")) {
+                Identifier aliasId = Identifier.fromNamespaceAndPath("bbb", material + "_beam" + suffix);
+                Item alias = BuiltInRegistries.ITEM.getValue(aliasId);
+                helper.assertTrue(aliasId.equals(BuiltInRegistries.ITEM.getKey(alias))
+                                && ShapeMap.shapesView().values().stream()
+                                        .noneMatch(component -> component.contains(alias)),
+                        "BBB provider alias remained in a final selector: " + aliasId);
+            }
+        }
+        for (String family : List.of("veiled", "celestial", "murublight")) {
+            assertExactSelector(helper, "enderscape:" + family + "_planks",
+                    CnmTerrainCompat.MOD_ID + ":enderscape/" + family + "_beam");
+        }
+        for (String family : List.of("celestial", "murublight")) {
+            assertExactSelector(helper, "enderscape:" + family + "_stem",
+                    "enderscape:" + family + "_hyphae");
+            assertExactSelector(helper, "enderscape:stripped_" + family + "_stem",
+                    "enderscape:stripped_" + family + "_hyphae");
+        }
+        assertExactSelector(helper, "enderscape:veiled_log", "enderscape:veiled_wood");
+        assertExactSelector(helper, "minecraft:oak_log", "minecraft:oak_wood");
+        assertExactSelector(helper, "mynx_trees:wisteria_log", "mynx_trees:wisteria_wood");
         helper.succeed();
     }
 
@@ -617,7 +745,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 reused++;
             }
         }
-        helper.assertTrue(reused == 124, "Expected 124 reused provider roles, found " + reused);
+        helper.assertTrue(reused == 133, "Expected 133 reused provider roles, found " + reused);
 
         Identifier family = Identifier.parse("mynx_trees:wisteria_log");
         CanonicalShapeMapAudit.CanonicalKey logSlab = new CanonicalShapeMapAudit.CanonicalKey(
@@ -804,6 +932,36 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
     }
 
     @GameTest(maxTicks = 40)
+    public void allBbbBeamTexturesResolveThroughIndirectProviderModels(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManagerForBbbBeamResourceRegression();
+        int resolved = 0;
+        for (String material : bbbBeamMaterials()) {
+            Identifier stairs = Identifier.fromNamespaceAndPath("bbb", material + "_beam_stairs");
+            Identifier directModel = Identifier.fromNamespaceAndPath("bbb",
+                    "models/block/" + stairs.getPath() + ".json");
+            Identifier blockState = Identifier.fromNamespaceAndPath("bbb",
+                    "blockstates/" + stairs.getPath() + ".json");
+            helper.assertTrue(manager.getResource(directModel).isEmpty()
+                            && manager.getResource(blockState).isPresent(),
+                    "BBB fixture stopped exercising blockstate-to-nested-model indirection: " + stairs);
+
+            ProviderModelTextureResolver.Textures textures =
+                    ProviderModelTextureResolver.resolve(manager, stairs);
+            ProviderModelTextureResolver.Textures expected = new ProviderModelTextureResolver.Textures(
+                    "bbb:block/beam/" + material,
+                    "bbb:block/beam/" + material + "_top",
+                    "bbb:block/beam/" + material + "_top");
+            helper.assertTrue(textures.equals(expected),
+                    "BBB indirect provider texture resolution changed for " + stairs
+                            + ": expected=" + expected + ", actual=" + textures);
+            resolved++;
+        }
+        helper.assertTrue(resolved == 12,
+                "Expected all twelve BBB Beam texture contracts, resolved " + resolved);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void lateServerDataResourcesCloseEveryStandardFamily(GameTestHelper helper) {
         int loot = 0;
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
@@ -818,15 +976,15 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             }
         }
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
-        helper.assertTrue(walls.getAsJsonArray("values").size() == 125,
+        helper.assertTrue(walls.getAsJsonArray("values").size() == 128,
                 "External wall classification does not contain every scoped full-parent family");
-        helper.assertTrue(loot == 501, "Expected 501 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C91_SERVER_RESOURCES|standardLoot=501|wallTags=125|materialFamilies=125");
+        helper.assertTrue(loot == 507, "Expected 507 BGE-owned external loot tables, found " + loot);
+        System.out.println("EXTERNAL_C92_SERVER_RESOURCES|standardLoot=507|wallTags=128|materialFamilies=128");
         helper.succeed();
     }
 
     @GameTest(maxTicks = 80)
-    public void actualClientWritersCloseAll826BgeOwnedGeometryResources(GameTestHelper helper) {
+    public void actualClientWritersCloseAll891BgeOwnedGeometryResources(GameTestHelper helper) {
         ResourceManager manager = clientFixtureManager();
         LayerGeneratedResources.GenerationSummary layers =
                 LayerGeneratedResources.generateExternalForValidation(manager);
@@ -834,12 +992,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.GenerationSummary standard =
                 ExternalMaterialGeneratedResources.generate(manager);
-        helper.assertTrue(layers.familyCount() == 125
-                        && quarters.cornerFamilyCount() == 125
-                        && quarters.columnFamilyCount() == 125
-                        && standard.familyCount() == 125
-                        && standard.blockStateCount() == 501
-                        && standard.itemCount() == 501,
+        helper.assertTrue(layers.familyCount() == 128
+                        && quarters.cornerFamilyCount() == 128
+                        && quarters.columnFamilyCount() == 128
+                        && standard.familyCount() == 128
+                        && standard.blockStateCount() == 507
+                        && standard.itemCount() == 507,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
@@ -866,10 +1024,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 876 && resolvedModelReferences >= 876,
+        helper.assertTrue(generatedRelations == 891 && resolvedModelReferences >= 891,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C91_CLIENT_RESOURCES|generatedRelations=876|blockstates=876|items=876"
+        System.out.println("EXTERNAL_C92_CLIENT_RESOURCES|generatedRelations=891|blockstates=891|items=891"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }
@@ -889,7 +1047,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             assertWallModel(helper, log, "_side_tall",
                     "more_slabs_stairs_and_walls:block/template_column_wall_side_tall");
             assertWallModel(helper, log, "_inventory",
-                    "minecraft:block/wall_inventory");
+                    "more_slabs_stairs_and_walls:block/template_column_wall_inventory");
             JsonObject logPost = wallModel(log, "_post");
             helper.assertTrue(logPost.getAsJsonObject("textures").get("side").getAsString()
                             .equals(log.profile().textureRoles().side())
@@ -914,16 +1072,22 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                                 .equals(wood.profile().textureRoles().side()),
                         "Wood wall stopped using bark on every face: " + wood.spec().id());
             }
-            assertWallModel(helper, wood, "_inventory", "minecraft:block/wall_inventory");
+            assertWallModel(helper, wood, "_inventory",
+                    "more_slabs_stairs_and_walls:block/template_column_wall_inventory");
         }
 
+        for (String source : List.of("veiled_log", "veiled_wood", "celestial_stem",
+                "celestial_hyphae", "murublight_stem", "murublight_hyphae",
+                "stripped_veiled_log", "stripped_veiled_wood", "stripped_celestial_stem",
+                "stripped_celestial_hyphae", "stripped_murublight_stem",
+                "stripped_murublight_hyphae")) {
+            assertNormalWallState(helper, external("enderscape:" + source));
+            assertColumnWallPreview(helper, external("enderscape:" + source));
+        }
         for (ExternalMaterialFamilies.Binding pillar : List.of(
-                external("mynx_trees:wisteria_log"), external("mynx_trees:wisteria_wood"))) {
-            JsonObject inventory = wallModel(pillar, "_inventory");
-            helper.assertTrue(inventory.getAsJsonObject("textures").get("wall").getAsString()
-                            .equals(pillar.profile().textureRoles().side()),
-                    "Axis pillar wall inventory lost its bark-only normal-wall preview: "
-                            + pillar.spec().id());
+                external("mynx_trees:wisteria_log"), external("mynx_trees:wisteria_wood"),
+                external("mynx_trees:silver_birch_log"), external("mynx_trees:silver_birch_wood"))) {
+            assertColumnWallPreview(helper, pillar);
         }
 
         ExternalMaterialFamilies.Binding silver = external("mynx_trees:silver_birch_leaves");
@@ -1217,6 +1381,23 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(decoded.equals(state), "BlockState.CODEC changed " + label + ": " + encoded);
     }
 
+    private static void assertExactSelector(GameTestHelper helper, String... variationRoots) {
+        List<Item> expected = new ArrayList<>();
+        for (String root : variationRoots) {
+            Identifier id = Identifier.parse(root);
+            Block block = BuiltInRegistries.BLOCK.getValue(id);
+            helper.assertTrue(id.equals(BuiltInRegistries.BLOCK.getKey(block)),
+                    "Missing declared selector root " + id);
+            NibaruMaterialProfile profile = NibaruMaterialProfiles.fromBlock(block).orElseThrow();
+            expected.addAll(ExplicitShapeMapFamilies.variationItems(profile));
+        }
+        List<Item> actual = ShapeMap.getShapes(expected.getFirst());
+        helper.assertTrue(actual.equals(expected)
+                        && new LinkedHashSet<>(actual).size() == actual.size(),
+                "Exact selector order/extras changed for " + List.of(variationRoots) + ": "
+                        + actual.stream().map(BuiltInRegistries.ITEM::getKey).toList());
+    }
+
     private static void assertNormalWallState(GameTestHelper helper,
             ExternalMaterialFamilies.Binding binding) {
         helper.assertTrue(binding.wall() instanceof WallBlock
@@ -1231,6 +1412,184 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             ExternalMaterialFamilies.Binding binding, String suffix, String parent) {
         helper.assertTrue(wallModel(binding, suffix).get("parent").getAsString().equals(parent),
                 "Unexpected wall model parent for " + binding.spec().id() + suffix);
+    }
+
+    private static void assertColumnWallPreview(GameTestHelper helper,
+            ExternalMaterialFamilies.Binding binding) {
+        JsonObject inventory = wallModel(binding, "_inventory");
+        helper.assertTrue(inventory.get("parent").getAsString().equals(
+                        "more_slabs_stairs_and_walls:block/template_column_wall_inventory"),
+                "Axis material wall preview lost the normal column-wall silhouette: "
+                        + binding.spec().id());
+        JsonObject textures = inventory.getAsJsonObject("textures");
+        helper.assertTrue(textures.get("side").getAsString().equals(
+                            binding.profile().textureRoles().side())
+                        && textures.get("top").getAsString().equals(
+                            binding.profile().textureRoles().top())
+                        && textures.get("bottom").getAsString().equals(
+                            binding.profile().textureRoles().bottom()),
+                "Wall preview does not expose the placed wall's side/end material roles: "
+                        + binding.spec().id());
+        JsonObject item = generatedClientJson(itemResource(binding.wall())).getAsJsonObject("model");
+        Identifier wall = BuiltInRegistries.BLOCK.getKey(binding.wall());
+        helper.assertTrue(item.get("model").getAsString().equals(
+                        wall.getNamespace() + ":block/" + wall.getPath() + "_inventory"),
+                "Wall item definition does not route to the end-grain preview: " + wall);
+    }
+
+    private static void assertPathLayerTopBandUvs(GameTestHelper helper, JsonObject model,
+            String label) {
+        JsonArray elements = model.getAsJsonArray("elements");
+        helper.assertTrue(elements != null && !elements.isEmpty(),
+                "Generated Path Layer has no emitted elements: " + label);
+        int sideFaces = 0;
+        for (JsonElement value : elements) {
+            JsonObject element = value.getAsJsonObject();
+            JsonArray from = element.getAsJsonArray("from");
+            JsonArray to = element.getAsJsonArray("to");
+            double height = to.get(1).getAsDouble() - from.get(1).getAsDouble();
+            JsonObject faces = element.getAsJsonObject("faces");
+            for (Direction side : List.of(Direction.NORTH, Direction.EAST,
+                    Direction.SOUTH, Direction.WEST)) {
+                if (!faces.has(side.getSerializedName())) continue;
+                JsonObject face = faces.getAsJsonObject(side.getSerializedName());
+                JsonArray uv = face.getAsJsonArray("uv");
+                helper.assertTrue(uv != null && uv.size() == 4
+                                && close(uv.get(1).getAsDouble(), 1)
+                                && close(uv.get(3).getAsDouble(), 1 + height)
+                                && close(uv.get(3).getAsDouble() - uv.get(1).getAsDouble(), height),
+                        "Generated Path Layer side is not cropped one-to-one from the authored top band: "
+                                + label + " " + side + " height=" + height + " uv=" + uv);
+                sideFaces++;
+            }
+        }
+        helper.assertTrue(sideFaces >= 4,
+                "Generated Path Layer did not expose every horizontal side UV: " + label);
+    }
+
+    private static void assertFinalCorner(GameTestHelper helper,
+            ExternalMaterialFamilies.Binding binding, String orientation, String stateFacing,
+            Set<String> expectedBounds, Set<Direction> expectedCullfaces) {
+        Identifier corner = BuiltInRegistries.BLOCK.getKey(binding.corner());
+        JsonObject variants = generatedClientJson(blockStateResource(binding.corner()))
+                .getAsJsonObject("variants");
+        String key = "facing=" + stateFacing;
+        JsonElement selected = variants.get(key);
+        helper.assertTrue(variants.size() == 4 && selected != null && selected.isJsonObject(),
+                "Final Corner blockstate lost its four direct orientation selectors: "
+                        + binding.spec().id() + " " + variants);
+        JsonObject selection = selected.getAsJsonObject();
+        String expectedModel = corner.getNamespace() + ":block/" + corner.getPath() + "_" + orientation;
+        helper.assertTrue(expectedModel.equals(selection.get("model").getAsString())
+                        && !selection.has("x") && !selection.has("y") && !selection.has("uvlock"),
+                "Final Corner selector rotates or targets the wrong physical quadrant: "
+                        + binding.spec().id() + " " + key + " " + selection);
+
+        JsonObject model = generatedClientJson(Identifier.fromNamespaceAndPath(corner.getNamespace(),
+                "models/block/" + corner.getPath() + "_" + orientation + ".json"));
+        Set<String> actualBounds = new LinkedHashSet<>();
+        for (JsonElement value : model.getAsJsonArray("elements")) {
+            actualBounds.add(elementBoundsKey(value.getAsJsonObject()));
+        }
+        helper.assertTrue(actualBounds.equals(expectedBounds),
+                "Final Corner model disagrees with its orientation/collision topology: "
+                        + binding.spec().id() + " " + orientation + " expected=" + expectedBounds
+                        + " actual=" + actualBounds);
+        assertCullfacesLegal(helper, model, expectedCullfaces,
+                binding.spec().id() + " " + orientation + " Corner");
+    }
+
+    private static String elementBoundsKey(JsonObject element) {
+        JsonArray from = element.getAsJsonArray("from");
+        JsonArray to = element.getAsJsonArray("to");
+        return from.get(0).getAsInt() + "," + from.get(1).getAsInt() + ","
+                + from.get(2).getAsInt() + "/" + to.get(0).getAsInt() + ","
+                + to.get(1).getAsInt() + "," + to.get(2).getAsInt();
+    }
+
+    private static void assertCullfacesLegal(GameTestHelper helper, JsonObject model,
+            Set<Direction> expectedDirections, String label) {
+        JsonArray elements = model.getAsJsonArray("elements");
+        helper.assertTrue(elements != null && !elements.isEmpty(),
+                "Cullface audit requires final emitted elements: " + label);
+        Set<Direction> actualDirections = new LinkedHashSet<>();
+        for (JsonElement value : elements) {
+            JsonObject element = value.getAsJsonObject();
+            JsonObject faces = element.getAsJsonObject("faces");
+            if (faces == null) continue;
+            for (Map.Entry<String, JsonElement> entry : faces.entrySet()) {
+                JsonObject face = entry.getValue().getAsJsonObject();
+                if (!face.has("cullface")) continue;
+                Direction emitted = direction(entry.getKey());
+                Direction culled = direction(face.get("cullface").getAsString());
+                helper.assertTrue(emitted == culled && elementTouchesBoundary(element, culled),
+                        "Cullface does not name its emitted boundary face: " + label + " " + entry);
+                helper.assertTrue(coversCompleteBoundaryPlane(elements, culled),
+                        "Partial boundary face was marked cullable in final JSON: "
+                                + label + " " + culled);
+                actualDirections.add(culled);
+            }
+        }
+        helper.assertTrue(actualDirections.equals(expectedDirections),
+                "Final cullface direction set changed for " + label + ": expected="
+                        + expectedDirections + ", actual=" + actualDirections);
+    }
+
+    private static boolean coversCompleteBoundaryPlane(JsonArray elements, Direction direction) {
+        for (int u = 0; u < 16; u++) for (int v = 0; v < 16; v++) {
+            double sampleU = u + 0.5;
+            double sampleV = v + 0.5;
+            boolean covered = false;
+            for (JsonElement value : elements) {
+                JsonObject element = value.getAsJsonObject();
+                if (elementTouchesBoundary(element, direction)
+                        && coversBoundarySample(element, direction, sampleU, sampleV)) {
+                    covered = true;
+                    break;
+                }
+            }
+            if (!covered) return false;
+        }
+        return true;
+    }
+
+    private static boolean elementTouchesBoundary(JsonObject element, Direction direction) {
+        JsonArray from = element.getAsJsonArray("from");
+        JsonArray to = element.getAsJsonArray("to");
+        return switch (direction) {
+            case DOWN -> close(from.get(1).getAsDouble(), 0);
+            case UP -> close(to.get(1).getAsDouble(), 16);
+            case NORTH -> close(from.get(2).getAsDouble(), 0);
+            case SOUTH -> close(to.get(2).getAsDouble(), 16);
+            case WEST -> close(from.get(0).getAsDouble(), 0);
+            case EAST -> close(to.get(0).getAsDouble(), 16);
+        };
+    }
+
+    private static boolean coversBoundarySample(JsonObject element, Direction direction,
+            double u, double v) {
+        JsonArray from = element.getAsJsonArray("from");
+        JsonArray to = element.getAsJsonArray("to");
+        return switch (direction.getAxis()) {
+            case X -> between(u, from.get(2).getAsDouble(), to.get(2).getAsDouble())
+                    && between(v, from.get(1).getAsDouble(), to.get(1).getAsDouble());
+            case Y -> between(u, from.get(0).getAsDouble(), to.get(0).getAsDouble())
+                    && between(v, from.get(2).getAsDouble(), to.get(2).getAsDouble());
+            case Z -> between(u, from.get(0).getAsDouble(), to.get(0).getAsDouble())
+                    && between(v, from.get(1).getAsDouble(), to.get(1).getAsDouble());
+        };
+    }
+
+    private static boolean between(double value, double min, double max) {
+        return value >= min && value <= max;
+    }
+
+    private static boolean close(double left, double right) {
+        return Math.abs(left - right) < 0.000001;
+    }
+
+    private static Direction direction(String name) {
+        return Direction.valueOf(name.toUpperCase(Locale.ROOT));
     }
 
     /** Verifies the item-only native preview is not substituted into the axis-aware world map. */
@@ -1386,6 +1745,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 "models/block/" + vertical.getPath() + ".json"));
         JsonObject stepModel = generatedClientJson(Identifier.fromNamespaceAndPath(step.getNamespace(),
                 "models/block/" + step.getPath() + ".json"));
+        JsonObject stepTopModel = generatedClientJson(Identifier.fromNamespaceAndPath(step.getNamespace(),
+                "models/block/" + step.getPath() + "_top.json"));
+        JsonObject stepDoubleModel = generatedClientJson(Identifier.fromNamespaceAndPath(step.getNamespace(),
+                "models/block/" + step.getPath() + "_double.json"));
         JsonObject layerModel = generatedClientJson(Identifier.fromNamespaceAndPath(layer.getNamespace(),
                 "models/block/" + layer.getPath() + "_4_full.json"));
         JsonObject cornerModel = generatedClientJson(Identifier.fromNamespaceAndPath(corner.getNamespace(),
@@ -1397,10 +1760,20 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             && cornerModel.toString().contains("#overlay"),
                     "Terrain structural overlay did not reach every BGE geometry for "
                             + binding.spec().id());
+            helper.assertTrue(modelHasBounds(stepModel, 0, 0, 0, 16, 8, 8)
+                            && modelHasBounds(stepTopModel, 0, 8, 0, 16, 16, 8)
+                            && modelHasBounds(stepDoubleModel, 0, 8, 0, 16, 16, 8)
+                            && modelHasBounds(stepDoubleModel, 0, 0, 8, 16, 8, 16)
+                            && !modelHasBounds(stepModel, 0, 0, 0, 16, 8, 16),
+                    "Terrain Step is not the canonical half-depth BGE topology for "
+                            + binding.spec().id());
         } else {
             helper.assertTrue(modelHasBounds(verticalModel, 0, 0, 0, 16, 15, 8)
-                            && modelHasBounds(stepModel, 0, 0, 0, 16, 7, 16)
-                            && !modelHasBounds(stepModel, 0, 7, 8, 16, 15, 16)
+                            && modelHasBounds(stepModel, 0, 0, 0, 16, 7, 8)
+                            && modelHasBounds(stepTopModel, 0, 7, 0, 16, 15, 8)
+                            && modelHasBounds(stepDoubleModel, 0, 7, 0, 16, 15, 8)
+                            && modelHasBounds(stepDoubleModel, 0, 0, 8, 16, 7, 16)
+                            && !modelHasBounds(stepModel, 0, 0, 0, 16, 7, 16)
                             && modelHasTop(layerModel, 15)
                             && modelHasTop(cornerModel, 15),
                     "Dirt Path lowered geometry/UV contract did not reach every BGE geometry for "
@@ -1436,10 +1809,6 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
     }
 
     private static ResourceManager clientFixtureManager() {
-        return clientFixtureManager(false);
-    }
-
-    private static ResourceManager clientFixtureManager(boolean genericCnmModelFallback) {
         Map<Identifier, String> json = new HashMap<>();
         json.put(Identifier.parse("minecraft:blockstates/oak_stairs.json"),
                 "{\"variants\":{\"facing=north,half=bottom,shape=straight\":"
@@ -1512,7 +1881,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                     case "getNamespaces" -> Set.of("minecraft", "mynx_trees", "bbb", "ribbits", "enderscape");
                     case "listResources", "close" -> null;
                     case "getRootResource", "getResource", "getMetadataSection", "location" -> null;
-                    case "toString" -> "BGE C80 client fixture pack";
+                    case "toString" -> "BGE C92 explicit-family client fixture pack";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected PackResources call " + method);
@@ -1526,15 +1895,6 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                     case "getResource" -> {
                         Identifier requested = (Identifier) args[0];
                         Resource resource = resources.get(requested);
-                        // Generic CNM candidates can be admitted from any provider namespace.
-                        // Their first-bake test needs a real model response while remaining
-                        // independent of provider texture bytes.
-                        if (resource == null && genericCnmModelFallback
-                                && requested.getPath().startsWith("models/block/")) {
-                            String fallback = "{\"textures\":{\"all\":\"minecraft:block/stone\"}}";
-                            resource = new Resource(pack, () -> new ByteArrayInputStream(
-                                    fallback.getBytes(StandardCharsets.UTF_8)));
-                        }
                         yield Optional.ofNullable(resource);
                     }
                     case "getResourceStack" -> Optional.ofNullable(resources.get((Identifier) args[0]))
@@ -1546,21 +1906,16 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                     case "listResourceStacks" -> Map.of();
                     case "listPacks" -> Stream.of(pack);
-                    case "toString" -> "BGE C80 client fixture manager";
+                    case "toString" -> "BGE C92 explicit-family client fixture manager";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     default -> throw new UnsupportedOperationException("Unexpected ResourceManager call " + method);
                 });
     }
 
-    /** Shared fixture seam for the generic-CNM first-bake resource regression. */
-    static ResourceManager clientFixtureManagerForCnmRegression() {
-        return clientFixtureManager(true);
-    }
-
     /** BBB resource regression fixture: direct conventional models must remain genuinely absent. */
     static ResourceManager clientFixtureManagerForBbbBeamResourceRegression() {
-        return clientFixtureManager(false);
+        return clientFixtureManager();
     }
 
     /** Small native-resource fixture with distinguishable topology/UV data for C87 copying tests. */

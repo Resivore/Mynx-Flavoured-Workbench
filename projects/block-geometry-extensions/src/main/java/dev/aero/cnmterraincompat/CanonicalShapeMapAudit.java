@@ -61,6 +61,46 @@ public final class CanonicalShapeMapAudit {
         }
     }
 
+    /** Compares every final, user-visible supported selector component byte-for-byte by item ID. */
+    public static ExactReport inspectExplicitFamilies() {
+        List<List<Identifier>> expectedGroups = ExplicitShapeMapFamilies.expectedIdGroups();
+        List<String> failures = new ArrayList<>();
+        int variations = 0;
+        for (List<Identifier> expected : expectedGroups) {
+            if (expected.isEmpty() || expected.size() % 9 != 0) {
+                failures.add("invalid expected group " + expected);
+                continue;
+            }
+            variations += expected.size() / 9;
+            Item root = BuiltInRegistries.ITEM.getValue(expected.getFirst());
+            List<Identifier> actual = ShapeMap.getShapes(root).stream()
+                    .map(CanonicalShapeMapAudit::itemId).toList();
+            if (!actual.equals(expected)) {
+                failures.add(expected.getFirst() + " expected=" + expected + " actual=" + actual);
+            }
+            if (new LinkedHashSet<>(actual).size() != actual.size()) {
+                failures.add(expected.getFirst() + " contains duplicate items " + actual);
+            }
+            for (Identifier member : expected) {
+                Item item = BuiltInRegistries.ITEM.getValue(member);
+                if (ShapeMap.getParent(item) != root) {
+                    failures.add(member + " parent=" + itemId(ShapeMap.getParent(item))
+                            + " expected=" + expected.getFirst());
+                }
+            }
+        }
+        return new ExactReport(expectedGroups.size(), variations, List.copyOf(failures));
+    }
+
+    public static void requireExplicitFamilies() {
+        requireExternalFamilies();
+        ExactReport report = inspectExplicitFamilies();
+        if (!report.failures().isEmpty()) {
+            throw new IllegalStateException("Invalid explicit ShapeMap selector sequences: "
+                    + report.failures());
+        }
+    }
+
     /** Pure duplicate detector used by direct regressions as well as the live ShapeMap audit. */
     public static List<Duplicate> duplicates(List<Member> members) {
         Map<CanonicalKey, LinkedHashSet<Identifier>> byKey = new LinkedHashMap<>();
@@ -111,5 +151,8 @@ public final class CanonicalShapeMapAudit {
             duplicates = List.copyOf(duplicates);
             missing = List.copyOf(missing);
         }
+    }
+    public record ExactReport(int groupCount, int variationCount, List<String> failures) {
+        public ExactReport { failures = List.copyOf(failures); }
     }
 }

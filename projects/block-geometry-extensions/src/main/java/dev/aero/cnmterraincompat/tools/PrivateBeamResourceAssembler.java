@@ -16,11 +16,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Local-only C91 texture assembly. It reads the exact retained BBB artifact and produces only
+ * Local-only C92 texture assembly. It reads the exact retained provider artifacts and produces only
  * ignored build output; no upstream image/model bytes are present in source resources.
  */
 public final class PrivateBeamResourceAssembler {
     private static final String BBB_SHA256 = "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a";
+    private static final String ENDERSCAPE_SHA256 = "9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b";
 
     private PrivateBeamResourceAssembler() {}
 
@@ -31,6 +32,7 @@ public final class PrivateBeamResourceAssembler {
         Path enderscape = Path.of(args[1]).toRealPath();
         Path output = Path.of(args[2]).toAbsolutePath().normalize();
         requireSha256(bbb, BBB_SHA256);
+        requireSha256(enderscape, ENDERSCAPE_SHA256);
         try (ZipFile bbbZip = new ZipFile(bbb.toFile()); ZipFile enderscapeZip = new ZipFile(enderscape.toFile())) {
             // Validate the authored Beam topology as well as the exact source pixels used below.
             require(bbbZip, "assets/bbb/models/block/beam/oak_beam.json");
@@ -115,6 +117,6 @@ public final class PrivateBeamResourceAssembler {
         }
         String actual = HexFormat.of().formatHex(digest.digest());
         if (!actual.equals(expected)) throw new IllegalStateException(
-                "Private BBB input SHA-256 mismatch: expected " + expected + " but got " + actual);
+                "Private provider input SHA-256 mismatch: expected " + expected + " but got " + actual);
     }
 }

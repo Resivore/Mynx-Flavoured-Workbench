@@ -123,9 +123,8 @@ public final class ExternalFixtureRegistry {
                         .mapColor(BlisteredMagniaBlock::getMapColor)));
         register("enderscape", "blinklamp", new BlinklampBlock(enderscapeProperties("blinklamp")));
 
-        // This is intentionally not an ExternalMaterialCatalog entry. It is a CNM-only fixture
-        // for the actual lifecycle where an untyped slab admission preregisters BGE's deferred
-        // Wall, then ShapeMap resolves the same family through this provider-owned real Wall.
+        // Plain Mirestone is intentionally not an ExternalMaterialCatalog entry. It remains a
+        // CNM-only negative fixture: BGE must neither complete it nor create deferred identities.
         Block mirestone = register("enderscape", "mirestone", Blocks.END_STONE, false);
         registerSlab("enderscape", "mirestone_slab", mirestone);
         registerStairs("enderscape", "mirestone_stairs", mirestone);
@@ -133,6 +132,10 @@ public final class ExternalFixtureRegistry {
                 .ofFullCopy(Blocks.END_STONE)
                 .setId(ResourceKey.create(Registries.BLOCK,
                         Identifier.fromNamespaceAndPath("enderscape", "mirestone_wall")))));
+
+        registerEnderscapeOrdinary("polished_end_stone", "polished_end_stone");
+        registerEnderscapeOrdinary("polished_veradite", "polished_veradite");
+        registerEnderscapeOrdinary("mirestone_bricks", "mirestone_brick");
 
         for (String path : new String[] {"chiseled_end_stone", "cracked_end_stone_bricks",
                 "chiseled_purpur", "chiseled_shadoline", "chiseled_veradite",
@@ -160,6 +163,16 @@ public final class ExternalFixtureRegistry {
         Identifier id = Identifier.fromNamespaceAndPath("enderscape", path);
         return BlockBehaviour.Properties.ofFullCopy(Blocks.END_STONE)
                 .setId(ResourceKey.create(Registries.BLOCK, id));
+    }
+
+    private static void registerEnderscapeOrdinary(String rootPath, String rolePrefix) {
+        Block source = register("enderscape", rootPath, Blocks.END_STONE, false);
+        registerSlab("enderscape", rolePrefix + "_slab", source);
+        registerStairs("enderscape", rolePrefix + "_stairs", source);
+        Identifier wallId = Identifier.fromNamespaceAndPath("enderscape", rolePrefix + "_wall");
+        register("enderscape", rolePrefix + "_wall", new WallBlock(BlockBehaviour.Properties
+                .ofFullCopy(Blocks.END_STONE)
+                .setId(ResourceKey.create(Registries.BLOCK, wallId))));
     }
 
     private static Block registerBbbSlab(String material, Block beam) {
