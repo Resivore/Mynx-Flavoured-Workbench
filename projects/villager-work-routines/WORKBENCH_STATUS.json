@@ -72,16 +72,16 @@
     ]
   },
   "state": {
-    "milestone": "The retained VWR history documents prior Fisherman and Shepherd observations. Exact user-supplied visual evidence binds only to paired VWR C18 and Ribbits C28: the rod was visibly displaced from the Frog Villager's hands and VWR's line could detach toward a high world/view point; those observations establish no aggregate PASS. C20 retires the optional reflection bridge and C17 stick fallback, directly requires the exact retained Ribbits C27 artifact, and renders C27's existing `fishing_rod` shaft/reel/detail beneath the inspected Frog Villager folded-arms transform. The user-authored JEM supplies `arms_rotation` 43 degrees and the local `[0,-7,-6]`-pixel grip; VWR adds no independent rod rotation, suppresses source `fishing_rod_2`/`fishing_rod_3`, and derives its 16-segment line from that same physical outer shaft tip. Fisherman scheduling, navigation, casting/retrieval, float, fish generation/deposit, sounds/cleanup, and Shepherd remain unchanged. C20 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; no Minecraft runtime observation is claimed.",
+    "milestone": "The retained VWR history documents prior Fisherman and Shepherd observations. Exact supplied C20 screenshot testing is a C20-only runtime FAIL: the Ribbits rod rendered around/above the Frog Villager head and upper torso rather than at its visible folded hands, its angle/placement did not match the supplied Blockbench reference, and VWR's line was detached from the visible outer shaft tip toward an incorrect distant/high world-space point. C21 inspects the active Frog Villager resource and follows its live replacement `arms` part through the real `arms_rotation` child before applying the user-authored unrotated `[0,-7,-6]` group. It keeps Ribbits C27 exact, adds no guessed rod rotation, suppresses source `fishing_rod_2`/`fishing_rod_3`, and transforms VWR's sole 16-segment line origin through that same final rod pose matrix. Fisherman scheduling, navigation, casting/retrieval, float behavior, fish generation/deposit, sounds/cleanup, and Shepherd remain unchanged. C21 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; no C21 Minecraft observation is claimed.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary20",
+        "version": "0.1.0-canary21",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary20.jar",
-          "sha256": "929e4f5fee37a5a3500ffde15e8a3f023ff6219a33b85d1446fd8f5c93585535"
+          "filename": "villager-work-routines-0.1.0-canary21.jar",
+          "sha256": "e50df0a79df2b778e1a4ce79237b02a5c472254359e7f4b13b5b918f3cfaa288"
         },
-        "built_at": "2026-09-21T00:30:40.0676568Z",
-        "source_commit": "6d13248d030dc0673623032915e5d384faad9382",
+        "built_at": "2026-09-21T03:39:54.4764644Z",
+        "source_commit": "8fd51b904af0506cae19efbe20bb315c523f7036",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -92,13 +92,13 @@
               "predicate": "=4.1.6+26.2-mynx-canary27",
               "reason": "VWR directly renders the installed private Ribbits C27 Fisherman model and texture without packaging their payload.",
               "regression_evidence": [
-                "The former C17 stick fallback and reflection-only bridge could not reproduce the Frog Villager reference pose.",
+                "Exact C20 runtime testing disproved parity between vanilla `translateToArms` and the active Frog Villager folded-arm hierarchy: the rod was high/displaced and its line detached toward an incorrect world point.",
                 "The private stack always installs Ribbits with VWR, so an intentional exact provider boundary is required."
               ]
             }
           ]
         },
-        "summary": "Renders the installed C27 Fisherman rod in the user-authored Frog Villager folded-arms pose and starts VWR's line at its physical outer shaft tip."
+        "summary": "Follows the active Frog Villager CEM folded arms and transforms VWR's line start through the same final C27 rod pose."
       },
       "accepted": null,
       "rollback": null,
@@ -112,10 +112,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 20,
-    "activity_at": "2026-09-21T00:30:40Z",
-    "updated_at": "2026-09-21T00:30:40Z",
-    "last_codex_at": "2026-09-21T00:30:40Z",
-    "source_commit": "6d13248d030dc0673623032915e5d384faad9382"
+    "revision": 21,
+    "activity_at": "2026-09-21T03:39:54Z",
+    "updated_at": "2026-09-21T03:39:54Z",
+    "last_codex_at": "2026-09-21T03:39:54Z",
+    "source_commit": "8fd51b904af0506cae19efbe20bb315c523f7036"
   }
 }
