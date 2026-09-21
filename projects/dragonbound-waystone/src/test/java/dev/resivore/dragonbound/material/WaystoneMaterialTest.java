@@ -121,6 +121,29 @@ final class WaystoneMaterialTest {
     }
 
     @Test
+    void changedClientVisualIdentityExplicitlyInvalidatesOnlyItsRenderedSection() throws IOException {
+        String blockEntity = Files.readString(Path.of(
+                "src/main/java/dev/resivore/dragonbound/block/DragonboundWaystoneBlockEntity.java"));
+        String client = Files.readString(Path.of(
+                "src/main/java/dev/resivore/dragonbound/client/DragonboundWaystoneClient.java"));
+
+        int changedVisualIdentity = blockEntity.indexOf("!Objects.equals(priorVisualMaterialId, visualMaterialId)");
+        int sectionInvalidation = blockEntity.indexOf(
+                "DragonboundWaystoneClient.invalidateRenderedSection(level, worldPosition)");
+        assertTrue(changedVisualIdentity >= 0);
+        assertTrue(sectionInvalidation > changedVisualIdentity,
+                "only a changed visual identity may schedule a render rebuild");
+        assertFalse(blockEntity.contains("level.setBlocksDirty(worldPosition, getBlockState(), getBlockState())"));
+
+        assertTrue(client.contains("clientLevel.setSectionRangeDirty(sectionX, sectionY, sectionZ, sectionX, sectionY, sectionZ)"));
+        assertTrue(client.contains("SectionPos.blockToSectionCoord(pos.getX())"));
+        assertTrue(client.contains("SectionPos.blockToSectionCoord(pos.getY())"));
+        assertTrue(client.contains("SectionPos.blockToSectionCoord(pos.getZ())"));
+        assertFalse(client.contains("setSectionDirtyWithNeighbors"),
+                "a material-only geometry change must not invalidate adjacent sections");
+    }
+
+    @Test
     void matchingIsShapelessButRequiresExactlyOneWaystoneAndOneDonor() {
         WaystoneMaterialRecipe recipe = WaystoneMaterialRecipe.INSTANCE;
 

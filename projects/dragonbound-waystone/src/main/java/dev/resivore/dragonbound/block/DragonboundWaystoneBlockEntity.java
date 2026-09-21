@@ -2,6 +2,7 @@ package dev.resivore.dragonbound.block;
 
 import dev.resivore.dragonbound.DragonboundContent;
 import dev.resivore.dragonbound.anchor.DragonboundAnchors;
+import dev.resivore.dragonbound.client.DragonboundWaystoneClient;
 import dev.resivore.dragonbound.material.WaystoneMaterial;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -80,9 +81,9 @@ public final class DragonboundWaystoneBlockEntity extends BlockEntity {
         }
 
         if (level != null && level.isClientSide() && !Objects.equals(priorVisualMaterialId, visualMaterialId)) {
-            // A block-entity packet does not itself rebuild a same-state block model. Force the
-            // geometry key to be re-evaluated only when the client-visible material changes.
-            level.setBlocksDirty(worldPosition, getBlockState(), getBlockState());
+            // The visual material participates in the model geometry key but not in block state.
+            // Mark its rendered section explicitly so the data-packet change rebuilds its quads.
+            DragonboundWaystoneClient.invalidateRenderedSection(level, worldPosition);
         }
     }
 

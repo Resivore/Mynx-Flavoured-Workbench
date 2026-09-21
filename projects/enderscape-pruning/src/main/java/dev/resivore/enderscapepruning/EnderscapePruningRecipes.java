@@ -1,6 +1,7 @@
 package dev.resivore.enderscapepruning;
 
 import dev.resivore.enderscapepruning.recipe.MatchaVoidCampfireRecipe;
+import net.fabricmc.fabric.api.recipe.v1.sync.RecipeSynchronization;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -19,5 +20,8 @@ public final class EnderscapePruningRecipes {
                 BuiltInRegistries.RECIPE_SERIALIZER,
                 Identifier.fromNamespaceAndPath(EnderscapePruning.MOD_ID, "matcha_void_campfire"),
                 MATCHA_VOID_CAMPFIRE);
+        // Fabric only synchronizes opt-in mod serializers. JEI consumes that
+        // synchronized RecipeHolder and its real RecipeDisplay directly.
+        RecipeSynchronization.synchronizeRecipeSerializer(MATCHA_VOID_CAMPFIRE);
     }
 }

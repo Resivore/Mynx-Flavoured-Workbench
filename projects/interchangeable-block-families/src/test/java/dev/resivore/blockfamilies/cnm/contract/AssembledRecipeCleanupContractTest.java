@@ -27,6 +27,90 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AssembledRecipeCleanupContractTest {
+    private static final Set<String> MINECRAFT_DISPLAY_RESULTS = Set.of(
+            "minecraft:oak_sign", "minecraft:oak_hanging_sign", "minecraft:oak_shelf",
+            "minecraft:spruce_sign", "minecraft:spruce_hanging_sign", "minecraft:spruce_shelf",
+            "minecraft:birch_sign", "minecraft:birch_hanging_sign", "minecraft:birch_shelf",
+            "minecraft:jungle_sign", "minecraft:jungle_hanging_sign", "minecraft:jungle_shelf",
+            "minecraft:acacia_sign", "minecraft:acacia_hanging_sign", "minecraft:acacia_shelf",
+            "minecraft:dark_oak_sign", "minecraft:dark_oak_hanging_sign", "minecraft:dark_oak_shelf",
+            "minecraft:mangrove_sign", "minecraft:mangrove_hanging_sign", "minecraft:mangrove_shelf",
+            "minecraft:cherry_sign", "minecraft:cherry_hanging_sign", "minecraft:cherry_shelf",
+            "minecraft:pale_oak_sign", "minecraft:pale_oak_hanging_sign", "minecraft:pale_oak_shelf",
+            "minecraft:bamboo_sign", "minecraft:bamboo_hanging_sign", "minecraft:bamboo_shelf",
+            "minecraft:crimson_sign", "minecraft:crimson_hanging_sign", "minecraft:crimson_shelf",
+            "minecraft:warped_sign", "minecraft:warped_hanging_sign", "minecraft:warped_shelf");
+
+    private static final Set<String> ENDERSCAPE_APPROVED_RESULTS = Set.of(
+            "enderscape:veiled_sign", "enderscape:veiled_hanging_sign", "enderscape:veiled_shelf",
+            "enderscape:celestial_sign", "enderscape:celestial_hanging_sign", "enderscape:celestial_shelf",
+            "enderscape:murublight_sign", "enderscape:murublight_hanging_sign",
+            "enderscape:murublight_shelf",
+            "enderscape:veiled_fence", "enderscape:veiled_fence_gate",
+            "enderscape:celestial_fence", "enderscape:celestial_fence_gate",
+            "enderscape:murublight_fence", "enderscape:murublight_fence_gate",
+            "enderscape:veiled_button", "enderscape:veiled_pressure_plate",
+            "enderscape:celestial_button", "enderscape:celestial_pressure_plate",
+            "enderscape:murublight_button", "enderscape:murublight_pressure_plate",
+            "enderscape:polished_end_stone_button",
+            "enderscape:polished_end_stone_pressure_plate",
+            "enderscape:polished_mirestone_button",
+            "enderscape:polished_mirestone_pressure_plate",
+            "enderscape:polished_veradite_button",
+            "enderscape:polished_veradite_pressure_plate",
+            "enderscape:polished_kurodite_button",
+            "enderscape:polished_kurodite_pressure_plate",
+            "enderscape:shadoline_bars", "enderscape:shadoline_chain");
+
+    private static final Set<String> C8_CANONICAL_RECIPE_IDS = Set.of(
+            "minecraft:oak_sign", "minecraft:spruce_sign", "minecraft:birch_sign",
+            "minecraft:jungle_sign", "minecraft:acacia_sign", "minecraft:dark_oak_sign",
+            "minecraft:mangrove_sign", "minecraft:cherry_sign", "minecraft:pale_oak_sign",
+            "minecraft:bamboo_sign", "minecraft:crimson_sign", "minecraft:warped_sign",
+            "enderscape:veiled_sign", "enderscape:celestial_sign", "enderscape:murublight_sign",
+            "enderscape:murublight_sign_from_celestial_sign",
+            "enderscape:veiled_fence", "enderscape:celestial_fence", "enderscape:murublight_fence",
+            "enderscape:murublight_fence_from_celestial_fence",
+            "enderscape:veiled_button", "enderscape:celestial_button", "enderscape:murublight_button",
+            "enderscape:murublight_button_from_celestial_button",
+            "enderscape:polished_end_stone_button", "enderscape:polished_mirestone_button",
+            "enderscape:polished_veradite_button", "enderscape:polished_kurodite_button",
+            "enderscape:polished_kurodite_button_from_polished_veradite_button",
+            "enderscape:shadoline_bars");
+
+    private static final Set<String> C8_REMOVED_ALTERNATE_RECIPE_IDS = Set.of(
+            "minecraft:oak_hanging_sign", "minecraft:oak_shelf",
+            "minecraft:spruce_hanging_sign", "minecraft:spruce_shelf",
+            "minecraft:birch_hanging_sign", "minecraft:birch_shelf",
+            "minecraft:jungle_hanging_sign", "minecraft:jungle_shelf",
+            "minecraft:acacia_hanging_sign", "minecraft:acacia_shelf",
+            "minecraft:dark_oak_hanging_sign", "minecraft:dark_oak_shelf",
+            "minecraft:mangrove_hanging_sign", "minecraft:mangrove_shelf",
+            "minecraft:cherry_hanging_sign", "minecraft:cherry_shelf",
+            "minecraft:pale_oak_hanging_sign", "minecraft:pale_oak_shelf",
+            "minecraft:bamboo_hanging_sign", "minecraft:bamboo_shelf",
+            "minecraft:crimson_hanging_sign", "minecraft:crimson_shelf",
+            "minecraft:warped_hanging_sign", "minecraft:warped_shelf",
+            "enderscape:veiled_hanging_sign", "enderscape:celestial_hanging_sign",
+            "enderscape:murublight_hanging_sign",
+            "enderscape:veiled_shelf", "enderscape:celestial_shelf", "enderscape:murublight_shelf",
+            "enderscape:veiled_fence_gate", "enderscape:celestial_fence_gate",
+            "enderscape:murublight_fence_gate",
+            "enderscape:veiled_pressure_plate", "enderscape:celestial_pressure_plate",
+            "enderscape:murublight_pressure_plate",
+            "enderscape:polished_end_stone_pressure_plate",
+            "enderscape:polished_mirestone_pressure_plate",
+            "enderscape:polished_veradite_pressure_plate",
+            "enderscape:polished_kurodite_pressure_plate",
+            "enderscape:shadoline_chain");
+
+    private static final Set<String> C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS = Set.of(
+            "enderscape:murublight_hanging_sign_from_celestial_hanging_sign",
+            "enderscape:murublight_shelf_from_celestial_shelf",
+            "enderscape:murublight_fence_gate_from_celestial_fence_gate",
+            "enderscape:murublight_pressure_plate_from_celestial_pressure_plate",
+            "enderscape:polished_kurodite_pressure_plate_from_polished_veradite_pressure_plate");
+
     @Test
     void exactAssembledCorpusReplaysCnmCleanupOrder() throws Exception {
         List<RecipeFixture> recipes = new ArrayList<>();
@@ -36,6 +120,12 @@ class AssembledRecipeCleanupContractTest {
         recipes.addAll(recipesFromJar("macawsWindowsReferenceJar", "mcwwindows", "windows_and_shutters"));
         recipes.addAll(recipesFromJar(
                 "dramaticDoorsReferenceJar", "dramaticdoors", "dramatic_packaged_static"));
+        recipes.addAll(recipesFromJarResults(
+                "minecraftReferenceJar", "minecraft", "minecraft_display_fixtures",
+                MINECRAFT_DISPLAY_RESULTS));
+        recipes.addAll(recipesFromJarResults(
+                "enderscapeReferenceJar", "enderscape", "enderscape_approved_families",
+                ENDERSCAPE_APPROVED_RESULTS));
         recipes.addAll(dynamicAndModeledRecipes());
 
         assertEquals(Map.of(
@@ -44,11 +134,13 @@ class AssembledRecipeCleanupContractTest {
                         "trapdoors", 207L,
                         "windows_and_shutters", 335L,
                         "dramatic_packaged_static", 59L,
+                        "minecraft_display_fixtures", 36L,
+                        "enderscape_approved_families", 40L,
                         "three_high_doors", 217L,
                         "fence_gates", 24L,
                         "vanilla_building_accessories", 42L),
                 countByCorpus(recipes));
-        assertEquals(1_478, recipes.size());
+        assertEquals(1_554, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -74,13 +166,15 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("macaws_paths", 143L);
         expectedRemoved.put("trapdoors", 195L);
         expectedRemoved.put("windows_and_shutters", 215L);
+        expectedRemoved.put("minecraft_display_fixtures", 24L);
+        expectedRemoved.put("enderscape_approved_families", 17L);
         expectedRemoved.put("three_high_doors", 217L);
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20,
+        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20 + 24 + 17,
                 removedNonParents.values().stream().mapToLong(Long::longValue).sum());
-        assertEquals(1_062L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(1_103L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -91,6 +185,12 @@ class AssembledRecipeCleanupContractTest {
         recipes.addAll(recipesFromJar("macawsPathsReferenceJar", "mcwpaths", "macaws_paths"));
         recipes.addAll(recipesFromJar(
                 "macawsWindowsReferenceJar", "mcwwindows", "windows_and_shutters"));
+        recipes.addAll(recipesFromJarResults(
+                "minecraftReferenceJar", "minecraft", "minecraft_display_fixtures",
+                MINECRAFT_DISPLAY_RESULTS));
+        recipes.addAll(recipesFromJarResults(
+                "enderscapeReferenceJar", "enderscape", "enderscape_approved_families",
+                ENDERSCAPE_APPROVED_RESULTS));
         recipes.addAll(dynamicAndModeledRecipes());
 
         ShapeFamilies shapes = ShapeFamilies.fromCatalog();
@@ -100,6 +200,11 @@ class AssembledRecipeCleanupContractTest {
         newFamilies.addAll(AuditedShapeFamilies.families(AuditedShapeFamily.Category.BAR_CHAIN));
         newFamilies.addAll(AuditedShapeFamilies.families(
                 AuditedShapeFamily.Category.BUILDING_ACCESSORY));
+        newFamilies.addAll(AuditedShapeFamilies.families(
+                AuditedShapeFamily.Category.DISPLAY_FIXTURE));
+        AuditedShapeFamilies.families(AuditedShapeFamily.Category.FENCE_GATE).stream()
+                .filter(family -> family.key().getPath().startsWith("cnm/fence_gate/enderscape_"))
+                .forEach(newFamilies::add);
         for (AuditedShapeFamily family : newFamilies) {
             family.members().forEach(member -> newMembers.add(member.toString()));
         }
@@ -118,7 +223,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(214, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(255, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",
@@ -129,7 +234,13 @@ class AssembledRecipeCleanupContractTest {
                 "mcwpaths:oak_planks_path",
                 "mcwpaths:stone_running_bond_path",
                 "mcwwindows:oak_log_parapet",
-                "mcwwindows:metal_curtain_rod")),
+                "mcwwindows:metal_curtain_rod",
+                "minecraft:oak_hanging_sign",
+                "minecraft:warped_shelf",
+                "enderscape:murublight_hanging_sign",
+                "enderscape:murublight_fence_gate",
+                "enderscape:polished_kurodite_pressure_plate",
+                "enderscape:shadoline_chain")),
                 "Expected new-family non-parent recipes were not all removed");
 
         Set<String> environmentalCopperParents = Set.of(
@@ -141,6 +252,46 @@ class AssembledRecipeCleanupContractTest {
             assertTrue(retainedResults.contains(parent) || environmentalCopperParents.contains(parent),
                     "New family has no retained recipe or audited weathering acquisition: " + family.key());
         }
+    }
+
+    @Test
+    void exactC8ProviderRecipesPreserveCanonicalAndCustomConversionResultsAndRemoveCraftingAlternates()
+            throws Exception {
+        List<RecipeFixture> recipes = new ArrayList<>();
+        recipes.addAll(recipesFromJarResults(
+                "minecraftReferenceJar", "minecraft", "minecraft_display_fixtures",
+                MINECRAFT_DISPLAY_RESULTS));
+        recipes.addAll(recipesFromJarResults(
+                "enderscapeReferenceJar", "enderscape", "enderscape_approved_families",
+                ENDERSCAPE_APPROVED_RESULTS));
+
+        assertEquals(76, recipes.size());
+        Set<String> expectedResults = new LinkedHashSet<>(MINECRAFT_DISPLAY_RESULTS);
+        expectedResults.addAll(ENDERSCAPE_APPROVED_RESULTS);
+        assertEquals(expectedResults, recipes.stream()
+                .map(RecipeFixture::result)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new)));
+
+        ShapeFamilies shapes = ShapeFamilies.fromCatalog();
+        Map<String, List<String>> tags = assembledTags();
+        Set<String> retained = new LinkedHashSet<>();
+        Set<String> removed = new LinkedHashSet<>();
+        Set<String> dangerous = new LinkedHashSet<>();
+        for (RecipeFixture recipe : recipes) {
+            CleanupOutcome outcome = cleanup(recipe, shapes, tags);
+            switch (outcome.disposition()) {
+                case KEEP -> retained.add(recipe.recipeId());
+                case REMOVE_NON_PARENT_RESULT -> removed.add(recipe.recipeId());
+                case REMOVE_PARENT_RESULT -> dangerous.add(recipe.recipeId());
+            }
+            assertTrue(!outcome.literalIngredientChanged(), recipe.recipeId());
+        }
+
+        Set<String> expectedRetained = new LinkedHashSet<>(C8_CANONICAL_RECIPE_IDS);
+        expectedRetained.addAll(C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS);
+        assertEquals(expectedRetained, retained);
+        assertEquals(C8_REMOVED_ALTERNATE_RECIPE_IDS, removed);
+        assertTrue(dangerous.isEmpty(), dangerous.toString());
     }
 
     @Test
@@ -172,6 +323,9 @@ class AssembledRecipeCleanupContractTest {
 
     private static CleanupOutcome cleanup(RecipeFixture recipe, ShapeFamilies shapes,
             Map<String, List<String>> assembledTags) {
+        if (!recipe.cleanupEligible()) {
+            return new CleanupOutcome(Disposition.KEEP, false);
+        }
         if (shapes.nonParents().contains(recipe.result())) {
             return new CleanupOutcome(Disposition.REMOVE_NON_PARENT_RESULT, false);
         }
@@ -286,6 +440,11 @@ class AssembledRecipeCleanupContractTest {
 
     private static List<RecipeFixture> recipesFromJar(String jarProperty, String namespace, String corpus)
             throws Exception {
+        return recipesFromJarResults(jarProperty, namespace, corpus, null);
+    }
+
+    private static List<RecipeFixture> recipesFromJarResults(String jarProperty, String namespace,
+            String corpus, Set<String> allowedResults) throws Exception {
         String prefix = "data/" + namespace + "/recipe/";
         List<RecipeFixture> recipes = new ArrayList<>();
         try (JarFile jar = new JarFile(requiredPath(jarProperty).toFile())) {
@@ -304,11 +463,26 @@ class AssembledRecipeCleanupContractTest {
                 String path = entry.getName().substring(prefix.length(), entry.getName().length() - 5);
                 String recipeId = namespace + ":" + path;
                 JsonElement resultElement = json.get("result");
+                if (resultElement == null) {
+                    assertTrue(allowedResults != null, recipeId + " has no result");
+                    continue;
+                }
                 String result = resultElement.isJsonObject()
                         ? resultElement.getAsJsonObject().get("id").getAsString()
                         : resultElement.getAsString();
-                recipes.add(new RecipeFixture(corpus, recipeId, result, ingredientSlots(json, recipeId)));
+                if (allowedResults != null && !allowedResults.contains(result)) continue;
+                String type = json.get("type").getAsString();
+                boolean cleanupEligible = !type.equals("enderscape:void_lachryma");
+                recipes.add(new RecipeFixture(
+                        corpus, recipeId, result, ingredientSlots(json, recipeId), cleanupEligible));
             }
+        }
+        if (allowedResults != null) {
+            Set<String> actualResults = recipes.stream()
+                    .map(RecipeFixture::result)
+                    .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+            assertEquals(allowedResults, actualResults,
+                    jarProperty + " did not cover the complete literal result set");
         }
         return List.copyOf(recipes);
     }
@@ -348,7 +522,8 @@ class AssembledRecipeCleanupContractTest {
     private static List<RecipeFixture> dynamicAndModeledRecipes() throws Exception {
         List<RecipeFixture> recipes = new ArrayList<>();
         for (String[] row : AuditFixtures.tsv("dynamic-and-modeled-recipes.tsv", 4)) {
-            recipes.add(new RecipeFixture(row[0], row[1], row[2], List.of(row[3].split("\\|", -1))));
+            recipes.add(new RecipeFixture(
+                    row[0], row[1], row[2], List.of(row[3].split("\\|", -1)), true));
         }
         return List.copyOf(recipes);
     }
@@ -375,7 +550,13 @@ class AssembledRecipeCleanupContractTest {
 
     private record CleanupOutcome(Disposition disposition, boolean literalIngredientChanged) {}
 
-    private record RecipeFixture(String corpus, String recipeId, String result, List<String> ingredients) {}
+    private record RecipeFixture(
+            String corpus,
+            String recipeId,
+            String result,
+            List<String> ingredients,
+            boolean cleanupEligible
+    ) {}
 
     private record ShapeFamilies(Map<String, String> parentByMember, Set<String> parents,
                                  Set<String> nonParents) {

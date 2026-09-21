@@ -39,7 +39,7 @@ final class BuildingButBetterFamiliesTest {
     void existingFenceGateFamiliesAreExtendedInPlaceWithoutFabricatingMossyOak() {
         Map<String, AuditedShapeFamily> fences = AuditedShapeFamilies.families(FENCE_GATE).stream()
                 .collect(Collectors.toMap(family -> family.key().getPath(), family -> family));
-        assertEquals(13, fences.size());
+        assertEquals(16, fences.size());
         for (String wood : WOODS) {
             assertEquals(List.of(minecraft(wood + "_fence"), minecraft(wood + "_fence_gate"),
                     bbb(wood + "_frame"), bbb(wood + "_lattice")),
