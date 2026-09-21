@@ -403,18 +403,24 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         List<Item> resolved = ShapeMap.getShapes(veiledSign);
         helper.assertTrue(resolved.equals(List.of(veiledSign, veiledHangingSign, veiledShelf)),
                 "Veiled display fixture changed before fail-closed transfer proof");
-        Item originalTarget = resolved.set(1, celestialShelf);
+        Map<Item, List<Item>> shapesSnapshot = new LinkedHashMap<>();
+        ShapeMap.shapesView().forEach((parent, members) ->
+                shapesSnapshot.put(parent, List.copyOf(members)));
+        Map<Item, Item> inverseSnapshot = new IdentityHashMap<>();
+        inverseSnapshot.putAll(ShapeMap.inverseView());
+        Map<Item, List<Item>> corruptedShapes = new LinkedHashMap<>(shapesSnapshot);
+        corruptedShapes.put(veiledSign, List.of(veiledSign, celestialShelf, veiledShelf));
         try {
+            ShapeMap.setShapeMaps(corruptedShapes, inverseSnapshot);
             ItemStack rejected = ShapeMap.transferStack(source, 1);
             helper.assertTrue(rejected.getItem() == source.getItem()
                             && rejected.getCount() == source.getCount()
                             && rejected.getComponentsPatch().equals(source.getComponentsPatch()),
                     "Transfer guard did not fail closed on a cross-family display target");
         } finally {
-            resolved.set(1, originalTarget);
+            ShapeMap.setShapeMaps(shapesSnapshot, inverseSnapshot);
         }
-        helper.assertTrue(originalTarget == veiledHangingSign
-                        && ShapeMap.getShapes(veiledSign).get(1) == veiledHangingSign,
+        helper.assertTrue(ShapeMap.getShapes(veiledSign).get(1) == veiledHangingSign,
                 "Veiled display fixture was not restored after fail-closed transfer proof");
         helper.succeed();
     }
