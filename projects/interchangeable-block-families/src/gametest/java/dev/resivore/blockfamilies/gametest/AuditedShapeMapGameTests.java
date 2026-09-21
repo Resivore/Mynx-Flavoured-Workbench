@@ -403,24 +403,24 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         List<Item> resolved = ShapeMap.getShapes(veiledSign);
         helper.assertTrue(resolved.equals(List.of(veiledSign, veiledHangingSign, veiledShelf)),
                 "Veiled display fixture changed before fail-closed transfer proof");
-        Map<Item, List<Item>> shapesSnapshot = new LinkedHashMap<>();
-        ShapeMap.shapesView().forEach((parent, members) ->
-                shapesSnapshot.put(parent, List.copyOf(members)));
-        Map<Item, Item> inverseSnapshot = new IdentityHashMap<>();
-        inverseSnapshot.putAll(ShapeMap.inverseView());
-        Map<Item, List<Item>> corruptedShapes = new LinkedHashMap<>(shapesSnapshot);
-        corruptedShapes.put(veiledSign, List.of(veiledSign, celestialShelf, veiledShelf));
+        Map<Item, List<Item>> mutableShapes = mutableShapeMapForGuardTest();
+        List<Item> originalMembers = mutableShapes.put(veiledSign,
+                List.of(veiledSign, celestialShelf, veiledShelf));
         try {
-            ShapeMap.setShapeMaps(corruptedShapes, inverseSnapshot);
             ItemStack rejected = ShapeMap.transferStack(source, 1);
             helper.assertTrue(rejected.getItem() == source.getItem()
                             && rejected.getCount() == source.getCount()
                             && rejected.getComponentsPatch().equals(source.getComponentsPatch()),
                     "Transfer guard did not fail closed on a cross-family display target");
         } finally {
-            ShapeMap.setShapeMaps(shapesSnapshot, inverseSnapshot);
+            if (originalMembers == null) {
+                mutableShapes.remove(veiledSign);
+            } else {
+                mutableShapes.put(veiledSign, originalMembers);
+            }
         }
-        helper.assertTrue(ShapeMap.getShapes(veiledSign).get(1) == veiledHangingSign,
+        helper.assertTrue(originalMembers != null
+                        && ShapeMap.getShapes(veiledSign).get(1) == veiledHangingSign,
                 "Veiled display fixture was not restored after fail-closed transfer proof");
         helper.succeed();
     }
@@ -1108,6 +1108,17 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             return (boolean) method.invoke(null, first, second);
         } catch (ReflectiveOperationException exception) {
             throw new AssertionError("Accepted QSN CNM resolver is unavailable", exception);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<Item, List<Item>> mutableShapeMapForGuardTest() {
+        try {
+            java.lang.reflect.Field field = ShapeMap.class.getDeclaredField("SHAPES_BY_PARENT");
+            field.setAccessible(true);
+            return (Map<Item, List<Item>>) field.get(null);
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("CNM ShapeMap storage is unavailable for guard testing", exception);
         }
     }
 
