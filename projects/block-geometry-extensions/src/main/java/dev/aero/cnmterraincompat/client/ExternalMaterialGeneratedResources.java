@@ -88,8 +88,9 @@ public final class ExternalMaterialGeneratedResources {
             }
             if (generatedVertical) {
                 if (profile.orientationPolicy() == NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED) {
-                    // AxisModelContract produces only placed-state signature models. Keep a neutral
-                    // base geometry for the final catalog-wide item-only preview wrapper.
+                    // AxisModelContract produces only placed-state signature models. Keep the normal
+                    // CNM base geometry for ordinary C92-compatible item presentation; Beam items
+                    // select a direct-Y signature through their inventory-only wrapper.
                     models += writeAxisItemBaseModels(profile, vertical, step);
                     AxisModelContract.AxisUvPolicy policy = AxisGeneratedResources.policy(
                             manager, profile.canonicalParentId());

@@ -17,9 +17,10 @@ public final class BgeGeneratedResources {
         ExternalMaterialGeneratedResources.GenerationSummary external =
                 ExternalMaterialGeneratedResources.generate(manager);
         PrivateBeamGeneratedResources.generate(manager);
-        // Run last: this item-only pass sees the complete explicit catalog and cannot affect any
-        // already-written blockstate or placed-state model rotation.
-        CatalogPreviewGeneratedResources.generate(manager);
+        // Run last so C93's persistent preview wrappers are actively unwrapped after every normal
+        // provider/BGE item definition exists. The pass changes only item definitions plus the two
+        // inventory-only Beam models; placed blockstates and their model selections stay untouched.
+        CatalogItemGeneratedResources.generate(manager);
         return new GenerationSummary(layer, quarter, external);
     }
 
