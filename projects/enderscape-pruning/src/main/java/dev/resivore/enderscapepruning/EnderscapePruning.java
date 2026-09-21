@@ -10,7 +10,7 @@ import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Registers C2's always-enabled, narrowly generated Enderscape data overlay. */
+/** Registers C3's always-enabled, narrowly generated Enderscape data overlay. */
 public final class EnderscapePruning implements ModInitializer {
     public static final String MOD_ID = "enderscape_pruning";
     public static final Identifier BUILTIN_PACK_ID = Identifier.fromNamespaceAndPath(MOD_ID, "enderscape_pruning");
@@ -24,12 +24,12 @@ public final class EnderscapePruning implements ModInitializer {
         boolean registered = ResourceLoader.registerBuiltinPack(
                 BUILTIN_PACK_ID,
                 container,
-                Component.literal("Enderscape Pruning C2"),
+                Component.literal("Enderscape Pruning C3"),
                 PackActivationType.ALWAYS_ENABLED);
         if (!registered) {
             throw new IllegalStateException("Could not register required Enderscape Pruning data overlay");
         }
-        LOGGER.info("Registered Enderscape Pruning C2 overlay; exact upstream input SHA-256={}",
+        LOGGER.info("Registered Enderscape Pruning C3 overlay; exact upstream input SHA-256={}",
                 PruningContract.ENDERSCAPE_SHA256);
     }
 }

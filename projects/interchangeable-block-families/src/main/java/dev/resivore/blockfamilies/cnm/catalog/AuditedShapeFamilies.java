@@ -10,6 +10,7 @@ import java.util.Set;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BAR_CHAIN;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BBB_DETAIL;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BUILDING_ACCESSORY;
+import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.DISPLAY_FIXTURE;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.FENCE_GATE;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.THREE_HIGH_DOOR;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.TRAPDOOR;
@@ -24,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 153;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_317;
+    public static final int EXPECTED_FAMILY_COUNT = 179;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_384;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -962,6 +963,39 @@ public final class AuditedShapeFamilies {
                     mcwWindows("warped_pane_window"))
     );
 
+    private static final List<AuditedShapeFamily> DISPLAY_FIXTURES = List.of(
+            family("cnm/display_fixture/oak", DISPLAY_FIXTURE, minecraft("oak_sign"),
+                    minecraft("oak_hanging_sign"), minecraft("oak_shelf")),
+            family("cnm/display_fixture/spruce", DISPLAY_FIXTURE, minecraft("spruce_sign"),
+                    minecraft("spruce_hanging_sign"), minecraft("spruce_shelf")),
+            family("cnm/display_fixture/birch", DISPLAY_FIXTURE, minecraft("birch_sign"),
+                    minecraft("birch_hanging_sign"), minecraft("birch_shelf")),
+            family("cnm/display_fixture/jungle", DISPLAY_FIXTURE, minecraft("jungle_sign"),
+                    minecraft("jungle_hanging_sign"), minecraft("jungle_shelf")),
+            family("cnm/display_fixture/acacia", DISPLAY_FIXTURE, minecraft("acacia_sign"),
+                    minecraft("acacia_hanging_sign"), minecraft("acacia_shelf")),
+            family("cnm/display_fixture/dark_oak", DISPLAY_FIXTURE, minecraft("dark_oak_sign"),
+                    minecraft("dark_oak_hanging_sign"), minecraft("dark_oak_shelf")),
+            family("cnm/display_fixture/mangrove", DISPLAY_FIXTURE, minecraft("mangrove_sign"),
+                    minecraft("mangrove_hanging_sign"), minecraft("mangrove_shelf")),
+            family("cnm/display_fixture/cherry", DISPLAY_FIXTURE, minecraft("cherry_sign"),
+                    minecraft("cherry_hanging_sign"), minecraft("cherry_shelf")),
+            family("cnm/display_fixture/pale_oak", DISPLAY_FIXTURE, minecraft("pale_oak_sign"),
+                    minecraft("pale_oak_hanging_sign"), minecraft("pale_oak_shelf")),
+            family("cnm/display_fixture/bamboo", DISPLAY_FIXTURE, minecraft("bamboo_sign"),
+                    minecraft("bamboo_hanging_sign"), minecraft("bamboo_shelf")),
+            family("cnm/display_fixture/crimson", DISPLAY_FIXTURE, minecraft("crimson_sign"),
+                    minecraft("crimson_hanging_sign"), minecraft("crimson_shelf")),
+            family("cnm/display_fixture/warped", DISPLAY_FIXTURE, minecraft("warped_sign"),
+                    minecraft("warped_hanging_sign"), minecraft("warped_shelf")),
+            family("cnm/display_fixture/enderscape_veiled", DISPLAY_FIXTURE, enderscape("veiled_sign"),
+                    enderscape("veiled_hanging_sign"), enderscape("veiled_shelf")),
+            family("cnm/display_fixture/enderscape_celestial", DISPLAY_FIXTURE, enderscape("celestial_sign"),
+                    enderscape("celestial_hanging_sign"), enderscape("celestial_shelf")),
+            family("cnm/display_fixture/enderscape_murublight", DISPLAY_FIXTURE, enderscape("murublight_sign"),
+                    enderscape("murublight_hanging_sign"), enderscape("murublight_shelf"))
+    );
+
     private static final List<AuditedShapeFamily> FENCE_GATES = List.of(
             family("cnm/fence_gate/oak", FENCE_GATE, minecraft("oak_fence"),
                     minecraft("oak_fence_gate"), bbb("oak_frame"), bbb("oak_lattice")),
@@ -989,7 +1023,13 @@ public final class AuditedShapeFamilies {
                     minecraft("warped_fence_gate"), bbb("warped_frame"), bbb("warped_lattice")),
             family("cnm/fence_gate/ribbits_mossy_oak_planks", FENCE_GATE,
                     ribbits("mossy_oak_planks_fence"),
-                    ribbits("mossy_oak_planks_fence_gate"))
+                    ribbits("mossy_oak_planks_fence_gate")),
+            family("cnm/fence_gate/enderscape_veiled", FENCE_GATE, enderscape("veiled_fence"),
+                    enderscape("veiled_fence_gate")),
+            family("cnm/fence_gate/enderscape_celestial", FENCE_GATE, enderscape("celestial_fence"),
+                    enderscape("celestial_fence_gate")),
+            family("cnm/fence_gate/enderscape_murublight", FENCE_GATE, enderscape("murublight_fence"),
+                    enderscape("murublight_fence_gate"))
     );
 
     private static final List<AuditedShapeFamily> BAR_CHAINS = List.of(
@@ -1016,7 +1056,9 @@ public final class AuditedShapeFamilies {
             family("cnm/bar_chain/waxed_oxidized_copper", BAR_CHAIN,
                     minecraft("waxed_oxidized_copper_bars"),
                     minecraft("waxed_oxidized_copper_chain"),
-                    aurorasLanterns("chandelier/waxed_oxidized_copper"))
+                    aurorasLanterns("chandelier/waxed_oxidized_copper")),
+            family("cnm/bar_chain/enderscape_shadoline", BAR_CHAIN, enderscape("shadoline_bars"),
+                    enderscape("shadoline_chain"))
     );
 
     private static final List<AuditedShapeFamily> BBB_DETAILS = List.of(
@@ -1292,7 +1334,21 @@ public final class AuditedShapeFamilies {
                     mcwPaths("dark_prismarine_square_paving"),
                     mcwPaths("dark_prismarine_honeycomb_paving"),
                     mcwPaths("dark_prismarine_clover_paving"),
-                    mcwPaths("dark_prismarine_dumble_paving"))
+                    mcwPaths("dark_prismarine_dumble_paving")),
+            family("cnm/building_accessory/enderscape_veiled", BUILDING_ACCESSORY,
+                    enderscape("veiled_button"), enderscape("veiled_pressure_plate")),
+            family("cnm/building_accessory/enderscape_celestial", BUILDING_ACCESSORY,
+                    enderscape("celestial_button"), enderscape("celestial_pressure_plate")),
+            family("cnm/building_accessory/enderscape_murublight", BUILDING_ACCESSORY,
+                    enderscape("murublight_button"), enderscape("murublight_pressure_plate")),
+            family("cnm/building_accessory/enderscape_polished_end_stone", BUILDING_ACCESSORY,
+                    enderscape("polished_end_stone_button"), enderscape("polished_end_stone_pressure_plate")),
+            family("cnm/building_accessory/enderscape_polished_mirestone", BUILDING_ACCESSORY,
+                    enderscape("polished_mirestone_button"), enderscape("polished_mirestone_pressure_plate")),
+            family("cnm/building_accessory/enderscape_polished_veradite", BUILDING_ACCESSORY,
+                    enderscape("polished_veradite_button"), enderscape("polished_veradite_pressure_plate")),
+            family("cnm/building_accessory/enderscape_polished_kurodite", BUILDING_ACCESSORY,
+                    enderscape("polished_kurodite_button"), enderscape("polished_kurodite_pressure_plate"))
     );
 
     private static final List<AuditedShapeFamily> FAMILIES = allFamilies();
@@ -1319,6 +1375,7 @@ public final class AuditedShapeFamilies {
             case THREE_HIGH_DOOR -> THREE_HIGH_DOORS;
             case TRAPDOOR -> TRAPDOORS;
             case WINDOW -> WINDOWS;
+            case DISPLAY_FIXTURE -> DISPLAY_FIXTURES;
             case FENCE_GATE -> FENCE_GATES;
             case BAR_CHAIN -> BAR_CHAINS;
             case BBB_DETAIL -> BBB_DETAILS;
@@ -1382,6 +1439,10 @@ public final class AuditedShapeFamilies {
         return Identifier.fromNamespaceAndPath("ribbits", path);
     }
 
+    private static Identifier enderscape(String path) {
+        return Identifier.fromNamespaceAndPath("enderscape", path);
+    }
+
     private static Identifier mcwWindows(String path) {
         return Identifier.fromNamespaceAndPath("mcwwindows", path);
     }
@@ -1392,6 +1453,7 @@ public final class AuditedShapeFamilies {
         families.addAll(THREE_HIGH_DOORS);
         families.addAll(TRAPDOORS);
         families.addAll(WINDOWS);
+        families.addAll(DISPLAY_FIXTURES);
         families.addAll(FENCE_GATES);
         families.addAll(BAR_CHAINS);
         families.addAll(BBB_DETAILS);

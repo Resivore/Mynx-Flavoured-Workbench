@@ -2,3 +2,6 @@
 oak_first	door_2h_oak	mcwdoors:oak_barn_door	first	minecraft:oak_door	37	custom_name=Workshop_Door|lore=North_Wing
 oak_middle	door_2h_oak	mcwdoors:oak_barn_door	middle	mcwdoors:oak_modern_door	37	custom_name=Workshop_Door|lore=North_Wing
 oak_last	door_2h_oak	mcwdoors:oak_barn_door	last	mcwdoors:oak_whispering_door	37	custom_name=Workshop_Door|lore=North_Wing
+veiled_first	display_veiled	enderscape:veiled_shelf	first	enderscape:veiled_sign	19	custom_name=Gallery_Display
+veiled_middle	display_veiled	enderscape:veiled_shelf	middle	enderscape:veiled_hanging_sign	19	custom_name=Gallery_Display
+veiled_last	display_veiled	enderscape:veiled_hanging_sign	last	enderscape:veiled_shelf	19	custom_name=Gallery_Display

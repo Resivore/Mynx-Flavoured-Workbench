@@ -6,3 +6,6 @@ custom_source_default_destination	minecraft:oak_trapdoor	mcwwindows:oak_shutter	
 same_shape_different_lore	mcwwindows:oak_window	mcwwindows:oak_window2	lore=North_Wing	lore=South_Wing	false
 same_nonparent_item_different_patch	mcwdoors:oak_barn_door	mcwdoors:oak_barn_door	custom_name=One	custom_name=Two	false
 cross_material_equal_patch	mcwdoors:oak_barn_door	mcwdoors:spruce_barn_door	custom_name=Shared	custom_name=Shared	false
+display_equal_patch	enderscape:veiled_sign	enderscape:veiled_shelf	custom_name=Display	custom_name=Display	true
+display_incompatible_patch	enderscape:veiled_hanging_sign	enderscape:veiled_shelf	custom_name=Left	custom_name=Right	false
+cross_display_material_equal_patch	enderscape:veiled_sign	enderscape:celestial_shelf	custom_name=Shared	custom_name=Shared	false

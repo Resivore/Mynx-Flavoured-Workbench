@@ -12,3 +12,6 @@ cross_material_window	mcwwindows:oak_window2	mcwwindows:spruce_window2	false
 fence_gate	minecraft:oak_fence	minecraft:oak_fence_gate	true
 cross_material_fence	minecraft:oak_fence_gate	minecraft:spruce_fence_gate	false
 cross_category	minecraft:oak_door	minecraft:oak_trapdoor	false
+display_fixture	enderscape:veiled_sign	enderscape:veiled_shelf	true
+cross_display_material	enderscape:veiled_hanging_sign	enderscape:celestial_hanging_sign	false
+display_to_door	enderscape:veiled_sign	minecraft:oak_door	false
