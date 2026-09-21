@@ -23,6 +23,7 @@ def workbenchRoot = providers.gradleProperty('workbench_root')
         .orElse(rootProject.projectDir.parentFile.parentFile.absolutePath)
         .get()
 def enderscapeJar = file("${workbenchRoot}/originals/mods/enderscape-fabric-3.0.2+mc26.2.jar")
+def jeiJar = file("${workbenchRoot}/originals/mods/jei-26.2-fabric-30.18.0.144.jar")
 def matchaDataRoot = file("${workbenchRoot}/projects/matcha-flavoured-data/src/main/resources/resourcepacks/matcha_flavoured_1_12/data")
 def matchaKindlingSource = file("${matchaDataRoot}/crafting/recipe/beacon_kindling.json")
 def generatedPruningData = layout.buildDirectory.dir('generated/enderscape-pruning-data')
@@ -31,10 +32,11 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    compileOnly files("${workbenchRoot}/originals/mods/jei-26.2-fabric-30.18.0.144.jar")
+    compileOnly files(jeiJar)
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation files(jeiJar)
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -91,7 +93,7 @@ tasks.register('generateEnderscapePruningData') {
         dataRoot.mkdirs()
         new File(packRoot, 'pack.mcmeta').text = JsonOutput.prettyPrint(JsonOutput.toJson([
             pack: [min_format: 88.0, max_format: 107.1,
-                   description: 'Enderscape Pruning C1 data overlay']
+                   description: 'Enderscape Pruning C3 data overlay']
         ])) + System.lineSeparator()
 
         def slurper = new JsonSlurper()
@@ -279,15 +281,17 @@ def packagedJarTask = tasks.named('jar')
 
 test {
     dependsOn packagedJarTask
+    inputs.file(jeiJar)
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
     systemProperty 'workbenchRoot', workbenchRoot
     systemProperty 'packagedJar', packagedJarTask.flatMap { it.archiveFile }.get().asFile.absolutePath
+    systemProperty 'jeiJar', jeiJar.absolutePath
 }
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored C2 JAR for canonical local retention.'
+    description = 'Stages the exact ignored C3 JAR for canonical local retention.'
     dependsOn tasks.named('test')
     from(packagedJarTask)
     into(layout.projectDirectory.dir('artifacts'))
@@ -295,4 +299,8 @@ tasks.register('stageCanaryArtifact', Copy) {
 
 java {
     withSourcesJar()
+}
+
+tasks.named('sourcesJar') {
+    dependsOn tasks.named('generateEnderscapePruningData')
 }

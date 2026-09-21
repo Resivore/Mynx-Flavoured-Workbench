@@ -201,7 +201,7 @@ final class EnderscapePruningContractTest {
         assertTrue(recipe.contains("MATCHA_KINDLING_MODEL"));
         assertTrue(recipe.contains("enderscape:void_shale"));
         assertTrue(recipe.contains("enderscape:void_campfire"));
-        assertTrue(recipe.contains("ingredientCount() != 2"));
+        assertTrue(recipe.contains("ingredientCount != 2"));
         assertTrue(recipe.contains("isMatchaKindling"));
     }
 

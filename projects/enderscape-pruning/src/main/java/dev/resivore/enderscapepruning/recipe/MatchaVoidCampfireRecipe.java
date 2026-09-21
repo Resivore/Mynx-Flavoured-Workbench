@@ -21,6 +21,8 @@ import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * C2's exact shapeless Kindling + Void Shale recipe. Matcha Kindling is a
@@ -38,22 +40,42 @@ public final class MatchaVoidCampfireRecipe extends CustomRecipe {
     public static final StreamCodec<RegistryFriendlyByteBuf, MatchaVoidCampfireRecipe> STREAM_CODEC =
             StreamCodec.unit(INSTANCE);
 
+    private final Supplier<Item> voidShale;
+    private final Supplier<Item> voidCampfire;
+
+    private MatchaVoidCampfireRecipe() {
+        this(() -> requiredItem(VOID_SHALE_ID), () -> requiredItem(VOID_CAMPFIRE_ID));
+    }
+
+    MatchaVoidCampfireRecipe(Supplier<Item> voidShale, Supplier<Item> voidCampfire) {
+        this.voidShale = voidShale;
+        this.voidCampfire = voidCampfire;
+    }
+
     @Override
     public boolean matches(CraftingInput input, Level level) {
-        if (input.ingredientCount() != 2) {
+        Item expectedVoidShale = voidShale.get();
+        return matchesIngredients(input.items(), input.ingredientCount(), stack -> stack.is(expectedVoidShale));
+    }
+
+    static boolean matchesIngredients(
+            List<ItemStack> stacks,
+            int ingredientCount,
+            Predicate<ItemStack> voidShalePredicate
+    ) {
+        if (ingredientCount != 2) {
             return false;
         }
 
         boolean kindling = false;
         boolean voidShale = false;
-        for (int index = 0; index < input.size(); index++) {
-            ItemStack stack = input.getItem(index);
+        for (ItemStack stack : stacks) {
             if (stack.isEmpty()) {
                 continue;
             }
             if (!kindling && isMatchaKindling(stack)) {
                 kindling = true;
-            } else if (!voidShale && isVoidShale(stack)) {
+            } else if (!voidShale && voidShalePredicate.test(stack)) {
                 voidShale = true;
             } else {
                 return false;
@@ -64,8 +86,7 @@ public final class MatchaVoidCampfireRecipe extends CustomRecipe {
 
     @Override
     public ItemStack assemble(CraftingInput input) {
-        Item output = BuiltInRegistries.ITEM.getValue(VOID_CAMPFIRE_ID);
-        return output == null ? ItemStack.EMPTY : new ItemStack(output);
+        return new ItemStack(voidCampfire.get());
     }
 
     @Override
@@ -90,15 +111,11 @@ public final class MatchaVoidCampfireRecipe extends CustomRecipe {
 
     @Override
     public List<RecipeDisplay> display() {
-        Item voidShale = BuiltInRegistries.ITEM.getValue(VOID_SHALE_ID);
-        Item voidCampfire = BuiltInRegistries.ITEM.getValue(VOID_CAMPFIRE_ID);
-        if (voidShale == null || voidCampfire == null) {
-            return List.of();
-        }
+        Item voidShale = this.voidShale.get();
+        Item voidCampfire = this.voidCampfire.get();
         return List.of(new ShapelessCraftingRecipeDisplay(
                 List.of(
-                        new SlotDisplay.ItemStackSlotDisplay(
-                                ItemStackTemplate.fromNonEmptyStack(matchaKindlingDisplayStack())),
+                        matchaKindlingDisplay(),
                         new SlotDisplay.ItemSlotDisplay(voidShale)),
                 new SlotDisplay.ItemSlotDisplay(voidCampfire),
                 new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
@@ -114,11 +131,23 @@ public final class MatchaVoidCampfireRecipe extends CustomRecipe {
                 && MATCHA_KINDLING_MODEL.equals(stack.get(DataComponents.ITEM_MODEL));
     }
 
-    private static boolean isVoidShale(ItemStack stack) {
-        return VOID_SHALE_ID.equals(BuiltInRegistries.ITEM.getKey(stack.getItem()));
+    static boolean isVoidShaleId(Identifier id) {
+        return VOID_SHALE_ID.equals(id);
     }
 
-    private static ItemStack matchaKindlingDisplayStack() {
+    private static Item requiredItem(Identifier id) {
+        return BuiltInRegistries.ITEM.getOptional(id).orElseThrow(
+                () -> new IllegalStateException("Required Enderscape recipe item is missing: " + id));
+    }
+
+    /** The exact component-qualified slot consumed by the recipe display. */
+    public static SlotDisplay.ItemStackSlotDisplay matchaKindlingDisplay() {
+        return new SlotDisplay.ItemStackSlotDisplay(
+                ItemStackTemplate.fromNonEmptyStack(matchaKindlingDisplayStack()));
+    }
+
+    /** The exact component-qualified input exposed by the authoritative display. */
+    public static ItemStack matchaKindlingDisplayStack() {
         ItemStack stack = new ItemStack(Items.CHICKEN_SPAWN_EGG);
         stack.set(DataComponents.ITEM_MODEL, MATCHA_KINDLING_MODEL);
         return stack;

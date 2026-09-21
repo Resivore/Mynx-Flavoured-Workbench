@@ -4,9 +4,13 @@ import dev.resivore.enderscapepruning.PruningContract;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.List;
 
@@ -18,6 +22,24 @@ public final class EnderscapePruningJeiPlugin implements IModPlugin {
     @Override
     public Identifier getPluginUid() {
         return UID;
+    }
+
+    @Override
+    public void registerItemSubtypes(ISubtypeRegistration registration) {
+        registerItemSubtypes(
+                registration,
+                FabricLoader.getInstance().isModLoaded("matcha_jei_integration"));
+    }
+
+    static void registerItemSubtypes(ISubtypeRegistration registration, boolean matchaJeiOwnsSubtype) {
+        // Matcha x JEI owns the full component-aware subtype when present.
+        // Without it, retain C2's exact item-model identity so an ordinary
+        // chicken spawn egg cannot focus or transfer as Beacon Kindling.
+        if (!matchaJeiOwnsSubtype) {
+            registration.registerFromDataComponentTypes(
+                    Items.CHICKEN_SPAWN_EGG,
+                    DataComponents.ITEM_MODEL);
+        }
     }
 
     @Override
