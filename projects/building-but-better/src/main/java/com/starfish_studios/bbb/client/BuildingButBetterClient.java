@@ -1,6 +1,7 @@
 package com.starfish_studios.bbb.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.starfish_studios.bbb.compat.EnderscapeWoodIntegration;
 import com.starfish_studios.bbb.item.DescriptionBlockItem;
 import com.starfish_studios.bbb.registry.BBBContent;
 import net.fabricmc.api.ClientModInitializer;
@@ -14,6 +15,7 @@ import java.util.List;
 public final class BuildingButBetterClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        EnderscapeWoodIntegration.requireProviderReady();
         DescriptionBlockItem.installControlKeyCheck(() -> {
             Minecraft minecraft = Minecraft.getInstance();
             return InputConstants.isKeyDown(minecraft.getWindow(), InputConstants.KEY_LCONTROL)

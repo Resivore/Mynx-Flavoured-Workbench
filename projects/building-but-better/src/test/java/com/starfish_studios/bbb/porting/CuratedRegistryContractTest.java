@@ -91,6 +91,50 @@ final class CuratedRegistryContractTest {
     }
 
     @Test
+    void manifestDeclaresExactlyThreeExplicitEnderscapeWoodFamilies() throws IOException {
+        String json = Files.readString(MANIFEST);
+        List<String> woodForms = stringArray(json, "wood_forms");
+        List<EnderscapeWoodFamily> families = enderscapeWoodFamilies(json);
+
+        assertEquals(List.of(
+                new EnderscapeWoodFamily("veiled", "enderscape:veiled_planks",
+                        "enderscape:stripped_veiled_log"),
+                new EnderscapeWoodFamily("celestial", "enderscape:celestial_planks",
+                        "enderscape:stripped_celestial_stem"),
+                new EnderscapeWoodFamily("murublight", "enderscape:murublight_planks",
+                        "enderscape:stripped_murublight_stem")
+        ), families);
+
+        Set<String> enderscapeBlocks = new LinkedHashSet<>();
+        for (EnderscapeWoodFamily family : families) {
+            for (String form : woodForms) {
+                enderscapeBlocks.add(family.material() + "_" + form);
+            }
+        }
+        assertEquals(33, enderscapeBlocks.size());
+        assertEquals(33, integer(json, "expected_enderscape_block_count"));
+        assertEquals(33, integer(json, "expected_enderscape_item_count"));
+        assertTrue(enderscapeBlocks.containsAll(Set.of(
+                "veiled_frame", "celestial_trim", "murublight_lattice")));
+        assertTrue(enderscapeBlocks.stream().noneMatch(id -> id.endsWith("_layer")));
+        assertTrue(enderscapeBlocks.stream().noneMatch(id -> id.endsWith("_ladder")));
+
+        Set<String> standaloneBlocks = retainedBlocks(json);
+        assertTrue(disjoint(standaloneBlocks, enderscapeBlocks));
+        Set<String> providerPresentBlocks = new LinkedHashSet<>(standaloneBlocks);
+        providerPresentBlocks.addAll(enderscapeBlocks);
+        Set<String> providerPresentItems = new LinkedHashSet<>(providerPresentBlocks);
+        providerPresentItems.addAll(stringArray(json, "standalone_items"));
+
+        assertEquals(171, standaloneBlocks.size(),
+                "Enderscape integration must not alter the standalone BBB registry");
+        assertEquals(204, providerPresentBlocks.size());
+        assertEquals(205, providerPresentItems.size());
+        assertEquals(204, integer(json, "expected_provider_present_block_count"));
+        assertEquals(205, integer(json, "expected_provider_present_item_count"));
+    }
+
+    @Test
     void removalsExactlyReconcileThePublishedRegistryCounts() throws IOException {
         String json = Files.readString(MANIFEST);
         Set<String> retainedBlocks = retainedBlocks(json);
@@ -153,6 +197,22 @@ final class CuratedRegistryContractTest {
         return Integer.parseInt(field.group(1));
     }
 
+    private static List<EnderscapeWoodFamily> enderscapeWoodFamilies(String json) {
+        Matcher field = Pattern.compile("\\\"enderscape_wood_families\\\"\\s*:\\s*\\[(.*?)]", Pattern.DOTALL)
+                .matcher(json);
+        assertTrue(field.find(), "Missing explicit Enderscape wood-family array");
+        Matcher family = Pattern.compile(
+                "\\{\\s*\\\"material\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"\\s*,"
+                        + "\\s*\\\"source_planks\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"\\s*,"
+                        + "\\s*\\\"beam_material\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"\\s*}",
+                Pattern.DOTALL).matcher(field.group(1));
+        java.util.ArrayList<EnderscapeWoodFamily> result = new java.util.ArrayList<>();
+        while (family.find()) {
+            result.add(new EnderscapeWoodFamily(family.group(1), family.group(2), family.group(3)));
+        }
+        return List.copyOf(result);
+    }
+
     private static Set<String> ids(String text) {
         return Arrays.stream(text.strip().split("[\\s,]+"))
                 .filter(value -> !value.isBlank())
@@ -162,4 +222,6 @@ final class CuratedRegistryContractTest {
     private static boolean disjoint(Set<String> left, Set<String> right) {
         return left.stream().noneMatch(right::contains);
     }
+
+    private record EnderscapeWoodFamily(String material, String sourcePlanks, String beamMaterial) {}
 }

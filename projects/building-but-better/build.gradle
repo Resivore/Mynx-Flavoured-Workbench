@@ -35,361 +35,275 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'zz_bbb_enderscape_fixture'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+loom.runs.named('gameTest') {
+    vmArg '-Dfabric-api.gametest.filter=zz_bbb_enderscape_fixture:*'
+}
+
+def absentGameTest = providers.gradleProperty('bbbAbsentGameTest')
+        .map { it.toBoolean() }.orElse(false)
+
+def expectedBaselineName = 'bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar'
+def expectedBaselineSize = 1_149_534L
+def expectedBaselineSha256 = '0D54034725C3E354515C78BCEE32AB2CB5CE764A33E0602419E26C78AAEF8C5A'
 def expectedOriginalName = 'bbb-fabric-2.0pre4.jar'
 def expectedOriginalSize = 1_701_505L
 def expectedOriginalSha256 = '1E7AE114AAEC53475133E11C607FC65DCE493BBA5897EAF0044D53959B508FC0'
+def expectedEnderscapeName = 'enderscape-fabric-3.0.2+mc26.2.jar'
+def expectedEnderscapeSize = 104_162_822L
+def expectedEnderscapeSha256 = '9FCC4F59CA88E91F90E7C7D18289F2F859F20C810EEBCCA924764AA15236C40B'
+def expectedEnderscapeLicenseSha256 = '8D141B1F4E73FFBDD5CDC2B73F4A20931E0D57B7E8989EC7DC777C8814AD729A'
 def curatedRegistryFile = layout.projectDirectory.file('src/porting/curated-registry.json')
 def stagedResourcesDir = layout.buildDirectory.dir('generated/bbb-resources')
 def minecraftClientJar = providers.provider { loom.minecraftProvider.minecraftClientJar }
+def optionalPackPath = 'resourcepacks/enderscape_wood_families'
 
-def locateOriginalJar = {
-    def configured = providers.gradleProperty('bbbOriginalJar').orElse(providers.environmentVariable('BBB_ORIGINAL_JAR')).orNull
-    if (configured) {
-        return file(configured)
-    }
-
-    File cursor = projectDir
-    while (cursor != null) {
-        File candidate = new File(cursor, "originals/mods/${expectedOriginalName}")
-        if (candidate.isFile()) {
-            return candidate
-        }
-        cursor = cursor.parentFile
-    }
-    return new File(projectDir, "../../originals/mods/${expectedOriginalName}")
+def sha256Bytes = { byte[] input ->
+    MessageDigest.getInstance('SHA-256').digest(input).collect { String.format('%02X', it) }.join()
 }
 
 def sha256 = { File input ->
     MessageDigest digest = MessageDigest.getInstance('SHA-256')
     input.withInputStream { stream ->
         byte[] buffer = new byte[64 * 1024]
-        int read
-        while ((read = stream.read(buffer)) >= 0) {
+        for (int read; (read = stream.read(buffer)) >= 0;) {
             if (read > 0) digest.update(buffer, 0, read)
         }
     }
     digest.digest().collect { String.format('%02X', it) }.join()
 }
 
-def requireExactOriginalJar = {
-    File originalJar = locateOriginalJar()
-    if (!originalJar.isFile()) {
-        throw new GradleException("Missing ${expectedOriginalName}. Set -PbbbOriginalJar=<path> or BBB_ORIGINAL_JAR.")
+def locateBaselineJar = {
+    def configured = providers.gradleProperty('bbbBaselineJar')
+            .orElse(providers.environmentVariable('BBB_BASELINE_JAR')).orNull
+    if (configured) return file(configured)
+    File local = new File(projectDir, "artifacts/${expectedBaselineName}")
+    if (local.isFile()) return local
+    File cursor = projectDir
+    while (cursor != null) {
+        File candidate = new File(cursor, "projects/building-but-better/artifacts/${expectedBaselineName}")
+        if (candidate.isFile()) return candidate
+        cursor = cursor.parentFile
     }
-    if (originalJar.name != expectedOriginalName) {
-        throw new GradleException("BBB original filename mismatch: expected ${expectedOriginalName}, found ${originalJar.name} at ${originalJar}")
-    }
-    if (originalJar.length() != expectedOriginalSize) {
-        throw new GradleException("BBB original size mismatch: expected ${expectedOriginalSize}, found ${originalJar.length()} at ${originalJar}")
-    }
-    String actualHash = sha256(originalJar)
-    if (actualHash != expectedOriginalSha256) {
-        throw new GradleException("BBB original SHA-256 mismatch: expected ${expectedOriginalSha256}, found ${actualHash} at ${originalJar}")
-    }
-    return originalJar
+    local
 }
 
-def collectStrings
-collectStrings = { Object value, Set<String> output ->
-    if (value instanceof Map) {
-        value.each { key, nested ->
-            collectStrings(key, output)
-            collectStrings(nested, output)
-        }
-    } else if (value instanceof Collection) {
-        value.each { collectStrings(it, output) }
-    } else if (value instanceof String) {
-        output.add(value)
+def locateEnderscapeJar = {
+    def configured = providers.gradleProperty('enderscapeJar')
+            .orElse(providers.environmentVariable('BBB_ENDERSCAPE_JAR')).orNull
+    if (configured) return file(configured)
+    File cursor = projectDir
+    while (cursor != null) {
+        File candidate = new File(cursor, "originals/mods/${expectedEnderscapeName}")
+        if (candidate.isFile()) return candidate
+        cursor = cursor.parentFile
     }
+    new File(projectDir, "../../originals/mods/${expectedEnderscapeName}")
 }
 
-def migrateRecipe
-migrateRecipe = { Object value ->
-    if (value instanceof Map) {
-        Map migrated = new LinkedHashMap()
-        value.each { key, nested -> migrated[key] = migrateRecipe(nested) }
-        if (migrated.keySet() == ['item'] as Set && migrated.item instanceof String) {
-            return migrated.item
-        }
-        if (migrated.keySet() == ['tag'] as Set && migrated.tag instanceof String) {
-            return "#${migrated.tag}"
-        }
-        if (migrated.containsKey('result')) {
-            if (migrated.result instanceof String) {
-                Map result = [id: migrated.result]
-                if (migrated.containsKey('count')) {
-                    result.count = migrated.remove('count')
-                }
-                migrated.result = result
-            } else if (migrated.result instanceof Map
-                    && migrated.result.containsKey('item') && !migrated.result.containsKey('id')) {
-                migrated.result.id = migrated.result.remove('item')
-            }
-        }
-        return migrated
+def requireExactFile = { File input, String label, String expectedName, expectedSize, String expectedHash ->
+    if (!input.isFile()) throw new GradleException("Missing exact ${label} ${expectedName}: ${input}")
+    if (input.name != expectedName) {
+        throw new GradleException("${label} filename mismatch: expected ${expectedName}, found ${input.name}")
     }
-    if (value instanceof Collection) {
-        return value.collect { migrateRecipe(it) }
+    if (input.length() != expectedSize) {
+        throw new GradleException("${label} size mismatch: expected ${expectedSize}, found ${input.length()}")
     }
-    return value
+    String actual = sha256(input)
+    if (actual != expectedHash) {
+        throw new GradleException("${label} SHA-256 mismatch: expected ${expectedHash}, found ${actual}")
+    }
+    input
 }
 
-def migrateAdvancement
-migrateAdvancement = { Object value ->
-    if (value instanceof Map) {
-        Map migrated = new LinkedHashMap()
-        value.each { key, nested -> migrated[key] = migrateAdvancement(nested) }
-        if (migrated.containsKey('tag') && migrated.tag instanceof String && !migrated.containsKey('items')) {
-            migrated.items = "#${migrated.remove('tag')}"
-        }
-        if (migrated.items instanceof Collection) {
-            Collection itemIds = migrated.items as Collection
-            if (itemIds.size() == 1 && itemIds.iterator().next() instanceof String) {
-                migrated.items = itemIds.iterator().next()
-            }
-        }
-        return migrated
-    }
-    if (value instanceof Collection) {
-        return value.collect { migrateAdvancement(it) }
-    }
-    return value
+def requireExactBaselineJar = {
+    requireExactFile(locateBaselineJar(), 'accepted BBB baseline', expectedBaselineName,
+            expectedBaselineSize, expectedBaselineSha256)
 }
 
-def migrateLootTable
-migrateLootTable = { Object value ->
-    if (value instanceof Map) {
-        Map migrated = new LinkedHashMap()
-        value.each { key, nested -> migrated[key] = migrateLootTable(nested) }
-        if (migrated.function == 'minecraft:set_count' && migrated.add instanceof String) {
-            if (!(migrated.add in ['true', 'false'])) {
-                throw new GradleException("Invalid string value for minecraft:set_count add: ${migrated.add}")
-            }
-            migrated.add = Boolean.valueOf(migrated.add as String)
+def requireExactEnderscapeJar = {
+    File input = requireExactFile(locateEnderscapeJar(), 'Enderscape provider', expectedEnderscapeName,
+            expectedEnderscapeSize, expectedEnderscapeSha256)
+    ZipFile zip = new ZipFile(input)
+    try {
+        def entry = zip.getEntry('LICENSE_enderscape')
+        if (entry == null) throw new GradleException('Enderscape provider is missing LICENSE_enderscape')
+        byte[] license = zip.getInputStream(entry).withCloseable { it.readAllBytes() }
+        if (sha256Bytes(license) != expectedEnderscapeLicenseSha256) {
+            throw new GradleException('Enderscape license bytes differ from the audited 3.0.2 provider')
         }
-        return migrated
+        String text = new String(license, StandardCharsets.UTF_8)
+        if (!text.contains('Assets License (All Rights Reserved)')
+                || !text.contains('src/main/resources/assets/')) {
+            throw new GradleException('Enderscape provider no longer declares the audited ARR asset boundary')
+        }
+    } finally {
+        zip.close()
     }
-    if (value instanceof Collection) {
-        return value.collect { migrateLootTable(it) }
-    }
-    return value
+    input
+}
+
+def brightness = { int rgb ->
+    (299 * ((rgb >> 16) & 0xff) + 587 * ((rgb >> 8) & 0xff) + 114 * (rgb & 0xff)) / 1000
 }
 
 tasks.register('stageBbbResources') {
     group = 'bbb porting'
-    description = 'Hash-verifies the pristine BBB JAR and stages only curated ARR resources into build/.'
+    description = 'Copies the exact accepted base closure and generates local-only Enderscape BBB resources.'
     inputs.file(curatedRegistryFile)
-    inputs.file(providers.provider { locateOriginalJar() })
-            .withPropertyName('exactBbbOriginalJar')
-            .withPathSensitivity(PathSensitivity.NONE)
+    inputs.file(providers.provider { locateBaselineJar() })
+            .withPropertyName('exactAcceptedBbbBaseline').withPathSensitivity(PathSensitivity.NONE)
+    inputs.file(providers.provider { locateEnderscapeJar() })
+            .withPropertyName('exactEnderscapeProvider').withPathSensitivity(PathSensitivity.NONE)
     inputs.file(minecraftClientJar)
-            .withPropertyName('minecraft262ClientJar')
-            .withPathSensitivity(PathSensitivity.NONE)
-    inputs.property('expectedOriginalName', expectedOriginalName)
-    inputs.property('expectedOriginalSize', expectedOriginalSize)
-    inputs.property('expectedOriginalSha256', expectedOriginalSha256)
+            .withPropertyName('minecraft262ClientJar').withPathSensitivity(PathSensitivity.NONE)
+    inputs.properties([
+            expectedBaselineName: expectedBaselineName,
+            expectedBaselineSize: expectedBaselineSize,
+            expectedBaselineSha256: expectedBaselineSha256,
+            expectedEnderscapeName: expectedEnderscapeName,
+            expectedEnderscapeSize: expectedEnderscapeSize,
+            expectedEnderscapeSha256: expectedEnderscapeSha256,
+            expectedEnderscapeLicenseSha256: expectedEnderscapeLicenseSha256
+    ])
     outputs.dir(stagedResourcesDir)
 
     doLast {
-        File originalJar = requireExactOriginalJar()
-        String actualHash = expectedOriginalSha256
+        File baselineJar = requireExactBaselineJar()
+        File enderscapeJar = requireExactEnderscapeJar()
+        File vanillaJar = minecraftClientJar.get()
+        if (!vanillaJar.isFile()) throw new GradleException("Missing Minecraft ${project.minecraft_version} client JAR")
 
         Map manifest = new JsonSlurper().parse(curatedRegistryFile.asFile) as Map
-        Set<String> retainedBlocks = new LinkedHashSet<>()
+        Set<String> baseBlocks = new LinkedHashSet<>()
         manifest.wood_materials.each { material ->
-            manifest.wood_forms.each { form -> retainedBlocks.add("${material}_${form}" as String) }
+            manifest.wood_forms.each { form -> baseBlocks.add("${material}_${form}" as String) }
         }
         manifest.stone_materials.each { material ->
-            manifest.stone_forms.each { form -> retainedBlocks.add("${material}_${form}" as String) }
+            manifest.stone_forms.each { form -> baseBlocks.add("${material}_${form}" as String) }
         }
-        retainedBlocks.addAll(manifest.standalone_blocks as Collection<String>)
-        Set<String> retainedItems = new LinkedHashSet<>(retainedBlocks)
-        retainedItems.addAll(manifest.standalone_items as Collection<String>)
-        Set<String> paleOakForms = manifest.wood_forms.collect { "pale_oak_${it}".toString() } as Set<String>
-        // Pale Oak is a 26.2-native extension. It intentionally has no entry in
-        // the hash-verified 2.0pre4 archive, so stage the historic closure first
-        // and synthesize its matching closure below from the retained Cherry form.
-        Set<String> upstreamRetainedBlocks = new LinkedHashSet<>(retainedBlocks)
-        upstreamRetainedBlocks.removeAll(paleOakForms)
-        Set<String> upstreamRetainedItems = new LinkedHashSet<>(upstreamRetainedBlocks)
-        upstreamRetainedItems.addAll(manifest.standalone_items as Collection<String>)
+        baseBlocks.addAll(manifest.standalone_blocks as Collection<String>)
+        Set<String> baseItems = new LinkedHashSet<>(baseBlocks)
+        baseItems.addAll(manifest.standalone_items as Collection<String>)
+        if (baseBlocks.size() != 171 || baseItems.size() != 172) {
+            throw new GradleException("Accepted BBB base registry drift: ${baseBlocks.size()}/${baseItems.size()}")
+        }
 
-        if (retainedBlocks.size() != manifest.expected_retained_block_count) {
-            throw new GradleException("Curated block count drift: expected ${manifest.expected_retained_block_count}, found ${retainedBlocks.size()}")
+        List<Map> providers = manifest.enderscape_wood_families as List<Map>
+        if (providers*.material != ['veiled', 'celestial', 'murublight']) {
+            throw new GradleException("Unexpected explicit Enderscape family catalog ${providers*.material}")
         }
-        if (retainedItems.size() != manifest.expected_retained_item_count) {
-            throw new GradleException("Curated item count drift: expected ${manifest.expected_retained_item_count}, found ${retainedItems.size()}")
+        Map<String, String> visualAxes = [
+                veiled: 'enderscape:veiled_log',
+                celestial: 'enderscape:celestial_stem',
+                murublight: 'enderscape:murublight_stem'
+        ]
+        Map<String, String> providerSlabs = providers.collectEntries {
+            [(it.material as String): "enderscape:${it.material}_slab".toString()]
         }
+        Map<String, String> providerLogTags = [
+                veiled: '#enderscape:veiled_logs',
+                celestial: '#enderscape:celestial_stems',
+                murublight: '#enderscape:murublight_stems'
+        ]
 
         File outputRoot = stagedResourcesDir.get().asFile
         project.delete(outputRoot)
         outputRoot.mkdirs()
+        File packRoot = new File(outputRoot, optionalPackPath)
+        packRoot.mkdirs()
 
-        File vanillaClientJar = minecraftClientJar.get()
-        if (!vanillaClientJar.isFile()) {
-            throw new GradleException("Missing resolved Minecraft ${project.minecraft_version} client JAR")
-        }
-
-        ZipFile zip = new ZipFile(originalJar)
-        ZipFile vanillaZip = new ZipFile(vanillaClientJar)
+        ZipFile baseline = new ZipFile(baselineJar)
+        ZipFile enderscape = new ZipFile(enderscapeJar)
+        ZipFile vanilla = new ZipFile(vanillaJar)
         try {
-            Map<String, java.util.zip.ZipEntry> entries = zip.entries().findAll { !it.directory }.collectEntries { [(it.name): it] }
-            Map<String, java.util.zip.ZipEntry> vanillaEntries = vanillaZip.entries().findAll { !it.directory }
+            Map<String, java.util.zip.ZipEntry> baseEntries = baseline.entries().findAll { !it.directory }
+                    .collectEntries { [(it.name): it] }
+            Map<String, java.util.zip.ZipEntry> enderscapeEntries = enderscape.entries().findAll { !it.directory }
+                    .collectEntries { [(it.name): it] }
+            Map<String, java.util.zip.ZipEntry> vanillaEntries = vanilla.entries().findAll { !it.directory }
                     .collectEntries { [(it.name): it] }
 
-            def readBytes = { String name ->
+            def bytesFrom = { ZipFile zip, Map entries, String name, String label ->
                 def entry = entries[name]
-                if (entry == null) return null
+                if (entry == null) throw new GradleException("${label} is missing ${name}")
                 zip.getInputStream(entry).withCloseable { it.readAllBytes() }
             }
-            def writeBytes = { String name, byte[] bytes ->
-                File destination = new File(outputRoot, name)
+            def writeBytes = { File targetRoot, String name, byte[] bytes ->
+                File destination = new File(targetRoot, name)
                 destination.parentFile.mkdirs()
                 Files.write(destination.toPath(), bytes)
             }
-            def writeJson = { String name, Object json ->
-                writeBytes(name, (JsonOutput.prettyPrint(JsonOutput.toJson(json)) + System.lineSeparator()).getBytes(StandardCharsets.UTF_8))
-            }
-            def requireEntry = { String name ->
-                byte[] bytes = readBytes(name)
-                if (bytes == null) throw new GradleException("Exact BBB input is missing required curated resource ${name}")
-                bytes
-            }
-            def requireVanillaEntry = { String name ->
-                def entry = vanillaEntries[name]
-                if (entry == null) {
-                    throw new GradleException("Resolved Minecraft ${project.minecraft_version} client JAR is missing ${name}")
-                }
-                vanillaZip.getInputStream(entry).withCloseable { it.readAllBytes() }
+            def writeJson = { File targetRoot, String name, Object json ->
+                byte[] bytes = (JsonOutput.prettyPrint(JsonOutput.toJson(json)) + System.lineSeparator())
+                        .getBytes(StandardCharsets.UTF_8)
+                writeBytes(targetRoot, name, bytes)
             }
 
-            LinkedHashSet<String> queue = new LinkedHashSet<>()
-            upstreamRetainedBlocks.each { queue.add("assets/bbb/blockstates/${it}.json".toString()) }
-            upstreamRetainedItems.each { queue.add("assets/bbb/models/item/${it}.json".toString()) }
-
-            def enqueueModel = { String reference ->
-                if (reference.startsWith('bbb:')) {
-                    String path = reference.substring('bbb:'.length())
-                    String candidate = "assets/bbb/models/${path}.json"
-                    if (entries.containsKey(candidate)) queue.add(candidate)
-                }
-            }
-            def enqueueTexture = { String reference ->
-                if (reference.startsWith('bbb:')) {
-                    String path = reference.substring('bbb:'.length())
-                    [
-                            "assets/bbb/textures/${path}.png",
-                            "assets/bbb/textures/${path}.png.mcmeta"
-                    ].findAll { entries.containsKey(it.toString()) }.each { queue.add(it.toString()) }
-                }
-            }
-            def collectAssetReferences
-            collectAssetReferences = { Object value ->
-                if (value instanceof Map) {
-                    value.each { key, nested ->
-                        if ((key == 'model' || key == 'parent') && nested instanceof String) {
-                            enqueueModel(nested)
-                        } else if (key == 'textures' && nested instanceof Map) {
-                            nested.values().findAll { it instanceof String && !it.startsWith('#') }
-                                    .each { enqueueTexture(it as String) }
-                        } else {
-                            collectAssetReferences(nested)
-                        }
-                    }
-                } else if (value instanceof Collection) {
-                    value.each { collectAssetReferences(it) }
-                }
+            Map acceptedStaging = new JsonSlurper().parse(
+                    bytesFrom(baseline, baseEntries, 'bbb-resource-staging.json', 'Accepted BBB baseline')) as Map
+            if (acceptedStaging.original_file != expectedOriginalName
+                    || (acceptedStaging.original_size as long) != expectedOriginalSize
+                    || acceptedStaging.original_sha256 != expectedOriginalSha256
+                    || (acceptedStaging.exact_asset_closure_entries as int) != 1_467) {
+                throw new GradleException('Accepted BBB baseline lost its exact upstream ARR closure provenance')
             }
 
-            Set<String> visited = new LinkedHashSet<>()
-            while (!queue.isEmpty()) {
-                String name = queue.iterator().next()
-                queue.remove(name)
-                if (!visited.add(name)) continue
-                byte[] bytes = requireEntry(name)
-                if (name.endsWith('.json')) {
-                    String jsonText = new String(bytes, StandardCharsets.UTF_8)
-                    if (name == 'assets/bbb/blockstates/dark_oak_lattice.json') {
-                        // The published 2.0pre4 blockstate accidentally points at Oak lattice
-                        // geometry. Preserve the Dark Oak variant by correcting only those
-                        // three authored model references in generated build output.
-                        jsonText = jsonText.replace('bbb:block/lattice/oak_', 'bbb:block/lattice/dark_oak_')
-                    }
-                    Object json = new JsonSlurper().parseText(jsonText)
-                    if (name == 'assets/bbb/blockstates/dark_oak_lattice.json') {
-                        writeJson(name, json)
-                    } else {
-                        writeBytes(name, bytes)
-                    }
-                    collectAssetReferences(json)
+            baseEntries.keySet().findAll {
+                it.startsWith('assets/bbb/') || it.startsWith('data/')
+            }.sort().each { name ->
+                writeBytes(outputRoot, name, bytesFrom(baseline, baseEntries, name, 'Accepted BBB baseline'))
+            }
+            byte[] enderscapeLicense = bytesFrom(enderscape, enderscapeEntries,
+                    'LICENSE_enderscape', 'Enderscape provider')
+            writeBytes(outputRoot, 'META-INF/licenses/LICENSE_enderscape', enderscapeLicense)
+
+            writeJson(packRoot, 'pack.mcmeta', [pack: [
+                    min_format: [107, 1], max_format: [107, 1],
+                    description: 'Building But Better — explicit Enderscape wood families'
+            ]])
+
+            def transformMaterialText = { String source, Map spec, boolean modelText ->
+                String family = spec.material as String
+                String result = source.replace('cherry', family)
+                if (modelText) {
+                    String visualPath = (visualAxes[family] as String).substring('enderscape:'.length())
+                    result = result
+                            .replace("\"plant_type\": \"${family}_leaves\"", '"plant_type": "cherry_leaves"')
+                            .replace("\"bbb:block/lattice/plants/${family}_leaves\"", '"bbb:block/lattice/plants/cherry_leaves"')
+                            .replace("\"minecraft:block/${family}_planks\"", "\"enderscape:block/${family}_planks\"")
+                            .replace("\"block/${family}_planks\"", "\"enderscape:block/${family}_planks\"")
+                            .replace("\"minecraft:block/${family}_log_top\"", "\"enderscape:block/${visualPath}_top\"")
+                            .replace("\"minecraft:block/${family}_log\"", "\"enderscape:block/${visualPath}\"")
+                            .replace("\"block/${family}_log_top\"", "\"enderscape:block/${visualPath}_top\"")
+                            .replace("\"block/${family}_log\"", "\"enderscape:block/${visualPath}\"")
                 } else {
-                    writeBytes(name, bytes)
+                    result = result
+                            .replace("minecraft:${family}_planks", spec.source_planks as String)
+                            .replace("minecraft:stripped_${family}_log", spec.beam_material as String)
+                            .replace("minecraft:${family}_slab", providerSlabs[family])
+                            .replace("#minecraft:${family}_logs", providerLogTags[family])
                 }
+                result
             }
 
-            // The Pale Oak resource family is deliberately generated in ignored
-            // output. Its model layout is the retained Cherry layout. Native log
-            // surfaces point directly at Minecraft 26.2 textures; authored sheets
-            // are regenerated below from the actual vanilla Pale Oak palette while
-            // preserving transparency and non-wood pixels from the audited BBB sheet.
-            // The lattice's cherry_leaves entry is a shared plant state/model, not
-            // a wood-material binding: LatticePlantType has no pale_oak_leaves
-            // value. Preserve that exact canonical multipart entry instead of
-            // synthesizing an invalid state condition and an unreachable model.
-            def paleOakText = { String text ->
-                text.replace('cherry', 'pale_oak')
-                        .replace('"plant_type": "pale_oak_leaves"', '"plant_type": "cherry_leaves"')
-                        .replace('"bbb:block/lattice/plants/pale_oak_leaves"', '"bbb:block/lattice/plants/cherry_leaves"')
-                        .replace('"block/pale_oak_log_top"', '"minecraft:block/pale_oak_log_top"')
-                        .replace('"block/pale_oak_log"', '"minecraft:block/pale_oak_log"')
-            }
-            def copyPaleOakJson = { String sourceName, String targetName ->
-                byte[] source = requireEntry(sourceName)
-                writeBytes(targetName, paleOakText(new String(source, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8))
-            }
-            manifest.wood_forms.each { form ->
-                copyPaleOakJson("assets/bbb/blockstates/cherry_${form}.json", "assets/bbb/blockstates/pale_oak_${form}.json")
-                copyPaleOakJson("assets/bbb/models/item/cherry_${form}.json", "assets/bbb/models/item/pale_oak_${form}.json")
-            }
-            File modelRoot = new File(outputRoot, 'assets/bbb/models')
-            List<File> cherryModels = fileTree(modelRoot).matching { include '**/*cherry*.json' }.files.findAll { source ->
-                String relative = modelRoot.toPath().relativize(source.toPath()).toString().replace('\\', '/')
-                relative != 'block/lattice/plants/cherry_leaves.json'
-            }.toList()
-            cherryModels.each { source ->
-                String relative = modelRoot.toPath().relativize(source.toPath()).toString().replace('\\', '/')
-                File target = new File(modelRoot, relative.replace('cherry', 'pale_oak'))
-                target.parentFile.mkdirs()
-                Files.writeString(target.toPath(), paleOakText(Files.readString(source.toPath())), StandardCharsets.UTF_8)
+            List<String> cherryModels = baseEntries.keySet().findAll {
+                it.startsWith('assets/bbb/models/') && it.contains('cherry') && it.endsWith('.json')
+            }.findAll { it != 'assets/bbb/models/block/lattice/plants/cherry_leaves.json' }.sort()
+            if (cherryModels.size() != 59) {
+                throw new GradleException("Expected 59 retained Cherry model templates, found ${cherryModels.size()}")
             }
 
-            def decodeImage = { byte[] bytes, String identity ->
-                BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes))
-                if (image == null) throw new GradleException("Unable to decode ${identity}")
-                image
-            }
-            BufferedImage cherryPlanks = decodeImage(
-                    requireVanillaEntry('assets/minecraft/textures/block/cherry_planks.png'),
-                    'Minecraft cherry_planks.png')
-            BufferedImage paleOakPlanks = decodeImage(
-                    requireVanillaEntry('assets/minecraft/textures/block/pale_oak_planks.png'),
-                    'Minecraft pale_oak_planks.png')
-            if (cherryPlanks.width != paleOakPlanks.width || cherryPlanks.height != paleOakPlanks.height) {
-                throw new GradleException('Minecraft Cherry/Pale Oak plank texture dimensions do not match')
-            }
-            Map<Integer, Integer> paleOakPalette = new LinkedHashMap<>()
-            for (int y = 0; y < cherryPlanks.height; y++) {
-                for (int x = 0; x < cherryPlanks.width; x++) {
-                    int cherryPixel = cherryPlanks.getRGB(x, y)
-                    int paleOakPixel = paleOakPlanks.getRGB(x, y)
-                    if (paleOakPalette.containsKey(cherryPixel) && paleOakPalette[cherryPixel] != paleOakPixel) {
-                        throw new GradleException('Minecraft Pale Oak palette is ambiguous for an audited Cherry color')
-                    }
-                    paleOakPalette[cherryPixel] = paleOakPixel
-                }
-            }
-
-            List<String> paleOakTextureSources = [
+            List<String> textureTemplates = [
                     'balustrade/cherry_sides.png', 'balustrade/cherry_top.png',
                     'beam/cherry.png', 'beam/cherry_top.png',
                     'frame/cherry.png', 'frame/cherry_sticks.png',
@@ -398,224 +312,199 @@ tasks.register('stageBbbResources') {
                     'trim/cherry.png', 'trim/cherry_bottom.png',
                     'trim/cherry_middle.png', 'trim/cherry_top.png'
             ]
-            Map<String, Map<String, Integer>> paleOakTextureStats = new LinkedHashMap<>()
-            paleOakTextureSources.each { relative ->
-                String sourceName = "assets/bbb/textures/block/${relative}"
-                String targetRelative = relative.replace('cherry', 'pale_oak')
-                BufferedImage source = decodeImage(requireEntry(sourceName), sourceName)
-                BufferedImage target = new BufferedImage(source.width, source.height, BufferedImage.TYPE_INT_ARGB)
-                int mappedWoodPixels = 0
-                int preservedOpaquePixels = 0
-                int transparentPixels = 0
-                for (int y = 0; y < source.height; y++) {
-                    for (int x = 0; x < source.width; x++) {
-                        int sourcePixel = source.getRGB(x, y)
-                        int alpha = (sourcePixel >>> 24) & 0xFF
+            def decodeImage = { byte[] bytes, String identity ->
+                BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes))
+                if (image == null) throw new GradleException("Unable to decode ${identity}")
+                image
+            }
+            BufferedImage cherryPlanks = decodeImage(bytesFrom(vanilla, vanillaEntries,
+                    'assets/minecraft/textures/block/cherry_planks.png', 'Minecraft client'), 'Cherry planks')
+            Set<Integer> cherryColors = new LinkedHashSet<>()
+            for (int y = 0; y < cherryPlanks.height; y++) for (int x = 0; x < cherryPlanks.width; x++) {
+                int argb = cherryPlanks.getRGB(x, y)
+                if ((argb >>> 24) == 255) cherryColors.add(argb & 0x00ffffff)
+            }
+            List<Integer> cherryPalette = cherryColors.toList().sort { a, b ->
+                int compare = brightness(a as int) <=> brightness(b as int)
+                compare != 0 ? compare : (a as int) <=> (b as int)
+            }
+            Map<String, Object> textureMetadata = new LinkedHashMap<>()
+
+            providers.each { spec ->
+                String family = spec.material as String
+                manifest.wood_forms.each { form ->
+                    String sourceBlockstate = "assets/bbb/blockstates/cherry_${form}.json"
+                    String targetBlockstate = "assets/bbb/blockstates/${family}_${form}.json"
+                    String sourceText = new String(bytesFrom(baseline, baseEntries, sourceBlockstate,
+                            'Accepted BBB baseline'), StandardCharsets.UTF_8)
+                    writeBytes(packRoot, targetBlockstate,
+                            transformMaterialText(sourceText, spec, true).getBytes(StandardCharsets.UTF_8))
+                    writeJson(packRoot, "assets/bbb/items/${family}_${form}.json", [
+                            model: [type: 'minecraft:model', model: "bbb:item/${family}_${form}"]
+                    ])
+                }
+                cherryModels.each { sourceName ->
+                    String targetName = sourceName.replace('cherry', family)
+                    String sourceText = new String(bytesFrom(baseline, baseEntries, sourceName,
+                            'Accepted BBB baseline'), StandardCharsets.UTF_8)
+                    writeBytes(packRoot, targetName,
+                            transformMaterialText(sourceText, spec, true).getBytes(StandardCharsets.UTF_8))
+                }
+
+                String providerTexture = "assets/enderscape/textures/block/${family}_planks.png"
+                BufferedImage providerPlanks = decodeImage(bytesFrom(enderscape, enderscapeEntries,
+                        providerTexture, 'Enderscape provider'), providerTexture)
+                Set<Integer> targetColors = new LinkedHashSet<>()
+                for (int y = 0; y < providerPlanks.height; y++) for (int x = 0; x < providerPlanks.width; x++) {
+                    int argb = providerPlanks.getRGB(x, y)
+                    if ((argb >>> 24) == 255) targetColors.add(argb & 0x00ffffff)
+                }
+                List<Integer> targetPalette = targetColors.toList().sort { a, b ->
+                    int compare = brightness(a as int) <=> brightness(b as int)
+                    compare != 0 ? compare : (a as int) <=> (b as int)
+                }
+                if (targetPalette.isEmpty()) throw new GradleException("${family} plank palette is empty")
+                Map<Integer, Integer> rankedPalette = new LinkedHashMap<>()
+                cherryPalette.eachWithIndex { color, index ->
+                    int targetIndex = Math.round(index * (targetPalette.size() - 1) /
+                            (float) Math.max(1, cherryPalette.size() - 1))
+                    rankedPalette[color as int] = targetPalette[targetIndex] as int
+                }
+                Map<String, Map<String, Integer>> familyStats = new LinkedHashMap<>()
+                textureTemplates.each { relative ->
+                    String sourceName = "assets/bbb/textures/block/${relative}"
+                    BufferedImage source = decodeImage(bytesFrom(baseline, baseEntries, sourceName,
+                            'Accepted BBB baseline'), sourceName)
+                    BufferedImage target = new BufferedImage(source.width, source.height, BufferedImage.TYPE_INT_ARGB)
+                    int mappedWoodPixels = 0
+                    int preservedOpaquePixels = 0
+                    int transparentPixels = 0
+                    for (int y = 0; y < source.height; y++) for (int x = 0; x < source.width; x++) {
+                        int argb = source.getRGB(x, y)
+                        int alpha = (argb >>> 24) & 0xff
                         if (alpha != 0 && alpha != 255) {
-                            throw new GradleException("Audited BBB texture ${sourceName} contains unexpected partial alpha ${alpha}")
+                            throw new GradleException("Audited BBB template ${sourceName} contains partial alpha ${alpha}")
                         }
-                        Integer replacement = paleOakPalette[sourcePixel]
+                        Integer replacement = alpha == 255 ? rankedPalette[argb & 0x00ffffff] : null
                         if (replacement != null) {
-                            target.setRGB(x, y, replacement)
+                            target.setRGB(x, y, (0xff << 24) | (replacement & 0x00ffffff))
                             mappedWoodPixels++
                         } else {
-                            target.setRGB(x, y, sourcePixel)
+                            target.setRGB(x, y, argb)
                             if (alpha == 0) transparentPixels++ else preservedOpaquePixels++
                         }
                     }
-                }
-                if (mappedWoodPixels == 0) {
-                    throw new GradleException("Generated Pale Oak texture ${targetRelative} contains no vanilla-derived wood pixels")
-                }
-                if (relative == 'lantern/cherry.png' && preservedOpaquePixels == 0) {
-                    throw new GradleException('Pale Oak Lantern generation lost its material-independent detail pixels')
-                }
-                ByteArrayOutputStream encoded = new ByteArrayOutputStream()
-                if (!ImageIO.write(target, 'PNG', encoded)) {
-                    throw new GradleException("Unable to encode generated Pale Oak texture ${targetRelative}")
-                }
-                writeBytes("assets/bbb/textures/block/${targetRelative}", encoded.toByteArray())
-                paleOakTextureStats[targetRelative] = [
-                        mapped_wood_pixels: mappedWoodPixels,
-                        preserved_opaque_pixels: preservedOpaquePixels,
-                        transparent_pixels: transparentPixels
-                ]
-            }
-
-            retainedItems.each { id ->
-                writeJson("assets/bbb/items/${id}.json", [
-                        model: [type: 'minecraft:model', model: "bbb:item/${id}"]
-                ])
-            }
-
-            writeBytes('assets/bbb/icon.png', requireEntry('assets/bbb/icon.png'))
-
-            entries.keySet().findAll { it ==~ /assets\/bbb\/lang\/[^\/]+\.json/ }.sort().each { name ->
-                Map language = new JsonSlurper().parse(readBytes(name)) as Map
-                Set<String> retainedBlockTypes = new LinkedHashSet<>(manifest.wood_forms as Collection<String>)
-                retainedBlockTypes.addAll(manifest.stone_forms as Collection<String>)
-                Map filtered = language.findAll { key, ignored ->
-                    key == 'itemGroup.bbb.tab'
-                            || (key.startsWith('block.bbb.') && retainedBlocks.contains(key.substring('block.bbb.'.length())))
-                            || (key.startsWith('item.bbb.') && retainedItems.contains(key.substring('item.bbb.'.length())))
-                            || (key.startsWith('block_type.bbb.')
-                            && retainedBlockTypes.contains(key.substring('block_type.bbb.'.length())))
-                            || key == 'description.bbb.pencil'
-                            || key in ['description.bbb.frameConfig1', 'description.bbb.frameConfig2']
-                            || key ==~ /description\.bbb\.(balustrade[1-5]|urn[1-4]|lattice[1-4]|moulding[1-2]|stone_fence[1-4]|frame[1-3]|pallet[1-5]|column[1-2]|support[1-2]|lantern[1-2])/
-                }
-                manifest.wood_forms.each { form ->
-                    String label = form.split('_').collect { it.capitalize() }.join(' ')
-                    filtered["block.bbb.pale_oak_${form}"] = "Pale Oak ${label}"
-                }
-                writeJson(name, filtered)
-            }
-
-            Set<String> retainedNamespacedIds = retainedItems.collect { "bbb:${it}".toString() } as Set<String>
-            Set<String> allowedBbbTags = [
-                    'balustrades', 'beams', 'braziers', 'columns', 'frames', 'hammers', 'lanterns',
-                    'lattices', 'metal_fences', 'mouldings', 'pallets', 'stone_blocks', 'stone_columns',
-                    'stone_fences', 'stone_frames', 'supports', 'trims', 'urns', 'wooden_blocks',
-                    'wooden_frames', 'wooden_lanterns', 'wooden_walls'
-            ] as Set<String>
-            entries.keySet().findAll { it ==~ /data\/[^\/]+\/tags\/(blocks|items)\/.+\.json/ }.sort().each { name ->
-                def tagMatcher = (name =~ /data\/([^\/]+)\/tags\/(blocks|items)\/(.+)\.json/)
-                String namespace = tagMatcher.matches() ? tagMatcher.group(1) : ''
-                String tagPath = tagMatcher.matches() ? tagMatcher.group(3) : ''
-                if (namespace == 'bbb' && !allowedBbbTags.contains(tagPath)) return
-
-                Map tag = new JsonSlurper().parse(readBytes(name)) as Map
-                List values = (tag.values ?: []) as List
-                List filteredValues = values.findAll { value ->
-                    String id = value instanceof Map ? value.id : value
-                    if (!(id instanceof String)) return true
-                    if (id.startsWith('#bbb:')) return allowedBbbTags.contains(id.substring('#bbb:'.length()))
-                    if (id.startsWith('bbb:')) return retainedNamespacedIds.contains(id)
-                    return true
-                }
-                boolean relevant = filteredValues.any { value ->
-                    String id = value instanceof Map ? value.id : value
-                    id instanceof String && (id.startsWith('bbb:') || id.startsWith('#bbb:'))
-                }
-                if (relevant) {
-                    // Each Pale Oak member inherits precisely the tags in which
-                    // the equivalent retained Cherry member participates.
-                    List paleOakValues = values.findAll { value ->
-                        String id = value instanceof Map ? value.id : value
-                        id instanceof String && id.startsWith('bbb:cherry_')
-                    }.collect { value ->
-                        String oldId = value instanceof Map ? value.id : value
-                        String newId = oldId.replace('bbb:cherry_', 'bbb:pale_oak_')
-                        value instanceof Map ? new LinkedHashMap(value + [id: newId]) : newId
+                    if (mappedWoodPixels == 0) {
+                        throw new GradleException("Generated ${family} texture from ${relative} has no audited wood pixels")
                     }
-                    tag.values = (filteredValues + paleOakValues).unique { value -> value instanceof Map ? value.id : value }
-                    String migratedName = name.replace('/tags/blocks/', '/tags/block/').replace('/tags/items/', '/tags/item/')
-                    writeJson(migratedName, tag)
+                    if (relative == 'lantern/cherry.png' && preservedOpaquePixels != 36) {
+                        throw new GradleException("${family} Lantern must preserve exactly 36 material-independent pixels")
+                    }
+                    String targetRelative = relative.replace('cherry', family)
+                    ByteArrayOutputStream encoded = new ByteArrayOutputStream()
+                    if (!ImageIO.write(target, 'PNG', encoded)) throw new GradleException("Unable to encode ${targetRelative}")
+                    writeBytes(packRoot, "assets/bbb/textures/block/${targetRelative}", encoded.toByteArray())
+                    familyStats[targetRelative] = [mapped_wood_pixels: mappedWoodPixels,
+                            preserved_opaque_pixels: preservedOpaquePixels, transparent_pixels: transparentPixels]
+                }
+                textureMetadata[family] = [source_texture: "enderscape:block/${family}_planks",
+                        mapping_method: 'audited-cherry-wood-mask+luminance-ranked-provider-palette',
+                        source_palette_size: cherryPalette.size(), target_palette_size: targetPalette.size(),
+                        sheets: familyStats]
+
+                List<String> cherryRecipes = baseEntries.keySet().findAll {
+                    it ==~ /data\/bbb\/recipe\/cherry_.+\.json/
+                }.sort()
+                if (cherryRecipes.size() != 13) {
+                    throw new GradleException("Expected 13 Cherry recipe templates, found ${cherryRecipes.size()}")
+                }
+                cherryRecipes.each { sourceName ->
+                    String targetName = sourceName.replace('cherry', family)
+                    String transformed = transformMaterialText(new String(bytesFrom(baseline, baseEntries,
+                            sourceName, 'Accepted BBB baseline'), StandardCharsets.UTF_8), spec, false)
+                    Map json = new JsonSlurper().parseText(transformed) as Map
+                    json['fabric:load_conditions'] = [condition: 'fabric:registry_contains',
+                            registry: 'minecraft:item', values: ["bbb:${family}_beam"]]
+                    writeJson(packRoot, targetName, json)
+                }
+
+                List<String> cherryAdvancements = baseEntries.keySet().findAll {
+                    it ==~ /data\/bbb\/advancement\/recipes\/cherry_.+\.json/
+                }.sort()
+                if (cherryAdvancements.size() != 9) {
+                    throw new GradleException("Expected 9 Cherry advancement templates, found ${cherryAdvancements.size()}")
+                }
+                cherryAdvancements.each { sourceName ->
+                    String targetName = sourceName.replace('cherry', family)
+                    String transformed = transformMaterialText(new String(bytesFrom(baseline, baseEntries,
+                            sourceName, 'Accepted BBB baseline'), StandardCharsets.UTF_8), spec, false)
+                    Map json = new JsonSlurper().parseText(transformed) as Map
+                    json['fabric:load_conditions'] = [condition: 'fabric:registry_contains',
+                            registry: 'minecraft:item', values: ["bbb:${family}_beam"]]
+                    writeJson(packRoot, targetName, json)
+                }
+
+                manifest.wood_forms.each { form ->
+                    String sourceName = "data/bbb/loot_table/blocks/cherry_${form}.json"
+                    String targetName = "data/bbb/loot_table/blocks/${family}_${form}.json"
+                    String transformed = transformMaterialText(new String(bytesFrom(baseline, baseEntries,
+                            sourceName, 'Accepted BBB baseline'), StandardCharsets.UTF_8), spec, false)
+                    Map json = new JsonSlurper().parseText(transformed) as Map
+                    json['fabric:load_conditions'] = [condition: 'fabric:registry_contains',
+                            registry: 'minecraft:block', values: ["bbb:${family}_${form}"]]
+                    writeJson(packRoot, targetName, json)
                 }
             }
 
-            def writeVanillaTag = { String registryKind, String tagName, Collection<String> ids ->
-                writeJson("data/minecraft/tags/${registryKind}/${tagName}.json", [replace: false, values: ids.collect { "bbb:${it}".toString() }])
-            }
-            List<String> beamSlabs = manifest.wood_materials.collect { "${it}_beam_slab".toString() }
-            List<String> beamStairs = manifest.wood_materials.collect { "${it}_beam_stairs".toString() }
-            List<String> beamWalls = manifest.wood_materials.collect { "${it}_wall".toString() }
-            writeVanillaTag('block', 'slabs', beamSlabs)
-            writeVanillaTag('block', 'stairs', beamStairs)
-            writeVanillaTag('block', 'walls', beamWalls + manifest.stone_materials.collect { "${it}_fence".toString() })
-            writeVanillaTag('item', 'slabs', beamSlabs)
-            writeVanillaTag('item', 'stairs', beamStairs)
-            writeVanillaTag('item', 'walls', beamWalls + manifest.stone_materials.collect { "${it}_fence".toString() })
-
-            int recipeCount = 0
-            Set<String> retainedRecipeIds = new LinkedHashSet<>()
-            entries.keySet().findAll { it ==~ /data\/bbb\/recipes\/[^\/]+\.json/ }.sort().each { name ->
-                Object recipe = new JsonSlurper().parse(readBytes(name))
-                Set<String> strings = new LinkedHashSet<>()
-                collectStrings(recipe, strings)
-                Set<String> directBbbIds = strings.findAll { it.startsWith('bbb:') && !it.startsWith('bbb:#') } as Set<String>
-                boolean referencesRetained = directBbbIds.any { retainedNamespacedIds.contains(it) }
-                boolean referencesRemoved = directBbbIds.any { !retainedNamespacedIds.contains(it) }
-                if (referencesRetained && !referencesRemoved) {
-                    String migratedName = name.replace('/recipes/', '/recipe/')
-                    writeJson(migratedName, migrateRecipe(recipe))
-                    retainedRecipeIds.add("bbb:${new File(name).name.replaceFirst(/\.json$/, '')}".toString())
-                    recipeCount++
+            Map<String, String> language = new LinkedHashMap<>()
+            providers.each { spec ->
+                String family = spec.material as String
+                String familyLabel = family.split('_').collect { it.capitalize() }.join(' ')
+                manifest.wood_forms.each { form ->
+                    String formLabel = (form as String).split('_').collect { it.capitalize() }.join(' ')
+                    language["block.bbb.${family}_${form}"] = "${familyLabel} ${formLabel}"
                 }
             }
-            Set<String> paleOakRecipeIds = new LinkedHashSet<>(paleOakForms)
-            paleOakRecipeIds.addAll(['pale_oak_planks_from_beam', 'pale_oak_planks_from_beam_slab'])
-            entries.keySet().findAll { name ->
-                if (!(name ==~ /data\/bbb\/recipes\/cherry_.+\.json/)) return false
-                String paleId = new File(name).name.replaceFirst(/^cherry_/, 'pale_oak_').replaceFirst(/\.json$/, '')
-                paleOakRecipeIds.contains(paleId)
-            }.sort().each { name ->
-                String paleName = name.replace('/cherry_', '/pale_oak_')
-                Object paleRecipe = migrateRecipe(new JsonSlurper().parseText(paleOakText(new String(readBytes(name), StandardCharsets.UTF_8))))
-                writeJson(paleName.replace('/recipes/', '/recipe/'), paleRecipe)
-                retainedRecipeIds.add("bbb:${new File(paleName).name.replaceFirst(/\.json$/, '')}".toString())
-                recipeCount++
-            }
+            writeJson(packRoot, 'assets/bbb/lang/en_us.json', language)
 
-            int advancementCount = 0
-            entries.keySet().findAll { it ==~ /data\/bbb\/advancements\/recipes\/[^\/]+\.json/ }.sort().each { name ->
-                Object advancement = new JsonSlurper().parse(readBytes(name))
-                List<String> rewardedRecipes = advancement.rewards?.recipes instanceof Collection
-                        ? advancement.rewards.recipes as List<String> : []
-                Set<String> strings = new LinkedHashSet<>()
-                collectStrings(advancement, strings)
-                Set<String> directBbbIds = strings.findAll { it.startsWith('bbb:') && !it.startsWith('bbb:#') } as Set<String>
-                boolean unlocksOnlyRetained = !rewardedRecipes.isEmpty()
-                        && rewardedRecipes.every { retainedRecipeIds.contains(it) }
-                boolean referencesRemoved = directBbbIds.any {
-                    !retainedNamespacedIds.contains(it) && !retainedRecipeIds.contains(it)
+            baseEntries.keySet().findAll { it ==~ /data\/.+\/tags\/(block|item)\/.+\.json/ }.sort().each { name ->
+                Map tag = new JsonSlurper().parse(bytesFrom(baseline, baseEntries, name,
+                        'Accepted BBB baseline')) as Map
+                List optionalValues = []
+                (tag.values ?: []).each { value ->
+                    String id = value instanceof Map ? value.id : value
+                    if (id instanceof String && id.startsWith('bbb:cherry_')) {
+                        providers.each { spec ->
+                            String replacement = id.replace('bbb:cherry_', "bbb:${spec.material}_")
+                            Map optional = value instanceof Map ? new LinkedHashMap(value as Map) : [:]
+                            optional.id = replacement
+                            optional.required = false
+                            optionalValues.add(optional)
+                        }
+                    }
                 }
-                if (unlocksOnlyRetained && !referencesRemoved) {
-                    String migratedName = name.replace('/advancements/', '/advancement/')
-                    writeJson(migratedName, migrateAdvancement(advancement))
-                    advancementCount++
-                }
-            }
-            entries.keySet().findAll { name ->
-                if (!(name ==~ /data\/bbb\/advancements\/recipes\/cherry_.+\.json/)) return false
-                String paleId = new File(name).name.replaceFirst(/^cherry_/, 'pale_oak_').replaceFirst(/\.json$/, '')
-                paleOakRecipeIds.contains(paleId)
-            }.sort().each { name ->
-                String paleName = name.replace('/cherry_', '/pale_oak_')
-                Object paleAdvancement = migrateAdvancement(new JsonSlurper().parseText(paleOakText(new String(readBytes(name), StandardCharsets.UTF_8))))
-                writeJson(paleName.replace('/advancements/', '/advancement/'), paleAdvancement)
-                advancementCount++
+                if (!optionalValues.isEmpty()) writeJson(packRoot, name, [replace: false, values: optionalValues])
             }
 
-            upstreamRetainedBlocks.each { id ->
-                String oldName = "data/bbb/loot_tables/blocks/${id}.json"
-                byte[] bytes = requireEntry(oldName)
-                Object lootTable = new JsonSlurper().parse(bytes)
-                writeJson("data/bbb/loot_table/blocks/${id}.json", migrateLootTable(lootTable))
-            }
-            manifest.wood_forms.each { form ->
-                String sourceId = "cherry_${form}"
-                String paleId = "pale_oak_${form}"
-                Object lootTable = new JsonSlurper().parseText(paleOakText(new String(requireEntry("data/bbb/loot_tables/blocks/${sourceId}.json"), StandardCharsets.UTF_8)))
-                writeJson("data/bbb/loot_table/blocks/${paleId}.json", migrateLootTable(lootTable))
-            }
-
-            writeJson('bbb-resource-staging.json', [
-                    original_file : originalJar.name,
-                    original_size : originalJar.length(),
-                    original_sha256: actualHash,
-                    retained_blocks: retainedBlocks.size(),
-                    retained_items : retainedItems.size(),
-                    retained_recipes: recipeCount,
-                    retained_recipe_advancements: advancementCount,
-                    pale_oak_texture_source: 'minecraft:block/pale_oak_planks',
-                    pale_oak_generated_textures: paleOakTextureStats,
-                    exact_asset_closure_entries: visited.size(),
-                    staged_entries : outputRoot.toPath().with { root -> Files.walk(root).withCloseable { stream -> stream.filter { Files.isRegularFile(it) }.count() } }
+            writeJson(outputRoot, 'bbb-resource-staging.json', [
+                    accepted_baseline: [file: baselineJar.name, size: baselineJar.length(), sha256: expectedBaselineSha256],
+                    upstream_original: [file: expectedOriginalName, size: expectedOriginalSize,
+                            sha256: expectedOriginalSha256,
+                            exact_asset_closure_entries: acceptedStaging.exact_asset_closure_entries],
+                    enderscape_provider: [file: enderscapeJar.name, size: enderscapeJar.length(),
+                            sha256: expectedEnderscapeSha256, license_sha256: expectedEnderscapeLicenseSha256,
+                            asset_license: 'All Rights Reserved',
+                            output_policy: 'ignored build output and local retained artifact only'],
+                    base_registry: [blocks: baseBlocks.size(), items: baseItems.size(), wood_families: 12],
+                    optional_registry: [blocks: 33, items: 33, wood_families: 3],
+                    provider_present_registry: [blocks: 204, items: 205, wood_families: 15],
+                    enderscape_generated_textures: textureMetadata,
+                    optional_pack: 'bbb:enderscape_wood_families'
             ])
         } finally {
-            vanillaZip.close()
-            zip.close()
+            vanilla.close()
+            enderscape.close()
+            baseline.close()
         }
     }
 }
@@ -628,12 +517,23 @@ processResources {
     dependsOn tasks.named('stageBbbResources')
     duplicatesStrategy = DuplicatesStrategy.FAIL
     inputs.property 'version', project.version
-    filesMatching('fabric.mod.json') {
-        expand 'version': project.version
-    }
+    filesMatching('fabric.mod.json') { expand 'version': project.version }
     from(layout.projectDirectory.file('LICENSE.md')) {
         into 'META-INF'
         rename { 'LICENSE_bbb-port.md' }
+    }
+}
+
+tasks.named('processGametestResources') {
+    inputs.property('bbbAbsentGameTest', absentGameTest)
+    exclude 'fabric.absent.mod.json'
+    if (absentGameTest.get()) exclude 'data/enderscape/**'
+    doLast {
+        if (absentGameTest.get()) {
+            Files.copy(layout.projectDirectory.file('src/gametest/resources/fabric.absent.mod.json').asFile.toPath(),
+                    new File(destinationDir, 'fabric.mod.json').toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        }
     }
 }
 
@@ -641,219 +541,203 @@ tasks.register('verifyCuratedResources') {
     group = 'verification'
     dependsOn tasks.named('stageBbbResources')
     doLast {
-        requireExactOriginalJar()
+        File baselineJar = requireExactBaselineJar()
+        File enderscapeJar = requireExactEnderscapeJar()
         File root = stagedResourcesDir.get().asFile
+        File pack = new File(root, optionalPackPath)
         Map manifest = new JsonSlurper().parse(curatedRegistryFile.asFile) as Map
-        Set<String> retainedBlocks = new LinkedHashSet<>()
-        manifest.wood_materials.each { material -> manifest.wood_forms.each { form -> retainedBlocks.add("${material}_${form}" as String) } }
-        manifest.stone_materials.each { material -> manifest.stone_forms.each { form -> retainedBlocks.add("${material}_${form}" as String) } }
-        retainedBlocks.addAll(manifest.standalone_blocks as Collection<String>)
-        Set<String> retainedItems = new LinkedHashSet<>(retainedBlocks)
-        retainedItems.addAll(manifest.standalone_items as Collection<String>)
+        List<Map> providers = manifest.enderscape_wood_families as List<Map>
 
-        int blockstates = fileTree(new File(root, 'assets/bbb/blockstates')).matching { include '*.json' }.files.size()
-        int models = fileTree(new File(root, 'assets/bbb/models')).matching { include '**/*.json' }.files.size()
-        int textures = fileTree(new File(root, 'assets/bbb/textures')).files.size()
-        int itemDefinitions = fileTree(new File(root, 'assets/bbb/items')).matching { include '*.json' }.files.size()
-        int recipes = fileTree(new File(root, 'data/bbb/recipe')).matching { include '*.json' }.files.size()
-        int advancements = fileTree(new File(root, 'data/bbb/advancement/recipes')).matching { include '*.json' }.files.size()
-        int lootTables = fileTree(new File(root, 'data/bbb/loot_table/blocks')).matching { include '*.json' }.files.size()
-        int tags = fileTree(new File(root, 'data')).matching { include '**/tags/**/*.json' }.files.size()
-        if (blockstates != retainedBlocks.size()) throw new GradleException("Expected ${retainedBlocks.size()} blockstates, found ${blockstates}")
-        if (models != 1_132) throw new GradleException("Expected exact 1,132-model dependency closure, found ${models}")
-        if (textures != 248) throw new GradleException("Expected 248 staged texture/sidecar files, found ${textures}")
-        if (itemDefinitions != retainedItems.size()) throw new GradleException("Expected ${retainedItems.size()} item definitions, found ${itemDefinitions}")
-        if (recipes != 224) throw new GradleException("Expected 224 curated recipes, found ${recipes}")
-        if (advancements != 140) throw new GradleException("Expected 140 curated recipe advancements, found ${advancements}")
-        if (lootTables != retainedBlocks.size()) throw new GradleException("Expected ${retainedBlocks.size()} loot tables, found ${lootTables}")
-        if (tags != 44) throw new GradleException("Expected 44 filtered/generated curated tag files, found ${tags}")
-        if (!new File(root, 'assets/bbb/icon.png').isFile()) throw new GradleException('Missing staged BBB icon')
+        def countJson = { File directory ->
+            directory.isDirectory() ? fileTree(directory).matching { include '**/*.json' }.files.size() : 0
+        }
+        List<Integer> baseCounts = [
+                countJson(new File(root, 'assets/bbb/blockstates')),
+                countJson(new File(root, 'assets/bbb/models')),
+                countJson(new File(root, 'assets/bbb/items')),
+                countJson(new File(root, 'data/bbb/recipe')),
+                countJson(new File(root, 'data/bbb/advancement/recipes')),
+                countJson(new File(root, 'data/bbb/loot_table/blocks')),
+                fileTree(new File(root, 'data')).matching { include '**/tags/**/*.json' }.files.size(),
+                fileTree(new File(root, 'assets/bbb/textures')).files.size()
+        ]
+        if (baseCounts != [171, 1_132, 172, 224, 140, 171, 44, 248]) {
+            throw new GradleException("Accepted base closure drift: ${baseCounts}")
+        }
 
-        int pngTextures = 0
-        int pngsWithTransparency = 0
-        fileTree(new File(root, 'assets/bbb/textures')).matching { include '**/*.png' }.files.each { textureFile ->
-            def image = ImageIO.read(textureFile)
-            if (image == null) throw new GradleException("Unable to decode staged PNG ${textureFile}")
-            pngTextures++
-            boolean hasTransparency = false
-            for (int x = 0; x < image.width; x++) {
-                for (int y = 0; y < image.height; y++) {
-                    int alpha = (image.getRGB(x, y) >>> 24) & 0xFF
-                    if (alpha == 0) {
-                        hasTransparency = true
-                    } else if (alpha != 255) {
-                        throw new GradleException("Staged texture ${textureFile} contains partial alpha ${alpha}; 26.2 transparency classification requires review")
+        int basePngs = 0
+        int baseTransparent = 0
+        fileTree(new File(root, 'assets/bbb/textures')).matching { include '**/*.png' }.files.each { file ->
+            BufferedImage image = ImageIO.read(file)
+            if (image == null) throw new GradleException("Unreadable base PNG ${file}")
+            basePngs++
+            boolean transparent = false
+            for (int y = 0; y < image.height; y++) for (int x = 0; x < image.width; x++) {
+                int alpha = (image.getRGB(x, y) >>> 24) & 0xff
+                if (alpha == 0) transparent = true
+                else if (alpha != 255) throw new GradleException("Partial alpha in ${file}")
+            }
+            if (transparent) baseTransparent++
+        }
+        if (basePngs != 244 || baseTransparent != 112) {
+            throw new GradleException("Accepted PNG closure drift: ${basePngs}/${baseTransparent}")
+        }
+
+        ZipFile baseline = new ZipFile(baselineJar)
+        ZipFile enderscape = new ZipFile(enderscapeJar)
+        ZipFile vanilla = new ZipFile(minecraftClientJar.get())
+        try {
+            baseline.entries().findAll { !it.directory && (it.name.startsWith('assets/bbb/') || it.name.startsWith('data/')) }
+                    .each { entry ->
+                        File staged = new File(root, entry.name)
+                        if (!staged.isFile()) throw new GradleException("Base staging omitted accepted resource ${entry.name}")
+                        byte[] expected = baseline.getInputStream(entry).withCloseable { it.readAllBytes() }
+                        if (!Arrays.equals(expected, Files.readAllBytes(staged.toPath()))) {
+                            throw new GradleException("Base staging changed accepted resource bytes ${entry.name}")
+                        }
+                    }
+
+            List<Integer> packCounts = [
+                    countJson(new File(pack, 'assets/bbb/blockstates')),
+                    countJson(new File(pack, 'assets/bbb/models')),
+                    countJson(new File(pack, 'assets/bbb/items')),
+                    countJson(new File(pack, 'data/bbb/recipe')),
+                    countJson(new File(pack, 'data/bbb/advancement/recipes')),
+                    countJson(new File(pack, 'data/bbb/loot_table/blocks')),
+                    fileTree(new File(pack, 'assets/bbb/textures')).matching { include '**/*.png' }.files.size()
+            ]
+            if (packCounts != [33, 177, 33, 39, 27, 33, 42]) {
+                throw new GradleException("Enderscape pack closure drift: ${packCounts}")
+            }
+            if (!new File(pack, 'pack.mcmeta').isFile()) throw new GradleException('Missing optional pack.mcmeta')
+            if (new File(pack, 'assets/enderscape').exists() || new File(pack, 'data/enderscape').exists()) {
+                throw new GradleException('Optional pack copied raw Enderscape namespace resources')
+            }
+
+            int packTransparent = 0
+            fileTree(new File(pack, 'assets/bbb/textures')).matching { include '**/*.png' }.files.each { file ->
+                BufferedImage image = ImageIO.read(file)
+                boolean transparent = false
+                for (int y = 0; y < image.height; y++) for (int x = 0; x < image.width; x++) {
+                    int alpha = (image.getRGB(x, y) >>> 24) & 0xff
+                    if (alpha == 0) transparent = true
+                    else if (alpha != 255) throw new GradleException("Partial alpha in ${file}")
+                }
+                if (transparent) packTransparent++
+            }
+            if (packTransparent != 18) throw new GradleException("Expected 18 transparent optional sprites, found ${packTransparent}")
+
+            Map<String, java.util.zip.ZipEntry> endEntries = enderscape.entries().findAll { !it.directory }
+                    .collectEntries { [(it.name): it] }
+            Map<String, java.util.zip.ZipEntry> vanillaEntries = vanilla.entries().findAll { !it.directory }
+                    .collectEntries { [(it.name): it] }
+            def resourceExists = { String reference, String kind ->
+                if (reference.startsWith('#')) return true
+                int colon = reference.indexOf(':')
+                String namespace = colon < 0 ? 'minecraft' : reference.substring(0, colon)
+                String path = colon < 0 ? reference : reference.substring(colon + 1)
+                String suffix = kind == 'texture' ? '.png' : '.json'
+                if (namespace == 'bbb') {
+                    return new File(pack, "assets/bbb/${kind}s/${path}${suffix}").isFile()
+                            || new File(root, "assets/bbb/${kind}s/${path}${suffix}").isFile()
+                }
+                if (namespace == 'minecraft') {
+                    return vanillaEntries.containsKey("assets/minecraft/${kind}s/${path}${suffix}".toString())
+                }
+                if (namespace == 'enderscape') {
+                    return endEntries.containsKey("assets/enderscape/${kind}s/${path}${suffix}".toString())
+                }
+                false
+            }
+            def validateModelSelectors
+            validateModelSelectors = { Object value, File owner ->
+                if (value instanceof Map) {
+                    value.each { key, nested ->
+                        if (key == 'model' && nested instanceof String && !resourceExists(nested, 'model')) {
+                            throw new GradleException("${owner} references missing model ${nested}")
+                        }
+                        validateModelSelectors(nested, owner)
+                    }
+                } else if (value instanceof Collection) value.each { validateModelSelectors(it, owner) }
+            }
+            fileTree(new File(pack, 'assets/bbb/models')).matching { include '**/*.json' }.files.each { modelFile ->
+                Map model = new JsonSlurper().parse(modelFile) as Map
+                if (model.parent instanceof String && !resourceExists(model.parent as String, 'model')) {
+                    throw new GradleException("${modelFile} references missing parent ${model.parent}")
+                }
+                if (model.textures instanceof Map) {
+                    model.textures.values().findAll { it instanceof String && !it.startsWith('#') }.each { texture ->
+                        if (!resourceExists(texture as String, 'texture')) {
+                            throw new GradleException("${modelFile} references missing texture ${texture}")
+                        }
                     }
                 }
             }
-            if (hasTransparency) pngsWithTransparency++
-        }
-        if (pngTextures != 244 || pngsWithTransparency != 112) {
-            throw new GradleException("Expected 244 binary-alpha PNGs with 112 transparent sprites; found ${pngTextures}/${pngsWithTransparency}")
-        }
-        File vanillaClientJar = minecraftClientJar.get()
-        ZipFile vanillaZip = new ZipFile(vanillaClientJar)
-        Set<String> vanillaEntries = vanillaZip.entries().findAll { !it.directory }.collect { it.name } as Set<String>
-        def validateResourceReference = { String reference, String kind, File owner ->
-            if (reference.startsWith('#')) return
-            int firstColon = reference.indexOf(':')
-            int secondColon = firstColon < 0 ? -1 : reference.indexOf(':', firstColon + 1)
-            if (secondColon >= 0) {
-                throw new GradleException("Generated ${owner} has malformed ${kind} reference ${reference}")
+            fileTree(new File(pack, 'assets/bbb/blockstates')).matching { include '*.json' }.files.each {
+                validateModelSelectors(new JsonSlurper().parse(it), it)
             }
-            String namespace = firstColon < 0 ? 'minecraft' : reference.substring(0, firstColon)
-            String path = firstColon < 0 ? reference : reference.substring(firstColon + 1)
-            if (namespace == 'bbb') {
-                File expected = new File(root, "assets/bbb/${kind}s/${path}.${kind == 'texture' ? 'png' : 'json'}")
-                if (!expected.isFile()) {
-                    throw new GradleException("Generated ${owner} references missing BBB ${kind} ${reference}")
-                }
-            } else if (namespace == 'minecraft') {
-                String expected = "assets/minecraft/${kind}s/${path}.${kind == 'texture' ? 'png' : 'json'}"
-                if (!vanillaEntries.contains(expected)) {
-                    throw new GradleException("Generated ${owner} references missing Minecraft ${kind} ${reference}")
-                }
+            fileTree(new File(pack, 'assets/bbb/items')).matching { include '*.json' }.files.each {
+                validateModelSelectors(new JsonSlurper().parse(it), it)
             }
-        }
-        def validateModelValues
-        validateModelValues = { Object value, File owner ->
-            if (value instanceof Map) {
-                value.each { key, nested ->
-                    if (key == 'model' && nested instanceof String) {
-                        validateResourceReference(nested, 'model', owner)
-                    } else {
-                        validateModelValues(nested, owner)
+
+            providers.each { spec ->
+                String family = spec.material as String
+                Set<String> forms = fileTree(new File(pack, 'assets/bbb/blockstates')).matching {
+                    include "${family}_*.json"
+                }.files.collect { it.name.substring(family.length() + 1).replaceFirst(/\.json$/, '') } as Set<String>
+                if (forms != (manifest.wood_forms as Set<String>)) {
+                    throw new GradleException("${family} form mismatch: ${forms}")
+                }
+                ['balustrade', 'beam', 'wall'].each { form ->
+                    String text = Files.readString(new File(pack, "data/bbb/recipe/${family}_${form}.json").toPath())
+                    if (!text.contains(spec.beam_material as String)) throw new GradleException("${family}_${form} lost beam material")
+                }
+                ['lattice', 'pallet', 'support', 'trim'].each { form ->
+                    String text = Files.readString(new File(pack, "data/bbb/recipe/${family}_${form}.json").toPath())
+                    if (!text.contains(spec.source_planks as String)) throw new GradleException("${family}_${form} lost source planks")
+                }
+                ['frame', 'lantern'].each { form ->
+                    String text = Files.readString(new File(pack, "data/bbb/recipe/${family}_${form}.json").toPath())
+                    if (!text.contains("enderscape:${family}_slab")) throw new GradleException("${family}_${form} lost provider slab")
+                }
+                fileTree(new File(pack, 'data')).matching { include '**/*.json' }.files.findAll {
+                    it.name.startsWith("${family}_")
+                }.each { dataFile ->
+                    String text = Files.readString(dataFile.toPath())
+                    if ((dataFile.path.contains('recipe') || dataFile.path.contains('advancement')
+                            || dataFile.path.contains('loot_table')) && !text.contains('fabric:load_conditions')) {
+                        throw new GradleException("Optional data lacks registry load condition: ${dataFile}")
                     }
                 }
-            } else if (value instanceof Collection) {
-                value.each { validateModelValues(it, owner) }
             }
-        }
-        fileTree(new File(root, 'assets/bbb/models')).matching { include '**/*.json' }.files.each { modelFile ->
-            Map model = new JsonSlurper().parse(modelFile) as Map
-            if (model.containsKey('render_type')) {
-                throw new GradleException("Generated model ${modelFile} contains unsupported/inert 26.2 render_type metadata")
-            }
-            if (model.parent instanceof String) validateResourceReference(model.parent as String, 'model', modelFile)
-            // BBB template models contain authored placeholder defaults that every
-            // concrete child overrides. Validate concrete model bindings here; the
-            // parent chain itself is still required and checked above.
-            boolean templateModel = modelFile.path.replace('\\', '/').contains('/models/block/template/')
-            if (!templateModel && model.textures instanceof Map) {
-                model.textures.values().findAll { it instanceof String }
-                        .each { validateResourceReference(it as String, 'texture', modelFile) }
-            }
-            if (modelFile.path.contains('pale_oak') && Files.readString(modelFile.toPath()).contains('cherry')) {
-                throw new GradleException("Generated Pale Oak model ${modelFile} retains a Cherry reference")
-            }
-        }
-        fileTree(new File(root, 'assets/bbb/blockstates')).matching { include '*.json' }.files.each { blockstateFile ->
-            validateModelValues(new JsonSlurper().parse(blockstateFile), blockstateFile)
-        }
-        fileTree(new File(root, 'assets/bbb/items')).matching { include '*.json' }.files.each { itemFile ->
-            validateModelValues(new JsonSlurper().parse(itemFile), itemFile)
-        }
-        vanillaZip.close()
 
-        fileTree(new File(root, 'assets/bbb/lang')).matching { include '*.json' }.files.each { languageFile ->
-            Map language = new JsonSlurper().parse(languageFile) as Map
-            language.keySet().findAll { it ==~ /(?:block|item)\.bbb\.[a-z0-9_\-.]+/ }.each { key ->
-                String id = key.substring(key.lastIndexOf('.') + 1)
-                if (!retainedItems.contains(id)) {
-                    throw new GradleException("Generated language file ${languageFile} retains removed BBB ID key ${key}")
+            Set<String> baseTagPaths = fileTree(new File(root, 'data')).matching { include '**/tags/**/*.json' }.files.collect {
+                root.toPath().relativize(it.toPath()).toString().replace('\\', '/')
+            } as Set<String>
+            fileTree(new File(pack, 'data')).matching { include '**/tags/**/*.json' }.files.each { tagFile ->
+                String relative = pack.toPath().relativize(tagFile.toPath()).toString().replace('\\', '/')
+                if (!baseTagPaths.contains(relative)) throw new GradleException("Optional tag has no accepted base identity ${relative}")
+                Map tag = new JsonSlurper().parse(tagFile) as Map
+                if ((tag.values as Collection).any { !(it instanceof Map) || it.required != false }) {
+                    throw new GradleException("Optional tag values must be required:false in ${tagFile}")
                 }
             }
-            if (language.containsKey('block_type.bbb.ladder') || language.containsKey('block_type.bbb.layer')) {
-                throw new GradleException("Generated language file ${languageFile} retains removed family text")
+
+            Map staging = new JsonSlurper().parse(new File(root, 'bbb-resource-staging.json')) as Map
+            if (staging.accepted_baseline.sha256 != expectedBaselineSha256
+                    || staging.enderscape_provider.sha256 != expectedEnderscapeSha256
+                    || staging.enderscape_provider.asset_license != 'All Rights Reserved'
+                    || staging.upstream_original.exact_asset_closure_entries != 1_467) {
+                throw new GradleException('Generated staging provenance is incomplete')
             }
-            ['description.bbb.frameConfig3', 'description.bbb.frameConfig4',
-             'description.bbb.frameConfig5'].each { removedConfigKey ->
-                if (language.containsKey(removedConfigKey)) {
-                    throw new GradleException("Generated language file ${languageFile} retains unused removed-config text ${removedConfigKey}")
-                }
-            }
+        } finally {
+            vanilla.close()
+            enderscape.close()
+            baseline.close()
         }
 
-        fileTree(new File(root, 'data/bbb/recipe')).matching { include '*.json' }.files.each { recipeFile ->
-            Map recipe = new JsonSlurper().parse(recipeFile) as Map
-            if (!(recipe.result instanceof Map) || !(recipe.result.id instanceof String)) {
-                throw new GradleException("Generated recipe ${recipeFile} does not use the Minecraft 26.2 result object schema")
-            }
-            if (recipe.containsKey('count')) {
-                throw new GradleException("Generated recipe ${recipeFile} retains obsolete top-level result count")
-            }
-        }
-
-        Set<String> stagedRecipeIds = fileTree(new File(root, 'data/bbb/recipe')).matching { include '*.json' }.files.collect {
-            "bbb:${it.name.replaceFirst(/\.json$/, '')}".toString()
-        } as Set<String>
-        def validateAdvancementValue
-        validateAdvancementValue = { Object value, File advancementFile ->
-            if (value instanceof Map) {
-                if (value.containsKey('tag')) {
-                    throw new GradleException("Generated advancement ${advancementFile} retains a legacy item-predicate tag key")
-                }
-                if (value.items instanceof Collection
-                        && (value.items as Collection).any { it instanceof String }) {
-                    throw new GradleException("Generated advancement ${advancementFile} retains a list-valued item predicate")
-                }
-                value.values().each { validateAdvancementValue(it, advancementFile) }
-            } else if (value instanceof Collection) {
-                value.each { validateAdvancementValue(it, advancementFile) }
-            }
-        }
-        fileTree(new File(root, 'data/bbb/advancement/recipes')).matching { include '*.json' }.files.each { advancementFile ->
-            Map advancement = new JsonSlurper().parse(advancementFile) as Map
-            if (advancement.parent != 'minecraft:recipes/root') {
-                throw new GradleException("Generated advancement ${advancementFile} has unexpected parent ${advancement.parent}")
-            }
-            List rewards = advancement.rewards?.recipes instanceof Collection
-                    ? advancement.rewards.recipes as List : []
-            if (rewards.isEmpty() || rewards.any { !(it instanceof String) || !stagedRecipeIds.contains(it) }) {
-                throw new GradleException("Generated advancement ${advancementFile} rewards a recipe outside the curated staging set")
-            }
-            validateAdvancementValue(advancement, advancementFile)
-        }
-
-        def validateLootValue
-        validateLootValue = { Object value, File lootFile ->
-            if (value instanceof Map) {
-                if (value.function == 'minecraft:set_count'
-                        && value.containsKey('add') && !(value.add instanceof Boolean)) {
-                    throw new GradleException("Generated loot table ${lootFile} has non-boolean minecraft:set_count add")
-                }
-                value.values().each { validateLootValue(it, lootFile) }
-            } else if (value instanceof Collection) {
-                value.each { validateLootValue(it, lootFile) }
-            }
-        }
-        fileTree(new File(root, 'data/bbb/loot_table')).matching { include '**/*.json' }.files.each { lootFile ->
-            validateLootValue(new JsonSlurper().parse(lootFile), lootFile)
-        }
-
-        Set<String> allowedTagIds = [
-                'balustrades', 'beams', 'braziers', 'columns', 'frames', 'hammers', 'lanterns',
-                'lattices', 'metal_fences', 'mouldings', 'pallets', 'stone_blocks', 'stone_columns',
-                'stone_fences', 'stone_frames', 'supports', 'trims', 'urns', 'wooden_blocks',
-                'wooden_frames', 'wooden_lanterns', 'wooden_walls'
-        ] as Set<String>
-        fileTree(root).matching { include '**/*.json' }.files.each { jsonFile ->
-            Object json = new JsonSlurper().parse(jsonFile)
-            Set<String> strings = new LinkedHashSet<>()
-            collectStrings(json, strings)
-            strings.findAll { it ==~ /#?bbb:[a-z0-9_\-.]+/ }.each { reference ->
-                String id = reference.substring(reference.indexOf(':') + 1)
-                if (!retainedItems.contains(id) && !allowedTagIds.contains(id)) {
-                    throw new GradleException("Generated resource ${jsonFile} references removed or unknown BBB ID ${reference}")
-                }
-            }
-        }
-        println "BBB_CURATED_RESOURCES blocks=${blockstates} items=${itemDefinitions} models=${models} textures=${textures} pngs=${pngTextures} transparentPngs=${pngsWithTransparency} recipes=${recipes} advancements=${advancements} loot=${lootTables} tags=${tags} sha256=${expectedOriginalSha256}"
+        println 'BBB_CURATED_RESOURCES base=171/172 optional=33/33 providerPresent=204/205 models=1132+177 pngs=244+42 recipes=224+39'
     }
-}
-
-tasks.named('check') {
-    dependsOn tasks.named('verifyCuratedResources')
 }
 
 tasks.register('verifyProductionMixinContract') {
@@ -862,9 +746,7 @@ tasks.register('verifyProductionMixinContract') {
     dependsOn tasks.named('jar')
     doLast {
         File productionJar = tasks.named('jar').get().archiveFile.get().asFile
-        if (!productionJar.isFile()) {
-            throw new GradleException("Missing remapped production JAR ${productionJar}")
-        }
+        if (!productionJar.isFile()) throw new GradleException("Missing production JAR ${productionJar}")
         ZipFile zip = new ZipFile(productionJar)
         try {
             def requireEntry = { String name ->
@@ -881,11 +763,50 @@ tasks.register('verifyProductionMixinContract') {
                 throw new GradleException('Production fabric.mod.json does not declare bbb.mixins.json')
             }
             requireEntry('com/starfish_studios/bbb/mixin/LivingEntityRopeClimbMixin.class')
-            def manifest = new java.util.jar.Manifest(zip.getInputStream(requireEntry('META-INF/MANIFEST.MF')))
-            if (manifest.mainAttributes.getValue('Fabric-Mapping-Namespace') != 'official') {
+            def jarManifest = new java.util.jar.Manifest(zip.getInputStream(requireEntry('META-INF/MANIFEST.MF')))
+            if (jarManifest.mainAttributes.getValue('Fabric-Mapping-Namespace') != 'official') {
                 throw new GradleException('Production BBB JAR is not remapped into the official Minecraft namespace')
             }
             println "BBB_PRODUCTION_MIXIN jar=${productionJar.name} mixin=LivingEntityRopeClimbMixin namespace=official"
+        } finally {
+            zip.close()
+        }
+    }
+}
+
+tasks.register('verifyProductionEnderscapeBoundary') {
+    group = 'verification'
+    description = 'Proves the optional pack is exact and no Enderscape code/raw namespace is bundled.'
+    dependsOn tasks.named('jar'), tasks.named('verifyCuratedResources')
+    doLast {
+        File productionJar = tasks.named('jar').get().archiveFile.get().asFile
+        ZipFile zip = new ZipFile(productionJar)
+        try {
+            List<String> names = zip.entries().findAll { !it.directory }.collect { it.name }
+            List<String> forbidden = names.findAll {
+                it.startsWith('net/penumbra/enderscape/') || it.startsWith('assets/enderscape/')
+                        || it.startsWith('data/enderscape/') || it.toLowerCase(Locale.ROOT).endsWith('.jar')
+            }
+            if (!forbidden.isEmpty()) throw new GradleException("Production JAR bundles forbidden provider content: ${forbidden}")
+            List<String> foreignClasses = names.findAll { it.endsWith('.class') && !it.startsWith('com/starfish_studios/bbb/') }
+            if (!foreignClasses.isEmpty()) throw new GradleException("Production JAR bundles unintended classes: ${foreignClasses}")
+            if (names.toSet().size() != names.size()) throw new GradleException('Production JAR contains duplicate entries')
+            String prefix = "${optionalPackPath}/"
+            int blockstates = names.count { it.startsWith("${prefix}assets/bbb/blockstates/") && it.endsWith('.json') }
+            int models = names.count { it.startsWith("${prefix}assets/bbb/models/") && it.endsWith('.json') }
+            int items = names.count { it.startsWith("${prefix}assets/bbb/items/") && it.endsWith('.json') }
+            int pngs = names.count { it.startsWith("${prefix}assets/bbb/textures/") && it.endsWith('.png') }
+            int recipes = names.count { it.startsWith("${prefix}data/bbb/recipe/") && it.endsWith('.json') }
+            int advancements = names.count { it.startsWith("${prefix}data/bbb/advancement/recipes/") && it.endsWith('.json') }
+            int loot = names.count { it.startsWith("${prefix}data/bbb/loot_table/blocks/") && it.endsWith('.json') }
+            if ([blockstates, models, items, pngs, recipes, advancements, loot] != [33, 177, 33, 42, 39, 27, 33]) {
+                throw new GradleException("Production optional-pack closure drift: ${[blockstates, models, items, pngs, recipes, advancements, loot]}")
+            }
+            Map mod = new JsonSlurper().parse(zip.getInputStream(zip.getEntry('fabric.mod.json'))) as Map
+            if ((mod.depends as Map).containsKey('enderscape') || mod.suggests?.enderscape != '>=3.0.2') {
+                throw new GradleException('Production metadata no longer keeps Enderscape optional')
+            }
+            println "BBB_ENDERSCAPE_BOUNDARY jar=${productionJar.name} optionalPack=33/33 providerClasses=0 rawProviderNamespaces=0"
         } finally {
             zip.close()
         }
@@ -906,10 +827,7 @@ tasks.register('productionLivingEntityMixinTest', JavaExec) {
         def runtime = configurations.testRuntimeClasspath.files.findAll { candidate ->
             !mainOutput.contains(candidate) && !candidate.name.startsWith('minecraft-merged-deobf-')
         }
-        sourceSets.test.output.files.findAll { it.exists() } + runtime + [
-                productionMinecraftServerJar,
-                productionBbbJar.get().asFile
-        ]
+        sourceSets.test.output.files.findAll { it.exists() } + runtime + [productionMinecraftServerJar, productionBbbJar.get().asFile]
     })
     systemProperty 'fabric.development', 'false'
     systemProperty 'fabric.unitTest', 'true'
@@ -926,17 +844,22 @@ tasks.register('productionLivingEntityMixinTest', JavaExec) {
 }
 
 tasks.named('check') {
+    dependsOn tasks.named('verifyCuratedResources')
     dependsOn tasks.named('verifyProductionMixinContract')
+    dependsOn tasks.named('verifyProductionEnderscapeBoundary')
     dependsOn tasks.named('productionLivingEntityMixinTest')
 }
 
-tasks.withType(Test).configureEach {
-    useJUnitPlatform()
-}
+tasks.withType(Test).configureEach { useJUnitPlatform() }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 25
+}
+
+tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }
 
 java {

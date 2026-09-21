@@ -4,10 +4,10 @@ This audit records the active registrations in the exact official `bbb-fabric-2.
 
 ## Count reconciliation
 
-| Registry | Upstream active | Retained | Removed |
-|---|---:|---:|---:|
-| Blocks | 247 | 160 historical baseline + 11 Pale Oak extension | 87 |
-| Items | 243 | 161 historical baseline + 11 Pale Oak extension | 82 |
+| Registry | Upstream active | Standalone retained | Optional Enderscape extension | Upstream active removed |
+|---|---:|---:|---:|---:|
+| Blocks | 247 | 160 historical baseline + 11 Pale Oak extension | 33 provider-derived | 87 |
+| Items | 243 | 161 historical baseline + 11 Pale Oak extension | 33 provider-derived | 82 |
 
 The retained block set is the exact Cartesian product below plus four standalone blocks:
 
@@ -18,9 +18,25 @@ The retained block set is the exact Cartesian product below plus four standalone
 - Standalone blocks: `brazier`, `soul_brazier`, `rope`, `iron_fence`.
 - Every retained block has a retained block item; `hammer` is the one additional item.
 
-The historical reconciliation remains `(11 × 11) + (7 × 5) + 4 = 160` blocks and `160 + hammer = 161` items. The explicit 26.2-native Pale Oak extension adds eleven blocks and their block items, producing `(12 × 11) + (7 × 5) + 4 = 171` blocks and `171 + hammer = 172` items. `src/porting/curated-registry.json` is the machine-readable authority for the current formula.
+The historical reconciliation remains `(11 × 11) + (7 × 5) + 4 = 160` blocks and `160 + hammer = 161` items. The explicit 26.2-native Pale Oak extension adds eleven blocks and their block items, producing `(12 × 11) + (7 × 5) + 4 = 171` blocks and `171 + hammer = 172` items. When the complete explicit Enderscape provider set is present, three more eleven-form families append 33 blocks and block items, producing 204 blocks and 205 items. `src/porting/curated-registry.json` is the machine-readable authority for both the standalone and provider-present formulas.
 
 Pale Oak is absent from the pristine `2.0pre4` registry and remains absent from the historical count. It is now a separately identified complete port-native extension; no claim is made that its eleven blocks appeared in the upstream artifact. Pale Oak Layers and Ladders remain excluded. The retained `bbb:rope` registry/item identity remains unchanged; C4 adds a narrow BBB-owned state-aware vertical climbing and one-segment pay-out/reel-in mechanic without changing the curated registry count.
+
+The optional Enderscape rows in the table are also extensions, not recovered `2.0pre4` registrations, so they do not alter the historical 87-block/82-item removal accounting.
+
+## Explicit Enderscape provider audit
+
+The audited provider is the exact `enderscape-fabric-3.0.2+mc26.2.jar`, SHA-256 `9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b`. Its registrations and packaged models/textures establish these literal bindings:
+
+| Material | Source planks | Axial/beam material |
+|---|---|---|
+| `veiled` | `enderscape:veiled_planks` | `enderscape:stripped_veiled_log` |
+| `celestial` | `enderscape:celestial_planks` | `enderscape:stripped_celestial_stem` |
+| `murublight` | `enderscape:murublight_planks` | `enderscape:stripped_murublight_stem` |
+
+For each material BBB explicitly registers balustrade, lattice, wall, beam, beam stairs, beam slab, support, pallet, frame, lantern, and trim under `bbb:<material>_<form>`. There is no registry-name scanning or inferred family discovery. The standalone 171-block/172-item registry is established first. With the literal `enderscape` provider loaded, an immediate six-ID lookup handles provider-first ordering and a callback filtered to those same six IDs handles late provider registration; the 33/33 extension is committed only after the complete set is available. The always-enabled built-in pack `bbb:enderscape_wood_families` is registered only in that provider-present path. If the provider is absent, BBB retains the accepted standalone registry and does not register invalid families or their pack.
+
+This task makes no IBF changes. Integration of these three new BBB families into IBF remains a separate successor.
 
 ## Removed block IDs (87)
 
@@ -253,7 +269,7 @@ The 26.2 port routes Hammer callbacks only through the retained Hammer-capable b
 
 ## Resource closure
 
-The hash-guarded staging pipeline starts from the retained registry rather than copying the JAR wholesale. Its current verified closure contains:
+The accepted standalone resource closure in `bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar` (SHA-256 `0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a`) contains:
 
 - 171 retained/generated blockstates;
 - 172 generated 26.2 item definitions;
@@ -269,4 +285,12 @@ The hash-guarded staging pipeline starts from the retained registry rather than 
 
 The historical selected ARR dependency closure remains exactly 1,467 paths. The current blockstates, models, and textures/sidecars total 1,551 files after adding 84 port-native Pale Oak resources: eleven blockstates, fifty-nine model JSON files, and fourteen generated authored texture sheets. Those sheets map only colors proven to belong to the actual Minecraft 26.2 Cherry plank palette onto the corresponding Pale Oak palette; transparent pixels and unmatched material-independent details—including the lantern's 36 opaque glow/metal pixels—remain unchanged. The Beam side/end sheets preserve BBB's original Beam layout and are palette-recolored like the other authored Pale Oak sheets. Pale Oak Lattice preserves its canonical shared `cherry_leaves` multipart state/model rather than inventing the nonexistent `pale_oak_leaves` state. The official `dark_oak_lattice` blockstate mistakenly points at Oak left/middle/right geometry; ignored staging output corrects just those three references to the authored Dark Oak models so the material variant remains distinct. Minecraft 26.2 derives section layers from sprite transparency, so the verifier rejects unsupported/inert model `render_type` metadata, malformed or unresolved model/texture references, and partial alpha. These are static asset checks, not runtime visual validation.
 
-One apparent removed-ID residue is intentional: retained Stone Column models reference `textures/block/polished_stone.png` as their shared particle texture. No `polished_stone` block or item is retained. Likewise, model paths containing `_layer1` through `_layer4` for columns and `_layer1`/`_layer2` for pallets are internal model-composition parts, not the removed BBB Layer block family. All generated content remains build output under `build/`, not tracked or redistributable source.
+One apparent removed-ID residue is intentional: retained Stone Column models reference `textures/block/polished_stone.png` as their shared particle texture. No `polished_stone` block or item is retained. Likewise, model paths containing `_layer1` through `_layer4` for columns and `_layer1`/`_layer2` for pallets are internal model-composition parts, not the removed BBB Layer block family.
+
+For the Enderscape candidate, the exact accepted dev.6 JAR above is the hash-guarded base input, and all accepted base resource bytes are verified unchanged. The optional built-in pack adds exactly 33 blockstates, 177 model JSON files, 33 item definitions, 39 recipes, 27 recipe-unlock advancements, 33 block loot tables, and 42 generated PNG textures. Inspection found all three provider plank sheets to be opaque 16-by-16 textures: Celestial has the same seven-color palette cardinality as the audited Cherry mask, while Veiled and Murublight each have ten colors. The generator therefore maps the seven verified Cherry wood ranks to seven luminance-ranked colors sampled across each real provider palette; it does not claim to reproduce the provider plank grain or all ten Veiled/Murublight variants. It preserves BBB geometry, alpha, and unmatched material-independent detail, including the 36 Lantern glow/metal pixels. Provider planks and the unstripped log/stem textures used by the accepted lattice visual template remain literal external references where that model contract calls for them; the actual block-property and recipe axial bindings use the requested stripped log/stems. Static closure checks resolve every Minecraft, BBB, and Enderscape model/texture reference without a missing-resource fallback and verify the recipe, loot, tag, and explicit material bindings.
+
+Enderscape's audited license marks its packaged `assets/` resources All Rights Reserved. The staging task therefore verifies the exact provider hash and license before reading those resources, writes generated derivatives only to ignored build output and the retained local candidate, and copies no raw `assets/enderscape` or `data/enderscape` tree. The production boundary check also rejects bundled `net/penumbra/enderscape` classes and nested JARs. `originals/` remains untouched, and neither the generated resources nor the local-only artifact are tracked or redistributable source.
+
+Observed validation comprises the passing static/unit/resource/JAR boundary checks, six required provider-present Fabric GameTests, and one required provider-absent Fabric GameTest. The provider-present tests cover exact family and ID counts, source identity, form/state/Hammer/waterlogging behavior contracts, lattice/wall/beam/lantern specializations, fuel, recipes, loot, and tags; the absent-provider test covers clean 171/172 startup and accepted data closure. These are controlled test observations, not gameplay validation.
+
+Generated resource staging remains ignored build output under `build/`; only the finalized ignored local artifact is retained, and neither is tracked or redistributable source.

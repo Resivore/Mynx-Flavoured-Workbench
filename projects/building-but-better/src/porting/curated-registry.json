@@ -3,6 +3,10 @@
   "upstream_item_count": 243,
   "expected_retained_block_count": 171,
   "expected_retained_item_count": 172,
+  "expected_enderscape_block_count": 33,
+  "expected_enderscape_item_count": 33,
+  "expected_provider_present_block_count": 204,
+  "expected_provider_present_item_count": 205,
   "wood_materials": [
     "oak",
     "spruce",
@@ -16,6 +20,23 @@
     "bamboo",
     "cherry",
     "pale_oak"
+  ],
+  "enderscape_wood_families": [
+    {
+      "material": "veiled",
+      "source_planks": "enderscape:veiled_planks",
+      "beam_material": "enderscape:stripped_veiled_log"
+    },
+    {
+      "material": "celestial",
+      "source_planks": "enderscape:celestial_planks",
+      "beam_material": "enderscape:stripped_celestial_stem"
+    },
+    {
+      "material": "murublight",
+      "source_planks": "enderscape:murublight_planks",
+      "beam_material": "enderscape:stripped_murublight_stem"
+    }
   ],
   "wood_forms": [
     "balustrade",

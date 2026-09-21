@@ -67,7 +67,7 @@ public final class BBBContent {
             "column", "urn", "moulding", "fence", "frame"
     );
 
-    private static final List<WoodSpec> WOOD_SPECS = List.of(
+    private static final List<WoodSpec> VANILLA_WOOD_SPECS = List.of(
             new WoodSpec("oak", Blocks.OAK_PLANKS),
             new WoodSpec("spruce", Blocks.SPRUCE_PLANKS),
             new WoodSpec("birch", Blocks.BIRCH_PLANKS),
@@ -122,11 +122,12 @@ public final class BBBContent {
     public static Item HAMMER;
     public static CreativeModeTab TAB;
     private static boolean initialized;
+    private static boolean enderscapeInitialized;
 
     public static synchronized void initialize() {
         if (initialized) return;
 
-        for (WoodSpec spec : WOOD_SPECS) {
+        for (WoodSpec spec : VANILLA_WOOD_SPECS) {
             registerWoodFamily(spec);
         }
         for (StoneSpec spec : STONE_SPECS) {
@@ -164,6 +165,34 @@ public final class BBBContent {
                     + ", items=" + MUTABLE_ITEMS.size());
         }
         initialized = true;
+    }
+
+    /**
+     * Appends the three explicit Enderscape families after their provider blocks exist.
+     * The ordinary {@link #initialize()} path remains exactly the standalone 171/172 registry.
+     */
+    public static synchronized void registerEnderscapeWoodFamilies(
+            Block veiledPlanks, Block strippedVeiledLog,
+            Block celestialPlanks, Block strippedCelestialStem,
+            Block murublightPlanks, Block strippedMurublightStem) {
+        if (enderscapeInitialized) return;
+        initialize();
+
+        registerWoodFamily(new WoodSpec("veiled", veiledPlanks, strippedVeiledLog));
+        registerWoodFamily(new WoodSpec("celestial", celestialPlanks, strippedCelestialStem));
+        registerWoodFamily(new WoodSpec("murublight", murublightPlanks, strippedMurublightStem));
+
+        if (MUTABLE_BLOCKS.size() != 204 || MUTABLE_ITEMS.size() != 205
+                || MUTABLE_WOOD_FAMILIES.size() != 15 || MUTABLE_BEAM_FAMILIES.size() != 15) {
+            throw new IllegalStateException("Enderscape BBB registry drift: blocks=" + MUTABLE_BLOCKS.size()
+                    + ", items=" + MUTABLE_ITEMS.size() + ", woodFamilies=" + MUTABLE_WOOD_FAMILIES.size()
+                    + ", beamFamilies=" + MUTABLE_BEAM_FAMILIES.size());
+        }
+        enderscapeInitialized = true;
+    }
+
+    public static synchronized boolean enderscapeFamiliesRegistered() {
+        return enderscapeInitialized;
     }
 
     private static void registerWoodFamily(WoodSpec spec) {
@@ -208,9 +237,11 @@ public final class BBBContent {
         family.put("trim", registerBlock(material + "_trim",
                 properties(source, material + "_trim"), FacingConnectingBlock::new));
 
-        WoodFamily metadata = new WoodFamily(material, source, Collections.unmodifiableMap(family));
+        WoodFamily metadata = new WoodFamily(material, source, spec.beamMaterial(),
+                Collections.unmodifiableMap(family));
         MUTABLE_WOOD_FAMILIES.add(metadata);
-        MUTABLE_BEAM_FAMILIES.add(new BeamFamily(material, source, beam, beamSlab, beamStairs, wall));
+        MUTABLE_BEAM_FAMILIES.add(new BeamFamily(material, source, spec.beamMaterial(), beam,
+                beamSlab, beamStairs, wall));
     }
 
     private static void registerStoneFamily(StoneSpec spec) {
@@ -315,7 +346,8 @@ public final class BBBContent {
         return item;
     }
 
-    public record WoodFamily(String material, Block sourcePlanks, Map<String, Block> blocks) {
+    public record WoodFamily(String material, Block sourcePlanks, Block beamMaterial,
+                             Map<String, Block> blocks) {
         public Block form(String form) {
             Block block = blocks.get(form);
             if (block == null) throw new IllegalArgumentException("Unknown wood form " + form);
@@ -332,8 +364,8 @@ public final class BBBContent {
         }
     }
 
-    public record BeamFamily(String material, Block sourcePlanks, Block beam, Block beamSlab,
-                             Block beamStairs, Block wall) {
+    public record BeamFamily(String material, Block sourcePlanks, Block beamMaterial, Block beam,
+                             Block beamSlab, Block beamStairs, Block wall) {
         public net.minecraft.core.Direction.Axis beamAxis(BlockState state) {
             return state.getValue(RotatedPillarBlock.AXIS);
         }

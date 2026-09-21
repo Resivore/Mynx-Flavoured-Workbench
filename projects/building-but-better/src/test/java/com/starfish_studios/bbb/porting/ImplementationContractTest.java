@@ -24,24 +24,83 @@ final class ImplementationContractTest {
     void beamCompatibilityUsesExplicitMetadataAndBlockState() throws IOException {
         String registry = read("registry/BBBContent.java");
 
-        assertEquals(12, occurrences(registry, "new WoodSpec("));
+        assertTrue(registry.contains("private static final List<WoodSpec> VANILLA_WOOD_SPECS = List.of("));
+        assertEquals(15, occurrences(registry, "new WoodSpec("));
         assertTrue(registry.contains("new WoodSpec(\"pale_oak\", Blocks.PALE_OAK_PLANKS, Blocks.STRIPPED_PALE_OAK_LOG)"));
+        assertTrue(registry.contains("new WoodSpec(\"veiled\", veiledPlanks, strippedVeiledLog)"));
+        assertTrue(registry.contains("new WoodSpec(\"celestial\", celestialPlanks, strippedCelestialStem)"));
+        assertTrue(registry.contains("new WoodSpec(\"murublight\", murublightPlanks, strippedMurublightStem)"));
+        assertEquals(3, occurrences(registry, "registerWoodFamily(new WoodSpec(\""),
+                "Only the three explicit provider families may extend the standalone wood catalog");
+        assertTrue(registry.contains("properties(spec.beamMaterial(), material + \"_beam\")"));
+        assertTrue(registry.contains("public record WoodFamily("));
         assertTrue(registry.contains("public record BeamFamily("));
         assertTrue(registry.contains("Block sourcePlanks"));
+        assertTrue(registry.contains("Block beamMaterial"));
         assertTrue(registry.contains("Block beam"));
         assertTrue(registry.contains("Block beamSlab"));
         assertTrue(registry.contains("Block beamStairs"));
         assertTrue(registry.contains("Block wall"));
-        assertTrue(registry.contains("new BeamFamily(material, source, beam, beamSlab, beamStairs, wall)"));
+        assertTrue(registry.contains("new WoodFamily(material, source, spec.beamMaterial(),"));
+        assertTrue(registry.contains("new BeamFamily(material, source, spec.beamMaterial(), beam,"));
         assertTrue(registry.contains("state.getValue(RotatedPillarBlock.AXIS)"));
         assertTrue(registry.contains("state.getValue(FacingSlabBlock.FACING).getAxis()"));
         assertTrue(registry.contains("MUTABLE_BLOCKS.size() != 171 || MUTABLE_ITEMS.size() != 172"));
+        assertTrue(registry.contains("MUTABLE_BLOCKS.size() != 204 || MUTABLE_ITEMS.size() != 205"));
+        assertTrue(registry.contains("MUTABLE_WOOD_FAMILIES.size() != 15 || MUTABLE_BEAM_FAMILIES.size() != 15"));
 
         assertFalse(Pattern.compile("getPath\\s*\\(").matcher(registry).find());
         assertFalse(Pattern.compile("\\.split\\s*\\(").matcher(registry).find());
         assertFalse(Pattern.compile("\\.substring\\s*\\(").matcher(registry).find());
         assertFalse(Pattern.compile("(?:startsWith|endsWith|contains)\\s*\\(\\s*\\\"[^\\\"]*beam")
                 .matcher(registry).find());
+    }
+
+    @Test
+    void optionalEnderscapeIntegrationUsesOnlySixExplicitProviderBlocks() throws IOException {
+        String bootstrap = read("BuildingButBetter.java");
+        String registry = read("registry/BBBContent.java");
+        String integration = read("compat/EnderscapeWoodIntegration.java");
+
+        assertTrue(bootstrap.indexOf("BBBContent.initialize()")
+                        < bootstrap.indexOf("EnderscapeWoodIntegration.initialize()"),
+                "The standalone registry must initialize before the optional provider bridge");
+        assertTrue(integration.contains("if (!FabricLoader.getInstance().isModLoaded(PROVIDER_ID)) return;"));
+        assertTrue(integration.contains("ResourceLoader.registerBuiltinPack("));
+        assertTrue(integration.contains("PackActivationType.ALWAYS_ENABLED"));
+        assertTrue(integration.contains("RegistryEntryAddedCallback.event(BuiltInRegistries.BLOCK)"));
+        assertTrue(integration.contains("if (registered || registering || !allProviderBlocksPresent()) return;"));
+        assertTrue(integration.contains("ServerLifecycleEvents.SERVER_STARTING.register(server -> requireProviderReady())"));
+        assertEquals(6, occurrences(integration, "= id(\""),
+                "The provider bridge must bind exactly the six audited Enderscape source blocks");
+
+        for (String binding : Set.of(
+                "VEILED_PLANKS = id(\"veiled_planks\")",
+                "STRIPPED_VEILED_LOG = id(\"stripped_veiled_log\")",
+                "CELESTIAL_PLANKS = id(\"celestial_planks\")",
+                "STRIPPED_CELESTIAL_STEM = id(\"stripped_celestial_stem\")",
+                "MURUBLIGHT_PLANKS = id(\"murublight_planks\")",
+                "STRIPPED_MURUBLIGHT_STEM = id(\"stripped_murublight_stem\")")) {
+            assertTrue(integration.contains(binding), () -> "Missing explicit provider binding " + binding);
+        }
+        assertTrue(integration.contains("requireBlock(VEILED_PLANKS), requireBlock(STRIPPED_VEILED_LOG)"));
+        assertTrue(integration.contains("requireBlock(CELESTIAL_PLANKS), requireBlock(STRIPPED_CELESTIAL_STEM)"));
+        assertTrue(integration.contains("requireBlock(MURUBLIGHT_PLANKS), requireBlock(STRIPPED_MURUBLIGHT_STEM)"));
+        assertEquals(3, occurrences(registry, "registerWoodFamily(new WoodSpec(\""));
+
+        String explicitProviderCode = registry + System.lineSeparator() + integration;
+        assertFalse(Pattern.compile("getPath\\s*\\(").matcher(explicitProviderCode).find());
+        assertFalse(Pattern.compile("\\.split\\s*\\(").matcher(explicitProviderCode).find());
+        assertFalse(Pattern.compile("\\.substring\\s*\\(").matcher(explicitProviderCode).find());
+        assertFalse(Pattern.compile("BuiltInRegistries\\.BLOCK\\s*\\.\\s*(?:stream|iterator|spliterator|entrySet|keySet|forEach)\\s*\\(")
+                .matcher(explicitProviderCode).find(), "Provider integration must not scan the block registry");
+
+        try (Stream<Path> files = Files.walk(JAVA)) {
+            for (Path file : files.filter(path -> path.getFileName().toString().endsWith(".java")).toList()) {
+                assertFalse(Files.readString(file).contains("net.penumbra.enderscape"),
+                        () -> file + " directly links production BBB to Enderscape classes");
+            }
+        }
     }
 
     @Test

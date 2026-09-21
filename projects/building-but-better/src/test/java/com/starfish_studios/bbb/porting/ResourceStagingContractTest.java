@@ -25,21 +25,28 @@ final class ResourceStagingContractTest {
     private static final Path PROJECT = Path.of(System.getProperty("user.dir")).toAbsolutePath();
 
     @Test
-    void exactOriginalIdentityIsCheckedBeforeArrResourcesAreOpened() throws IOException {
+    void exactPrivateInputsAndLicenseAreCheckedBeforeArrResourcesAreOpened() throws IOException {
         String build = Files.readString(PROJECT.resolve("build.gradle"));
 
+        assertTrue(build.contains("expectedBaselineName = 'bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar'"));
+        assertTrue(build.contains("expectedBaselineSize = 1_149_534L"));
+        assertTrue(build.contains("expectedBaselineSha256 = '0D54034725C3E354515C78BCEE32AB2CB5CE764A33E0602419E26C78AAEF8C5A'"));
         assertTrue(build.contains("expectedOriginalName = 'bbb-fabric-2.0pre4.jar'"));
         assertTrue(build.contains("expectedOriginalSize = 1_701_505L"));
         assertTrue(build.contains("expectedOriginalSha256 = '1E7AE114AAEC53475133E11C607FC65DCE493BBA5897EAF0044D53959B508FC0'"));
-        int sizeGuard = build.indexOf("originalJar.length() != expectedOriginalSize");
-        int hashGuard = build.indexOf("actualHash != expectedOriginalSha256");
-        int archiveOpen = build.indexOf("ZipFile zip = new ZipFile(originalJar)");
+        assertTrue(build.contains("expectedEnderscapeName = 'enderscape-fabric-3.0.2+mc26.2.jar'"));
+        assertTrue(build.contains("expectedEnderscapeSize = 104_162_822L"));
+        assertTrue(build.contains("expectedEnderscapeSha256 = '9FCC4F59CA88E91F90E7C7D18289F2F859F20C810EEBCCA924764AA15236C40B'"));
+        assertTrue(build.contains("expectedEnderscapeLicenseSha256 = '8D141B1F4E73FFBDD5CDC2B73F4A20931E0D57B7E8989EC7DC777C8814AD729A'"));
+        int sizeGuard = build.indexOf("input.length() != expectedSize");
+        int hashGuard = build.indexOf("actual != expectedHash");
+        int archiveOpen = build.indexOf("ZipFile zip = new ZipFile(input)");
         assertTrue(sizeGuard >= 0 && hashGuard > sizeGuard && archiveOpen > hashGuard,
-                "The exact size and SHA-256 must be checked before reading the ARR archive");
-        assertTrue(build.contains("inputs.file(providers.provider { locateOriginalJar() })"),
-                "The pristine JAR must participate in Gradle's input fingerprint");
-        assertEquals(2, occurrences(build, "requireExactOriginalJar()"),
-                "Staging and verification must both require the current exact pristine JAR");
+                "Exact size and SHA-256 must be checked before reading the Enderscape ARR archive");
+        assertTrue(build.contains("inputs.file(providers.provider { locateBaselineJar() })"));
+        assertTrue(build.contains("inputs.file(providers.provider { locateEnderscapeJar() })"));
+        assertTrue(build.contains("Assets License (All Rights Reserved)"));
+        assertTrue(build.contains("src/main/resources/assets/"));
     }
 
     @Test
@@ -58,17 +65,13 @@ final class ResourceStagingContractTest {
     void stagingAndVerificationAreCuratedRatherThanWholeJarCopies() throws IOException {
         String build = Files.readString(PROJECT.resolve("build.gradle"));
 
-        assertTrue(build.contains("expected_retained_block_count"));
-        assertTrue(build.contains("expected_retained_item_count"));
-        assertTrue(build.contains("assets/bbb/blockstates/${it}.json"));
-        assertTrue(build.contains("assets/bbb/items/${id}.json"));
-        assertTrue(build.contains("replace('/recipes/', '/recipe/')"));
-        assertTrue(build.contains("data/bbb/loot_table/blocks/${id}.json"));
-        assertTrue(build.contains("referencesRemoved"));
-        assertTrue(build.contains("references removed or unknown BBB ID"));
-        assertTrue(build.contains("if (blockstates != retainedBlocks.size())"));
-        assertTrue(build.contains("if (itemDefinitions != retainedItems.size())"));
-        assertTrue(build.contains("if (lootTables != retainedBlocks.size())"));
+        assertTrue(build.contains("it.startsWith('assets/bbb/') || it.startsWith('data/')"));
+        assertTrue(build.contains("Base staging changed accepted resource bytes"));
+        assertTrue(build.contains("[171, 1_132, 172, 224, 140, 171, 44, 248]"));
+        assertTrue(build.contains("[33, 177, 33, 39, 27, 33, 42]"));
+        assertTrue(build.contains("exact_asset_closure_entries"));
+        assertTrue(build.contains("!= 1_467"));
+        assertFalse(build.contains("zipTree("), "Private provider archives must never be copied wholesale");
     }
 
     @Test
@@ -266,8 +269,10 @@ final class ResourceStagingContractTest {
         }
 
         String staging = Files.readString(PROJECT.resolve("build/generated/bbb-resources/bbb-resource-staging.json"));
-        assertTrue(staging.contains("\"pale_oak_texture_source\": \"minecraft:block/pale_oak_planks\""));
-        assertEquals(14, occurrences(staging, "mapped_wood_pixels"));
+        assertTrue(staging.contains("\"sha256\": \"0D54034725C3E354515C78BCEE32AB2CB5CE764A33E0602419E26C78AAEF8C5A\""));
+        assertTrue(staging.contains("\"asset_license\": \"All Rights Reserved\""));
+        assertTrue(staging.contains("audited-cherry-wood-mask+luminance-ranked-provider-palette"));
+        assertEquals(42, occurrences(staging, "mapped_wood_pixels"));
 
         Path models = PROJECT.resolve("build/generated/bbb-resources/assets/bbb/models/block");
         assertTrue(Files.readString(models.resolve("lantern/pale_oak.json"))
@@ -295,6 +300,79 @@ final class ResourceStagingContractTest {
                         () -> file + " contains a malformed duplicated namespace");
             }
         }
+    }
+
+    @Test
+    void optionalEnderscapePackHasExactlyThreeCompleteFamiliesAndExplicitBindings() throws IOException {
+        List<String> forms = List.of("balustrade", "lattice", "wall", "beam", "beam_stairs",
+                "beam_slab", "support", "pallet", "frame", "lantern", "trim");
+        Path pack = PROJECT.resolve("build/generated/bbb-resources/resourcepacks/enderscape_wood_families");
+        Path blockstates = pack.resolve("assets/bbb/blockstates");
+        Path models = pack.resolve("assets/bbb/models");
+        Path items = pack.resolve("assets/bbb/items");
+        Path recipes = pack.resolve("data/bbb/recipe");
+        Path loot = pack.resolve("data/bbb/loot_table/blocks");
+
+        assertTrue(Files.isRegularFile(pack.resolve("pack.mcmeta")));
+        assertEquals(33, jsonFileCount(blockstates));
+        assertEquals(177, jsonFileCount(models));
+        assertEquals(33, jsonFileCount(items));
+        assertEquals(39, jsonFileCount(recipes));
+        assertEquals(33, jsonFileCount(loot));
+
+        for (String family : List.of("veiled", "celestial", "murublight")) {
+            for (String form : forms) {
+                String id = family + "_" + form;
+                assertTrue(Files.isRegularFile(blockstates.resolve(id + ".json")), () -> "Missing " + id);
+                assertTrue(Files.isRegularFile(items.resolve(id + ".json")), () -> "Missing item " + id);
+                assertTrue(Files.isRegularFile(loot.resolve(id + ".json")), () -> "Missing loot " + id);
+            }
+            assertFalse(Files.exists(blockstates.resolve(family + "_layer.json")));
+            assertFalse(Files.exists(blockstates.resolve(family + "_ladder.json")));
+            assertEquals(13, jsonFilesStartingWith(recipes, family + "_"));
+        }
+
+        assertRecipeBinding(recipes, "veiled", "enderscape:veiled_planks", "enderscape:stripped_veiled_log");
+        assertRecipeBinding(recipes, "celestial", "enderscape:celestial_planks", "enderscape:stripped_celestial_stem");
+        assertRecipeBinding(recipes, "murublight", "enderscape:murublight_planks", "enderscape:stripped_murublight_stem");
+    }
+
+    @Test
+    void optionalEnderscapeModelsUseProviderMaterialsWithoutCopyingProviderNamespaces() throws IOException {
+        Path pack = PROJECT.resolve("build/generated/bbb-resources/resourcepacks/enderscape_wood_families");
+        assertFalse(Files.exists(pack.resolve("assets/enderscape")));
+        assertFalse(Files.exists(pack.resolve("data/enderscape")));
+
+        String veiled = Files.readString(pack.resolve("assets/bbb/models/block/balustrade/veiled_beam.json"));
+        String celestial = Files.readString(pack.resolve("assets/bbb/models/block/lattice/celestial_left.json"));
+        String murublight = Files.readString(pack.resolve("assets/bbb/models/block/lattice/murublight_left.json"));
+        assertTrue(veiled.contains("enderscape:block/veiled_planks"));
+        assertTrue(celestial.contains("enderscape:block/celestial_stem"));
+        assertTrue(celestial.contains("enderscape:block/celestial_stem_top"));
+        assertTrue(murublight.contains("enderscape:block/murublight_stem"));
+        assertTrue(murublight.contains("enderscape:block/murublight_stem_top"));
+
+        Path textures = pack.resolve("assets/bbb/textures");
+        int transparent = 0;
+        List<Path> pngs;
+        try (Stream<Path> files = Files.walk(textures)) {
+            pngs = files.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".png"))
+                    .toList();
+        }
+        assertEquals(42, pngs.size());
+        for (Path png : pngs) {
+            BufferedImage image = ImageIO.read(png.toFile());
+            assertTrue(image != null, () -> "Unreadable optional PNG " + png);
+            boolean hasTransparency = false;
+            for (int y = 0; y < image.getHeight(); y++) for (int x = 0; x < image.getWidth(); x++) {
+                int alpha = image.getRGB(x, y) >>> 24;
+                assertTrue(alpha == 0 || alpha == 255, () -> png + " contains partial alpha");
+                hasTransparency |= alpha == 0;
+            }
+            if (hasTransparency) transparent++;
+        }
+        assertEquals(18, transparent);
     }
 
     @Test
@@ -477,6 +555,40 @@ final class ResourceStagingContractTest {
             return files.filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString().endsWith(".json"))
                     .count();
+        }
+    }
+
+    private static long jsonFileCount(Path root) throws IOException {
+        try (Stream<Path> files = Files.walk(root)) {
+            return files.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .count();
+        }
+    }
+
+    private static long jsonFilesStartingWith(Path root, String prefix) throws IOException {
+        try (Stream<Path> files = Files.list(root)) {
+            return files.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().startsWith(prefix))
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .count();
+        }
+    }
+
+    private static void assertRecipeBinding(Path recipes, String family, String planks,
+                                            String beamMaterial) throws IOException {
+        for (String form : List.of("balustrade", "beam", "wall")) {
+            String json = Files.readString(recipes.resolve(family + "_" + form + ".json"));
+            assertTrue(json.contains(beamMaterial), () -> family + " " + form + " lost " + beamMaterial);
+        }
+        for (String form : List.of("lattice", "pallet", "support", "trim")) {
+            String json = Files.readString(recipes.resolve(family + "_" + form + ".json"));
+            assertTrue(json.contains(planks), () -> family + " " + form + " lost " + planks);
+        }
+        for (String form : List.of("frame", "lantern")) {
+            String json = Files.readString(recipes.resolve(family + "_" + form + ".json"));
+            assertTrue(json.contains("enderscape:" + family + "_slab"),
+                    () -> family + " " + form + " lost its real provider slab");
         }
     }
 
