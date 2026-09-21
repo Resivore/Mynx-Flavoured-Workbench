@@ -42,6 +42,146 @@ import java.util.Set;
  * pinned provider has registered its items.
  */
 public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
+    private static final List<List<String>> C8_DISPLAY_FIXTURE_FAMILIES = List.of(
+            List.of("minecraft:oak_sign", "minecraft:oak_hanging_sign", "minecraft:oak_shelf"),
+            List.of("minecraft:spruce_sign", "minecraft:spruce_hanging_sign", "minecraft:spruce_shelf"),
+            List.of("minecraft:birch_sign", "minecraft:birch_hanging_sign", "minecraft:birch_shelf"),
+            List.of("minecraft:jungle_sign", "minecraft:jungle_hanging_sign", "minecraft:jungle_shelf"),
+            List.of("minecraft:acacia_sign", "minecraft:acacia_hanging_sign", "minecraft:acacia_shelf"),
+            List.of("minecraft:dark_oak_sign", "minecraft:dark_oak_hanging_sign", "minecraft:dark_oak_shelf"),
+            List.of("minecraft:mangrove_sign", "minecraft:mangrove_hanging_sign", "minecraft:mangrove_shelf"),
+            List.of("minecraft:cherry_sign", "minecraft:cherry_hanging_sign", "minecraft:cherry_shelf"),
+            List.of("minecraft:pale_oak_sign", "minecraft:pale_oak_hanging_sign", "minecraft:pale_oak_shelf"),
+            List.of("minecraft:bamboo_sign", "minecraft:bamboo_hanging_sign", "minecraft:bamboo_shelf"),
+            List.of("minecraft:crimson_sign", "minecraft:crimson_hanging_sign", "minecraft:crimson_shelf"),
+            List.of("minecraft:warped_sign", "minecraft:warped_hanging_sign", "minecraft:warped_shelf"),
+            List.of("enderscape:veiled_sign", "enderscape:veiled_hanging_sign", "enderscape:veiled_shelf"),
+            List.of("enderscape:celestial_sign", "enderscape:celestial_hanging_sign", "enderscape:celestial_shelf"),
+            List.of("enderscape:murublight_sign", "enderscape:murublight_hanging_sign",
+                    "enderscape:murublight_shelf")
+    );
+
+    private static final List<List<String>> C8_ENDERSCAPE_FENCE_GATE_FAMILIES = List.of(
+            List.of("enderscape:veiled_fence", "enderscape:veiled_fence_gate"),
+            List.of("enderscape:celestial_fence", "enderscape:celestial_fence_gate"),
+            List.of("enderscape:murublight_fence", "enderscape:murublight_fence_gate")
+    );
+
+    private static final List<List<String>> C8_ENDERSCAPE_BUILDING_ACCESSORY_FAMILIES = List.of(
+            List.of("enderscape:veiled_button", "enderscape:veiled_pressure_plate"),
+            List.of("enderscape:celestial_button", "enderscape:celestial_pressure_plate"),
+            List.of("enderscape:murublight_button", "enderscape:murublight_pressure_plate"),
+            List.of("enderscape:polished_end_stone_button",
+                    "enderscape:polished_end_stone_pressure_plate"),
+            List.of("enderscape:polished_mirestone_button",
+                    "enderscape:polished_mirestone_pressure_plate"),
+            List.of("enderscape:polished_veradite_button",
+                    "enderscape:polished_veradite_pressure_plate"),
+            List.of("enderscape:polished_kurodite_button",
+                    "enderscape:polished_kurodite_pressure_plate")
+    );
+
+    private static final List<List<String>> C8_ENDERSCAPE_BAR_CHAIN_FAMILIES = List.of(
+            List.of("enderscape:shadoline_bars", "enderscape:shadoline_chain")
+    );
+
+    private static final List<String> C8_WALL_ONLY_SIGN_BLOCKS = List.of(
+            "minecraft:oak_wall_sign", "minecraft:oak_wall_hanging_sign",
+            "minecraft:spruce_wall_sign", "minecraft:spruce_wall_hanging_sign",
+            "minecraft:birch_wall_sign", "minecraft:birch_wall_hanging_sign",
+            "minecraft:jungle_wall_sign", "minecraft:jungle_wall_hanging_sign",
+            "minecraft:acacia_wall_sign", "minecraft:acacia_wall_hanging_sign",
+            "minecraft:dark_oak_wall_sign", "minecraft:dark_oak_wall_hanging_sign",
+            "minecraft:mangrove_wall_sign", "minecraft:mangrove_wall_hanging_sign",
+            "minecraft:cherry_wall_sign", "minecraft:cherry_wall_hanging_sign",
+            "minecraft:pale_oak_wall_sign", "minecraft:pale_oak_wall_hanging_sign",
+            "minecraft:bamboo_wall_sign", "minecraft:bamboo_wall_hanging_sign",
+            "minecraft:crimson_wall_sign", "minecraft:crimson_wall_hanging_sign",
+            "minecraft:warped_wall_sign", "minecraft:warped_wall_hanging_sign",
+            "enderscape:veiled_wall_sign", "enderscape:veiled_wall_hanging_sign",
+            "enderscape:celestial_wall_sign", "enderscape:celestial_wall_hanging_sign",
+            "enderscape:murublight_wall_sign", "enderscape:murublight_wall_hanging_sign"
+    );
+
+    private static final List<String> C8_ENDERSCAPE_DOOR_TRAPDOOR_EXCLUSIONS = List.of(
+            "enderscape:veiled_door", "enderscape:veiled_trapdoor",
+            "enderscape:celestial_door", "enderscape:celestial_trapdoor",
+            "enderscape:murublight_door", "enderscape:murublight_trapdoor"
+    );
+
+    private static final List<String> C8_CANONICAL_RESULT_RECIPE_IDS = List.of(
+            "minecraft:oak_sign",
+            "minecraft:spruce_sign",
+            "minecraft:birch_sign",
+            "minecraft:jungle_sign",
+            "minecraft:acacia_sign",
+            "minecraft:dark_oak_sign",
+            "minecraft:mangrove_sign",
+            "minecraft:cherry_sign",
+            "minecraft:pale_oak_sign",
+            "minecraft:bamboo_sign",
+            "minecraft:crimson_sign",
+            "minecraft:warped_sign",
+            "enderscape:veiled_sign",
+            "enderscape:celestial_sign",
+            "enderscape:murublight_sign",
+            "enderscape:murublight_sign_from_celestial_sign",
+            "enderscape:veiled_fence",
+            "enderscape:celestial_fence",
+            "enderscape:murublight_fence",
+            "enderscape:murublight_fence_from_celestial_fence",
+            "enderscape:veiled_button",
+            "enderscape:celestial_button",
+            "enderscape:murublight_button",
+            "enderscape:murublight_button_from_celestial_button",
+            "enderscape:polished_end_stone_button",
+            "enderscape:polished_mirestone_button",
+            "enderscape:polished_veradite_button",
+            "enderscape:polished_kurodite_button",
+            "enderscape:polished_kurodite_button_from_polished_veradite_button",
+            "enderscape:shadoline_bars"
+    );
+
+    private static final List<String> C8_REMOVED_ALTERNATE_RECIPE_IDS = List.of(
+            "minecraft:oak_hanging_sign", "minecraft:oak_shelf",
+            "minecraft:spruce_hanging_sign", "minecraft:spruce_shelf",
+            "minecraft:birch_hanging_sign", "minecraft:birch_shelf",
+            "minecraft:jungle_hanging_sign", "minecraft:jungle_shelf",
+            "minecraft:acacia_hanging_sign", "minecraft:acacia_shelf",
+            "minecraft:dark_oak_hanging_sign", "minecraft:dark_oak_shelf",
+            "minecraft:mangrove_hanging_sign", "minecraft:mangrove_shelf",
+            "minecraft:cherry_hanging_sign", "minecraft:cherry_shelf",
+            "minecraft:pale_oak_hanging_sign", "minecraft:pale_oak_shelf",
+            "minecraft:bamboo_hanging_sign", "minecraft:bamboo_shelf",
+            "minecraft:crimson_hanging_sign", "minecraft:crimson_shelf",
+            "minecraft:warped_hanging_sign", "minecraft:warped_shelf",
+            "enderscape:veiled_hanging_sign",
+            "enderscape:veiled_shelf",
+            "enderscape:celestial_hanging_sign",
+            "enderscape:celestial_shelf",
+            "enderscape:murublight_hanging_sign",
+            "enderscape:murublight_shelf",
+            "enderscape:veiled_fence_gate",
+            "enderscape:celestial_fence_gate",
+            "enderscape:murublight_fence_gate",
+            "enderscape:veiled_pressure_plate",
+            "enderscape:celestial_pressure_plate",
+            "enderscape:murublight_pressure_plate",
+            "enderscape:polished_end_stone_pressure_plate",
+            "enderscape:polished_mirestone_pressure_plate",
+            "enderscape:polished_veradite_pressure_plate",
+            "enderscape:polished_kurodite_pressure_plate",
+            "enderscape:shadoline_chain"
+    );
+
+    private static final List<String> C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS = List.of(
+            "enderscape:murublight_hanging_sign_from_celestial_hanging_sign",
+            "enderscape:murublight_shelf_from_celestial_shelf",
+            "enderscape:murublight_fence_gate_from_celestial_fence_gate",
+            "enderscape:murublight_pressure_plate_from_celestial_pressure_plate",
+            "enderscape:polished_kurodite_pressure_plate_from_polished_veradite_pressure_plate"
+    );
+
     private static final List<String> REGISTERED_EXCLUSIONS = List.of(
             "mcwdoors:garage_white_door",
             "mcwdoors:garage_silver_door",
@@ -147,6 +287,135 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                         + " unique runtime IDs, found " + seen.size());
         helper.assertTrue(largest == AuditedShapeFamilies.EXPECTED_LARGEST_FAMILY_SIZE,
                 "Expected largest runtime family size 22, found " + largest);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c8DisplayFixtureFamiliesResolveExactlyWithSignsCanonical(GameTestHelper helper) {
+        List<AuditedShapeFamily> actual = AuditedShapeFamilies.families(
+                AuditedShapeFamily.Category.DISPLAY_FIXTURE);
+        assertExactFamilies(helper, "C8 display fixtures", actual, C8_DISPLAY_FIXTURE_FAMILIES);
+
+        for (AuditedShapeFamily family : actual) {
+            String path = family.canonicalParent().getPath();
+            helper.assertTrue(path.endsWith("_sign") && !path.endsWith("_hanging_sign"),
+                    "Display-fixture canonical parent is not its standing Sign: "
+                            + family.key() + " -> " + family.canonicalParent());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c8EnderscapeFenceAccessoryAndShadolineFamiliesResolveExactly(GameTestHelper helper) {
+        assertExactFamilies(helper, "C8 Enderscape fence/gate families",
+                providerFamilies(AuditedShapeFamily.Category.FENCE_GATE, "enderscape"),
+                C8_ENDERSCAPE_FENCE_GATE_FAMILIES);
+        assertExactFamilies(helper, "C8 Enderscape button/plate families",
+                providerFamilies(AuditedShapeFamily.Category.BUILDING_ACCESSORY, "enderscape"),
+                C8_ENDERSCAPE_BUILDING_ACCESSORY_FAMILIES);
+        assertExactFamilies(helper, "C8 Enderscape Shadoline bars/chain family",
+                providerFamilies(AuditedShapeFamily.Category.BAR_CHAIN, "enderscape"),
+                C8_ENDERSCAPE_BAR_CHAIN_FAMILIES);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c8WallSignPlacementBlocksRemainBlockOnlyAndUncataloged(GameTestHelper helper) {
+        helper.assertTrue(C8_WALL_ONLY_SIGN_BLOCKS.size() == 30
+                        && new HashSet<>(C8_WALL_ONLY_SIGN_BLOCKS).size() == 30,
+                "C8 wall-only sign fixture must contain exactly 30 distinct IDs");
+        Set<Identifier> approved = approvedIds();
+        for (String value : C8_WALL_ONLY_SIGN_BLOCKS) {
+            Identifier blockId = id(value);
+            helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(blockId),
+                    "Pinned provider is missing wall-only placement block " + blockId);
+            helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(blockId),
+                    "Wall-only placement block unexpectedly has an inventory item " + blockId);
+            helper.assertTrue(!approved.contains(blockId),
+                    "Wall-only placement block entered the literal catalog " + blockId);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c8EnderscapeDoorsAndTrapdoorsRemainOutsideDisplayCatalog(GameTestHelper helper) {
+        Set<Identifier> approved = approvedIds();
+        for (String value : C8_ENDERSCAPE_DOOR_TRAPDOOR_EXCLUSIONS) {
+            Identifier itemId = id(value);
+            helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(itemId)
+                            && BuiltInRegistries.ITEM.containsKey(itemId),
+                    "Pinned Enderscape no longer registers audited door/trapdoor " + itemId);
+            helper.assertTrue(!approved.contains(itemId),
+                    "Enderscape door/trapdoor entered the display catalog " + itemId);
+
+            Set<Identifier> intersection = new HashSet<>(ids(
+                    ShapeMap.getShapes(requiredItem(itemId))));
+            intersection.retainAll(approved);
+            helper.assertTrue(intersection.isEmpty(),
+                    "Enderscape door/trapdoor joined an approved ShapeMap component: "
+                            + itemId + " -> " + intersection);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c8DisplayComponentsAndTransfersPreservePatchesAndFailClosed(GameTestHelper helper) {
+        Item veiledSign = requiredItem("enderscape:veiled_sign");
+        Item veiledHangingSign = requiredItem("enderscape:veiled_hanging_sign");
+        Item veiledShelf = requiredItem("enderscape:veiled_shelf");
+        Item celestialShelf = requiredItem("enderscape:celestial_shelf");
+
+        ItemStack equalSign = new ItemStack(veiledSign, 8);
+        equalSign.set(DataComponents.CUSTOM_NAME, Component.literal("Display"));
+        ItemStack equalShelf = new ItemStack(veiledShelf, 5);
+        equalShelf.set(DataComponents.CUSTOM_NAME, Component.literal("Display"));
+        helper.assertTrue(ItemStack.isSameItemSameComponents(equalSign, equalShelf),
+                "Equal display-fixture component patches were rejected");
+
+        ItemStack incompatibleHangingSign = new ItemStack(veiledHangingSign, 8);
+        incompatibleHangingSign.set(DataComponents.CUSTOM_NAME, Component.literal("Left"));
+        ItemStack incompatibleShelf = new ItemStack(veiledShelf, 5);
+        incompatibleShelf.set(DataComponents.CUSTOM_NAME, Component.literal("Right"));
+        helper.assertTrue(!ItemStack.isSameItemSameComponents(
+                        incompatibleHangingSign, incompatibleShelf),
+                "Incompatible display-fixture component patches merged");
+
+        ItemStack crossMaterialSign = new ItemStack(veiledSign, 8);
+        crossMaterialSign.set(DataComponents.CUSTOM_NAME, Component.literal("Shared"));
+        ItemStack crossMaterialShelf = new ItemStack(celestialShelf, 5);
+        crossMaterialShelf.set(DataComponents.CUSTOM_NAME, Component.literal("Shared"));
+        helper.assertTrue(!ItemStack.isSameItemSameComponents(
+                        crossMaterialSign, crossMaterialShelf),
+                "Equal patches merged across two display-fixture materials");
+
+        ItemStack source = new ItemStack(veiledShelf, 19);
+        source.set(DataComponents.CUSTOM_NAME, Component.literal("Gallery Display"));
+        ItemStack first = ShapeMap.transferStack(source, 0);
+        ItemStack middle = ShapeMap.transferStack(source, 1);
+        ItemStack last = ShapeMap.transferStack(middle, 2);
+        assertTransferred(helper, source, first, veiledSign,
+                "Veiled display transfer to first failed");
+        assertTransferred(helper, source, middle, veiledHangingSign,
+                "Veiled display transfer to middle failed");
+        assertTransferred(helper, middle, last, veiledShelf,
+                "Veiled display transfer to last failed");
+
+        List<Item> resolved = ShapeMap.getShapes(veiledSign);
+        helper.assertTrue(resolved.equals(List.of(veiledSign, veiledHangingSign, veiledShelf)),
+                "Veiled display fixture changed before fail-closed transfer proof");
+        Item originalTarget = resolved.set(1, celestialShelf);
+        try {
+            ItemStack rejected = ShapeMap.transferStack(source, 1);
+            helper.assertTrue(rejected.getItem() == source.getItem()
+                            && rejected.getCount() == source.getCount()
+                            && rejected.getComponentsPatch().equals(source.getComponentsPatch()),
+                    "Transfer guard did not fail closed on a cross-family display target");
+        } finally {
+            resolved.set(1, originalTarget);
+        }
+        helper.assertTrue(originalTarget == veiledHangingSign
+                        && ShapeMap.getShapes(veiledSign).get(1) == veiledHangingSign,
+                "Veiled display fixture was not restored after fail-closed transfer proof");
         helper.succeed();
     }
 
@@ -286,6 +555,44 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 .toList();
         helper.assertTrue(missingCanonicalRecipes.isEmpty(),
                 "CNM removed intended canonical acquisition recipes: " + missingCanonicalRecipes);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c8RecipeCleanupPreserves30CanonicalAnd5ProviderConversionsAndRemoves41CraftingAlternates(
+            GameTestHelper helper) {
+        helper.assertTrue(C8_CANONICAL_RESULT_RECIPE_IDS.size() == 30
+                        && new HashSet<>(C8_CANONICAL_RESULT_RECIPE_IDS).size() == 30,
+                "C8 canonical-result recipe fixture must contain exactly 30 distinct IDs");
+        helper.assertTrue(C8_REMOVED_ALTERNATE_RECIPE_IDS.size() == 41
+                        && new HashSet<>(C8_REMOVED_ALTERNATE_RECIPE_IDS).size() == 41,
+                "C8 removed-alternate recipe fixture must contain exactly 41 distinct IDs");
+        helper.assertTrue(C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS.size() == 5
+                        && new HashSet<>(C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS).size() == 5,
+                "C8 retained provider-conversion fixture must contain exactly 5 distinct IDs");
+        Set<String> overlap = new HashSet<>(C8_CANONICAL_RESULT_RECIPE_IDS);
+        overlap.retainAll(C8_REMOVED_ALTERNATE_RECIPE_IDS);
+        helper.assertTrue(overlap.isEmpty(),
+                "C8 canonical and alternate recipe fixtures overlap: " + overlap);
+
+        List<String> missingCanonicalRecipes = C8_CANONICAL_RESULT_RECIPE_IDS.stream()
+                .filter(recipeId -> !hasRecipe(helper, recipeId))
+                .toList();
+        helper.assertTrue(missingCanonicalRecipes.isEmpty(),
+                "CNM removed C8 canonical-result recipes: " + missingCanonicalRecipes);
+
+        List<String> retainedAlternateRecipes = C8_REMOVED_ALTERNATE_RECIPE_IDS.stream()
+                .filter(recipeId -> hasRecipe(helper, recipeId))
+                .toList();
+        helper.assertTrue(retainedAlternateRecipes.isEmpty(),
+                "CNM retained C8 alternate-result crafting recipes: " + retainedAlternateRecipes);
+
+        List<String> missingProviderConversions = C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS.stream()
+                .filter(recipeId -> !hasRecipe(helper, recipeId))
+                .toList();
+        helper.assertTrue(missingProviderConversions.isEmpty(),
+                "CNM removed Enderscape custom conversion recipes it cannot re-encode: "
+                        + missingProviderConversions);
         helper.succeed();
     }
 
@@ -596,6 +903,40 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                         && ShapeMap.getShapes(auditedItem).size() == 22,
                 "Enabled ShapeMap snapshot did not restore after the disabled-mode proof");
         helper.succeed();
+    }
+
+    private static List<AuditedShapeFamily> providerFamilies(
+            AuditedShapeFamily.Category category,
+            String namespace
+    ) {
+        return AuditedShapeFamilies.families(category).stream()
+                .filter(family -> family.members().stream()
+                        .anyMatch(member -> member.getNamespace().equals(namespace)))
+                .toList();
+    }
+
+    private static void assertExactFamilies(
+            GameTestHelper helper,
+            String label,
+            List<AuditedShapeFamily> actualFamilies,
+            List<List<String>> expectedFamilies
+    ) {
+        helper.assertTrue(actualFamilies.size() == expectedFamilies.size(),
+                label + " count changed: expected=" + expectedFamilies.size()
+                        + ", actual=" + actualFamilies.size());
+        for (int index = 0; index < expectedFamilies.size(); index++) {
+            AuditedShapeFamily actual = actualFamilies.get(index);
+            List<String> expectedValues = expectedFamilies.get(index);
+            List<Identifier> expectedIds = expectedValues.stream()
+                    .map(AuditedShapeMapGameTests::id)
+                    .toList();
+            helper.assertTrue(actual.members().equals(expectedIds),
+                    label + " family " + index + " changed: expected=" + expectedIds
+                            + ", actual=" + actual.members());
+            helper.assertTrue(actual.canonicalParent().equals(expectedIds.getFirst()),
+                    label + " canonical parent changed for " + actual.key());
+            assertExactShapeSet(helper, expectedValues.getFirst(), expectedValues);
+        }
     }
 
     private static void assertSeparate(GameTestHelper helper, String first, String second, String label) {
