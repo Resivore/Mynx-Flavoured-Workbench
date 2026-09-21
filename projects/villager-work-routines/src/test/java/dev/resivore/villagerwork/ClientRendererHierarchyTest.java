@@ -44,8 +44,10 @@ class ClientRendererHierarchyTest {
     }
 
     @Test
-    void diagnosticAccessorsTargetActualMappedRuntimeFields() throws NoSuchFieldException {
+    void structuralAccessorsAndDirectGeometryPredicateMatchMappedRuntime()
+            throws NoSuchFieldException, NoSuchMethodException {
         assertEquals(ModelPart.class, VillagerModel.class.getDeclaredField("arms").getType());
         assertEquals(Map.class, ModelPart.class.getDeclaredField("children").getType());
+        assertEquals(boolean.class, ModelPart.class.getDeclaredMethod("isEmpty").getReturnType());
     }
 }

@@ -38,9 +38,10 @@ import org.joml.Matrix4f;
  * VWR's direct C27 consumer for the installed Ribbits Fisherman geometry and texture.
  *
  * <p>The raw {@code fishing_rod} shaft/reel/detail is rendered beneath the caller's Frog
- * Villager folded arms. C22 restores C20 exactly: C20 sets the rod snapshot's animation delta to
- * zero but leaves the baked Geo bone rotation untouched. No new PoseStack correction is added.
- * The diagnostic capture never feeds its measurements back into the pose or restored C20 line.</p>
+ * Villager folded arms. The source bone's Ribbit-body pose is neutralized from its own live baked
+ * values so the unrotated authored rod group inherits only the effective folded-arm transform.
+ * No guessed PoseStack correction is added. The captured physical tip from the exact submitted
+ * rod transform is also VWR's sole fishing-line endpoint authority.</p>
  */
 final class RibbitsFishermanRodRenderer {
     private static final Identifier MODEL = Identifier.fromNamespaceAndPath("ribbits", "fisherman_ribbit");
@@ -163,10 +164,10 @@ final class RibbitsFishermanRodRenderer {
         @Override
         public void adjustModelBonesForRender(RenderPassInfo<GeoRenderState> renderInfo,
                                               BoneSnapshots bones) {
-            applyC20BoneAdjustments(bones);
+            applyReferenceBoneAdjustments(bones);
         }
 
-        private static void applyC20BoneAdjustments(BoneSnapshots bones) {
+        private static void applyReferenceBoneAdjustments(BoneSnapshots bones) {
             bones.ifPresent("main", snapshot -> snapshot.skipRender(true));
             bones.ifPresent("body", snapshot -> snapshot.skipRender(true));
             bones.ifPresent("left_arm", snapshot -> snapshot.skipRender(true));
@@ -174,9 +175,11 @@ final class RibbitsFishermanRodRenderer {
             bones.ifPresent("right_leg", snapshot -> snapshot.skipRender(true));
             bones.ifPresent("left_leg", snapshot -> snapshot.skipRender(true));
             bones.ifPresent("fishing_rod", snapshot -> {
-                // Exact C20 behavior: reset the animation delta. GeckoLib still adds the baked
-                // GeoBone base rotation; C22 logs both components rather than hiding that fact.
-                snapshot.setRotation(0.0F, 0.0F, 0.0F);
+                // GeckoLib adds the snapshot delta to these live baked values. Cancel that
+                // Ribbit-body-specific pose without inventing a literal replacement rotation;
+                // the reference rod group itself has no authored rotation.
+                GeoBone bone = snapshot.getBone();
+                snapshot.setRotation(-bone.baseRotX(), -bone.baseRotY(), -bone.baseRotZ());
             });
             bones.ifPresent("fishing_rod_2", snapshot -> {
                 snapshot.skipRender(true);
@@ -438,7 +441,8 @@ final class RibbitsFishermanRodRenderer {
             }
 
             private Inspection finish() {
-                boolean exactLiveCapture = geometryRootMatrix != null && rodPivotMatrix != null;
+                boolean exactLiveCapture = geometryRootMatrix != null && rodPivotMatrix != null
+                        && physicalGrip != null && physicalOuterTip != null;
                 String report = preliminary.resourceReport();
                 if (liveBoneChain != null) {
                     report += "\n  live_render_snapshot (snapshot deltas are actual for this submission):\n"
@@ -474,7 +478,7 @@ final class RibbitsFishermanRodRenderer {
         }
     }
 
-    /** Immutable copies of the diagnostic-only stages surrounding C20's actual renderer. */
+    /** Immutable copies of the live stages used by C23's rod, line, markers, and diagnostics. */
     record Inspection(String resourceSignature, String resourceReport,
                       Matrix4f geometryRootMatrix, Matrix4f rodPivotMatrix,
                       Vec3 geometryRootOrigin, Vec3 physicalGrip,

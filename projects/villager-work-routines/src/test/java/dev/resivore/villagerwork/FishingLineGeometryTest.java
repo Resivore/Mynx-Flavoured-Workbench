@@ -23,6 +23,18 @@ class FishingLineGeometryTest {
         assertTrue(FishingLineGeometry.segments(1.0f, Float.POSITIVE_INFINITY, 1.0f).isEmpty());
     }
 
+    @Test void physicalRodTipIsTheExactFirstVertexAndBobberAttachmentRemainsExact() {
+        List<FishingLineGeometry.Segment> segments = FishingLineGeometry.segmentsFromRodTip(
+                14.0f, 22.0f, 27.0f, 10.0f, 20.0f, 30.0f);
+
+        assertEquals(FishingLineGeometry.SEGMENT_COUNT, segments.size());
+        assertPoint(segments.getFirst().start().position(), 14.0f, 22.0f, 27.0f);
+        assertPoint(segments.getLast().end().position(), 10.0f, 20.125f, 30.0f);
+        assertFinite(segments);
+        assertTrue(FishingLineGeometry.segmentsFromRodTip(Float.NaN, 0.0f, 0.0f,
+                1.0f, 1.0f, 1.0f).isEmpty());
+    }
+
     private static void assertFinite(List<FishingLineGeometry.Segment> segments) {
         for (FishingLineGeometry.Segment segment : segments) {
             assertTrue(segment.start().position().isFinite());

@@ -13,8 +13,6 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.phys.Vec3;
 
 /** Isolated bobber and line drawing; no villager renderer, model part, or texture hook. */
@@ -27,41 +25,9 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
 
     @Override public void extractRenderState(FishingFloat entity, FloatState state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
-        Entity owner = entity.owner();
-        if (owner instanceof Villager villager) {
-            Vec3 ribbitsTip = VwrFishingRodLayer.ribbitsRodTip(villager, partialTick);
-            if (ribbitsTip != null) {
-                // C22 deliberately restores C20's independent analytical endpoint unchanged.
-                state.line = ribbitsTip.subtract(entity.getPosition(partialTick));
-                try {
-                    VwrRodDiagnostics.observeLinePath(entity.getId(), villager.getId(), ribbitsTip,
-                            entity.getPosition(partialTick), state.line);
-                } catch (RuntimeException | LinkageError ignored) {
-                    // A diagnostic failure must not suppress C20's line or float renderer.
-                }
-            } else {
-                // A required C27 visual resource failure must not invent a second fallback line.
-                state.line = null;
-            }
-        } else state.line = null;
     }
 
     @Override public void submit(FloatState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        if (state.line != null) {
-            var segments = FishingLineGeometry.segments((float) state.line.x, (float) state.line.y, (float) state.line.z);
-            if (!segments.isEmpty()) {
-                // 26.2's LINES vertex format is position, color, normal, and line width. Match
-                // the vanilla FishingHookRenderer contract rather than relying on default elements.
-                float lineWidth = Minecraft.getInstance().gameRenderer.gameRenderState()
-                        .windowRenderState.appropriateLineWidth;
-                collector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, vertices) -> {
-                    for (FishingLineGeometry.Segment segment : segments) {
-                        lineVertex(vertices, pose, segment.start(), lineWidth);
-                        lineVertex(vertices, pose, segment.end(), lineWidth);
-                    }
-                });
-            }
-        }
         poseStack.pushPose();
         poseStack.mulPose(camera.orientation);
         collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(TEXTURE), (pose, vertices) -> {
@@ -72,6 +38,53 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
         });
         poseStack.popPose();
         super.submit(state, poseStack, collector, camera);
+    }
+
+    /**
+     * Submits VWR's sole line from the physical tip captured by the exact rod render pass.
+     * Camera position only expresses the existing float in that same camera-relative space.
+     */
+    static LineSubmission submitLineFromPhysicalRod(Vec3 physicalTipRender,
+                                                     SubmitNodeCollector collector,
+                                                     Vec3 floatWorld) {
+        if (physicalTipRender == null || floatWorld == null) {
+            return new LineSubmission(physicalTipRender, null, null, floatWorld, 0, false);
+        }
+        Vec3 cameraWorld = Minecraft.getInstance().gameRenderer.gameRenderState()
+                .levelRenderState.cameraRenderState.pos;
+        Vec3 floatRender = floatWorld.subtract(cameraWorld);
+        Vec3 physicalTipWorld = physicalTipRender.add(cameraWorld);
+        if (!finite(physicalTipRender) || !finite(floatRender)) {
+            return new LineSubmission(physicalTipRender, physicalTipWorld, floatRender, floatWorld,
+                    0, false);
+        }
+
+        var segments = FishingLineGeometry.segmentsFromRodTip(
+                (float) physicalTipRender.x, (float) physicalTipRender.y,
+                (float) physicalTipRender.z,
+                (float) floatRender.x, (float) floatRender.y, (float) floatRender.z);
+        if (segments.isEmpty()) {
+            return new LineSubmission(physicalTipRender, physicalTipWorld, floatRender, floatWorld,
+                    0, false);
+        }
+
+        // Both endpoints are already camera-relative, so reusing an entity/arm PoseStack would
+        // apply the live transform twice. The identity stack submits the captured points exactly.
+        PoseStack linePose = new PoseStack();
+        float lineWidth = Minecraft.getInstance().gameRenderer.gameRenderState()
+                .windowRenderState.appropriateLineWidth;
+        collector.submitCustomGeometry(linePose, RenderTypes.lines(), (pose, vertices) -> {
+            for (FishingLineGeometry.Segment segment : segments) {
+                lineVertex(vertices, pose, segment.start(), lineWidth);
+                lineVertex(vertices, pose, segment.end(), lineWidth);
+            }
+        });
+        return new LineSubmission(physicalTipRender, physicalTipWorld, floatRender, floatWorld,
+                segments.size(), true);
+    }
+
+    private static boolean finite(Vec3 point) {
+        return Double.isFinite(point.x) && Double.isFinite(point.y) && Double.isFinite(point.z);
     }
 
     private static void vertex(com.mojang.blaze3d.vertex.VertexConsumer vertices, PoseStack.Pose pose,
@@ -90,5 +103,11 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
                 .setLineWidth(lineWidth);
     }
 
-    public static final class FloatState extends EntityRenderState { Vec3 line; }
+    record LineSubmission(Vec3 physicalTipRender, Vec3 physicalTipWorld,
+                          Vec3 floatRender, Vec3 floatWorld,
+                          int segmentCount, boolean submitted) {
+    }
+
+    public static final class FloatState extends EntityRenderState {
+    }
 }

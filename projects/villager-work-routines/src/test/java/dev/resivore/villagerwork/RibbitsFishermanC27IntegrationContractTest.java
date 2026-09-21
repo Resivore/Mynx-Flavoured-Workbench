@@ -1,7 +1,6 @@
 package dev.resivore.villagerwork;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -14,196 +13,142 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Guards the intentional C27 boundary and the user-authored Frog Villager rendering contract. */
+/** Guards C23's exact C27 boundary and user-authored Frog Villager render contract. */
 class RibbitsFishermanC27IntegrationContractTest {
     private static final Path ROOT = Path.of(System.getProperty("user.dir"));
-    /** Exact bytes of FishingLineGeometry.java at C20 source checkpoint 6d13248d. */
-    private static final String C20_FISHING_LINE_GEOMETRY_SHA256 =
-            "e59b46514dafaa0a159492a13fb1dc7aff64afdc8d9053b29060e27e74a32e6f";
 
     @Test
-    void vwrRequiresRetainedC27DirectlyAndRetiresTheOptionalReflectionFallback() throws IOException {
+    void vwrRequiresTheRetainedC27ProviderWithoutFallbackOrPayloadCopy() throws IOException {
         String build = read("build.gradle");
         String metadata = read("src/main/resources/fabric.mod.json");
         String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
-        String floatRenderer = read("src/main/java/dev/resivore/villagerwork/client/FishingFloatRenderer.java");
 
         assertTrue(build.contains("ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar"));
         assertTrue(build.contains("implementation files(ribbitsC27Artifact)"));
         assertTrue(metadata.contains("\"ribbits\": \"=4.1.6+26.2-mynx-canary27\""));
         assertTrue(metadata.contains("\"relationship\": \"depends\""));
         assertTrue(layer.contains("RibbitsFishermanRodRenderer.submit"));
-        assertTrue(floatRenderer.contains("VwrFishingRodLayer.ribbitsRodTip(villager, partialTick)"));
         assertFalse(layer.contains("Items.STICK"));
-        assertFalse(floatRenderer.contains("FishingRodPose"));
         assertFalse(Files.exists(ROOT.resolve(
                 "src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodProvider.java")));
-        assertFalse(Files.exists(ROOT.resolve("src/main/java/dev/resivore/villagerwork/FishingRodPose.java")));
+        assertFalse(Files.exists(ROOT.resolve(
+                "src/main/java/dev/resivore/villagerwork/FishingRodPose.java")));
     }
 
     @Test
-    void rawRibbitsRodRestoresTheC20TranslateToArmsAndAuthoredGripPath() throws IOException {
+    void effectiveFoldedArmPathUsesRenderedStructureAndThenExactAuthoredGrip() throws IOException {
         String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
+        String path = read("src/main/java/dev/resivore/villagerwork/client/FoldedArmRenderPath.java");
         String pose = read("src/main/java/dev/resivore/villagerwork/FrogVillagerRodPose.java");
-        String renderer = read("src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodRenderer.java");
+        String accessor = read(
+                "src/main/java/dev/resivore/villagerwork/mixin/client/ModelPartChildrenAccessor.java");
 
-        int translateToArms = layer.indexOf("getParentModel().translateToArms(state, poseStack)");
-        int authoredGrip = layer.indexOf("FrogVillagerRodPose.applyReferenceGrip(poseStack)");
-        int rodSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submit(poseStack, collector, light)");
-        assertTrue(translateToArms >= 0 && authoredGrip > translateToArms && rodSubmit > authoredGrip,
-                "C20's actual arm -> authored grip -> rod submission order must remain intact");
+        assertTrue(path.contains("model.translateToArms(state, poseStack)"));
+        assertTrue(path.contains("selection.steps().get(index).node().translateAndRotate(poseStack)"));
+        assertTrue(path.contains("return !part.isEmpty()"));
+        assertTrue(path.contains("contributing.size() != 1"));
+        assertTrue(path.contains("!view.skipDraw(current) && view.hasDirectGeometry(current)"));
+        assertTrue(accessor.contains("@Accessor(\"children\")"));
+        assertFalse(path.contains("getChild("));
+        assertFalse(path.contains("EMF_arms"));
+        assertFalse(path.contains("arms_rotation"));
+        assertFalse(path.contains("rotationDegrees("));
+
+        String fishingBranch = blockBody(layer, "if (fishing)");
+        int effectivePath = fishingBranch.indexOf("FoldedArmRenderPath.apply(");
+        int authoredGrip = fishingBranch.indexOf("FrogVillagerRodPose.applyReferenceGrip(poseStack)");
+        int rodSubmit = fishingBranch.indexOf("RibbitsFishermanRodRenderer.submit(");
+        assertTrue(effectivePath >= 0 && authoredGrip > effectivePath && rodSubmit > authoredGrip);
+        assertFalse(fishingBranch.contains("poseStack.translate("));
+        assertFalse(fishingBranch.contains("poseStack.mulPose("));
+        assertFalse(fishingBranch.contains("poseStack.scale("));
+
+        assertTrue(pose.contains("JEM_ARMS_ROTATION_DEGREES = 43.0F"));
+        assertTrue(pose.contains("AUTHORED_GRIP_X_PIXELS = 0.0F"));
         assertTrue(pose.contains("AUTHORED_GRIP_Y_PIXELS = -7.0F"));
         assertTrue(pose.contains("AUTHORED_GRIP_Z_PIXELS = -6.0F"));
-        assertTrue(pose.contains("JEM_ARMS_ROTATION_DEGREES = 43.0F"));
-        assertTrue(renderer.contains("snapshot.setRotation(0.0F, 0.0F, 0.0F)"));
-        assertTrue(renderer.contains("getBone(\"fishing_rod\")"));
-        assertFalse(renderer.contains("rotationDegrees("));
-        assertFalse(renderer.contains("com.mojang.math.Axis"));
-        assertFalse(layer.contains("arms_rotation"));
-        assertFalse(Files.exists(ROOT.resolve(
-                "src/main/java/dev/resivore/villagerwork/client/FrogVillagerCemRodPose.java")));
-    }
-
-    @Test
-    void restoredC20TransformBodiesRemainExactAroundTheDiagnosticProbes()
-            throws IOException, NoSuchAlgorithmException {
-        String pose = read("src/main/java/dev/resivore/villagerwork/FrogVillagerRodPose.java");
-        String renderer = read("src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodRenderer.java");
-        String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
-
         assertMethodBodyEquals("""
                 poseStack.translate(AUTHORED_GRIP_X, AUTHORED_GRIP_Y, AUTHORED_GRIP_Z);
                 """, pose, "public static void applyReferenceGrip(PoseStack poseStack)");
-        assertMethodBodyEquals("""
-                GeoBone rod = getGeoModel().getBakedModel(MODEL).getBone("fishing_rod")
-                        .orElseThrow(() -> new IllegalStateException("Ribbits C27 Fisherman rod is missing"));
-                PoseStack modelPose = new PoseStack();
-                applyRibbitsGeometryRoot(modelPose);
-                RenderUtil.transformToBone(modelPose, rod);
-                Vec3 grip = transform(modelPose, 0.0F, 0.0F, 0.0F);
-                return new StandaloneRodBasis(grip);
-                """, renderer, "private StandaloneRodBasis standaloneBasis()");
-        assertMethodBodyEquals("""
-                poseStack.translate(0.5F, 0.51F, 0.5F);
-                """, renderer, "private static void applyRibbitsGeometryRoot(PoseStack poseStack)");
-        assertMethodBodyEquals("""
-                poseStack.translate(-rawGripPosition.x, -rawGripPosition.y, -rawGripPosition.z);
-                """, renderer, "private void attachGripAtOrigin(PoseStack poseStack)");
-        assertMethodBodyEquals("""
-                bones.ifPresent("main", snapshot -> snapshot.skipRender(true));
-                bones.ifPresent("body", snapshot -> snapshot.skipRender(true));
-                bones.ifPresent("left_arm", snapshot -> snapshot.skipRender(true));
-                bones.ifPresent("right_arm", snapshot -> snapshot.skipRender(true));
-                bones.ifPresent("right_leg", snapshot -> snapshot.skipRender(true));
-                bones.ifPresent("left_leg", snapshot -> snapshot.skipRender(true));
-                bones.ifPresent("fishing_rod", snapshot -> {
-                    snapshot.setRotation(0.0F, 0.0F, 0.0F);
-                });
-                bones.ifPresent("fishing_rod_2", snapshot -> {
-                    snapshot.skipRender(true);
-                    snapshot.skipChildrenRender(true);
-                });
-                bones.ifPresent("fishing_rod_3", snapshot -> snapshot.skipRender(true));
-                """, renderer, "private static void applyC20BoneAdjustments(BoneSnapshots bones)");
-
-        String fishingBranch = blockBody(layer, "if (fishing)");
-        assertEquals(1, occurrences(fishingBranch,
-                "getParentModel().translateToArms(state, poseStack)"));
-        assertEquals(1, occurrences(fishingBranch,
-                "FrogVillagerRodPose.applyReferenceGrip(poseStack)"));
-        assertEquals(1, occurrences(fishingBranch,
-                "RibbitsFishermanRodRenderer.submit(poseStack, collector, light)"));
-        assertTrue(fishingBranch.indexOf("getParentModel().translateToArms(state, poseStack)")
-                < fishingBranch.indexOf("FrogVillagerRodPose.applyReferenceGrip(poseStack)"));
-        assertTrue(fishingBranch.indexOf("FrogVillagerRodPose.applyReferenceGrip(poseStack)")
-                < fishingBranch.indexOf("RibbitsFishermanRodRenderer.submit(poseStack, collector, light)"));
-        assertFalse(fishingBranch.contains("poseStack.translate("),
-                "C22 must not add a direct translation around C20's pose calls");
-        assertFalse(fishingBranch.contains("poseStack.mulPose("),
-                "C22 must not add a direct rotation around C20's pose calls");
-        assertFalse(fishingBranch.contains("poseStack.scale("),
-                "C22 must not add a direct scale around C20's pose calls");
-
-        assertEquals(C20_FISHING_LINE_GEOMETRY_SHA256,
-                sha256("src/main/java/dev/resivore/villagerwork/FishingLineGeometry.java"),
-                "C20's complete 16-segment line implementation must remain byte-identical");
     }
 
     @Test
-    void restoredC20AnalyticalLineStartBodyRemainsExact() throws IOException {
+    void c27RodPoseIsDerivedAndPhysicalTipIsTheSoleLineAuthority() throws IOException {
+        String renderer = read(
+                "src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodRenderer.java");
         String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
-        assertMethodBodyEquals("""
-                Vec3 position = villager.getPosition(partialTick);
-                float bodyYaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
-                FrogVillagerRodPose.Point worldTip = FrogVillagerRodPose.outerShaftTip(position.x, position.y,
-                        position.z, bodyYaw);
-                return worldTip.isFinite() ? new Vec3(worldTip.x(), worldTip.y(), worldTip.z()) : null;
-                """, layer, "static Vec3 ribbitsRodTip(Villager villager, float partialTick)");
-    }
-
-    @Test
-    void sourceDecorationsAreSuppressedAndTheLineRestoresC20WithoutUsingTheMeasuredTip() throws IOException {
-        String pose = read("src/main/java/dev/resivore/villagerwork/FrogVillagerRodPose.java");
-        String renderer = read("src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodRenderer.java");
-        String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
-        String floatRenderer = read("src/main/java/dev/resivore/villagerwork/client/FishingFloatRenderer.java");
+        String floatRenderer = read(
+                "src/main/java/dev/resivore/villagerwork/client/FishingFloatRenderer.java");
         String lineGeometry = read("src/main/java/dev/resivore/villagerwork/FishingLineGeometry.java");
+        String pose = read("src/main/java/dev/resivore/villagerwork/FrogVillagerRodPose.java");
 
+        assertTrue(renderer.contains("GeoBone bone = snapshot.getBone()"));
+        assertTrue(renderer.contains(
+                "snapshot.setRotation(-bone.baseRotX(), -bone.baseRotY(), -bone.baseRotZ())"));
+        assertFalse(renderer.contains("rotationDegrees("));
+        assertFalse(renderer.contains("com.mojang.math.Axis"));
         assertTrue(renderer.contains("bones.ifPresent(\"fishing_rod_2\""));
         assertTrue(renderer.contains("bones.ifPresent(\"fishing_rod_3\""));
         assertTrue(renderer.contains("snapshot.skipChildrenRender(true)"));
+        assertTrue(renderer.contains("physicalOuterTip = transform(poseStack, 0.0F, 0.0F"));
+        assertTrue(renderer.contains("FrogVillagerRodPose.OUTER_SHAFT_TIP_FROM_GRIP_Z"));
         assertTrue(pose.contains("OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS = -9.5F"));
-        assertTrue(pose.contains("outerShaftTipFromFoldedArms"));
-        assertTrue(layer.contains("FrogVillagerRodPose.outerShaftTip"));
-        assertTrue(layer.contains("Mth.rotLerp"));
-        assertTrue(floatRenderer.contains("state.line = ribbitsTip.subtract(entity.getPosition(partialTick))"));
-        assertTrue(floatRenderer.contains("FishingLineGeometry.segments("));
-        assertFalse(floatRenderer.contains("physicalOuterTip"));
-        assertFalse(floatRenderer.contains("cameraRenderState"));
-        assertFalse(lineGeometry.contains("segmentsBetween"));
-        assertFalse(floatRenderer.contains("FishingRodPose.tip"));
+
+        int rodSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submit(");
+        int physicalTip = layer.indexOf("inspection.physicalOuterTip()", rodSubmit);
+        int lineSubmit = layer.indexOf("FishingFloatRenderer.submitLineFromPhysicalRod(", rodSubmit);
+        assertTrue(rodSubmit >= 0 && physicalTip > rodSubmit && lineSubmit > physicalTip);
+        assertTrue(layer.contains("inspection.exactLiveCapture()"));
+        assertFalse(layer.contains("ribbitsRodTip"));
+        assertFalse(layer.contains("Mth.rotLerp"));
+        assertFalse(pose.contains("outerShaftTip("));
+
+        assertTrue(floatRenderer.contains("segmentsFromRodTip("));
+        assertTrue(floatRenderer.contains("PoseStack linePose = new PoseStack()"));
+        assertTrue(floatRenderer.contains("physicalTipRender.add(cameraWorld)"));
+        assertFalse(floatRenderer.contains("state.line"));
+        assertTrue(lineGeometry.contains("public static List<Segment> segmentsFromRodTip"));
+        assertTrue(lineGeometry.contains("for (int index = floatToRod.size() - 1; index >= 0; index--)"));
+        assertTrue(lineGeometry.contains("SEGMENT_COUNT = 16"));
     }
 
     @Test
-    void diagnosticProbesObserveTheLivePathWithoutBecomingPoseOrLineAuthority() throws IOException {
-        String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
-        String renderer = read("src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodRenderer.java");
-        String diagnostics = read("src/main/java/dev/resivore/villagerwork/client/VwrRodDiagnostics.java");
+    void c23DiagnosticsExposeEffectivePathAuthoredGripAndSharedPhysicalTip() throws IOException {
+        String diagnostics = read(
+                "src/main/java/dev/resivore/villagerwork/client/VwrRodDiagnostics.java");
         String markers = read("src/main/java/dev/resivore/villagerwork/client/RodDiagnosticMarkers.java");
-        String floatRenderer = read("src/main/java/dev/resivore/villagerwork/client/FishingFloatRenderer.java");
-        String armsAccessor = read(
-                "src/main/java/dev/resivore/villagerwork/mixin/client/VillagerModelArmsAccessor.java");
-        String childrenAccessor = read(
-                "src/main/java/dev/resivore/villagerwork/mixin/client/ModelPartChildrenAccessor.java");
-        String mixins = read("src/main/resources/villager_work_routines.mixins.json");
+        String renderer = read(
+                "src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodRenderer.java");
+        String presentation = read(
+                "src/main/java/dev/resivore/villagerwork/client/VwrFishingRodPresentation.java");
+        String stateMixin = read(
+                "src/main/java/dev/resivore/villagerwork/mixin/client/VillagerRenderStateMixin.java");
+        String rendererMixin = read(
+                "src/main/java/dev/resivore/villagerwork/mixin/client/VillagerRendererMixin.java");
 
         assertTrue(renderer.contains("C27_MODEL_SHA256"));
         assertTrue(renderer.contains("sourcePackId()"));
         assertTrue(renderer.contains("addPerBoneRender"));
         assertTrue(renderer.contains("capturePhysicalRod"));
         assertTrue(renderer.contains("live_render_snapshot"));
-        assertTrue(diagnostics.contains("arms_direct_children_exact_names"));
-        assertTrue(diagnostics.contains("arms_rotation_direct_child_exists"));
-        assertTrue(diagnostics.contains("MAX_HIERARCHY_DEPTH"));
-        assertTrue(diagnostics.contains("REPORTED_CASTS"));
-        assertTrue(diagnostics.contains("C20_line_start_currently_used_world"));
-        assertTrue(diagnostics.contains("diagnostic_only_line_start_minus_visible_tip"));
+        assertTrue(diagnostics.contains("effective_folded_arm_path_actually_used"));
+        assertTrue(diagnostics.contains("after_effective_folded_arm_path"));
+        assertTrue(diagnostics.contains("after_C23_authored_grip_[0,-7,-6]px"));
+        assertTrue(diagnostics.contains("C23_line_start_authority=live_fishing_rod_physical_outer_tip"));
+        assertTrue(diagnostics.contains("C23_line_start_minus_visible_tip"));
+        assertFalse(diagnostics.contains("C20_line_start_currently_used"));
         assertTrue(markers.contains("Shape.SQUARE"));
+        assertTrue(markers.contains("Shape.PLUS"));
         assertTrue(markers.contains("Shape.X"));
         assertTrue(markers.contains("Shape.DIAMOND"));
         assertTrue(markers.contains("Shape.STAR"));
-        assertTrue(layer.contains("RodDiagnosticMarkers.submit"));
-        assertTrue(floatRenderer.contains("VwrRodDiagnostics.observeLinePath"));
-        assertTrue(armsAccessor.contains("@Accessor(\"arms\")"));
-        assertTrue(childrenAccessor.contains("@Accessor(\"children\")"));
-        assertTrue(mixins.contains("\"client.VillagerModelArmsAccessor\""));
-        assertTrue(mixins.contains("\"client.ModelPartChildrenAccessor\""));
-        assertFalse(layer.contains("villagerWork$getArms"));
-        assertFalse(layer.contains("getChild(\"arms_rotation\")"));
+        assertTrue(presentation.contains("villagerWork$partialTick()"));
+        assertTrue(stateMixin.contains("villagerWork$partialTick"));
+        assertTrue(rendererMixin.contains("villagerWork$setPartialTick(partialTick)"));
     }
 
     @Test
-    void vwrNeverPackagesRibbitsOwnedResourcesAndVisualOnlyChangeLeavesBehaviorUnchanged()
+    void vwrNeverPackagesRibbitsResourcesAndNonvisualBehaviorRemainsUnchanged()
             throws IOException, NoSuchAlgorithmException {
         String build = read("build.gradle");
         assertTrue(build.contains("verifyNoRibbitsPayload"));
@@ -239,7 +184,6 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertEquals(normalizeJava(expectedBody), normalizeJava(blockBody(source, declaration)), declaration);
     }
 
-    /** Extracts a brace-balanced block; all asserted C20 blocks contain no brace-bearing literals. */
     private static String blockBody(String source, String anchor) {
         int anchorIndex = source.indexOf(anchor);
         assertTrue(anchorIndex >= 0, "Missing source anchor: " + anchor);
@@ -258,17 +202,6 @@ class RibbitsFishermanC27IntegrationContractTest {
         return source.replaceAll("(?s)/\\*.*?\\*/", "")
                 .replaceAll("(?m)//.*$", "")
                 .replaceAll("\\s+", "");
-    }
-
-    private static int occurrences(String source, String target) {
-        int count = 0;
-        for (int index = 0; (index = source.indexOf(target, index)) >= 0; index += target.length()) count++;
-        return count;
-    }
-
-    private static String sha256(String relative) throws IOException, NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        return HexFormat.of().formatHex(digest.digest(Files.readAllBytes(ROOT.resolve(relative))));
     }
 
     private static void assertFilesRemainAtC19Content(List<String> files, List<String> expectedHashes)

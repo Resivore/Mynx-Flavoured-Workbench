@@ -9,16 +9,18 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
-/** Small, bright VWR-owned axes and shapes used only by the C22 diagnostic canary. */
+/** Small, bright VWR-owned axes and shapes retained for the focused C23 runtime trial. */
 final class RodDiagnosticMarkers {
     private RodDiagnosticMarkers() {
     }
 
     static void submit(SubmitNodeCollector collector, Matrix4fc incomingEntityLayer,
-                       Matrix4fc afterTranslateToArms, Matrix4fc afterAuthoredGrip,
+                       Matrix4fc afterTranslateToArms, Matrix4fc afterEffectiveFoldedArms,
+                       Matrix4fc afterAuthoredGrip,
                        RibbitsFishermanRodRenderer.Inspection rod) {
         submitMarker(collector, incomingEntityLayer, Shape.CROSS, 0.055F, 255, 255, 255);
         submitMarker(collector, afterTranslateToArms, Shape.SQUARE, 0.095F, 0, 255, 255);
+        submitMarker(collector, afterEffectiveFoldedArms, Shape.PLUS, 0.085F, 64, 160, 255);
         submitMarker(collector, afterAuthoredGrip, Shape.X, 0.080F, 255, 0, 255);
         if (rod.geometryRootMatrix() != null) {
             submitMarker(collector, rod.geometryRootMatrix(), Shape.TRIANGLE, 0.070F, 255, 112, 0);
@@ -66,6 +68,10 @@ final class RodDiagnosticMarkers {
                 line(vertices, pose, -s, s, 0, s, -s, 0, red, green, blue, width);
                 line(vertices, pose, 0, -s, -s, 0, s, s, red, green, blue, width);
             }
+            case PLUS -> {
+                line(vertices, pose, -s, 0, 0, s, 0, 0, red, green, blue, width);
+                line(vertices, pose, 0, -s, 0, 0, s, 0, red, green, blue, width);
+            }
             case TRIANGLE -> {
                 line(vertices, pose, 0, s, 0, -s, -s, 0, red, green, blue, width);
                 line(vertices, pose, -s, -s, 0, s, -s, 0, red, green, blue, width);
@@ -105,5 +111,5 @@ final class RodDiagnosticMarkers {
                 .setNormal(pose, -nx, -ny, -nz).setLineWidth(width);
     }
 
-    private enum Shape { CROSS, SQUARE, X, TRIANGLE, DIAMOND, STAR }
+    private enum Shape { CROSS, SQUARE, PLUS, X, TRIANGLE, DIAMOND, STAR }
 }

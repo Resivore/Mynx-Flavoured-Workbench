@@ -53,6 +53,41 @@ public final class FishingLineGeometry {
         return List.copyOf(result);
     }
 
+    /** Preserves the same 16-segment curve between two explicit render-space endpoints. */
+    public static List<Segment> segmentsBetween(float startX, float startY, float startZ,
+                                                float endX, float endY, float endZ) {
+        if (!Float.isFinite(startX) || !Float.isFinite(startY) || !Float.isFinite(startZ)) {
+            return List.of();
+        }
+        List<Segment> relative = segments(endX - startX, endY - startY, endZ - startZ);
+        if (relative.isEmpty()) return relative;
+
+        List<Segment> translated = new ArrayList<>(relative.size());
+        for (Segment segment : relative) {
+            translated.add(new Segment(translate(segment.start(), startX, startY, startZ),
+                    translate(segment.end(), startX, startY, startZ)));
+        }
+        return List.copyOf(translated);
+    }
+
+    /**
+     * Returns that curve in rod-to-float vertex order while retaining the bobber's +0.125 Y
+     * attachment. The first submitted vertex is therefore the exact physical shaft tip.
+     */
+    public static List<Segment> segmentsFromRodTip(float rodX, float rodY, float rodZ,
+                                                   float floatX, float floatY, float floatZ) {
+        List<Segment> floatToRod = segmentsBetween(floatX, floatY, floatZ, rodX, rodY, rodZ);
+        if (floatToRod.isEmpty()) return floatToRod;
+
+        List<Segment> rodToFloat = new ArrayList<>(floatToRod.size());
+        for (int index = floatToRod.size() - 1; index >= 0; index--) {
+            Segment segment = floatToRod.get(index);
+            // Existing endpoint normals already have the correct signs for reversed traversal.
+            rodToFloat.add(new Segment(segment.end(), segment.start()));
+        }
+        return List.copyOf(rodToFloat);
+    }
+
     private static float fraction(int index) {
         return (float) index / SEGMENT_COUNT;
     }
@@ -62,5 +97,11 @@ public final class FishingLineGeometry {
                 BOBBER_ATTACHMENT_HEIGHT + (endY - BOBBER_ATTACHMENT_HEIGHT)
                         * (fraction * fraction + fraction) * 0.5f,
                 endZ * fraction);
+    }
+
+    private static Vertex translate(Vertex vertex, float x, float y, float z) {
+        Point position = vertex.position();
+        return new Vertex(new Point(position.x() + x, position.y() + y, position.z() + z),
+                vertex.normal());
     }
 }

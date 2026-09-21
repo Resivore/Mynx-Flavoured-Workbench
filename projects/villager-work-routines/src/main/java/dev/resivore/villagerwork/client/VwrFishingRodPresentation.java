@@ -4,4 +4,6 @@ package dev.resivore.villagerwork.client;
 public interface VwrFishingRodPresentation {
     int villagerWork$entityId();
     void villagerWork$setEntityId(int entityId);
+    float villagerWork$partialTick();
+    void villagerWork$setPartialTick(float partialTick);
 }

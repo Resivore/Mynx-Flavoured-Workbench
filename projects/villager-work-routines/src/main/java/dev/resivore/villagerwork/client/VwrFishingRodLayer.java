@@ -13,8 +13,6 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -51,23 +49,41 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
             poseStack.pushPose();
             try {
                 Matrix4f incomingEntityLayer = new Matrix4f(poseStack.last().pose());
-                getParentModel().translateToArms(state, poseStack);
-                Matrix4f afterTranslateToArms = new Matrix4f(poseStack.last().pose());
-                FrogVillagerRodPose.applyReferenceGrip(poseStack);
-                Matrix4f afterAuthoredGrip = new Matrix4f(poseStack.last().pose());
+                FoldedArmRenderPath.Attachment attachment = FoldedArmRenderPath.apply(
+                        getParentModel(), state, poseStack);
+                if (attachment.applied()) {
+                    FrogVillagerRodPose.applyReferenceGrip(poseStack);
+                    Matrix4f afterAuthoredGrip = new Matrix4f(poseStack.last().pose());
 
-                // These observations only copy the matrices used by the restored C20 path. They
-                // never select, gate, or alter rod submission or C20's independent line endpoint.
-                RibbitsFishermanRodRenderer.Inspection inspection =
-                        RibbitsFishermanRodRenderer.submit(poseStack, collector, light);
-                try {
-                    VwrRodDiagnostics.observeRenderPath(villager, fishingFloat.getId(), getParentModel(),
-                            inspection.submitted(), incomingEntityLayer, afterTranslateToArms,
-                            afterAuthoredGrip, inspection);
-                    RodDiagnosticMarkers.submit(collector, incomingEntityLayer, afterTranslateToArms,
-                            afterAuthoredGrip, inspection);
-                } catch (RuntimeException | LinkageError ignored) {
-                    // Diagnostic geometry/logging is never allowed to suppress the C20 rod.
+                    RibbitsFishermanRodRenderer.Inspection inspection =
+                            RibbitsFishermanRodRenderer.submit(poseStack, collector, light);
+                    FishingFloatRenderer.LineSubmission line = null;
+                    if (inspection.submitted() && inspection.exactLiveCapture()
+                            && inspection.physicalOuterTip() != null) {
+                        try {
+                            line = FishingFloatRenderer.submitLineFromPhysicalRod(
+                                    inspection.physicalOuterTip(), collector,
+                                    fishingFloat.getPosition(presentation.villagerWork$partialTick()));
+                        } catch (RuntimeException | LinkageError ignored) {
+                            // Never substitute an analytical or duplicate line after a live-tip failure.
+                        }
+                    }
+                    try {
+                        VwrRodDiagnostics.observeRenderPath(villager, fishingFloat.getId(),
+                                getParentModel(), inspection.submitted(), incomingEntityLayer,
+                                attachment, afterAuthoredGrip, inspection, line);
+                        RodDiagnosticMarkers.submit(collector, incomingEntityLayer,
+                                attachment.afterTranslateToArms(),
+                                attachment.afterEffectiveFoldedArms(), afterAuthoredGrip, inspection);
+                    } catch (RuntimeException | LinkageError ignored) {
+                        // Diagnostic geometry/logging is never allowed to suppress the C23 rod/line.
+                    }
+                } else {
+                    try {
+                        VwrRodDiagnostics.observeAttachmentPath(getParentModel(), attachment);
+                    } catch (RuntimeException | LinkageError ignored) {
+                        // A diagnostic failure must not affect any other render layer.
+                    }
                 }
             } finally {
                 poseStack.popPose();
@@ -101,19 +117,6 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
     private static boolean hasLiveShears(Villager villager) {
         return !villager.level().getEntitiesOfClass(ShearingToolMarker.class,
                 villager.getBoundingBox().inflate(18.0), marker -> marker.owner() == villager).isEmpty();
-    }
-
-    /**
-     * Restores C20's analytical outer-tip calculation unchanged. It intentionally does not use
-     * the live layer/GeoLib matrices; C22 logs both endpoints so a later canary can correct the
-     * mismatch from runtime evidence rather than hiding it here.
-     */
-    static Vec3 ribbitsRodTip(Villager villager, float partialTick) {
-        Vec3 position = villager.getPosition(partialTick);
-        float bodyYaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
-        FrogVillagerRodPose.Point worldTip = FrogVillagerRodPose.outerShaftTip(position.x, position.y,
-                position.z, bodyYaw);
-        return worldTip.isFinite() ? new Vec3(worldTip.x(), worldTip.y(), worldTip.z()) : null;
     }
 
 }
