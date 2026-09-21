@@ -22,12 +22,12 @@ class Canary4IrisBridgeContractTest {
     private static final Path RESOURCES = PROJECT_ROOT.resolve("src/main/resources");
 
     @Test
-    void successorVersionIsCanaryFive() throws IOException {
+    void successorVersionIsCanarySix() throws IOException {
         Properties properties = new Properties();
         try (var input = Files.newInputStream(PROJECT_ROOT.resolve("gradle.properties"))) {
             properties.load(input);
         }
-        assertEquals("0.1.0-canary5", properties.getProperty("mod_version"));
+        assertEquals("0.1.0-canary6", properties.getProperty("mod_version"));
     }
 
     @Test

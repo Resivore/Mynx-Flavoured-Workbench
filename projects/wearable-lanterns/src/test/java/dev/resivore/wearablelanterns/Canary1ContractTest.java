@@ -49,15 +49,17 @@ class Canary1ContractTest {
     }
 
     @Test
-    void canonicalTagContainsExactlyTheTwoInitialVanillaLanterns() throws IOException {
+    void canonicalTagStillRequiresTheTwoInitialVanillaLanterns() throws IOException {
         JsonObject tag = resourceJson("data/trinkets/tags/item/legs/lantern.json");
         assertFalse(tag.get("replace").getAsBoolean(), "The tag must remain extensible");
 
         JsonArray values = tag.getAsJsonArray("values");
-        assertEquals(2, values.size());
         assertEquals(
                 Set.of("minecraft:lantern", "minecraft:soul_lantern"),
-                new HashSet<>(strings(values)));
+                values.asList().stream()
+                        .filter(JsonElement::isJsonPrimitive)
+                        .map(JsonElement::getAsString)
+                        .collect(java.util.stream.Collectors.toSet()));
     }
 
     @Test

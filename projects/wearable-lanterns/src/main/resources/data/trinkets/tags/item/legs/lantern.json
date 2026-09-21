@@ -2,6 +2,26 @@
   "replace": false,
   "values": [
     "minecraft:lantern",
-    "minecraft:soul_lantern"
+    "minecraft:soul_lantern",
+    {
+      "id": "enderscape:void_lantern",
+      "required": false
+    },
+    {
+      "id": "enderscape:bulb_lantern",
+      "required": false
+    },
+    {
+      "id": "ribbits:swamp_lantern",
+      "required": false
+    },
+    {
+      "id": "auroraslanterns:amethyst_lantern",
+      "required": false
+    },
+    {
+      "id": "auroraslanterns:redstone_lantern",
+      "required": false
+    }
   ]
 }

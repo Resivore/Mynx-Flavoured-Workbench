@@ -64,6 +64,98 @@ tasks.withType(Jar).configureEach {
 test {
     useJUnitPlatform()
     systemProperty 'projectRoot', projectDir.absolutePath
+    for (String propertyName : ['enderscapeJar', 'ribbitsJar', 'aurorasLanternsJar']) {
+        if (project.hasProperty(propertyName)) {
+            systemProperty propertyName, file(project.property(propertyName)).absolutePath
+        }
+    }
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'wearable_lanterns_runtime_tests'
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}
+
+loom.runs.named('gameTest') {
+    vmArg "-DwearableLanterns.providerFixtures=${providers.gradleProperty('providerFixtures').orElse('false').get()}"
+    vmArg '-Dfabric-api.gametest.filter=wearable_lanterns_runtime_tests:*'
+}
+
+tasks.register('verifyProductionJar') {
+    group = 'verification'
+    description = 'Verifies the remapped release JAR packaging and accepted-baseline boundary.'
+    // Loom 1.17 remaps the primary jar task in-place; this project has no remapJar task.
+    dependsOn tasks.named('jar')
+    def productionJar = tasks.named('jar').flatMap { it.archiveFile }
+    inputs.file(productionJar)
+    if (project.hasProperty('acceptedJar')) {
+        inputs.file(file(project.property('acceptedJar')))
+    }
+    doLast {
+        def forbiddenPrefixes = [
+                'assets/enderscape/',
+                'data/enderscape/',
+                'net/penumbra/enderscape/',
+                'assets/ribbits/',
+                'data/ribbits/',
+                'com/yungnickyoung/minecraft/ribbits/',
+                'assets/auroraslanterns/',
+                'data/auroraslanterns/',
+                'dev/lambdaurora/auroraslanterns/'
+        ]
+        def forbiddenNestedJars = ['enderscape', 'ribbits', 'auroraslanterns']
+        def archive = productionJar.get().asFile
+        new java.util.zip.ZipFile(archive).withCloseable { zip ->
+            def names = zip.entries().collect { it.name }
+            def forbidden = names.findAll { name ->
+                forbiddenPrefixes.any { name.startsWith(it) } ||
+                        name.contains('/gametest/') ||
+                        (name.startsWith('META-INF/jars/') &&
+                                forbiddenNestedJars.any { name.toLowerCase(Locale.ROOT).contains(it) })
+            }
+            if (!forbidden.isEmpty()) {
+                throw new GradleException("Provider-owned entries leaked into ${archive.name}: ${forbidden}")
+            }
+        }
+
+        if (project.hasProperty('acceptedJar')) {
+            def acceptedArchive = file(project.property('acceptedJar'))
+            def expectedChangedEntries = [
+                    'data/trinkets/tags/item/legs/lantern.json',
+                    'fabric.mod.json'
+            ] as Set
+            new java.util.zip.ZipFile(acceptedArchive).withCloseable { acceptedZip ->
+                new java.util.zip.ZipFile(archive).withCloseable { candidateZip ->
+                    def acceptedEntries = acceptedZip.entries().findAll { !it.directory }
+                            .collectEntries { [(it.name): it] }
+                    def candidateEntries = candidateZip.entries().findAll { !it.directory }
+                            .collectEntries { [(it.name): it] }
+                    if (acceptedEntries.keySet() != candidateEntries.keySet()) {
+                        throw new GradleException(
+                                "Release JAR entry set changed from ${acceptedArchive.name}")
+                    }
+                    def changedEntries = acceptedEntries.keySet().findAll { name ->
+                        !java.util.Arrays.equals(
+                                acceptedZip.getInputStream(acceptedEntries[name]).bytes,
+                                candidateZip.getInputStream(candidateEntries[name]).bytes)
+                    } as Set
+                    if (changedEntries != expectedChangedEntries) {
+                        throw new GradleException(
+                                "Unexpected release JAR content changes from ${acceptedArchive.name}: ${changedEntries}")
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyProductionJar')
 }
 
 java {
