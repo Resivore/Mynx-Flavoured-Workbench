@@ -17,5 +17,6 @@ abstract class VillagerRendererMixin {
                                                       float partialTick, CallbackInfo ci) {
         VwrFishingRodPresentation presentation = (VwrFishingRodPresentation)(Object)state;
         presentation.villagerWork$setEntityId(villager.getId());
+        presentation.villagerWork$setPartialTick(partialTick);
     }
 }

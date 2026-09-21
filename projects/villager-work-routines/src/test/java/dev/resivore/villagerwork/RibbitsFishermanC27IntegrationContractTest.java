@@ -30,7 +30,8 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(metadata.contains("\"ribbits\": \"=4.1.6+26.2-mynx-canary27\""));
         assertTrue(metadata.contains("\"relationship\": \"depends\""));
         assertTrue(layer.contains("RibbitsFishermanRodRenderer.submit"));
-        assertTrue(floatRenderer.contains("VwrFishingRodLayer.ribbitsRodTip(villager, partialTick)"));
+        assertTrue(layer.contains("FishingFloatRenderer.submitLineFromSharedRodPose"));
+        assertTrue(floatRenderer.contains("FrogVillagerCemRodPose.outerShaftTipInRenderSpace(rodPose)"));
         assertFalse(layer.contains("Items.STICK"));
         assertFalse(floatRenderer.contains("FishingRodPose"));
         assertFalse(Files.exists(ROOT.resolve(
@@ -39,16 +40,21 @@ class RibbitsFishermanC27IntegrationContractTest {
     }
 
     @Test
-    void rawRibbitsRodIsNestedAtTheReferenceGripWithoutAnIndependentRotation() throws IOException {
+    void rawRibbitsRodUsesTheLiveCemFoldedArmChildWithoutAnIndependentRotation() throws IOException {
         String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
-        String pose = read("src/main/java/dev/resivore/villagerwork/FrogVillagerRodPose.java");
+        String pose = read("src/main/java/dev/resivore/villagerwork/client/FrogVillagerCemRodPose.java");
         String renderer = read("src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodRenderer.java");
+        String accessor = read("src/main/java/dev/resivore/villagerwork/mixin/client/VillagerModelArmsAccessor.java");
 
-        assertTrue(layer.contains("getParentModel().translateToArms(state, poseStack)"));
-        assertTrue(layer.contains("FrogVillagerRodPose.applyReferenceGrip(poseStack)"));
+        assertTrue(layer.contains("FrogVillagerCemRodPose.apply(getParentModel(), state, poseStack)"));
+        assertTrue(pose.contains("FOLDED_ARMS_CHILD = \"arms_rotation\""));
+        assertTrue(pose.contains("applyFoldedArmsAndReferenceGrip(arms.getChild(FOLDED_ARMS_CHILD), poseStack)"));
+        assertTrue(pose.contains("foldedArms.translateAndRotate(poseStack)"));
+        assertTrue(accessor.contains("@Accessor(\"arms\")"));
         assertTrue(pose.contains("AUTHORED_GRIP_Y_PIXELS = -7.0F"));
         assertTrue(pose.contains("AUTHORED_GRIP_Z_PIXELS = -6.0F"));
-        assertTrue(pose.contains("JEM_ARMS_ROTATION_DEGREES = 43.0F"));
+        assertFalse(pose.contains("JEM_ARMS_ROTATION_DEGREES"));
+        assertFalse(pose.contains("rotationDegrees("));
         assertTrue(renderer.contains("snapshot.setRotation(0.0F, 0.0F, 0.0F)"));
         assertTrue(renderer.contains("getBone(\"fishing_rod\")"));
         assertFalse(renderer.contains("rotationDegrees("));
@@ -57,7 +63,7 @@ class RibbitsFishermanC27IntegrationContractTest {
 
     @Test
     void sourceDecorationsAreSuppressedAndTheLineUsesTheSamePhysicalOuterTip() throws IOException {
-        String pose = read("src/main/java/dev/resivore/villagerwork/FrogVillagerRodPose.java");
+        String pose = read("src/main/java/dev/resivore/villagerwork/client/FrogVillagerCemRodPose.java");
         String renderer = read("src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodRenderer.java");
         String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
         String floatRenderer = read("src/main/java/dev/resivore/villagerwork/client/FishingFloatRenderer.java");
@@ -66,10 +72,12 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(renderer.contains("bones.ifPresent(\"fishing_rod_3\""));
         assertTrue(renderer.contains("snapshot.skipChildrenRender(true)"));
         assertTrue(pose.contains("OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS = -9.5F"));
-        assertTrue(pose.contains("outerShaftTipFromFoldedArms"));
-        assertTrue(layer.contains("FrogVillagerRodPose.outerShaftTip"));
-        assertTrue(floatRenderer.contains("ribbitsTip.subtract(entity.getPosition(partialTick))"));
-        assertFalse(floatRenderer.contains("cameraRenderState"));
+        assertTrue(layer.contains("FishingFloatRenderer.submitLineFromSharedRodPose"));
+        assertTrue(floatRenderer.contains("FrogVillagerCemRodPose.outerShaftTipInRenderSpace(rodPose)"));
+        assertTrue(floatRenderer.contains("FishingLineGeometry.segmentsBetween"));
+        assertTrue(floatRenderer.contains("cameraRenderState.pos"));
+        assertFalse(layer.contains("Mth.rotLerp"));
+        assertFalse(floatRenderer.contains("ribbitsRodTip"));
         assertFalse(floatRenderer.contains("FishingRodPose.tip"));
     }
 

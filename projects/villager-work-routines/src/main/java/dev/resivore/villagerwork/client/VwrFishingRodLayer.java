@@ -10,12 +10,9 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import dev.resivore.villagerwork.FishingFloat;
-import dev.resivore.villagerwork.FrogVillagerRodPose;
 import dev.resivore.villagerwork.ShearingToolMarker;
 import net.minecraft.world.item.Items;
 
@@ -41,15 +38,20 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         if (Minecraft.getInstance().level == null) return;
         Entity entity = Minecraft.getInstance().level.getEntity(presentation.villagerWork$entityId());
         if (!(entity instanceof Villager villager)) return;
-        boolean fishing = hasLiveFloat(villager);
+        FishingFloat fishingFloat = activeFloat(villager);
+        boolean fishing = fishingFloat != null;
         boolean shearing = hasLiveShears(villager);
         if (!fishing && !shearing) return;
 
         if (fishing) {
             poseStack.pushPose();
-            getParentModel().translateToArms(state, poseStack);
-            FrogVillagerRodPose.applyReferenceGrip(poseStack);
-            RibbitsFishermanRodRenderer.submit(poseStack, collector, light);
+            if (FrogVillagerCemRodPose.apply(getParentModel(), state, poseStack)
+                    && RibbitsFishermanRodRenderer.submit(poseStack, collector, light)) {
+                // The line origin is transformed through this exact pose stack, after the live
+                // CEM folded arms and the same authored group used for rod submission.
+                FishingFloatRenderer.submitLineFromSharedRodPose(poseStack, collector,
+                        fishingFloat.getPosition(presentation.villagerWork$partialTick()));
+            }
             poseStack.popPose();
         }
         if (shearing) {
@@ -71,9 +73,11 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         poseStack.popPose();
     }
 
-    private static boolean hasLiveFloat(Villager villager) {
-        return !villager.level().getEntitiesOfClass(FishingFloat.class,
-                villager.getBoundingBox().inflate(18.0), floatEntity -> floatEntity.owner() == villager).isEmpty();
+    private static FishingFloat activeFloat(Villager villager) {
+        return villager.level().getEntitiesOfClass(FishingFloat.class,
+                        villager.getBoundingBox().inflate(18.0),
+                        floatEntity -> floatEntity.owner() == villager)
+                .stream().findFirst().orElse(null);
     }
 
     private static boolean hasLiveShears(Villager villager) {
@@ -81,16 +85,4 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                 villager.getBoundingBox().inflate(18.0), marker -> marker.owner() == villager).isEmpty();
     }
 
-    /**
-     * Converts the reference's physical outer shaft tip to world space through the exact same
-     * folded-arms/reference chain that the visible rod receives. Entity layers get a
-     * camera-relative PoseStack in 26.2, so camera state is intentionally never an input.
-     */
-    static Vec3 ribbitsRodTip(Villager villager, float partialTick) {
-        Vec3 position = villager.getPosition(partialTick);
-        float bodyYaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
-        FrogVillagerRodPose.Point worldTip = FrogVillagerRodPose.outerShaftTip(position.x, position.y,
-                position.z, bodyYaw);
-        return worldTip.isFinite() ? new Vec3(worldTip.x(), worldTip.y(), worldTip.z()) : null;
-    }
 }

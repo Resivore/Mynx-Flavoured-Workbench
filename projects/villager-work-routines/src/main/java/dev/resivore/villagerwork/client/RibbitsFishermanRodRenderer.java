@@ -12,7 +12,6 @@ import com.geckolib.renderer.base.RenderPassInfo;
 import com.geckolib.util.GeckoLibUtil;
 import com.geckolib.util.RenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.resivore.villagerwork.FrogVillagerRodPose;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.resources.Identifier;
@@ -131,8 +130,8 @@ final class RibbitsFishermanRodRenderer {
 
         /**
          * Detaches the Ribbits body/accessories origin while retaining raw fishing_rod cubes.
-         * The physical outer tip is then exactly {@link FrogVillagerRodPose}'s -9.5-pixel shaft
-         * vector from the shared reference grip.
+         * The physical outer tip is then exactly the C27 shaft's -9.5-pixel vector from the
+         * shared reference grip.
          */
         private StandaloneRodBasis standaloneBasis() {
             GeoBone rod = getGeoModel().getBakedModel(MODEL).getBone("fishing_rod")
