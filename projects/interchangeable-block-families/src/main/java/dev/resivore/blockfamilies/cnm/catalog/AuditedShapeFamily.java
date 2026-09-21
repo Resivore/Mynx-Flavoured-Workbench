@@ -47,6 +47,7 @@ public record AuditedShapeFamily(
         THREE_HIGH_DOOR("three_high_door"),
         TRAPDOOR("trapdoor"),
         WINDOW("window"),
+        DISPLAY_FIXTURE("display_fixture"),
         FENCE_GATE("fence_gate"),
         BAR_CHAIN("bar_chain"),
         BBB_DETAIL("bbb_detail"),

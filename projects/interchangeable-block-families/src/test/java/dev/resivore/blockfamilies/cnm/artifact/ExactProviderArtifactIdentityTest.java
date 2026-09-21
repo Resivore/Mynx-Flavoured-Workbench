@@ -17,6 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ExactProviderArtifactIdentityTest {
+    private static final String MINECRAFT_26_2_MERGED_SHA256 =
+            "E29FDDD54A12FDBB7A0CCC899AD7CE6B5167F5CBCEF7C305EE3069ED7A4CC1EF";
+
     private static final Map<String, ArtifactContract> CONTRACTS = Map.ofEntries(
             Map.entry("cnmUpstreamReferenceJar", new ArtifactContract(
                     "41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE",
@@ -33,6 +36,18 @@ final class ExactProviderArtifactIdentityTest {
             Map.entry("ribbitsReferenceJar", new ArtifactContract(
                     "7024EA6FF0FD03DDCC686E18FF7D228B25766B9A46FC5B293DF8C71579D05387",
                     "ribbits", "4.1.6+26.2-mynx-canary17")),
+            Map.entry("bbbReferenceJar", new ArtifactContract(
+                    "D0928B9316E3F6B323151FAC73DF3BE1056ABA05B56D4909B419CC15C09FC4D0",
+                    "bbb", "2.0pre4+26.2-pale-oak-dev.3")),
+            Map.entry("enderscapeReferenceJar", new ArtifactContract(
+                    "9FCC4F59CA88E91F90E7C7D18289F2F859F20C810EEBCCA924764AA15236C40B",
+                    "enderscape", "3.0.2")),
+            Map.entry("lithostitchedReferenceJar", new ArtifactContract(
+                    "A159EC68946521CA07D6D341C143033EE693BC32C34673C953B529E4AB9971D3",
+                    "lithostitched", "1.7.13")),
+            Map.entry("trimPatcherReferenceJar", new ArtifactContract(
+                    "B5F4AAEB9C906522654D8B7FDDEBF0BF02099775C9F31D42F13C761598E0E9B0",
+                    "trimpatcher", "2.1-mc26.2-fabric")),
             Map.entry("yaclReferenceJar", new ArtifactContract(
                     "829396C3B3E7D1801AE0E9E2921D0454C5A3078AFDB6C6DDA6B3D1819DFA0E3F",
                     "yet_another_config_lib_v3", "3.9.6+26.2-fabric")),
@@ -43,8 +58,8 @@ final class ExactProviderArtifactIdentityTest {
                     "40BA9C55F191F8BD4758293683ED2BCF6D0C76C8F54F9FC8A0DCCABDBCFD36AD",
                     "mcwwindows", "2.4.2")),
             Map.entry("dramaticDoorsReferenceJar", new ArtifactContract(
-                    "43C3EFD19619A59A10957B5893ADCE081766F653D8CCCB13F38BFBAACEC2CEFB",
-                    "dramaticdoors", "1.20.1-3.3.3+26.2-workbench-canary7")),
+                    "4E77603B3337EE2A2571900395B89273E7053440EA0C325223DA1556C1F14B34",
+                    "dramaticdoors", "1.20.1-3.3.3+26.2-workbench-canary8")),
             Map.entry("nibaruReferenceJar", new ArtifactContract(
                     "0A979A75101076E987A35807F8EB293631FE5E664B252E5DB0AA263D4EEDF07F",
                     "more_slabs_stairs_and_walls", "4.2.0+26.2-port-canary43-native-directional-material-axis")),
@@ -75,6 +90,19 @@ final class ExactProviderArtifactIdentityTest {
             assertTrue(metadata.contains("\"version\"") && metadata.contains("\"" + contract.version() + "\""),
                     property + " has the wrong Fabric mod version");
         }
+    }
+
+    @Test
+    void minecraftRegistryAuditUsesTheExactCurrent26_2MergedJar() throws Exception {
+        Path artifact = Path.of(requiredProperty("minecraftReferenceJar"));
+        assertTrue(Files.isRegularFile(artifact),
+                "minecraftReferenceJar did not resolve to a file: " + artifact);
+        assertEquals(MINECRAFT_26_2_MERGED_SHA256, sha256(artifact));
+
+        String version = zipText(artifact, "version.json");
+        assertTrue(version.contains("\"id\": \"26.2\"")
+                        || version.contains("\"id\":\"26.2\""),
+                "minecraftReferenceJar is not the Minecraft 26.2 registry input");
     }
 
     private static String requiredProperty(String name) {

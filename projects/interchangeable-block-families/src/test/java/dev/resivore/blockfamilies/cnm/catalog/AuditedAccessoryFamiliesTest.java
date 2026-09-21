@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class AuditedAccessoryFamiliesTest {
     @Test
-    void ironAndEveryCopperFinishHaveOneExactBarChainFamily() {
+    void ironCopperFinishesAndShadolineHaveOneExactBarChainFamily() {
         List<ExpectedFamily> expected = List.of(
                 quadruple("iron", "minecraft:iron_bars", "bbb:iron_fence", "minecraft:iron_chain", "auroraslanterns:chandelier/iron"),
                 triple("copper", "minecraft:copper_bars", "minecraft:copper_chain", "auroraslanterns:chandelier/copper"),
@@ -43,7 +43,8 @@ final class AuditedAccessoryFamiliesTest {
                 triple("waxed_weathered_copper", "minecraft:waxed_weathered_copper_bars",
                         "minecraft:waxed_weathered_copper_chain", "auroraslanterns:chandelier/waxed_weathered_copper"),
                 triple("waxed_oxidized_copper", "minecraft:waxed_oxidized_copper_bars",
-                        "minecraft:waxed_oxidized_copper_chain", "auroraslanterns:chandelier/waxed_oxidized_copper"));
+                        "minecraft:waxed_oxidized_copper_chain", "auroraslanterns:chandelier/waxed_oxidized_copper"),
+                pair("enderscape_shadoline", "enderscape:shadoline_bars", "enderscape:shadoline_chain"));
 
         List<AuditedShapeFamily> actual = AuditedShapeFamilies.families(BAR_CHAIN);
         assertEquals(expected.size(), actual.size());
@@ -58,9 +59,9 @@ final class AuditedAccessoryFamiliesTest {
             assertEquals(expectedFamily.members().getFirst(), actualFamily.canonicalParent());
             assertTrue(members.addAll(actualFamily.members()), actualFamily.key().toString());
         }
-        assertEquals(28, members.size());
+        assertEquals(30, members.size());
 
-        for (int first = 1; first < actual.size(); first++) {
+        for (int first = 0; first < actual.size(); first++) {
             for (int second = first + 1; second < actual.size(); second++) {
                 Set<Identifier> overlap = new HashSet<>(actual.get(first).members());
                 overlap.retainAll(actual.get(second).members());
@@ -138,8 +139,8 @@ final class AuditedAccessoryFamiliesTest {
                 "Unapproved singleton parapet entered the catalog");
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(28, accessories.size());
-        assertEquals(236, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(35, accessories.size());
+        assertEquals(250, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
@@ -221,6 +222,7 @@ final class AuditedAccessoryFamiliesTest {
         List<AuditedShapeFamily> legacyFamilies = AuditedShapeFamilies.families().stream()
                 .filter(family -> legacy.contains(family.category()))
                 .filter(family -> !family.key().getPath().equals("cnm/fence_gate/ribbits_mossy_oak_planks"))
+                .filter(family -> !family.key().getPath().startsWith("cnm/fence_gate/enderscape_"))
                 .toList();
 
         assertEquals(96, legacyFamilies.size());
@@ -229,9 +231,13 @@ final class AuditedAccessoryFamiliesTest {
                 digest(legacyFamilies));
     }
 
+    @Test
     void ribbitsMossyOakFenceGateIsTheOnlyRibbitsFamily() {
         List<AuditedShapeFamily> fences = AuditedShapeFamilies.families(FENCE_GATE);
-        AuditedShapeFamily mossyOak = fences.getLast();
+        AuditedShapeFamily mossyOak = fences.stream()
+                .filter(family -> family.key().getPath().equals("cnm/fence_gate/ribbits_mossy_oak_planks"))
+                .findFirst()
+                .orElseThrow();
         assertEquals(id("interchangeable_block_families:cnm/fence_gate/ribbits_mossy_oak_planks"), mossyOak.key());
         assertEquals(List.of(id("ribbits:mossy_oak_planks_fence"),
                 id("ribbits:mossy_oak_planks_fence_gate")), mossyOak.members());
@@ -243,6 +249,10 @@ final class AuditedAccessoryFamiliesTest {
     private static ExpectedFamily triple(String keySuffix, String parent, String alternative,
                                          String chandelier) {
         return new ExpectedFamily(keySuffix, List.of(id(parent), id(alternative), id(chandelier)));
+    }
+
+    private static ExpectedFamily pair(String keySuffix, String parent, String alternative) {
+        return new ExpectedFamily(keySuffix, List.of(id(parent), id(alternative)));
     }
 
     private static ExpectedFamily quadruple(

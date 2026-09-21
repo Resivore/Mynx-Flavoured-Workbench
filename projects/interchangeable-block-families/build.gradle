@@ -55,6 +55,21 @@ configurations {
         canBeResolved = true
         transitive = false
     }
+    enderscapeReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    lithostitchedReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    trimPatcherReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
     yaclReference {
         canBeConsumed = false
         canBeResolved = true
@@ -107,7 +122,7 @@ def cnmReferenceJar = referenceJar(
         '../../originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
 def dramaticDoorsReferenceJar = referenceJar(
         'dramatic_doors_reference_jar',
-        '../dramatic-doors/artifacts/dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar')
+        '../dramatic-doors/artifacts/dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary8.jar')
 def nibaruReferenceJar = referenceJar(
         'nibaru_reference_jar',
         '../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar')
@@ -119,7 +134,7 @@ def qsnReferenceJar = referenceJar(
         '../../originals/mods/quick-stack-nearby-0.4.0.jar')
 def qsnCompatReferenceJar = referenceJar(
         'qsn_compat_reference_jar',
-        '../../originals/mods/quick-stack-nearby-compat-0.1.0-canary6.jar')
+        '../quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary6.jar')
 def aurorasLanternsReferenceJar = referenceJar(
         'auroras_lanterns_reference_jar',
         '../../originals/mods/auroraslanterns-2.1.1+26.2.jar')
@@ -128,7 +143,13 @@ def ribbitsReferenceJar = referenceJar(
         '../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar')
 def bbbReferenceJar = referenceJar(
         'bbb_reference_jar',
-        '../building-but-better/build/libs/bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar')
+        '../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar')
+def enderscapeReferenceJar = referenceJar(
+        'enderscape_reference_jar',
+        '../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
+def minecraftReferenceJar = new File(
+        gradle.gradleUserHomeDir,
+        "caches/fabric-loom/${project.minecraft_version}/minecraft-merged.jar")
 def ribbitsRuntimeReferenceJars = providers.gradleProperty('ribbits_runtime_reference_jars')
         .map { value -> value.split(';').collect { path -> file(path) } }
         .orElse([])
@@ -167,6 +188,18 @@ dependencies {
     // BBB is a provider-only runtime input. It is not bundled in IBF.
     runtimeOnly files(bbbReferenceJar)
     bbbReference files(bbbReferenceJar)
+
+    // Enderscape is a literal inventory-item provider. Its exact local JAR is
+    // audited directly and remains an external runtime input, never bundled.
+    runtimeOnly files(enderscapeReferenceJar)
+    enderscapeReference files(enderscapeReferenceJar)
+
+    // Exact controlled-validation providers required by Enderscape 3.0.2.
+    // These are test/runtime support and are not direct packaged IBF dependencies.
+    runtimeOnly("maven.modrinth:XaDC71GB:vVFCOh7u") { transitive = false }
+    lithostitchedReference("maven.modrinth:XaDC71GB:vVFCOh7u") { transitive = false }
+    runtimeOnly("curse.maven:trim-patcher-1414986:8574012") { transitive = false }
+    trimPatcherReference("curse.maven:trim-patcher-1414986:8574012") { transitive = false }
     runtimeOnly files(ribbitsRuntimeReferenceJars)
 
     // Ribbits' provider runtime requires YACL. This is test/runtime support only;
@@ -232,6 +265,10 @@ loom.runs.named('gameTest') {
 // input is test-only: it mounts the canonical Matcha data dependencies in the
 // GameTest test mod without bundling them in IBF's production artifact.
 tasks.named('processGametestResources') {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
     if (matchaFoodResourceRoot.isPresent()) {
         from(matchaFoodResourceRoot) {
             include 'data/**'
@@ -259,6 +296,9 @@ test {
             configurations.aurorasLanternsReference,
             configurations.ribbitsReference,
             configurations.bbbReference,
+            configurations.enderscapeReference,
+            configurations.lithostitchedReference,
+            configurations.trimPatcherReference,
             configurations.yaclReference,
             configurations.macawsTrapdoorsReference,
             configurations.macawsWindowsReference,
@@ -266,7 +306,8 @@ test {
             configurations.nibaruReference,
             configurations.cnmIntegrationReference,
             configurations.qsnReference,
-            configurations.qsnCompatReference
+            configurations.qsnCompatReference,
+            minecraftReferenceJar
     )
     systemProperty 'projectRoot', projectDir.absolutePath
     doFirst {
@@ -276,6 +317,10 @@ test {
         systemProperty 'aurorasLanternsReferenceJar', configurations.aurorasLanternsReference.singleFile.absolutePath
         systemProperty 'ribbitsReferenceJar', configurations.ribbitsReference.singleFile.absolutePath
         systemProperty 'bbbReferenceJar', configurations.bbbReference.singleFile.absolutePath
+        systemProperty 'enderscapeReferenceJar', configurations.enderscapeReference.singleFile.absolutePath
+        systemProperty 'lithostitchedReferenceJar', configurations.lithostitchedReference.singleFile.absolutePath
+        systemProperty 'trimPatcherReferenceJar', configurations.trimPatcherReference.singleFile.absolutePath
+        systemProperty 'minecraftReferenceJar', minecraftReferenceJar.absolutePath
         systemProperty 'yaclReferenceJar', configurations.yaclReference.singleFile.absolutePath
         systemProperty 'macawsTrapdoorsReferenceJar', configurations.macawsTrapdoorsReference.singleFile.absolutePath
         systemProperty 'macawsWindowsReferenceJar', configurations.macawsWindowsReference.singleFile.absolutePath
@@ -289,4 +334,60 @@ test {
 
 java {
     withSourcesJar()
+}
+
+tasks.register('verifyProductionJarIsolation') {
+    group = 'verification'
+    description = 'Verifies the production JAR contains only IBF production classes.'
+    dependsOn 'jar'
+    inputs.files { tasks.getByName('jar').archiveFile.get().asFile }
+
+    doLast {
+        def archivePath = tasks.getByName('jar').archiveFile.get().asFile
+        def archive = new java.util.zip.ZipFile(archivePath)
+        try {
+            def foreignClasses = archive.entries().findAll { entry ->
+                entry.name.endsWith('.class') && (
+                        !entry.name.startsWith('dev/resivore/blockfamilies/')
+                                || entry.name.contains('/gametest/'))
+            }.collect { it.name }.sort()
+            if (!foreignClasses.isEmpty()) {
+                throw new GradleException("Production JAR contains provider or GameTest classes: ${foreignClasses}")
+            }
+
+            def nestedJars = archive.entries().findAll { entry ->
+                !entry.directory && entry.name.toLowerCase(java.util.Locale.ROOT).endsWith('.jar')
+            }.collect { it.name }.sort()
+            if (!nestedJars.isEmpty()) {
+                throw new GradleException("Production JAR contains nested provider archives: ${nestedJars}")
+            }
+
+            def forbiddenPrefixes = [
+                    'net/penumbra/enderscape/',
+                    'dev/tazer/clutternomore/',
+                    'com/starfish_studios/bbb/',
+                    'net/minecraft/',
+                    'dev/resivore/blockfamilies/gametest/'
+            ]
+            forbiddenPrefixes.each { prefix ->
+                if (archive.entries().any { entry -> entry.name.endsWith('.class') && entry.name.startsWith(prefix) }) {
+                    throw new GradleException("Production JAR bundles forbidden classes under ${prefix}")
+                }
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyProductionJarIsolation')
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the verified current canary JAR for local retention.'
+    dependsOn tasks.named('verifyProductionJarIsolation')
+    from { tasks.getByName('jar').archiveFile.get().asFile }
+    into(layout.projectDirectory.dir('artifacts'))
 }
