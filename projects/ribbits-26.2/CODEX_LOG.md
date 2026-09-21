@@ -355,3 +355,14 @@
 - Artifact: Current unaccepted private `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary29.jar`, 3,388,052 bytes, SHA-256 `29cd32edba3d9a4bd1838f3f01cd783e16e34a23f0c090450b54299125b7e5dd`, built at `2026-09-20T14:59:43.8067987Z`, from the source checkpoint above. Canonical ignored-artifact retention remains required before integration.
 - Result: C29 is current with static evidence, no runtime claim, and the C24 accepted release preserved.
 - Next state: Retain the exact artifact, validate and integrate/push revision 35 to authoritative `main`, regenerate the best-effort dashboard, then run the focused paired C29/C19 normal-20-TPS visual and fallback trial when the owner chooses.
+
+## 2026-09-21T00:30:40Z — Retire VWR-only C28/C29 bridge experiments and restore exact C27
+
+- Revision: 36
+- Source checkpoint: `6d13248d030dc0673623032915e5d384faad9382`
+- Changes: C28 and C29 were VWR integration infrastructure only, not Ribbits gameplay or presentation features. Removed the VWR-specific Fisherman visual bridge and its contract test from Ribbits, restored the C27 private-assembly/version guards, and restored the C27-focused runtime procedure. Native Ribbits Fisherman behavior/presentation, C27 toadstool behavior, Gardener behavior, protected resources, and accepted C24 are unchanged. VWR now owns its direct C27 consumer boundary.
+- Build/static: Rehashed the retained artifact as exactly 3,377,508 bytes / SHA-256 `088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd`. Restored C27 source `test check` and all 55 private-resource Python tests passed using the validated YUNG's API artifact. The C27 private JAR was not rebuilt, renamed, replaced, or represented as new bytes.
+- Runtime: The historical C18/C28 displaced-rod/detached-line observations are integration evidence only. No C27 runtime behavior was launched or observed for this administrative restoration; no Minecraft profile was accessed. C27 remains `RUNTIME_UNTESTED`.
+- Artifact: Current unaccepted artifact is restored exactly to `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar`, 3,377,508 bytes, SHA-256 `088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd`, built `2026-09-18T05:47:40.8628936Z` from C27 source checkpoint `9fe0bf18b3799e749fdf736a3b330d5bee8e23e2`. Accepted C24 remains unchanged.
+- Result: C28/C29 are retired; C27 is restored as the exact active private line with no new Ribbits Canary.
+- Next state: Preserve exact C27/C24 identities and use the C27 procedure only if the owner elects to gather new runtime evidence. VWR C20 owns any further Fisherman rod pose work.

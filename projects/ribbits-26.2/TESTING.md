@@ -1,8 +1,8 @@
 # Testing
 
-## Canary 29 — focused toadstool, Gardener, and optional VWR Fisherman visual-bridge runtime procedure
+## Canary 27 — focused toadstool and Gardener runtime procedure
 
-This procedure is lifecycle-neutral. Record only Minecraft behavior actually observed against the exact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary29.jar` / SHA-256 `29cd32edba3d9a4bd1838f3f01cd783e16e34a23f0c090450b54299125b7e5dd`. Build, unit tests, private assembly, archive inspection, and resource validation are not Minecraft runtime evidence. Record any separately enabled resource pack because it can independently override visible models or textures.
+This procedure is lifecycle-neutral. Record only Minecraft behavior actually observed against the exact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar` / SHA-256 `088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd`. Build, unit tests, private assembly, archive inspection, and resource validation are not Minecraft runtime evidence. Record any separately enabled resource pack because it can independently override visible models or textures.
 
 1. **Identity and baseline behavior.** Confirm `ribbits:small_brown_toadstool`, `ribbits:toadstool`, `ribbits:brown_toadstool`, and `ribbits:red_toadstool` remain four distinct identities. Confirm the small brown item appears exactly once as **Brown Toadstool** and retains the small red plant's valid/invalid surfaces, random placement offset, half-block-high selection shape, no collision, sound, instant breaking, self-drop, pick-block result, ordinary stack limit, and `0.65` Composter participation.
 2. **Model parity.** Place or spread enough brown small toadstools to observe all four variants. Without an external pack masking the packaged resources, confirm every brown variant is fully volumetric, none is two crossed planes, and its physical model shape/detail matches the corresponding Matcha-donor red variant while retaining the brown cap texture and intended stem appearance. Confirm the Brown Toadstool inventory icon is centered with no visible blue key-color pixels.
@@ -11,13 +11,8 @@ This procedure is lifecycle-neutral. Record only Minecraft behavior actually obs
 5. **Huge brown growth and obstruction fallback.** Confirm a brown small toadstool can grow a huge structure with the vanilla red-mushroom shape using only `ribbits:brown_toadstool` cap blocks and `ribbits:toadstool_stem` stem blocks. Bonemeal each color where its huge form cannot fit; confirm the source plant is restored, no partial giant remains, and its same-color spread fallback remains available.
 6. **Future village generation.** Generate new Ribbit villages and inspect both embedded-template plants and decoration vegetation. Confirm red and brown small toadstools can both occur, individual plants in one village can differ, and already-generated villages remain unchanged. The exact per-plant `0.5` red/brown probability is a static processor/data contract and must not be inferred from a finite runtime sample.
 7. **Scope boundary.** Confirm no vanilla mushroom cap/stem blocks appear in either huge Ribbits form and no new recipe, Toadstool Heart input, Wandering Ribbit trade, or economy presentation beyond the approved Gardener tier-1 exchange exists. Ordinary-biome-generation absence is primarily a static/reference-scope contract; do not claim it solely from failing to encounter the plant during play.
-8. **Optional VWR Fisherman visual bridge.** In a separate paired trial with exact VWR Canary 19, make a VWR Fisherman cast. Confirm that the actual Ribbits `fishing_rod` grip is held at the crossed arms and only its shaft/reel/detail renders; `fishing_rod_2` decorative hanging-line geometry and `fishing_rod_3` decorative terminal/bobber geometry must not appear. Confirm VWR's real 16-segment line visibly starts at that same outer shaft tip, reaches only its existing float, and has no detached high world/view endpoint. Repeat the normal VWR fallback trial with its provider/resources unavailable: the VWR stick fallback must be safe, while Ribbits' native Fisherman gameplay and presentation remain unaffected in either case.
 
 The exact huge-growth probability is the static vanilla 26.2 `0.4` contract and likewise must not be inferred from a short random sample. Record `PASS`, `FAIL`, or `INCONCLUSIVE` only for observations actually completed.
-
-### Historical paired Fisherman evidence boundary
-
-Against exact Ribbits C28 and VWR C18, the user reported that the Ribbits rod rendered but was severely displaced from the villager's hands, and VWR's line was detached and could extend toward an arbitrary high world/view point. These are scoped C18/C28 observations only; they establish no aggregate PASS and no C29/C19 runtime result.
 
 ## Historical Canary 25 evidence boundary
 

@@ -52,6 +52,18 @@
         "reason": "Fabric client entity renderer registration."
       },
       {
+        "type": "PROJECT",
+        "identifier": "2a650718-ec62-568f-8dff-71258a4d6f3f",
+        "requirement": "=4.1.6+26.2-mynx-canary27; ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar; 3,377,508 bytes; SHA-256 088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd",
+        "reason": "VWR directly consumes the installed private C27 Fisherman model and texture at runtime without copying their protected payload into its own artifact."
+      },
+      {
+        "type": "MOD",
+        "identifier": "geckolib",
+        "requirement": ">=5.5.1",
+        "reason": "Required to submit the installed Ribbits C27 Geo model directly under VWR's Frog Villager pose."
+      },
+      {
         "type": "TOOL",
         "identifier": "Java",
         "requirement": ">=25",
@@ -60,21 +72,33 @@
     ]
   },
   "state": {
-    "milestone": "The retained VWR history documents prior Fisherman and Shepherd observations. Exact user-supplied visual evidence binds only to paired VWR C18 and Ribbits C28: the Ribbits rod rendered but was severely displaced from the villager's hands, and VWR's line was detached and could extend toward an arbitrary high world/view point. Those observations establish no aggregate PASS. C19 removes camera-position-derived endpoint behavior for the optional provider path; uses the actual `fishing_rod` Geo hierarchy to derive an explicit grip and outer-shaft tip; reanchors the rendered shaft grip at the crossed arms; suppresses `fishing_rod_2` and `fishing_rod_3`; and derives the VWR 16-segment line origin from that same arm-local physical tip through the inspected Minecraft 26.2 villager transform. Provider/resource failure still uses the C17 stick and its existing line endpoint. Fisherman behavior, float, fish output/deposit, sounds, and Shepherd rendering remain isolated and preserved. C19 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; the exact scoped C18/C28 observations require a new paired runtime trial.",
+    "milestone": "The retained VWR history documents prior Fisherman and Shepherd observations. Exact user-supplied visual evidence binds only to paired VWR C18 and Ribbits C28: the rod was visibly displaced from the Frog Villager's hands and VWR's line could detach toward a high world/view point; those observations establish no aggregate PASS. C20 retires the optional reflection bridge and C17 stick fallback, directly requires the exact retained Ribbits C27 artifact, and renders C27's existing `fishing_rod` shaft/reel/detail beneath the inspected Frog Villager folded-arms transform. The user-authored JEM supplies `arms_rotation` 43 degrees and the local `[0,-7,-6]`-pixel grip; VWR adds no independent rod rotation, suppresses source `fishing_rod_2`/`fishing_rod_3`, and derives its 16-segment line from that same physical outer shaft tip. Fisherman scheduling, navigation, casting/retrieval, float, fish generation/deposit, sounds/cleanup, and Shepherd remain unchanged. C20 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; no Minecraft runtime observation is claimed.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary19",
+        "version": "0.1.0-canary20",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary19.jar",
-          "sha256": "f48729b13b25fc7d502999b4981eb98bf90a26f8fb2fd9e848823bd374f76b8a"
+          "filename": "villager-work-routines-0.1.0-canary20.jar",
+          "sha256": "929e4f5fee37a5a3500ffde15e8a3f023ff6219a33b85d1446fd8f5c93585535"
         },
-        "built_at": "2026-09-20T14:59:43.7992872Z",
-        "source_commit": "3e68262c95e273cafd25fa421bcc0e107084df82",
+        "built_at": "2026-09-21T00:30:40.0676568Z",
+        "source_commit": "6d13248d030dc0673623032915e5d384faad9382",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
-          "exceptions": []
+          "exceptions": [
+            {
+              "consumer_id": "villager_work_routines",
+              "relationship": "depends",
+              "dependency_id": "ribbits",
+              "predicate": "=4.1.6+26.2-mynx-canary27",
+              "reason": "VWR directly renders the installed private Ribbits C27 Fisherman model and texture without packaging their payload.",
+              "regression_evidence": [
+                "The former C17 stick fallback and reflection-only bridge could not reproduce the Frog Villager reference pose.",
+                "The private stack always installs Ribbits with VWR, so an intentional exact provider boundary is required."
+              ]
+            }
+          ]
         },
-        "summary": "Physically reanchors the optional Ribbits rod at the crossed arms and starts VWR's line at its shared outer-shaft tip, with C17 stick fallback."
+        "summary": "Renders the installed C27 Fisherman rod in the user-authored Frog Villager folded-arms pose and starts VWR's line at its physical outer shaft tip."
       },
       "accepted": null,
       "rollback": null,
@@ -88,10 +112,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 19,
-    "activity_at": "2026-09-20T14:59:43Z",
-    "updated_at": "2026-09-20T14:59:43Z",
-    "last_codex_at": "2026-09-20T14:59:43Z",
-    "source_commit": "3e68262c95e273cafd25fa421bcc0e107084df82"
+    "revision": 20,
+    "activity_at": "2026-09-21T00:30:40Z",
+    "updated_at": "2026-09-21T00:30:40Z",
+    "last_codex_at": "2026-09-21T00:30:40Z",
+    "source_commit": "6d13248d030dc0673623032915e5d384faad9382"
   }
 }

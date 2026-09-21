@@ -187,21 +187,21 @@
     ]
   },
   "state": {
-    "milestone": "Canary 27's toadstool and Gardener behavior remains unchanged. Exact user-supplied visual evidence binds only to paired Ribbits C28 and VWR C18: the Ribbits rod rendered but was severely displaced from the villager's hands, and VWR's line was detached and could extend toward an arbitrary high world/view point. Those observations establish no aggregate PASS. C29 changes only the optional VWR Fisherman visual bridge: it derives an explicit grip and outer-shaft tip from the actual `fishing_rod` Geo hierarchy, reanchors the rendered shaft grip at the caller's crossed arms, suppresses `fishing_rod_2` and `fishing_rod_3`, and exposes the same arm-local physical tip for VWR's line origin without camera-position endpoint math. It adds no Ribbits gameplay, model/resource payload, resource mutation, or VWR dependency; unavailable resources leave consumers to their fallback. C29 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; Canary 24 remains the exact accepted release.",
+    "milestone": "Canaries 28 and 29 were VWR-only visual-bridge experiments and are retired. Ribbits' implementation/release boundary is restored exactly to retained Canary 27: its private artifact remains `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar`, SHA-256 `088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd`, without rebuilding or relabeling bytes. The VWR-specific Fisherman bridge is removed; native Ribbits Fisherman gameplay and presentation, C27 small-brown-toadstool behavior, and Gardener behavior are unchanged. The C18/C28 observations of displaced rod/line are historical integration evidence only and establish no C27 runtime result. Current C27 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED; accepted C24 remains unchanged.",
     "releases": {
       "current": {
-      "version": "4.1.6+26.2-mynx-canary29",
+      "version": "4.1.6+26.2-mynx-canary27",
       "artifact": {
-        "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary29.jar",
-        "sha256": "29cd32edba3d9a4bd1838f3f01cd783e16e34a23f0c090450b54299125b7e5dd"
+        "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar",
+        "sha256": "088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd"
       },
-      "built_at": "2026-09-20T14:59:43.8067987Z",
-      "source_commit": "3e68262c95e273cafd25fa421bcc0e107084df82",
+      "built_at": "2026-09-18T05:47:40.8628936Z",
+      "source_commit": "9fe0bf18b3799e749fdf736a3b330d5bee8e23e2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-      "summary": "Physically reanchors the optional Fisherman rod and shares its actual outer-shaft tip with VWR while retaining C27's toadstool and Gardener behavior."
+      "summary": "Retains the exact C27 private bytes and C27's small-brown-toadstool and Gardener behavior after retiring VWR-only C28/C29 bridge experiments."
       },
       "accepted": {
         "version": "4.1.6+26.2-mynx-canary24",
@@ -228,10 +228,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 35,
-    "activity_at": "2026-09-20T14:59:43Z",
-    "updated_at": "2026-09-20T14:59:43Z",
-    "last_codex_at": "2026-09-20T14:59:43Z",
-    "source_commit": "3e68262c95e273cafd25fa421bcc0e107084df82"
+    "revision": 36,
+    "activity_at": "2026-09-21T00:30:40Z",
+    "updated_at": "2026-09-21T00:30:40Z",
+    "last_codex_at": "2026-09-21T00:30:40Z",
+    "source_commit": "6d13248d030dc0673623032915e5d384faad9382"
   }
 }
