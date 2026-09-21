@@ -23,7 +23,7 @@
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
       "Expose one deterministic ordered geometry catalog for Vertical Slab, Step, Corner, Quarter Column, and Layer without changing established placement, economy, or material-frame semantics.",
-      "Offer complete nine-role BGE geometry families for the exact 118 requested optional-provider sources when Ribbits, Mynx Trees, Macaw's Paths, Building But Better, or Enderscape supplies the corresponding source block, and bind any BGE-only CNM candidate only after CNM itself admits its real horizontal source and resolves its actual ShapeMap graph.",
+      "Offer complete nine-role BGE geometry families for the exact 128 explicitly cataloged optional-provider sources when Ribbits, Mynx Trees, Macaw's Paths, Building But Better, or Enderscape supplies the corresponding source block, without discovering or completing arbitrary CNM families.",
       "Treat adding a normal catalog material as full membership in the canonical block, horizontal slab, stair, wall, Vertical Slab, Step, Layer, Corner, and Quarter Column roles unless an exact technical exclusion is recorded.",
       "Keep canonical material identity separate from geometry generation so limited special forms such as Farmland Slab remain explicitly canonical-bound without implying a full generated family.",
       "Require every BGE-owned registered block to have one explicit canonical classification or a documented exemption, with bootstrap validation preventing anonymous material-semantic holes.",
@@ -33,9 +33,10 @@
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
+      "C92 restores C78's explicit material/profile architecture, selectively retains approved later catalog and resource behavior, and removes C79-C91 arbitrary-CNM discovery, deferred carriers, provisional identities, and post-resolution material guessing.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.35-bge.canary91.private-local-beam-catalog+26.2`.",
-      "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, six Mynx Trees log, wood, and leaf sources, all 12 BBB beam parents including Pale Oak, and 46 Enderscape-family catalog entries (14 axis-aware, 24 ordinary, three terrain, two path, and three private/local-only Beam roots). The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` is one declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched, but their provider state is geometry-only and cannot carry an independent material AXIS; C69 therefore gives BGE canonical AxisSlab and AxisStairs forms, retains BBB's ordinary thin WoodenWallBlock as the canonical wall, and keeps the five other BGE axis-aware roles. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.36-bge.canary92.explicit-family-reconstruction+26.2`.",
+      "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks, five distinct Macaw soil Path blocks, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, six Mynx Trees log, wood, and leaf sources, all 12 BBB beam parents including Pale Oak, and 49 Enderscape-family catalog entries (14 axis-aware, 27 ordinary, three terrain, two path, and three private/local-only Beam roots). The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` is one declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's ordinary thin WoodenWallBlock remains the canonical wall, and all 12 loaded BBB selectors are exact `[Plank][Beam]` concatenations. C65 accepts BBB's real semantically equivalent `axis=z` `x=90,y=180` representation while rejecting unknown transforms and `uvlock`."
     ],
     "boundaries": {
       "owned_paths": [
@@ -44,6 +45,7 @@
       "exclusions": [
         "C89 changes only CNM/BGE family-root classification after normal first-pass family completion: every canonically bound non-root role, whether supplied as a normal slab, stair, wall, Vertical Slab, Step, Layer, Corner, or Quarter Column, is rejected as a later CNM source by both Slab and Stair scan branches. It adds no name- or provider-specific exclusion, synthetic geometry combination, canonical binding, validation bypass, registration, resource, placement, economy, CTM, or provider-behavior change.",
         "C90 changes only the C87 deferred-CNM-Wall lifecycle after ShapeMap resolves a component: when that resolved component already has a real provider Wall, BGE retires and explicitly exempts its preregistered provisional deferred Wall rather than injecting or binding it; when the component has no real Wall, the same provisional block remains its normal canonical Wall. This is component- and role-based, not a material, namespace, provider, or Enderscape compatibility path; it creates no synthetic binding, does not weaken validation, does not alter C89's non-root guard, and does not change normal CNM family autopopulation, registration, geometry, placement, economy, CTM, resources, or provider behavior.",
+        "C92 makes the C79-C91 arbitrary-CNM/deferred completion path historical only: unknown CNM materials remain CNM-owned and receive no BGE registrations, inferred identities, or selector rewrites; only explicit profile definitions may contribute BGE families.",
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
         "C68 changes only normal axis-material Layer face UV rectangles: it preserves Layer bounds, placement, collision, state, texture roles, grain rotation, special visual paths, non-axis materials, all other geometries, registration, data, display transforms, and external-material support.",
@@ -63,7 +65,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C90 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C92 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -86,17 +88,17 @@
     ]
   },
   "state": {
-    "milestone": "C91 adds deterministic, complete nine-role Veiled, Celestial, and Murublight Beam families beside their Enderscape plank selectors, Block of Raw Shadoline, corrected terrain/path/Step/Corner geometry/resource seams, and category-wide regression coverage. Its six recolored Beam textures are privately assembled at build time from the exact local BBB Beam artwork and Enderscape palettes, preserving pixels, shading, alpha, and direction; those derivative bytes and exact JAR are PRIVATE_LOCAL_ONLY with no redistribution permission. Controlled Java 25 validation passed all 158/158 GameTests; C91 remains ACTIVE and runtime-untested. The supplied `BGE canonical binding validation failed` observation remains exact C89 predecessor evidence; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C92 reconstructs BGE on C78's explicit material/profile architecture, removes arbitrary CNM discovery and deferred families, and preserves only the approved later catalog, model-resolution, state, and private Beam features. Exact selectors, axis-wall previews, Corner orientation, genuine Step topology, Path Layer UVs, and full-plane culling are controlled-validated across 474 profiles and 128 optional sources. Java 25 validation passed all 152/152 GameTests; C92 remains ACTIVE and runtime-untested. The supplied visible selector/rendering failures remain bound only to exact C91 SHA-256 c59294526858627cc20a496fd14842b4920b12c05ff66d520a024168153d2478; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C91 (Private Local-Only Enderscape Beam Catalog; embedded 4.2.35-bge.canary91.private-local-beam-catalog+26.2)",
-        "embedded_version": "4.2.35-bge.canary91.private-local-beam-catalog+26.2",
+        "version": "C92 (Explicit Family Reconstruction; embedded 4.2.36-bge.canary92.explicit-family-reconstruction+26.2)",
+        "embedded_version": "4.2.36-bge.canary92.explicit-family-reconstruction+26.2",
         "artifact": {
-          "filename": "BGE C91.jar",
-          "sha256": "c59294526858627cc20a496fd14842b4920b12c05ff66d520a024168153d2478"
+          "filename": "BGE C92.jar",
+          "sha256": "81c5327b0f87ce156985ff5b5a0505a7c213bbcba24abd6418e24c69aace060e"
         },
-        "built_at": "2026-09-21T02:09:03.6322657Z",
-        "source_commit": "7b4619643f972222a7c8bfc189968b3c6395578c",
+        "built_at": "2026-09-21T04:18:35.7661287Z",
+        "source_commit": "4d23509c7165951c71d236310a80ca92d877afbe",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -105,16 +107,17 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C91 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; because it contains privately derived BBB Beam resources, this target-specific artifact is PRIVATE_LOCAL_ONLY and has no redistribution permission.",
+              "reason": "The exact C92 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; because it contains privately derived BBB Beam resources, this target-specific artifact is PRIVATE_LOCAL_ONLY and has no redistribution permission.",
               "regression_evidence": [
-                "Java 25 clean packaging produced exact PRIVATE_LOCAL_ONLY `BGE C91.jar`, 6,428,213 bytes, SHA-256 c59294526858627cc20a496fd14842b4920b12c05ff66d520a024168153d2478, finalized at 2026-09-21T02:09:03.6322657Z from preceding coherent implementation/artifact checkpoint 7b4619643f972222a7c8bfc189968b3c6395578c.",
+                "Java 25 clean packaging produced exact PRIVATE_LOCAL_ONLY `BGE C92.jar`, 6,395,359 bytes, SHA-256 81c5327b0f87ce156985ff5b5a0505a7c213bbcba24abd6418e24c69aace060e, finalized at 2026-09-21T04:18:35.7661287Z from preceding coherent implementation/artifact checkpoint 4d23509c7165951c71d236310a80ca92d877afbe.",
                 "The private Beam generator accepted only locally supplied BBB dev.6 SHA-256 0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a and Enderscape 3.0.2+mc26.2 SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b; archive inspection found six generated private Beam PNG entries and zero `assets/bbb/` entries.",
-                "The C91 controlled Minecraft 26.2 GameTest suite passed 158/158, including deterministic selector order/grouping and names, all three Beam role families and wooden Walls, Raw Shadoline, terrain-resource leakage prevention, Step topology, Corner orientation, and Path culling/Layer UV regressions."
+                "The C92 controlled Minecraft 26.2 GameTest suite passed 152/152; the architecture, Glass Corner UV, and all 11 Nibaru static/resource suites passed. Unified artifact verification found zero missing C58/C78 entries, forbidden architecture/provider resources, source-artwork leaks, or invalid private-resource counts.",
+                "Owner-reported runtime failures remain bound only to exact C91 SHA-256 c59294526858627cc20a496fd14842b4920b12c05ff66d520a024168153d2478: Enderscape Stem/Hyphae and Plank/Beam menu order/duplication, missing Log/Stem Wall preview rings, visible culling gaps, rotated/misaligned Corners, and visible deferred Wall entries. No unreported checklist result or acceptance is inferred."
               ]
             }
           ]
         },
-        "summary": "Adds complete Veiled, Celestial, and Murublight Beam families plus Raw Shadoline and catalog geometry fixes; this exact derivative-resource artifact is PRIVATE_LOCAL_ONLY and may not be redistributed."
+        "summary": "Reconstructs BGE around explicit C78-style families, removes arbitrary/deferred CNM completion, and corrects exact selectors, wall previews, topology, UVs, culling, and retained Enderscape/BBB resources; this artifact remains PRIVATE_LOCAL_ONLY."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -182,10 +185,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 53,
-    "activity_at": "2026-09-21T02:09:03.6322657Z",
-    "updated_at": "2026-09-21T02:09:03.6322657Z",
-    "last_codex_at": "2026-09-21T02:09:03.6322657Z",
-    "source_commit": "7b4619643f972222a7c8bfc189968b3c6395578c"
+    "revision": 54,
+    "activity_at": "2026-09-21T04:18:35.7661287Z",
+    "updated_at": "2026-09-21T04:18:35.7661287Z",
+    "last_codex_at": "2026-09-21T04:18:35.7661287Z",
+    "source_commit": "4d23509c7165951c71d236310a80ca92d877afbe"
   }
 }
