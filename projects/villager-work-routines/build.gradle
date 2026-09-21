@@ -3,11 +3,25 @@ plugins { id 'net.fabricmc.fabric-loom' version '1.15.5' }
 version = project.mod_version
 group = project.maven_group
 base { archivesName = project.archives_base_name }
-repositories { maven { url = 'https://maven.fabricmc.net/' }; mavenCentral() }
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    mavenCentral()
+}
+
+def ribbitsC27Artifact = file('../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar')
+if (!ribbitsC27Artifact.isFile()) {
+    throw new GradleException("VWR requires the retained private Ribbits C27 artifact: ${ribbitsC27Artifact}")
+}
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    // VWR owns this visual integration, but the private C27 JAR remains the only source of the
+    // Fisherman geometry and texture. Loom exposes it to compilation/development without nesting
+    // its protected payload in VWR's artifact.
+    implementation files(ribbitsC27Artifact)
+    implementation "com.geckolib:geckolib-fabric-26.2:5.5.1"
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -17,3 +31,17 @@ tasks.withType(JavaCompile).configureEach { options.release = 25 }
 tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }
 test { useJUnitPlatform() }
 java { withSourcesJar() }
+
+def verifyNoRibbitsPayload = tasks.register('verifyNoRibbitsPayload') {
+    dependsOn tasks.named('jar')
+    doLast {
+        def forbidden = zipTree(tasks.named('jar').get().archiveFile.get().asFile).matching {
+            include 'assets/ribbits/**'
+            include 'data/ribbits/**'
+        }.files
+        if (!forbidden.isEmpty()) {
+            throw new GradleException("VWR must not package Ribbits-owned resources: ${forbidden}")
+        }
+    }
+}
+tasks.named('check') { dependsOn verifyNoRibbitsPayload }

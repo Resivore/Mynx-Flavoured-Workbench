@@ -1,7 +1,6 @@
 package dev.resivore.villagerwork.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -16,15 +15,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import dev.resivore.villagerwork.FishingFloat;
-import dev.resivore.villagerwork.FishingRodPose;
+import dev.resivore.villagerwork.FrogVillagerRodPose;
 import dev.resivore.villagerwork.ShearingToolMarker;
 import net.minecraft.world.item.Items;
 
 /**
  * A single client-only Fisherman prop posed at crossed villager arms while this villager owns a
- * live VWR float. The optional Ribbits provider owns its protected rod material; VWR retains its
- * plain-stick fallback when that provider is unavailable. Both paths stay independent of
- * equipment synchronization, avoiding vanilla's duplicate fishing line and hook.
+ * live VWR float. VWR directly consumes the installed private Ribbits C27 model/resources but
+ * owns its Frog Villager reference pose and sole live line/float. It does not synchronize an
+ * equipment item, avoiding vanilla's duplicate fishing line and hook.
  */
 public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, VillagerModel> {
     private final ItemInHandRenderer itemRenderer;
@@ -49,9 +48,9 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         if (fishing) {
             poseStack.pushPose();
             getParentModel().translateToArms(state, poseStack);
-            boolean submittedRibbitsRod = RibbitsFishermanRodProvider.submit(poseStack, collector, light);
+            FrogVillagerRodPose.applyReferenceGrip(poseStack);
+            RibbitsFishermanRodRenderer.submit(poseStack, collector, light);
             poseStack.popPose();
-            if (!submittedRibbitsRod) submitFishingStick(villager, state, poseStack, collector, light);
         }
         if (shearing) {
             poseStack.pushPose();
@@ -61,30 +60,11 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         }
     }
 
-    private void submitFishingStick(Villager villager, VillagerRenderState state, PoseStack poseStack,
-                                    SubmitNodeCollector collector, int light) {
-        poseStack.pushPose();
-        // C17 stays solely on the item-renderer fallback path. The standalone Ribbits rod is
-        // attached directly to the crossed-arms grip and never inherits these display transforms.
-        FishingRodPose.BodySpaceOffset inward = FishingRodPose.C17_INWARD_BODY_OFFSET;
-        poseStack.translate(inward.x(), inward.y(), inward.z());
-        getParentModel().translateToArms(state, poseStack);
-        poseStack.translate(0.0F, FishingRodPose.STICK_VERTICAL_TRANSLATION,
-                FishingRodPose.STICK_ARM_LOCAL_DEPTH_TRANSLATION);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-58.0F));
-        poseStack.mulPose(Axis.YP.rotationDegrees(12.0F));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-12.0F));
-        poseStack.scale(1.28F, 1.28F, 1.28F);
-        itemRenderer.renderItem(villager, new ItemStack(Items.STICK),
-                ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, poseStack, collector, light);
-        poseStack.popPose();
-    }
-
     private void submitShears(Villager villager, PoseStack poseStack, SubmitNodeCollector collector, int light) {
         poseStack.pushPose();
         poseStack.translate(0.0F, 0.02F, -0.30F);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-58.0F));
-        poseStack.mulPose(Axis.YP.rotationDegrees(10.0F));
+        poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-58.0F));
+        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(10.0F));
         poseStack.scale(1.12F, 1.12F, 1.12F);
         itemRenderer.renderItem(villager, new ItemStack(Items.SHEARS),
                 ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, poseStack, collector, light);
@@ -102,22 +82,15 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
     }
 
     /**
-     * Converts the provider's explicit crossed-arms-local shaft tip to world space using the
-     * interpolated villager location and actual body yaw. Entity layers receive a camera-relative
-     * PoseStack in 26.2, so the camera is intentionally never used for this physical endpoint.
+     * Converts the reference's physical outer shaft tip to world space through the exact same
+     * folded-arms/reference chain that the visible rod receives. Entity layers get a
+     * camera-relative PoseStack in 26.2, so camera state is intentionally never an input.
      */
     static Vec3 ribbitsRodTip(Villager villager, float partialTick) {
-        RibbitsFishermanRodProvider.ArmLocalRodTip armLocalTip = RibbitsFishermanRodProvider.armLocalTip();
-        if (armLocalTip == null) return null;
         Vec3 position = villager.getPosition(partialTick);
         float bodyYaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
-        FishingRodPose.Point worldTip = FishingRodPose.tipFromCrossedArms(position.x, position.y,
-                position.z, bodyYaw, new FishingRodPose.ArmLocalPoint(armLocalTip.x(),
-                        armLocalTip.y(), armLocalTip.z()));
+        FrogVillagerRodPose.Point worldTip = FrogVillagerRodPose.outerShaftTip(position.x, position.y,
+                position.z, bodyYaw);
         return worldTip.isFinite() ? new Vec3(worldTip.x(), worldTip.y(), worldTip.z()) : null;
-    }
-
-    static boolean ribbitsRodProviderAvailable() {
-        return RibbitsFishermanRodProvider.isAvailable();
     }
 }

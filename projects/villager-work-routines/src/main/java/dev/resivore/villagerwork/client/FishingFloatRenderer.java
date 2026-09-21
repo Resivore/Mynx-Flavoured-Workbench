@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.resivore.villagerwork.FishingFloat;
 import dev.resivore.villagerwork.FishingLineGeometry;
-import dev.resivore.villagerwork.FishingRodPose;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -14,7 +13,6 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.phys.Vec3;
@@ -31,25 +29,13 @@ public final class FishingFloatRenderer extends EntityRenderer<FishingFloat, Fis
         super.extractRenderState(entity, state, partialTick);
         Entity owner = entity.owner();
         if (owner instanceof Villager villager) {
-            Vec3 villagerPosition = villager.getPosition(partialTick);
-            float yaw = Mth.rotLerp(partialTick, villager.yBodyRotO, villager.yBodyRot);
             Vec3 ribbitsTip = VwrFishingRodLayer.ribbitsRodTip(villager, partialTick);
             if (ribbitsTip != null) {
-                // The provider's standalone grip/tip basis is shared by visible rod submission
-                // and this explicit model-to-world conversion, rather than retaining a second
-                // VWR approximation or deriving an endpoint from camera position.
+                // The Frog Villager reference's folded-arms/local-grip chain is shared by
+                // visible rod submission and this physical outer-shaft line origin.
                 state.line = ribbitsTip.subtract(entity.getPosition(partialTick));
-            } else if (!VwrFishingRodLayer.ribbitsRodProviderAvailable()) {
-                // Ribbits is optional. Retain C17's proven stick/line presentation only when its
-                // visual provider or resources are unavailable.
-                FishingRodPose.Point tip = FishingRodPose.tip(villagerPosition.x, villagerPosition.y,
-                        villagerPosition.z, yaw);
-                state.line = tip.isFinite()
-                        ? new Vec3(tip.x(), tip.y(), tip.z()).subtract(entity.getPosition(partialTick))
-                        : null;
             } else {
-                // Await the matching rod-layer submission instead of displaying a line from an
-                // arbitrary fallback point beside an available authored rod.
+                // A required C27 visual resource failure must not invent a second fallback line.
                 state.line = null;
             }
         } else state.line = null;

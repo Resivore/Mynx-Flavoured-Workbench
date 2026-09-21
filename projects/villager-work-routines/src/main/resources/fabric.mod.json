@@ -16,7 +16,26 @@
     "minecraft": "=26.2",
     "fabricloader": ">=0.19.3",
     "fabric-api": ">=0.157.0",
+    "ribbits": "=4.1.6+26.2-mynx-canary27",
+    "geckolib": ">=5.5.1",
     "java": ">=25"
   },
-  "custom": { "runtime_dependency_policy": { "contract": "CAPABILITY_OR_PROVIDER", "exceptions": [] } }
+  "custom": {
+    "runtime_dependency_policy": {
+      "contract": "CAPABILITY_OR_PROVIDER",
+      "exceptions": [
+        {
+          "consumer_id": "villager_work_routines",
+          "relationship": "depends",
+          "dependency_id": "ribbits",
+          "predicate": "=4.1.6+26.2-mynx-canary27",
+          "reason": "VWR directly renders the installed private Ribbits C27 Fisherman model and texture without packaging their payload.",
+          "regression_evidence": [
+            "The former C17 stick fallback and reflection-only bridge could not reproduce the Frog Villager reference pose.",
+            "The private stack always installs Ribbits with VWR, so an intentional exact provider boundary is required."
+          ]
+        }
+      ]
+    }
+  }
 }
