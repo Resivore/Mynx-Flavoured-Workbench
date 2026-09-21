@@ -33,7 +33,7 @@
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
-      "C92 restores C78's explicit material/profile architecture, selectively retains approved later catalog and resource behavior, and removes C79-C91 arbitrary-CNM discovery, deferred carriers, provisional identities, and post-resolution material guessing; C93 retains that boundary while adopting exact provider-owned standard roles, completing only explicit known families, and correcting shared preview, Wall, lowered-Path culling, Step UV, and directional-state contracts.",
+      "C92 restores C78's explicit material/profile architecture, selectively retains approved later catalog and resource behavior, and removes C79-C91 arbitrary-CNM discovery, deferred carriers, provisional identities, and post-resolution material guessing; C93 retains that boundary while adopting exact provider-owned standard roles, completing only explicit known families, and correcting shared preview, Wall, lowered-Path culling, Step UV, and directional-state contracts; C94 restores C92 item/selector presentation for Stairs, Vertical Slabs, Steps, and Walls while giving Beam Vertical Slab and Step items their authoritative axis-aware material frame without changing C93 placed resources.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
       "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.37-bge.canary93.provider-role-completion+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks plus five distinct Macaw soil Path blocks, six Mynx Trees log/wood/leaf sources, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, all 12 BBB beam parents including Pale Oak, 68 exact Enderscape sources, and the provider-owned Mossy Stone root. C93 adopts exact vanilla or Enderscape Slab/Stairs/Wall blocks wherever supplied, suppresses overlapping fallback registrations while Enderscape is loaded, supplies only genuinely absent standard roles plus the five BGE-specific roles, and validates exactly one visible nine-role ShapeMap variation for each explicit family. The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` remains a declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's thin Beam Wall topology remains canonical for all 12 Beam families, and the three Enderscape private Beam variants preserve that topology with their own palettes."
@@ -47,6 +47,7 @@
         "C90 changes only the C87 deferred-CNM-Wall lifecycle after ShapeMap resolves a component: when that resolved component already has a real provider Wall, BGE retires and explicitly exempts its preregistered provisional deferred Wall rather than injecting or binding it; when the component has no real Wall, the same provisional block remains its normal canonical Wall. This is component- and role-based, not a material, namespace, provider, or Enderscape compatibility path; it creates no synthetic binding, does not weaken validation, does not alter C89's non-root guard, and does not change normal CNM family autopopulation, registration, geometry, placement, economy, CTM, resources, or provider behavior.",
         "C92 makes the C79-C91 arbitrary-CNM/deferred completion path historical only: unknown CNM materials remain CNM-owned and receive no BGE registrations, inferred identities, or selector rewrites; only explicit profile definitions may contribute BGE families.",
         "C93 changes only explicitly cataloged provider-family ownership and the shared rendering contracts requested for Walls, item/selector previews, lowered Path culling and Step UVs, and Corrupt Overgrowth state projection. Item-only preview transforms do not alter placed blockstates or world model rotations; no arbitrary discovery, generic root inference, deferred/profile-free family, provisional block, `*_slab_wall`, or post-resolution material guessing returns.",
+        "C94 changes only item/selector presentation: it removes the C93-only catalog display override, restores each affected item's C92 model chain, and routes all 15 Beam Vertical Slab and Step items through inventory-only wrappers over their unchanged direct-Y placed models. It changes no placed blockstate or block-model resource, texture artwork, registration, placement rule, geometry state, provider ownership, selector order, economy, or architecture boundary.",
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
         "C68 changes only normal axis-material Layer face UV rectangles: it preserves Layer bounds, placement, collision, state, texture roles, grain rotation, special visual paths, non-axis materials, all other geometries, registration, data, display transforms, and external-material support.",
@@ -66,7 +67,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C93 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C94 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -89,17 +90,17 @@
     ]
   },
   "state": {
-    "milestone": "C93 retains C92's explicit C78-style architecture while completing Mossy Stone, adopting exact Enderscape/vanilla standard roles, and correcting Plank/Beam Wall topology, catalog-wide item previews, lowered-Path culling and Step UVs, and Corrupt Overgrowth state projection. Controlled validation covers 492 profiles, 148 explicit optional sources, 1,332 canonical relations, and 982 genuinely generated external roles; Java 25 validation passed all 162/162 GameTests. C93 remains ACTIVE and runtime-untested. The supplied C92 failures remain bound only to exact C92 SHA-256 81c5327b0f87ce156985ff5b5a0505a7c213bbcba24abd6418e24c69aace060e; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C94 is a narrow C93 presentation successor: it removes C93's catalog-wide item rotation override, restores the exact C92 item/selector presentation contract for Stairs, Vertical Slabs, Steps, and Walls, and gives all 12 BBB plus three private Enderscape Beam Vertical Slab and Step items the authoritative direct-Y Beam UV frame and decorative center band. Unified verification proves all 7,992 C93 placed blockstate/block-model resources remain byte-identical and no placed resources were added or removed; Java 25 validation passed all 162/162 GameTests. C94 remains ACTIVE and runtime-untested. Owner observations of changed preview rotations and cropped/missing Beam item bands bind only to exact C93 SHA-256 16087d67acb3554f8a6aeee3652f4d75ff00b8a042a395332c72c7fb9f7016e3; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C93 (Provider Role Completion; embedded 4.2.37-bge.canary93.provider-role-completion+26.2)",
-        "embedded_version": "4.2.37-bge.canary93.provider-role-completion+26.2",
+        "version": "C94 (Item Preview Beam UV; embedded 4.2.38-bge.canary94.item-preview-beam-uv+26.2)",
+        "embedded_version": "4.2.38-bge.canary94.item-preview-beam-uv+26.2",
         "artifact": {
-          "filename": "BGE C93.jar",
-          "sha256": "16087d67acb3554f8a6aeee3652f4d75ff00b8a042a395332c72c7fb9f7016e3"
+          "filename": "BGE C94.jar",
+          "sha256": "38f6f50341cea0dd3a31da657616651626b89b8e73558794edf95e1d2229a967"
         },
-        "built_at": "2026-09-21T06:08:09.831Z",
-        "source_commit": "374fe75c6ce3f428611b6d84f340101d197db099",
+        "built_at": "2026-09-21T16:03:27.0181044Z",
+        "source_commit": "2a2372f03e8b1c528ae8af3dab4f2de8606c1d5b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -108,17 +109,18 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C93 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; because it contains privately derived BBB Beam resources, this target-specific artifact is PRIVATE_LOCAL_ONLY and has no redistribution permission.",
+              "reason": "The exact C94 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; because it contains privately derived BBB Beam resources, this target-specific artifact is PRIVATE_LOCAL_ONLY and has no redistribution permission.",
               "regression_evidence": [
-                "Java 25 clean packaging produced exact PRIVATE_LOCAL_ONLY `BGE C93.jar`, 6,416,477 bytes, SHA-256 16087d67acb3554f8a6aeee3652f4d75ff00b8a042a395332c72c7fb9f7016e3, finalized at 2026-09-21T06:08:09.831Z from preceding coherent implementation/artifact checkpoint 374fe75c6ce3f428611b6d84f340101d197db099.",
+                "Java 25 clean packaging produced exact PRIVATE_LOCAL_ONLY `BGE C94.jar`, 6,418,548 bytes, SHA-256 38f6f50341cea0dd3a31da657616651626b89b8e73558794edf95e1d2229a967, finalized at 2026-09-21T16:03:27.0181044Z from preceding coherent implementation/artifact checkpoint 2a2372f03e8b1c528ae8af3dab4f2de8606c1d5b.",
                 "The private Beam generator accepted only locally supplied BBB dev.6 SHA-256 0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a and Enderscape 3.0.2+mc26.2 SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b; archive inspection found six generated private Beam PNG entries and zero `assets/bbb/` entries.",
-                "The C93 controlled Minecraft 26.2 GameTest suite passed 162/162; the material-profile architecture suite, Glass Corner UV audit, and all 11 Nibaru static/resource suites passed. Unified artifact verification found one root descriptor, zero nested JARs or packaged CNM classes, zero missing C58/C78 entries, zero forbidden architecture/provider resources or source-artwork leaks, exactly six approved private Beam PNGs, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, and zero recipes.",
-                "Owner-reported runtime observations remain bound only to exact C92 SHA-256 81c5327b0f87ce156985ff5b5a0505a7c213bbcba24abd6418e24c69aace060e: Mossy Stone and the 17 named Enderscape families were incomplete; exact End Stone, Plank, Purpur, and Purpur-Wall provider-role ownership needed correction; the six named Veiled/Celestial/Murublight Plank and Beam Walls had incorrect geometry while their textures were correct; menu previews were reversed for apparently all Stairs, Vertical Slabs, Steps, and Walls while placed-world orientation was correct; Celestial/Corrupt Path Stairs and Vertical Slabs culled the neighboring top 1/16; and Celestial/Corrupt Path Steps, not Stairs, had incorrect UVs. Corrupt Overgrowth's no-AXIS behavior is a source-backed invariant rather than a claimed C92 runtime failure. No aggregate result, unreported checklist result, or acceptance is inferred."
+                "The C94 controlled Minecraft 26.2 GameTest suite passed 162/162; the material-profile architecture suite, Glass Corner UV audit, and all 11 Nibaru static/resource suites passed. Unified artifact verification found exact C92 presentation equality for six representative Stair/Wall chain resources, byte equality for all 7,992 C93 placed blockstate/block-model resources with no additions or deletions, authoritative U=7 decorative bands for all 15 Beam side frames, one root descriptor, zero nested JARs or packaged CNM classes, zero forbidden architecture/provider resources or source-artwork leaks, exactly six approved private Beam PNGs, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, and zero recipes.",
+                "Owner-reported runtime observations bind only to exact C93 SHA-256 16087d67acb3554f8a6aeee3652f4d75ff00b8a042a395332c72c7fb9f7016e3: the item/selector preview rotations introduced between C92 and C93 were unwanted for Stairs, Vertical Slabs, Steps, and Walls while placed-world geometry and orientation were correct; Beam Vertical Slab and Step item previews cropped or omitted the source Beam decorative center line/band on vertical faces. These observations do not establish any C94 runtime result or acceptance.",
+                "Previously recorded owner observations remain bound only to exact C92 SHA-256 81c5327b0f87ce156985ff5b5a0505a7c213bbcba24abd6418e24c69aace060e; C94 retains C93's provider-role completion, explicit-family boundary, Wall topology, lowered-Path culling and Step UV, Mossy Stone, and Corrupt Overgrowth corrections except for the explicitly reverted item-presentation override."
               ]
             }
           ]
         },
-        "summary": "Completes exact provider-owned Mossy Stone and Enderscape families while correcting Wall topology, item previews, lowered-Path culling and Step UVs, and Corrupt Overgrowth state projection without relaxing C92's explicit-family boundary; this artifact remains PRIVATE_LOCAL_ONLY."
+        "summary": "Restores exact C92 item/selector presentation for Stairs, Vertical Slabs, Steps, and Walls and preserves authoritative Beam side/end UV frames in all Beam Vertical Slab and Step items while leaving every C93 placed blockstate and block model byte-identical; this artifact remains PRIVATE_LOCAL_ONLY."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -186,10 +188,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 55,
-    "activity_at": "2026-09-21T06:08:09.831Z",
-    "updated_at": "2026-09-21T06:08:09.831Z",
-    "last_codex_at": "2026-09-21T06:08:09.831Z",
-    "source_commit": "374fe75c6ce3f428611b6d84f340101d197db099"
+    "revision": 56,
+    "activity_at": "2026-09-21T16:03:27.0181044Z",
+    "updated_at": "2026-09-21T16:03:27.0181044Z",
+    "last_codex_at": "2026-09-21T16:03:27.0181044Z",
+    "source_commit": "2a2372f03e8b1c528ae8af3dab4f2de8606c1d5b"
   }
 }
