@@ -1,14 +1,15 @@
-# C7 focused runtime checklist
+# C8 focused verification checklist
 
-Exact candidate: `interchangeable-block-families-0.1.0-canary7.jar`, embedded version `0.1.0-canary7`, SHA-256 `599660b27db061926a800bd486f25bb1d8511b6b82b8afd2a369e8189c696b7c`.
+Exact current candidate: `interchangeable-block-families-0.1.0-canary8.jar`, embedded version `0.1.0-canary8`, 56,854 bytes, SHA-256 `496335c83a8fa990d0ac7267c5920cf8918598be16af3e5f3b1a0cfe8816d043`, source `745714aadb669409a172ec7a4e0cacb9a6dcf98f`. Exact C7 remains the accepted baseline.
 
-Run only in the dedicated Matcha Flavoured 26.2 Workbench after a serialized Test Instance Manager deployment that includes BBB. C7 requires BBB but deliberately has no BBB version predicate; first verify Fabric resolves the intentionally installed `2.0pre4+26.2-pale-oak-dev.3` BBB provider and proceeds to normal mod loading.
+Use an owner-approved isolated Minecraft 26.2 Fabric environment with Clutter No More and the candidate's declared providers. The controlled baseline used exact Enderscape `3.0.2` (`enderscape-fabric-3.0.2+mc26.2.jar`, SHA-256 `9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b`). Do not substitute a wall-sign placement block or infer any family from a registry-name suffix.
 
-1. For Oak and Pale Oak, use CNM's selector in both directions through Trim, Balustrade, Support, and Pallet; repeat one nether wood representative.
-2. Confirm each existing Fence/Fence Gate pair still interchanges, and that its matching BBB Frame and Lattice are now selector members. Check Pale Oak specifically.
-3. Confirm the Ribbits Mossy Oak fence/gate pair still interchanges and has no BBB Frame or Lattice selector member.
-4. For Stone, Blackstone, Deepslate, Nether Brick, Sandstone, Red Sandstone, and Quartz, confirm Column, Urn, Moulding, Fence, and Frame interconvert only within their material family.
-5. Confirm Iron Bars, BBB Iron Fence, Iron Chain, and Aurora Iron Chandelier interconvert; confirm the Iron Bars canonical recipe remains available.
-6. Restart/reload once and repeat one wood, one stone, and the iron family. Stop and report any missing item, canonical recipe removal, duplicate selector/conversion entry, cross-material match, crash, or reload error.
+1. Confirm dependency resolution reaches normal loading and IBF reports exactly 179 audited families, 1,384 unique items, and a largest family of 22.
+2. Exercise all 15 display-fixture families. The complete literal set is Oak, Spruce, Birch, Jungle, Acacia, Dark Oak, Mangrove, Cherry, Pale Oak, Bamboo, Crimson, Warped, Veiled, Celestial, and Murublight. Each selector must contain exactly Sign, Hanging Sign, and Shelf in that order, with Sign canonical.
+3. Confirm Wall Sign and Wall Hanging Sign placement blocks never appear as selector members. Enderscape doors, trapdoors, slabs, stairs, walls, and BGE-generated geometry must also remain outside the new display families.
+4. Exercise the three Enderscape Fence/Fence Gate pairs, the seven Button/Pressure Plate pairs, and the single `enderscape:shadoline_bars` / `enderscape:shadoline_chain` family. Confirm they use the existing fence, building-accessory, and bar/chain behavior and never cross materials.
+5. Verify canonical acquisition and cleanup behavior after reload: all 30 canonical-result recipes among the 67 new members remain available; the 41 ordinary crafting recipes that produce alternates are removed; the five Enderscape `void_lachryma` alternate conversions remain provider-owned and unchanged because CNM cannot re-encode that custom recipe type.
+6. Transfer a component-bearing stack through one vanilla and one Enderscape display family and confirm item count and component patch remain exact. Confirm mismatched component patches and a deliberately incompatible transfer target fail closed. Recheck Quick Stack Nearby affinity and the large-family selector viewport.
+7. Restart or reload once and repeat one vanilla display family, one Enderscape display family, one Enderscape accessory family, and Shadoline. Stop and report any missing literal item, duplicate membership, canonical-parent change, cross-family match, recipe drift, crash, or reload error.
 
-No manual Minecraft result is recorded. C7 passed controlled Java 25 / Gradle 9.5.1 / Loom 1.17.19 focused catalog validation and production archive packaging; this is not runtime evidence. C7 is not deployed: Slot B still contains older IBF C4. C3 remains the accepted rollback.
+Controlled evidence for these exact source and provider inputs: 50/50 JUnit tests passed; all 25 required Fabric GameTests passed after loading 85 mods, 4,712 recipes, and 3,012 advancements; production-JAR isolation passed with 30 entries, 19 IBF production classes, no nested JARs, and no bundled Enderscape, CNM, BBB, Minecraft, or GameTest provider classes. This is controlled automated evidence, not a manual Minecraft runtime result. C8 remains `RUNTIME_UNTESTED` pending owner-supplied evidence.
