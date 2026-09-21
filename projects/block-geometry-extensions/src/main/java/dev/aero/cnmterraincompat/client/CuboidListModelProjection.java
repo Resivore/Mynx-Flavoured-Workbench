@@ -341,7 +341,8 @@ public final class CuboidListModelProjection {
             int rotation = faceRotation(face, materialFrame);
             if (rotation != 0) encoded.addProperty("rotation", rotation);
             if (!bottomOnly && tintBaseFace(profile, face)) encoded.addProperty("tintindex", 0);
-            if (cullBoundary && cuboid.geometry().onBoundary(face)) {
+            if (cullBoundary && profile.visualProfile() != VisualProfile.PATH
+                    && cuboid.geometry().onBoundary(face)) {
                 encoded.addProperty("cullface", face.getSerializedName());
             }
             faces.add(face.getSerializedName(), encoded);
@@ -520,7 +521,8 @@ public final class CuboidListModelProjection {
             encoded.addProperty("texture", "#overlay");
             encoded.addProperty("tintindex", 0);
             encoded.add("uv", overlayUv(face, cuboid.uv()));
-            if (cullBoundary && cuboid.geometry().onBoundary(face)) {
+            if (cullBoundary && profile.visualProfile() != VisualProfile.PATH
+                    && cuboid.geometry().onBoundary(face)) {
                 encoded.addProperty("cullface", face.getSerializedName());
             }
             faces.add(face.getSerializedName(), encoded);

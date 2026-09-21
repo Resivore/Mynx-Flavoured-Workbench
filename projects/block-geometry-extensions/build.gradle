@@ -30,7 +30,10 @@ dependencies {
 }
 
 def generatedNibaruResources = layout.buildDirectory.dir('generated/nibaru-resources')
+def privateBeamResources = layout.buildDirectory.dir('generated/private-beam-resources')
 def pristineNibaruJar = layout.projectDirectory.file('build-inputs/nibaru/moreslabsstairsandwalls-4.2.0.jar')
+def privateBbbJar = layout.projectDirectory.file('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar')
+def privateEnderscapeJar = layout.projectDirectory.file('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
 def nibaruLicenseSource = layout.projectDirectory.file('LICENSES/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt')
 def generatedNibaruLicense = layout.buildDirectory.file('generated/licenses/more-slabs-stairs-and-walls-LGPL-3.0-or-later.txt')
 
@@ -86,6 +89,20 @@ tasks.register('generateNativeMaterialResources', JavaExec) {
     outputs.upToDateWhen { false }
 }
 
+// C91: source code is redistributable, but the Beam PNG derivatives are assembled only from the
+// exact local BBB input into ignored build output and therefore never enter tracked resources.
+tasks.register('generatePrivateBeamResources', JavaExec) {
+    dependsOn compileJava
+    classpath = files(sourceSets.main.output.classesDirs) + configurations.runtimeClasspath
+    mainClass = 'dev.aero.cnmterraincompat.tools.PrivateBeamResourceAssembler'
+    args privateBbbJar.asFile.absolutePath, privateEnderscapeJar.asFile.absolutePath,
+            privateBeamResources.get().asFile.absolutePath
+    inputs.file privateBbbJar
+    inputs.file privateEnderscapeJar
+    outputs.dir privateBeamResources
+    outputs.upToDateWhen { false }
+}
+
 tasks.register('prepareNibaruLicense') {
     inputs.file nibaruLicenseSource
     outputs.file generatedNibaruLicense
@@ -121,6 +138,8 @@ dependencies {
 
 processResources {
     dependsOn tasks.named('generateNativeAxisResources')
+    dependsOn tasks.named('generatePrivateBeamResources')
+    from(privateBeamResources)
     inputs.property 'version', project.version
     inputs.file pristineNibaruJar
     filesMatching('fabric.mod.json') {
@@ -187,6 +206,7 @@ processResources {
 }
 
 processGametestResources {
+    dependsOn tasks.named('generatePrivateBeamResources')
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand 'version': project.version

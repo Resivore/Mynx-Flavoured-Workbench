@@ -18,6 +18,7 @@ public final class BgeGeneratedResources {
                 ResolvedCnmCandidateResources.generate(manager);
         ExternalMaterialGeneratedResources.GenerationSummary external =
                 ExternalMaterialGeneratedResources.generate(manager);
+        PrivateBeamGeneratedResources.generate(manager);
         return new GenerationSummary(layer, quarter, resolvedCandidates, external);
     }
 

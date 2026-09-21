@@ -173,20 +173,20 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 118,
-                "External source allowlist is not exactly 118");
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 125,
+                "External source allowlist is not exactly 125");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
                         && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
                         && ExternalMaterialCatalog.sourceCount("ribbits") == 4
                         && ExternalMaterialCatalog.sourceCount("bbb") == 12
-                        && ExternalMaterialCatalog.sourceCount("enderscape") == 39,
-                "Provider source partition is not 57/6/4/12/39");
-        helper.assertTrue(ExternalMaterialFamilies.all().size() == 118,
-                "Provider completion did not register all 118 allowlisted families: "
+                        && ExternalMaterialCatalog.sourceCount("enderscape") == 46,
+                "Provider source partition is not 57/6/4/12/46");
+        helper.assertTrue(ExternalMaterialFamilies.all().size() == 125,
+                "Provider completion did not register all 125 allowlisted families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 314
                         && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null
-                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 118,
+                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 125,
                 "External append changed the frozen native inventory or lost an external source");
 
         Set<Identifier> actual = new LinkedHashSet<>();
@@ -198,8 +198,8 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C87_INVENTORY|sources=118|mcwpaths=57"
-                + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=39|relations=1062");
+        System.out.println("EXTERNAL_C91_INVENTORY|sources=125|mcwpaths=57"
+                + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=46|relations=1125");
         helper.succeed();
     }
 
@@ -225,10 +225,17 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 Identifier.parse("enderscape:blinklamp"), Identifier.parse("enderscape:veiled_end_stone"),
                 Identifier.parse("enderscape:celestial_overgrowth"), Identifier.parse("enderscape:corrupt_overgrowth"),
                 Identifier.parse("enderscape:celestial_path"), Identifier.parse("enderscape:corrupt_path"));
+        expected = new LinkedHashSet<>(expected);
+        expected.add(Identifier.parse("enderscape:raw_shadoline_block"));
+        for (String family : List.of("veiled", "celestial", "murublight")) {
+            expected.add(Identifier.parse("enderscape:" + family + "_planks"));
+            expected.add(Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
+                    "enderscape/" + family + "_beam"));
+        }
         Set<Identifier> actual = new LinkedHashSet<>();
         ExternalMaterialFamilies.all().stream().filter(binding -> binding.spec().provider().equals("enderscape"))
                 .forEach(binding -> actual.add(binding.spec().id()));
-        helper.assertTrue(actual.equals(expected) && actual.size() == 39,
+        helper.assertTrue(actual.equals(expected) && actual.size() == 46,
                 "Enderscape source allowlist drifted: " + actual);
         helper.assertTrue(ExternalMaterialCatalog.requestedEnderscapeExclusions().size() == 1
                         && ExternalMaterialCatalog.requestedEnderscapeExclusions().getFirst().requestedId()
@@ -271,6 +278,28 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             && ExternalMaterialFamilies.fromSource(id).orElseThrow().profile().surfaceSamplingPolicy()
                             == games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile.SurfaceSamplingPolicy.PATH_LOWERED_SURFACE,
                     "Enderscape path family lost its lowered path surface contract: " + id);
+        }
+        ExternalMaterialFamilies.Binding rawShadoline = external("enderscape:raw_shadoline_block");
+        helper.assertTrue(rawShadoline.profile().textureRoles().side()
+                        .equals("enderscape:block/raw_shadoline_block")
+                        && rawShadoline.roles().size() == 9,
+                "Block of Raw Shadoline did not retain its exact source texture/family");
+        for (PrivateBeamFamilies.Definition definition : PrivateBeamFamilies.definitions()) {
+            ExternalMaterialFamilies.Binding plank = external(definition.planks().toString());
+            ExternalMaterialFamilies.Binding beam = external(definition.root().toString());
+            helper.assertTrue(beam.profile().orientationPolicy()
+                            == games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED
+                            && beam.canonicalDerived().stream().filter(block -> block != beam.wall())
+                                    .allMatch(block -> block.defaultBlockState().hasProperty(BlockStateProperties.AXIS))
+                            && !beam.wall().defaultBlockState().hasProperty(BlockStateProperties.AXIS)
+                            && beam.wall() instanceof WoodenPlankWallBlock
+                            && plank.wall() instanceof WoodenPlankWallBlock,
+                    "C91 Beam/plank wooden-wall or axis contract drifted for " + definition.family());
+            List<Item> component = ShapeMap.getShapes(plank.source().asItem());
+            List<Item> beamFamily = beam.roles().values().stream().map(Block::asItem).toList();
+            helper.assertTrue(component.indexOf(beam.source().asItem()) > component.indexOf(plank.source().asItem())
+                            && beamFamily.stream().allMatch(component::contains),
+                    "Private Beam family is not grouped after its plank root: " + definition.family());
         }
         helper.assertTrue(ExternalMaterialFamilies.fromSource(Identifier.parse("enderscape:drift_jelly_block"))
                         .orElseThrow().profile().visualProfile() == VisualProfile.SLIME_INSET,
@@ -564,10 +593,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             relations += roles.size();
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
-        helper.assertTrue(relations == 1062 && canonicalDerived.size() == 944 && bgeGenerated.size() == 826,
-                "C87 relation/canonical/generated identity count mismatch: " + relations + "/"
+        helper.assertTrue(relations == 1125 && canonicalDerived.size() == 1000 && bgeGenerated.size() == 876,
+                "C91 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
-        helper.assertTrue(audit.variantCount() == 118 && audit.missing().isEmpty()
+        helper.assertTrue(audit.variantCount() == 125 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
                 "Live ShapeMap canonical variant/role audit failed: " + audit);
         helper.succeed();
@@ -588,7 +617,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 reused++;
             }
         }
-        helper.assertTrue(reused == 118, "Expected 118 reused provider roles, found " + reused);
+        helper.assertTrue(reused == 124, "Expected 124 reused provider roles, found " + reused);
 
         Identifier family = Identifier.parse("mynx_trees:wisteria_log");
         CanonicalShapeMapAudit.CanonicalKey logSlab = new CanonicalShapeMapAudit.CanonicalKey(
@@ -789,10 +818,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             }
         }
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
-        helper.assertTrue(walls.getAsJsonArray("values").size() == 118,
+        helper.assertTrue(walls.getAsJsonArray("values").size() == 125,
                 "External wall classification does not contain every scoped full-parent family");
-        helper.assertTrue(loot == 472, "Expected 472 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C87_SERVER_RESOURCES|standardLoot=472|wallTags=118|materialFamilies=118");
+        helper.assertTrue(loot == 501, "Expected 501 BGE-owned external loot tables, found " + loot);
+        System.out.println("EXTERNAL_C91_SERVER_RESOURCES|standardLoot=501|wallTags=125|materialFamilies=125");
         helper.succeed();
     }
 
@@ -805,12 +834,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.GenerationSummary standard =
                 ExternalMaterialGeneratedResources.generate(manager);
-        helper.assertTrue(layers.familyCount() == 118
-                        && quarters.cornerFamilyCount() == 118
-                        && quarters.columnFamilyCount() == 118
-                        && standard.familyCount() == 118
-                        && standard.blockStateCount() == 472
-                        && standard.itemCount() == 472,
+        helper.assertTrue(layers.familyCount() == 125
+                        && quarters.cornerFamilyCount() == 125
+                        && quarters.columnFamilyCount() == 125
+                        && standard.familyCount() == 125
+                        && standard.blockStateCount() == 501
+                        && standard.itemCount() == 501,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
@@ -837,10 +866,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 826 && resolvedModelReferences >= 826,
+        helper.assertTrue(generatedRelations == 876 && resolvedModelReferences >= 876,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C87_CLIENT_RESOURCES|generatedRelations=826|blockstates=826|items=826"
+        System.out.println("EXTERNAL_C91_CLIENT_RESOURCES|generatedRelations=876|blockstates=876|items=876"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }
@@ -1344,8 +1373,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             helper.assertTrue(textures.get("side").getAsString()
                             .equals(binding.profile().textureRoles().side())
                             && textures.get("top").getAsString()
-                                    .equals(binding.profile().textureRoles().top()),
-                    "Generated " + binding.spec().id() + " retained the reference material instead of its own textures");
+                                    .equals(binding.profile().textureRoles().top())
+                            && !model.toString().contains("minecraft:block/crimson_nylium"),
+                    "Generated " + binding.spec().id() + " retained a reference texture instead of its own textures");
         }
 
         Identifier vertical = BuiltInRegistries.BLOCK.getKey(binding.verticalSlab());
@@ -1365,12 +1395,12 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                             && stepModel.toString().contains("#overlay")
                             && layerModel.toString().contains("#overlay")
                             && cornerModel.toString().contains("#overlay"),
-                    "Crimson Nylium structural overlay did not reach every BGE geometry for "
+                    "Terrain structural overlay did not reach every BGE geometry for "
                             + binding.spec().id());
         } else {
             helper.assertTrue(modelHasBounds(verticalModel, 0, 0, 0, 16, 15, 8)
                             && modelHasBounds(stepModel, 0, 0, 0, 16, 7, 16)
-                            && modelHasBounds(stepModel, 0, 7, 8, 16, 15, 16)
+                            && !modelHasBounds(stepModel, 0, 7, 8, 16, 15, 16)
                             && modelHasTop(layerModel, 15)
                             && modelHasTop(cornerModel, 15),
                     "Dirt Path lowered geometry/UV contract did not reach every BGE geometry for "

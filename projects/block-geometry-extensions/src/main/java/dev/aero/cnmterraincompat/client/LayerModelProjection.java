@@ -218,9 +218,14 @@ public final class LayerModelProjection {
                     : cut ? "#interior" : textureRole(face, materialAxis));
             int rotation = faceRotation(face, materialAxis);
             if (materialAxis != null) encoded.add("uv", axisUv(face, bounds, rotation));
+            // Lowered Paths have cropped faces. Explicit block-space UVs prevent side stretching
+            // at every Layer height and orientation.
+            if (materialAxis == null && profile.visualProfile() == VisualProfile.PATH) {
+                encoded.add("uv", defaultUv(face, bounds));
+            }
             if (rotation != 0) encoded.addProperty("rotation", rotation);
             if (!bottomOnly && tintBaseFace(profile, face)) encoded.addProperty("tintindex", 0);
-            if (cullBoundary && bounds.onBoundary(face)) {
+            if (cullBoundary && profile.visualProfile() != VisualProfile.PATH && bounds.onBoundary(face)) {
                 encoded.addProperty("cullface", face.getSerializedName());
             }
             faces.add(face.getSerializedName(), encoded);

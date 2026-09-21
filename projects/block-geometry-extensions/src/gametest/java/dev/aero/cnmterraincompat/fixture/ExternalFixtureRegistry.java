@@ -138,8 +138,13 @@ public final class ExternalFixtureRegistry {
                 "chiseled_purpur", "chiseled_shadoline", "chiseled_veradite",
                 "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
                 "chiseled_dusk_purpur", "void_shale", "celestial_cap", "murublight_cap", "end_lamp",
-                "drift_jelly_block"}) {
+                "drift_jelly_block", "raw_shadoline_block"}) {
             register("enderscape", path, Blocks.END_STONE, false);
+        }
+        for (String family : new String[] {"veiled", "celestial", "murublight"}) {
+            Block planks = register("enderscape", family + "_planks", Blocks.OAK_PLANKS, false);
+            registerSlab("enderscape", family + "_planks_slab", planks);
+            registerStairs("enderscape", family + "_planks_stairs", planks);
         }
         // The five concrete 3.0.2 terrain/path classes inherit DirectionalBlock. Their canonical
         // FACING is the same property instance that BGE Layers use for exposed geometry, which is

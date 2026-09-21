@@ -405,6 +405,13 @@ public final class NibaruProviderAdapter {
             for (BgeGeometryCatalog.Descriptor geometry : BgeGeometryCatalog.ordered()) {
                 add(mappings, parent, geometry.resolveItem(profile));
             }
+            ExternalMaterialCatalog.selectorParent(profile.canonicalParentId()).ifPresent(selectorParent -> {
+                Block plank = BuiltInRegistries.BLOCK.getValue(selectorParent);
+                if (!selectorParent.equals(BuiltInRegistries.BLOCK.getKey(plank))) {
+                    throw new IllegalStateException("Missing Beam selector parent " + selectorParent);
+                }
+                add(mappings, plank.asItem(), Optional.of(parent));
+            });
         }
     }
 
@@ -419,6 +426,8 @@ public final class NibaruProviderAdapter {
             for (Item item : before) providerProfile(item).filter(seenProfiles::add).ifPresent(profiles::add);
 
             List<Item> providerOrder = new ArrayList<>();
+            profiles.sort(java.util.Comparator.comparing(profile ->
+                    ExternalMaterialCatalog.selectorOrderKey(profile.canonicalParentId())));
             for (NibaruMaterialProfile profile : profiles) {
                 addIfPresent(providerOrder, before, profile.canonicalParent().asItem());
                 profile.effectiveSlabSource().map(Block::asItem)

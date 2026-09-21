@@ -79,12 +79,18 @@ public final class ExternalMaterialBlocks {
 
     public static WallBlock createWall(Block source, Block.Properties properties, boolean leaves,
             boolean hugeMushroom, ExternalMaterialStateBridge materialStateBridge) {
+        return createWall(source, properties, leaves, hugeMushroom, materialStateBridge, false);
+    }
+
+    public static WallBlock createWall(Block source, Block.Properties properties, boolean leaves,
+            boolean hugeMushroom, ExternalMaterialStateBridge materialStateBridge, boolean woodenPlankTopology) {
         if (materialStateBridge.requiresBridge())
             return EnderscapeMaterialGeometry.wall(materialStateBridge, properties);
         // A wall's connection state is its complete placement contract. It is not a rotated
         // pillar merely because the material it is made from has an axis.
         return leaves ? new LeafWall(properties)
                 : hugeMushroom ? new HugeMushroomWallBlock(properties)
+                : woodenPlankTopology ? new WoodenPlankWallBlock(properties)
                 : new WallBlock(properties);
     }
 

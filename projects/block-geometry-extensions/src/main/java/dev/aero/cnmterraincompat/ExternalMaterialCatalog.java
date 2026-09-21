@@ -17,11 +17,12 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c87-enderscape-visual-contract-v1";
+    public static final String PROFILE_VERSION = "bge-c91-private-beam-visual-contract-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -30,6 +31,7 @@ public final class ExternalMaterialCatalog {
     /** Called by optional pseudo-mixins after the named provider has registered all of its blocks. */
     public static synchronized void registerProvider(String provider) {
         if (!FabricLoader.getInstance().isModLoaded(provider) || !REGISTERED_PROVIDERS.add(provider)) return;
+        if (provider.equals("enderscape")) PrivateBeamFamilies.registerRoots();
         List<Spec> specs = SPECS.stream().filter(spec -> spec.provider().equals(provider)).toList();
         if (specs.isEmpty()) throw new IllegalArgumentException("Unsupported external provider: " + provider);
         CnmTerrainCompat.registerExternalFamilies(provider, specs);
@@ -211,8 +213,16 @@ public final class ExternalMaterialCatalog {
                 "chiseled_mirestone", "cracked_mirestone_bricks", "chiseled_kurodite",
                 "alluring_magnia", "repulsive_magnia", "chiseled_dusk_purpur",
                 "blistered_magnia", "celestial_cap", "murublight_cap",
-                "end_lamp", "blinklamp")) {
+                "end_lamp", "blinklamp", "raw_shadoline_block")) {
             result.add(uniform("enderscape:" + path, Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Map.of()));
+        }
+
+        // These exact Enderscape plank parents keep their provider Slab/Stairs while BGE owns
+        // the Wall and tail forms.  Their private Beam variants are linked into the same selector
+        // family below, never registered as a second public provider source.
+        for (String plank : List.of("veiled", "celestial", "murublight")) {
+            result.add(uniform("enderscape:" + plank + "_planks", Set.of(BlockTags.MINEABLE_WITH_AXE),
+                    standardRoles("enderscape:" + plank + "_planks")));
         }
 
         // The source's stress/shatter state remains provider-only.  BGE's ordinary geometry uses
@@ -258,7 +268,26 @@ public final class ExternalMaterialCatalog {
                 "enderscape:block/stripped_murublight_stem_top"));
         result.add(pillar("enderscape:stripped_murublight_hyphae", "enderscape:block/stripped_murublight_stem",
                 "enderscape:block/stripped_murublight_stem"));
+        result.addAll(PrivateBeamFamilies.specs());
         return List.copyOf(result);
+    }
+
+    static Optional<Identifier> selectorParent(Identifier source) {
+        return PrivateBeamFamilies.selectorParent(source);
+    }
+
+    public static boolean usesWoodenWall(Spec spec) {
+        return PrivateBeamFamilies.usesWoodenWall(spec);
+    }
+
+    static String selectorOrderKey(Identifier canonicalParent) {
+        return PrivateBeamFamilies.selectorOrderKey(canonicalParent);
+    }
+
+    public static String displayNameBase(Spec spec) {
+        String path = PrivateBeamFamilies.displayName(spec.id());
+        int slash = path.lastIndexOf('/');
+        return slash < 0 ? path : path.substring(slash + 1);
     }
 
     /** External axial sources intentionally do not fabricate an unrequested strip transition. */

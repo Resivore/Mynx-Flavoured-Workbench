@@ -75,7 +75,7 @@ public final class ExternalMaterialGeneratedResources {
             if (binding.isGeneratedRole("wall")) {
                 // Wall state remains the normal post/low/tall multipart contract. Directional
                 // material faces are expressed by the model templates, never an AXIS property.
-                models += writeWall(manager, profile, wall);
+                models += writeWall(manager, binding, wall);
                 blockStates++;
             }
 
@@ -189,7 +189,9 @@ public final class ExternalMaterialGeneratedResources {
         return 3;
     }
 
-    private static int writeWall(ResourceManager manager, NibaruMaterialProfile profile, Identifier id) {
+    private static int writeWall(ResourceManager manager, ExternalMaterialFamilies.Binding binding,
+            Identifier id) {
+        NibaruMaterialProfile profile = binding.profile();
         String reference = structuralReference(profile);
         if (reference != null) {
             write(blockState(id), referenceBlockState(manager, reference + "_wall", id));
@@ -202,7 +204,18 @@ public final class ExternalMaterialGeneratedResources {
                 Identifier.fromNamespaceAndPath("minecraft", "blockstates/cobblestone_wall.json"),
                 "minecraft:block/cobblestone_wall", model(id));
         write(blockState(id), state);
-        if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PILLAR) {
+        if (dev.aero.cnmterraincompat.ExternalMaterialCatalog.usesWoodenWall(binding.spec())) {
+            write(modelResource(id, "_post"), woodenWallModel(profile,
+                    List.of(new int[] {4, 0, 4, 12, 16, 12})));
+            write(modelResource(id, "_side"), woodenWallModel(profile,
+                    List.of(new int[] {4, 0, 0, 12, 16, 4})));
+            write(modelResource(id, "_side_tall"), woodenWallModel(profile,
+                    List.of(new int[] {4, 0, 0, 12, 16, 4})));
+            write(modelResource(id, "_inventory"), woodenWallModel(profile, List.of(
+                    new int[] {4, 0, 4, 12, 16, 12}, new int[] {4, 0, 0, 12, 16, 4},
+                    new int[] {12, 0, 4, 16, 16, 12}, new int[] {4, 0, 12, 12, 16, 16},
+                    new int[] {0, 0, 4, 4, 16, 12})));
+        } else if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PILLAR) {
             write(modelResource(id, "_post"), columnWallTemplate(
                     "more_slabs_stairs_and_walls:block/template_column_wall_post", profile));
             write(modelResource(id, "_side"), columnWallTemplate(
@@ -281,24 +294,19 @@ public final class ExternalMaterialGeneratedResources {
         }
         write(blockState(id), variants(variants));
         if (structuralReference(profile) != null) {
-            boolean path = profile.visualProfile()
-                    == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PATH;
-            // Dirt Path's native stair is 0..7 then 7..15, rather than a normal 0..8/8..16
-            // stair.  The terrain route retains its full-height topology while still using the
-            // same typed face/overlay projection as the layer and quarter forms.
-            int low = path ? 7 : 8;
-            int high = path ? 15 : 16;
-            write(modelResource(id), projectedModel(profile, List.of(
-                    Cuboid.world(new Bounds(0, 0, 0, 16, low, 16)),
-                    Cuboid.world(new Bounds(0, low, 8, 16, high, 16)))));
-            write(modelResource(id, "_top"), projectedModel(profile, List.of(
-                    Cuboid.world(new Bounds(0, 0, 0, 16, low, 16)),
-                    Cuboid.world(new Bounds(0, low, 0, 16, high, 8)))));
+            // A Step is a flat half-depth form, not a re-skinned Stair.  Terrain keeps the
+            // lowered seven-pixel Path surface while all face/overlay roles remain profile based.
+            int height = profile.visualProfile()
+                    == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.PATH ? 7 : 8;
+            write(modelResource(id), projectedModel(profile,
+                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, height, 16)))));
+            write(modelResource(id, "_top"), projectedModel(profile,
+                    List.of(Cuboid.world(new Bounds(0, 16 - height, 0, 16, 16, 16)))));
             write(modelResource(id, "_double"), projectedModel(profile,
-                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, high, 16)))));
+                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, 16, 16)))));
         } else if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
-            write(modelResource(id), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 8, 16, 16, 16})));
-            write(modelResource(id, "_top"), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 0, 16, 16, 8})));
+            write(modelResource(id), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 8, 16})));
+            write(modelResource(id, "_top"), cuboidModel(profile, List.of(new int[] {0, 8, 0, 16, 16, 16})));
             write(modelResource(id, "_double"), cuboidModel(profile, List.of(new int[] {0, 0, 0, 16, 16, 16})));
         } else {
             String tint = profile.tintProfile() == TintProfile.NONE ? "" : "_tinted";
@@ -376,13 +384,18 @@ public final class ExternalMaterialGeneratedResources {
     private static void writeReferenceModel(ResourceManager manager, String reference, Identifier target,
             String targetSuffix, NibaruMaterialProfile profile) {
         JsonObject model = referenceJson(manager, "models/block/" + reference + ".json", reference, target);
-        JsonObject textures = model.has("textures") ? model.getAsJsonObject("textures") : new JsonObject();
+        // Do not inherit any source texture alias from the structural template. In particular,
+        // Crimson Nylium is a topology reference only and may never leak into Enderscape models.
+        JsonObject textures = new JsonObject();
         textures.addProperty("side", texture(profile.textureRoles().side()));
         textures.addProperty("top", texture(profile.textureRoles().top()));
         textures.addProperty("bottom", texture(profile.textureRoles().bottom()));
         textures.addProperty("particle", texture(profile.textureRoles().particle()));
-        if (!profile.textureRoles().overlay().isEmpty())
+        textures.addProperty("layer0", texture(profile.textureRoles().side()));
+        if (!profile.textureRoles().overlay().isEmpty()) {
             textures.addProperty("overlay", texture(profile.textureRoles().overlay()));
+            textures.addProperty("layer1", texture(profile.textureRoles().overlay()));
+        }
         model.add("textures", textures);
         write(modelResource(target, targetSuffix), model);
     }
@@ -427,6 +440,10 @@ public final class ExternalMaterialGeneratedResources {
         textures.addProperty("wall", texture(profile.textureRoles().side()));
         result.add("textures", textures);
         return result;
+    }
+
+    private static JsonObject woodenWallModel(NibaruMaterialProfile profile, List<int[]> cuboids) {
+        return cuboidModel(profile, cuboids);
     }
 
     /** Complete tinted geometry for the standard forms whose vanilla parents have no tint index. */
@@ -521,13 +538,18 @@ public final class ExternalMaterialGeneratedResources {
                 QuarterGeometryGeneratedData.bindings(BgeGeometryRole.QUARTER_COLUMN))
             language.addProperty(translation(column.id()), QuarterGeometryGeneratedResources.quarterColumnDisplayName(column.profile()));
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
+            if (dev.aero.cnmterraincompat.PrivateBeamFamilies.isPrivateBeam(binding.spec().id())) {
+                language.addProperty(translation(id(binding.source())), AssetGenerator.langName(
+                        dev.aero.cnmterraincompat.ExternalMaterialCatalog.displayNameBase(binding.spec())));
+            }
             for (Map.Entry<String, Block> role : binding.roles().entrySet()) {
                 if (role.getKey().equals("block") || role.getKey().equals("layer")
                         || role.getKey().equals("corner") || role.getKey().equals("quarter_column")) continue;
                 if (!binding.isGeneratedRole(role.getKey())) continue;
                 Identifier id = id(role.getValue());
                 language.addProperty(translation(id), AssetGenerator.langName(
-                        binding.spec().id().getPath() + "_" + role.getKey()));
+                        dev.aero.cnmterraincompat.ExternalMaterialCatalog.displayNameBase(binding.spec())
+                                + "_" + role.getKey()));
             }
         }
         return language;

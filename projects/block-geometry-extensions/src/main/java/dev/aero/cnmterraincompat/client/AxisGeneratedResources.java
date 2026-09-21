@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.aero.cnmterraincompat.AxisModelContract;
 import dev.aero.cnmterraincompat.AxisModelContract.AxisUvPolicy;
+import dev.aero.cnmterraincompat.PrivateBeamFamilies;
 import dev.tazer.clutternomore.client.assets.AssetGenerator;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
@@ -46,6 +47,10 @@ public final class AxisGeneratedResources {
 
     /** Reads the canonical parent's actual axis selectors; missing/unknown data is a hard failure. */
     public static AxisUvPolicy policy(ResourceManager manager, Identifier canonicalParent) {
+        // C91 Beam roots are BGE-owned and their tiny source model is emitted in this same
+        // generated-resource pass. The BBB-derived texture bytes remain private build output;
+        // their normal rotated-pillar topology is known from the validated local source model.
+        if (PrivateBeamFamilies.isPrivateBeam(canonicalParent)) return AxisUvPolicy.STANDARD_ROTATED;
         Identifier blockStateId = Identifier.fromNamespaceAndPath(canonicalParent.getNamespace(),
                 "blockstates/" + canonicalParent.getPath() + ".json");
         Resource resource = manager.getResource(blockStateId).orElseThrow(() ->

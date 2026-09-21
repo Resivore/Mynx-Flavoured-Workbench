@@ -69,7 +69,7 @@ public final class ExternalMaterialFamilies {
         RoleSelection wall = selectStandardRole(spec, "wall", wallId, WallBlock.class,
                 () -> ExternalMaterialBlocks.createWall(source,
                         wallProperties(wallId, source, spec.materialStateBridge()), leaves, hugeMushroom,
-                        spec.materialStateBridge()));
+                        spec.materialStateBridge(), ExternalMaterialCatalog.usesWoodenWall(spec)));
         Set<String> generatedStandardRoles = new LinkedHashSet<>();
         if (slab.generated()) generatedStandardRoles.add("slab");
         if (stairs.generated()) generatedStandardRoles.add("stairs");

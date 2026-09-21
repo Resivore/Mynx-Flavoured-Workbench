@@ -63,7 +63,8 @@ public final class ResolvedCnmCandidateResources {
             models += writeCorner(family.roles().get(BgeGeometryRole.CORNER), textures);
             models += writeColumn(family.roles().get(BgeGeometryRole.QUARTER_COLUMN), textures);
         }
-        if (!families.isEmpty()) writeLanguage(CnmShapeMapCandidateBridge.resolvedGenericFamilies());
+        if (!families.isEmpty()) writeLanguage(CnmShapeMapCandidateBridge.provisionalGenericFamilies(),
+                CnmShapeMapCandidateBridge.resolvedGenericFamilies());
         return new GenerationSummary(families.size(), models);
     }
 
@@ -181,7 +182,8 @@ public final class ResolvedCnmCandidateResources {
         return count;
     }
 
-    private static void writeLanguage(List<CnmShapeMapCandidateBridge.ResolvedGenericFamily> families) {
+    private static void writeLanguage(List<CnmShapeMapCandidateBridge.ProvisionalGenericFamily> provisional,
+            List<CnmShapeMapCandidateBridge.ResolvedGenericFamily> families) {
         JsonObject language = new JsonObject();
         language.addProperty("tag.item." + CnmTerrainCompat.MOD_ID + ".layers", "Layers");
         language.addProperty("tag.item." + CnmTerrainCompat.MOD_ID + ".corners", "Corners");
@@ -194,9 +196,16 @@ public final class ResolvedCnmCandidateResources {
         QuarterGeometryGeneratedData.bindings(BgeGeometryRole.QUARTER_COLUMN).forEach(binding ->
                 language.addProperty(translation(binding.id()),
                         QuarterGeometryGeneratedResources.quarterColumnDisplayName(binding.profile())));
+        // First-bake resources are visible before ShapeMap elects its parent. Give every admitted
+        // role a normal human-facing name immediately, then let the resolved canonical source
+        // replace it without exposing deferred/internal translation keys.
+        for (CnmShapeMapCandidateBridge.ProvisionalGenericFamily family : provisional) {
+            family.roles().forEach((role, id) -> language.addProperty(translation(id),
+                    displayName(family.visualSource(), role)));
+        }
         for (CnmShapeMapCandidateBridge.ResolvedGenericFamily family : families) {
             family.roles().forEach((role, id) -> language.addProperty(translation(id),
-                    AssetGenerator.langName(family.canonicalParent().getPath() + "_" + roleName(role))));
+                    displayName(family.canonicalParent(), role)));
         }
         write(Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID + "_generated", "lang/en_us.json"), language);
     }
@@ -208,6 +217,14 @@ public final class ResolvedCnmCandidateResources {
             case QUARTER_COLUMN -> "quarter_column";
             default -> throw new IllegalArgumentException("Not a generated tail role: " + role);
         };
+    }
+
+    private static String displayName(Identifier source, BgeGeometryRole role) {
+        String path = source.getPath();
+        for (String suffix : List.of("_slab", "_stairs", "_wall")) {
+            if (path.endsWith(suffix)) path = path.substring(0, path.length() - suffix.length());
+        }
+        return AssetGenerator.langName(path + "_" + roleName(role));
     }
 
     private static JsonObject model(Textures textures, List<int[]> boxes) {
@@ -283,9 +300,9 @@ public final class ResolvedCnmCandidateResources {
 
     private static List<int[]> cornerBoxes(BgeCornerBlock.Orientation orientation) {
         return switch (orientation) {
-            case SOUTH_WEST -> List.of(nw(), ne(), sw());
-            case NORTH_WEST -> List.of(nw(), ne(), se());
-            case NORTH_EAST -> List.of(nw(), sw(), se());
+            case SOUTH_WEST -> List.of(nw(), sw(), se());
+            case NORTH_WEST -> List.of(nw(), ne(), sw());
+            case NORTH_EAST -> List.of(nw(), ne(), se());
             case SOUTH_EAST -> List.of(ne(), sw(), se());
         };
     }
