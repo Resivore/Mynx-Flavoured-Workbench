@@ -444,6 +444,12 @@ public final class NibaruProviderAdapter {
         TINT_TARGETS.forEach((profile, blocks) -> blocks.forEach(block -> registrar.accept(profile, block)));
     }
 
+    /** Immutable inspection seam for controlled registration-contract coverage. */
+    static Set<Block> tintTargets(NibaruMaterialProfile profile) {
+        Set<Block> targets = TINT_TARGETS.get(profile);
+        return targets == null ? Set.of() : Set.copyOf(targets);
+    }
+
     /** Adds a late-registered standard external form to the same client tint contract. */
     public static void registerTintTarget(NibaruMaterialProfile profile, Block block) {
         registerTint(profile, block);

@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 94 — Item Preview Beam UV",
-  "description": "Restores exact C92 catalog item presentation and preserves Beam material UV frames without changing placed geometry.",
+  "name": "Block Geometry Extensions Canary 95 — Spruce Leaf Tint",
+  "description": "Restores vanilla's fixed ARGB spruce foliage tint across every BGE geometry role without changing geometry.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {
