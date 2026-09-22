@@ -143,7 +143,7 @@ def ribbitsReferenceJar = referenceJar(
         '../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary17.jar')
 def bbbReferenceJar = referenceJar(
         'bbb_reference_jar',
-        '../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar')
+        '../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')
 def enderscapeReferenceJar = referenceJar(
         'enderscape_reference_jar',
         '../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')

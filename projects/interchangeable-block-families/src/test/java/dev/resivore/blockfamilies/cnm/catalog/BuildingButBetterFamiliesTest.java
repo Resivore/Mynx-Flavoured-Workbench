@@ -15,24 +15,37 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Literal C6 contract for the BBB families registered by current BBB main. */
+/** Literal C9 contract for the BBB families registered by current BBB main. */
 final class BuildingButBetterFamiliesTest {
     private static final List<String> WOODS = List.of(
             "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
             "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak");
     private static final List<String> STONES = List.of(
             "stone", "blackstone", "deepslate", "nether_brick", "sandstone", "red_sandstone", "quartz");
+    private static final List<String> ENDERSCAPE_WOODS = List.of("veiled", "celestial", "murublight");
 
     @Test
     void everyRegisteredWoodHasOneExactTrimDetailFamilyIncludingPaleOak() {
         Map<String, AuditedShapeFamily> details = detailsByPath();
-        assertEquals(19, details.size());
+        assertEquals(22, details.size());
         for (String wood : WOODS) {
             assertEquals(List.of(bbb(wood + "_trim"), bbb(wood + "_balustrade"),
                     bbb(wood + "_support"), bbb(wood + "_pallet")),
                     details.get("cnm/bbb_detail/wood/" + wood).members(), wood);
         }
         assertTrue(details.get("cnm/bbb_detail/wood/pale_oak").members().contains(bbb("pale_oak_pallet")));
+    }
+
+    @Test
+    void enderscapeBbbDetailsUseTheExistingLiteralWoodDetailArchitecture() {
+        Map<String, AuditedShapeFamily> details = detailsByPath();
+        for (String wood : ENDERSCAPE_WOODS) {
+            assertEquals(List.of(bbb(wood + "_trim"), bbb(wood + "_balustrade"),
+                    bbb(wood + "_support"), bbb(wood + "_pallet")),
+                    details.get("cnm/bbb_detail/wood/enderscape_" + wood).members(), wood);
+            assertEquals(bbb(wood + "_trim"),
+                    details.get("cnm/bbb_detail/wood/enderscape_" + wood).canonicalParent(), wood);
+        }
     }
 
     @Test
@@ -51,6 +64,31 @@ final class BuildingButBetterFamiliesTest {
                 .flatMap(family -> family.members().stream()).collect(Collectors.toSet());
         assertFalse(all.contains(bbb("mossy_oak_frame")));
         assertFalse(all.contains(bbb("mossy_oak_lattice")));
+    }
+
+    @Test
+    void enderscapeFenceGateFamiliesAreExtendedInPlaceWithOnlyFrameAndLattice() {
+        Map<String, AuditedShapeFamily> fences = AuditedShapeFamilies.families(FENCE_GATE).stream()
+                .collect(Collectors.toMap(family -> family.key().getPath(), family -> family));
+        assertEquals(16, fences.size());
+        for (String wood : ENDERSCAPE_WOODS) {
+            AuditedShapeFamily family = fences.get("cnm/fence_gate/enderscape_" + wood);
+            assertEquals(List.of(id("enderscape:" + wood + "_fence"),
+                    id("enderscape:" + wood + "_fence_gate"),
+                    bbb(wood + "_frame"), bbb(wood + "_lattice")), family.members(), wood);
+            assertEquals(id("enderscape:" + wood + "_fence"), family.canonicalParent(), wood);
+        }
+    }
+
+    @Test
+    void enderscapeBbbWallsBeamsAndLanternsRemainOutsideIbfFamilies() {
+        Set<Identifier> all = AuditedShapeFamilies.families().stream()
+                .flatMap(family -> family.members().stream()).collect(Collectors.toSet());
+        for (String wood : ENDERSCAPE_WOODS) {
+            for (String excluded : List.of("wall", "beam", "beam_stairs", "beam_slab", "lantern")) {
+                assertFalse(all.contains(bbb(wood + "_" + excluded)), wood + "_" + excluded);
+            }
+        }
     }
 
     @Test

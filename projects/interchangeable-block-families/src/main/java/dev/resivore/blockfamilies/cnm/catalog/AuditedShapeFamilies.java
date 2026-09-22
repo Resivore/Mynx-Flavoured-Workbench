@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 179;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_384;
+    public static final int EXPECTED_FAMILY_COUNT = 182;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_402;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -1025,11 +1025,11 @@ public final class AuditedShapeFamilies {
                     ribbits("mossy_oak_planks_fence"),
                     ribbits("mossy_oak_planks_fence_gate")),
             family("cnm/fence_gate/enderscape_veiled", FENCE_GATE, enderscape("veiled_fence"),
-                    enderscape("veiled_fence_gate")),
+                    enderscape("veiled_fence_gate"), bbb("veiled_frame"), bbb("veiled_lattice")),
             family("cnm/fence_gate/enderscape_celestial", FENCE_GATE, enderscape("celestial_fence"),
-                    enderscape("celestial_fence_gate")),
+                    enderscape("celestial_fence_gate"), bbb("celestial_frame"), bbb("celestial_lattice")),
             family("cnm/fence_gate/enderscape_murublight", FENCE_GATE, enderscape("murublight_fence"),
-                    enderscape("murublight_fence_gate"))
+                    enderscape("murublight_fence_gate"), bbb("murublight_frame"), bbb("murublight_lattice"))
     );
 
     private static final List<AuditedShapeFamily> BAR_CHAINS = List.of(
@@ -1074,6 +1074,9 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/wood/bamboo", BBB_DETAIL, bbb("bamboo_trim"), bbb("bamboo_balustrade"), bbb("bamboo_support"), bbb("bamboo_pallet")),
             family("cnm/bbb_detail/wood/cherry", BBB_DETAIL, bbb("cherry_trim"), bbb("cherry_balustrade"), bbb("cherry_support"), bbb("cherry_pallet")),
             family("cnm/bbb_detail/wood/pale_oak", BBB_DETAIL, bbb("pale_oak_trim"), bbb("pale_oak_balustrade"), bbb("pale_oak_support"), bbb("pale_oak_pallet")),
+            family("cnm/bbb_detail/wood/enderscape_veiled", BBB_DETAIL, bbb("veiled_trim"), bbb("veiled_balustrade"), bbb("veiled_support"), bbb("veiled_pallet")),
+            family("cnm/bbb_detail/wood/enderscape_celestial", BBB_DETAIL, bbb("celestial_trim"), bbb("celestial_balustrade"), bbb("celestial_support"), bbb("celestial_pallet")),
+            family("cnm/bbb_detail/wood/enderscape_murublight", BBB_DETAIL, bbb("murublight_trim"), bbb("murublight_balustrade"), bbb("murublight_support"), bbb("murublight_pallet")),
             family("cnm/bbb_detail/stone/stone", BBB_DETAIL, bbb("stone_column"), bbb("stone_urn"), bbb("stone_moulding"), bbb("stone_fence"), bbb("stone_frame")),
             family("cnm/bbb_detail/stone/blackstone", BBB_DETAIL, bbb("blackstone_column"), bbb("blackstone_urn"), bbb("blackstone_moulding"), bbb("blackstone_fence"), bbb("blackstone_frame")),
             family("cnm/bbb_detail/stone/deepslate", BBB_DETAIL, bbb("deepslate_column"), bbb("deepslate_urn"), bbb("deepslate_moulding"), bbb("deepslate_fence"), bbb("deepslate_frame")),

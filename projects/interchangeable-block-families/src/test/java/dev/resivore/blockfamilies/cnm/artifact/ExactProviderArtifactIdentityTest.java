@@ -37,8 +37,8 @@ final class ExactProviderArtifactIdentityTest {
                     "7024EA6FF0FD03DDCC686E18FF7D228B25766B9A46FC5B293DF8C71579D05387",
                     "ribbits", "4.1.6+26.2-mynx-canary17")),
             Map.entry("bbbReferenceJar", new ArtifactContract(
-                    "D0928B9316E3F6B323151FAC73DF3BE1056ABA05B56D4909B419CC15C09FC4D0",
-                    "bbb", "2.0pre4+26.2-pale-oak-dev.3")),
+                    "57DDB5DFE62F2EB9F4A2CE22FBEEB5CCE4386BBD93AAB3F7DF0DD8E6D19DDAF0",
+                    "bbb", "2.0pre4+26.2-enderscape-dev.7")),
             Map.entry("enderscapeReferenceJar", new ArtifactContract(
                     "9FCC4F59CA88E91F90E7C7D18289F2F859F20C810EEBCCA924764AA15236C40B",
                     "enderscape", "3.0.2")),

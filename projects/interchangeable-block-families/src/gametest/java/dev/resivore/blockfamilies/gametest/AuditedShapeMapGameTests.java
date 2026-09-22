@@ -61,10 +61,19 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     "enderscape:murublight_shelf")
     );
 
-    private static final List<List<String>> C8_ENDERSCAPE_FENCE_GATE_FAMILIES = List.of(
-            List.of("enderscape:veiled_fence", "enderscape:veiled_fence_gate"),
-            List.of("enderscape:celestial_fence", "enderscape:celestial_fence_gate"),
-            List.of("enderscape:murublight_fence", "enderscape:murublight_fence_gate")
+    private static final List<List<String>> C9_ENDERSCAPE_FENCE_GATE_FAMILIES = List.of(
+            List.of("enderscape:veiled_fence", "enderscape:veiled_fence_gate",
+                    "bbb:veiled_frame", "bbb:veiled_lattice"),
+            List.of("enderscape:celestial_fence", "enderscape:celestial_fence_gate",
+                    "bbb:celestial_frame", "bbb:celestial_lattice"),
+            List.of("enderscape:murublight_fence", "enderscape:murublight_fence_gate",
+                    "bbb:murublight_frame", "bbb:murublight_lattice")
+    );
+
+    private static final List<List<String>> C9_BBB_ENDERSCAPE_DETAIL_FAMILIES = List.of(
+            List.of("bbb:veiled_trim", "bbb:veiled_balustrade", "bbb:veiled_support", "bbb:veiled_pallet"),
+            List.of("bbb:celestial_trim", "bbb:celestial_balustrade", "bbb:celestial_support", "bbb:celestial_pallet"),
+            List.of("bbb:murublight_trim", "bbb:murublight_balustrade", "bbb:murublight_support", "bbb:murublight_pallet")
     );
 
     private static final List<List<String>> C8_ENDERSCAPE_BUILDING_ACCESSORY_FAMILIES = List.of(
@@ -109,7 +118,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "enderscape:murublight_door", "enderscape:murublight_trapdoor"
     );
 
-    private static final List<String> C8_CANONICAL_RESULT_RECIPE_IDS = List.of(
+    private static final List<String> C9_CANONICAL_RESULT_RECIPE_IDS = List.of(
             "minecraft:oak_sign",
             "minecraft:spruce_sign",
             "minecraft:birch_sign",
@@ -139,10 +148,11 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "enderscape:polished_veradite_button",
             "enderscape:polished_kurodite_button",
             "enderscape:polished_kurodite_button_from_polished_veradite_button",
-            "enderscape:shadoline_bars"
+            "enderscape:shadoline_bars",
+            "bbb:veiled_trim", "bbb:celestial_trim", "bbb:murublight_trim"
     );
 
-    private static final List<String> C8_REMOVED_ALTERNATE_RECIPE_IDS = List.of(
+    private static final List<String> C9_REMOVED_ALTERNATE_RECIPE_IDS = List.of(
             "minecraft:oak_hanging_sign", "minecraft:oak_shelf",
             "minecraft:spruce_hanging_sign", "minecraft:spruce_shelf",
             "minecraft:birch_hanging_sign", "minecraft:birch_shelf",
@@ -171,10 +181,16 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "enderscape:polished_mirestone_pressure_plate",
             "enderscape:polished_veradite_pressure_plate",
             "enderscape:polished_kurodite_pressure_plate",
-            "enderscape:shadoline_chain"
+            "enderscape:shadoline_chain",
+            "bbb:veiled_frame", "bbb:veiled_lattice", "bbb:veiled_balustrade",
+            "bbb:veiled_support", "bbb:veiled_pallet",
+            "bbb:celestial_frame", "bbb:celestial_lattice", "bbb:celestial_balustrade",
+            "bbb:celestial_support", "bbb:celestial_pallet",
+            "bbb:murublight_frame", "bbb:murublight_lattice", "bbb:murublight_balustrade",
+            "bbb:murublight_support", "bbb:murublight_pallet"
     );
 
-    private static final List<String> C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS = List.of(
+    private static final List<String> C9_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS = List.of(
             "enderscape:murublight_hanging_sign_from_celestial_hanging_sign",
             "enderscape:murublight_shelf_from_celestial_shelf",
             "enderscape:murublight_fence_gate_from_celestial_fence_gate",
@@ -306,16 +322,55 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void c8EnderscapeFenceAccessoryAndShadolineFamiliesResolveExactly(GameTestHelper helper) {
-        assertExactFamilies(helper, "C8 Enderscape fence/gate families",
+    public void c9EnderscapeFenceAccessoryAndShadolineFamiliesResolveExactly(GameTestHelper helper) {
+        assertExactFamilies(helper, "C9 Enderscape fence/gate families",
                 providerFamilies(AuditedShapeFamily.Category.FENCE_GATE, "enderscape"),
-                C8_ENDERSCAPE_FENCE_GATE_FAMILIES);
+                C9_ENDERSCAPE_FENCE_GATE_FAMILIES);
         assertExactFamilies(helper, "C8 Enderscape button/plate families",
                 providerFamilies(AuditedShapeFamily.Category.BUILDING_ACCESSORY, "enderscape"),
                 C8_ENDERSCAPE_BUILDING_ACCESSORY_FAMILIES);
         assertExactFamilies(helper, "C8 Enderscape Shadoline bars/chain family",
                 providerFamilies(AuditedShapeFamily.Category.BAR_CHAIN, "enderscape"),
                 C8_ENDERSCAPE_BAR_CHAIN_FAMILIES);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void c9BbbEnderscapeItemsExistResolveExactlyAndExcludeOrdinaryBuildingForms(
+            GameTestHelper helper) {
+        Set<Identifier> approved = approvedIds();
+        for (String material : List.of("veiled", "celestial", "murublight")) {
+            for (String form : List.of("frame", "lattice", "trim", "balustrade", "support", "pallet")) {
+                Identifier itemId = id("bbb:" + material + "_" + form);
+                helper.assertTrue(BuiltInRegistries.ITEM.containsKey(itemId),
+                        "BBB dev.7 is missing audited Enderscape item " + itemId);
+            }
+
+            assertExactShapeSet(helper, "enderscape:" + material + "_fence", List.of(
+                    "enderscape:" + material + "_fence", "enderscape:" + material + "_fence_gate",
+                    "bbb:" + material + "_frame", "bbb:" + material + "_lattice"));
+            assertExactShapeSet(helper, "bbb:" + material + "_trim", List.of(
+                    "bbb:" + material + "_trim", "bbb:" + material + "_balustrade",
+                    "bbb:" + material + "_support", "bbb:" + material + "_pallet"));
+
+            for (String excluded : List.of("wall", "beam", "beam_stairs", "beam_slab", "lantern")) {
+                Identifier itemId = id("bbb:" + material + "_" + excluded);
+                helper.assertTrue(BuiltInRegistries.ITEM.containsKey(itemId),
+                        "BBB dev.7 lost ordinary building form " + itemId);
+                helper.assertTrue(!approved.contains(itemId),
+                        "Ordinary BBB building form entered IBF " + itemId);
+                Set<Identifier> overlap = new HashSet<>(ids(ShapeMap.getShapes(requiredItem(itemId))));
+                overlap.retainAll(approved);
+                helper.assertTrue(overlap.isEmpty(),
+                        "Ordinary BBB building form joined an IBF ShapeMap family " + itemId + " -> " + overlap);
+            }
+        }
+
+        assertExactFamilies(helper, "C9 BBB Enderscape detail families",
+                AuditedShapeFamilies.families(AuditedShapeFamily.Category.BBB_DETAIL).stream()
+                        .filter(family -> family.key().getPath().startsWith("cnm/bbb_detail/wood/enderscape_"))
+                        .toList(),
+                C9_BBB_ENDERSCAPE_DETAIL_FAMILIES);
         helper.succeed();
     }
 
@@ -565,35 +620,35 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void c8RecipeCleanupPreserves30CanonicalAnd5ProviderConversionsAndRemoves41CraftingAlternates(
+    public void c9RecipeCleanupPreserves33CanonicalAnd5ProviderConversionsAndRemoves56CraftingAlternates(
             GameTestHelper helper) {
-        helper.assertTrue(C8_CANONICAL_RESULT_RECIPE_IDS.size() == 30
-                        && new HashSet<>(C8_CANONICAL_RESULT_RECIPE_IDS).size() == 30,
-                "C8 canonical-result recipe fixture must contain exactly 30 distinct IDs");
-        helper.assertTrue(C8_REMOVED_ALTERNATE_RECIPE_IDS.size() == 41
-                        && new HashSet<>(C8_REMOVED_ALTERNATE_RECIPE_IDS).size() == 41,
-                "C8 removed-alternate recipe fixture must contain exactly 41 distinct IDs");
-        helper.assertTrue(C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS.size() == 5
-                        && new HashSet<>(C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS).size() == 5,
-                "C8 retained provider-conversion fixture must contain exactly 5 distinct IDs");
-        Set<String> overlap = new HashSet<>(C8_CANONICAL_RESULT_RECIPE_IDS);
-        overlap.retainAll(C8_REMOVED_ALTERNATE_RECIPE_IDS);
+        helper.assertTrue(C9_CANONICAL_RESULT_RECIPE_IDS.size() == 33
+                        && new HashSet<>(C9_CANONICAL_RESULT_RECIPE_IDS).size() == 33,
+                "C9 canonical-result recipe fixture must contain exactly 33 distinct IDs");
+        helper.assertTrue(C9_REMOVED_ALTERNATE_RECIPE_IDS.size() == 56
+                        && new HashSet<>(C9_REMOVED_ALTERNATE_RECIPE_IDS).size() == 56,
+                "C9 removed-alternate recipe fixture must contain exactly 56 distinct IDs");
+        helper.assertTrue(C9_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS.size() == 5
+                        && new HashSet<>(C9_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS).size() == 5,
+                "C9 retained provider-conversion fixture must contain exactly 5 distinct IDs");
+        Set<String> overlap = new HashSet<>(C9_CANONICAL_RESULT_RECIPE_IDS);
+        overlap.retainAll(C9_REMOVED_ALTERNATE_RECIPE_IDS);
         helper.assertTrue(overlap.isEmpty(),
                 "C8 canonical and alternate recipe fixtures overlap: " + overlap);
 
-        List<String> missingCanonicalRecipes = C8_CANONICAL_RESULT_RECIPE_IDS.stream()
+        List<String> missingCanonicalRecipes = C9_CANONICAL_RESULT_RECIPE_IDS.stream()
                 .filter(recipeId -> !hasRecipe(helper, recipeId))
                 .toList();
         helper.assertTrue(missingCanonicalRecipes.isEmpty(),
-                "CNM removed C8 canonical-result recipes: " + missingCanonicalRecipes);
+                "CNM removed C9 canonical-result recipes: " + missingCanonicalRecipes);
 
-        List<String> retainedAlternateRecipes = C8_REMOVED_ALTERNATE_RECIPE_IDS.stream()
+        List<String> retainedAlternateRecipes = C9_REMOVED_ALTERNATE_RECIPE_IDS.stream()
                 .filter(recipeId -> hasRecipe(helper, recipeId))
                 .toList();
         helper.assertTrue(retainedAlternateRecipes.isEmpty(),
-                "CNM retained C8 alternate-result crafting recipes: " + retainedAlternateRecipes);
+                "CNM retained C9 alternate-result crafting recipes: " + retainedAlternateRecipes);
 
-        List<String> missingProviderConversions = C8_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS.stream()
+        List<String> missingProviderConversions = C9_RETAINED_ALTERNATE_PROVIDER_RECIPE_IDS.stream()
                 .filter(recipeId -> !hasRecipe(helper, recipeId))
                 .toList();
         helper.assertTrue(missingProviderConversions.isEmpty(),

@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Literal C8 contract for the Minecraft 26.2 and Enderscape 3.0.2 display/accessory audit. */
+/** Literal C9 contract for the Minecraft 26.2, Enderscape, and BBB provider audit. */
 final class EnderscapeDisplayFixtureFamiliesTest {
     private static final String MINECRAFT_JAR_PROPERTY = "minecraftReferenceJar";
     private static final String ENDERSCAPE_JAR_PROPERTY = "enderscapeReferenceJar";
@@ -84,11 +84,14 @@ final class EnderscapeDisplayFixtureFamiliesTest {
 
     private static final List<ExpectedFamily> ENDERSCAPE_FENCE_GATES = List.of(
             family("cnm/fence_gate/enderscape_veiled", FENCE_GATE,
-                    "enderscape:veiled_fence", "enderscape:veiled_fence_gate"),
+                    "enderscape:veiled_fence", "enderscape:veiled_fence_gate",
+                    "bbb:veiled_frame", "bbb:veiled_lattice"),
             family("cnm/fence_gate/enderscape_celestial", FENCE_GATE,
-                    "enderscape:celestial_fence", "enderscape:celestial_fence_gate"),
+                    "enderscape:celestial_fence", "enderscape:celestial_fence_gate",
+                    "bbb:celestial_frame", "bbb:celestial_lattice"),
             family("cnm/fence_gate/enderscape_murublight", FENCE_GATE,
-                    "enderscape:murublight_fence", "enderscape:murublight_fence_gate"));
+                    "enderscape:murublight_fence", "enderscape:murublight_fence_gate",
+                    "bbb:murublight_frame", "bbb:murublight_lattice"));
 
     private static final List<ExpectedFamily> ENDERSCAPE_BUILDING_ACCESSORIES = List.of(
             family("cnm/building_accessory/enderscape_veiled", BUILDING_ACCESSORY,
@@ -176,7 +179,9 @@ final class EnderscapeDisplayFixtureFamiliesTest {
         expectedEnderscape.addAll(ENDERSCAPE_BUILDING_ACCESSORIES);
 
         Set<Identifier> expectedMembers = new LinkedHashSet<>();
-        expectedEnderscape.forEach(family -> expectedMembers.addAll(family.members()));
+        expectedEnderscape.forEach(family -> family.members().stream()
+                .filter(member -> member.getNamespace().equals("enderscape"))
+                .forEach(expectedMembers::add));
         Set<Identifier> actualMembers = new LinkedHashSet<>();
         AuditedShapeFamilies.families().stream()
                 .flatMap(family -> family.members().stream())
