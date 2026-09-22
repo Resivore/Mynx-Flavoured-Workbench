@@ -33,9 +33,9 @@
       "Compile the retained `games.twinhead.moreslabsstairsandwalls` source and `more_slabs_stairs_and_walls` resources directly inside BGE with a clear LGPL-covered source and attribution boundary.",
       "Register native slabs, stairs, walls, material profiles, transitions, and client bindings before deriving CNM/BGE geometry through one guarded bootstrap and one root Fabric descriptor.",
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
-      "C92 restores C78's explicit material/profile architecture, selectively retains approved later catalog and resource behavior, and removes C79-C91 arbitrary-CNM discovery, deferred carriers, provisional identities, and post-resolution material guessing; C93 retains that boundary while adopting exact provider-owned standard roles, completing only explicit known families, and correcting shared preview, Wall, lowered-Path culling, Step UV, and directional-state contracts; C94 restores C92 item/selector presentation for Stairs, Vertical Slabs, Steps, and Walls while giving Beam Vertical Slab and Step items their authoritative axis-aware material frame without changing C93 placed resources; C95 restores Minecraft 26.2's exact fixed spruce foliage ARGB multiplier to every registered BGE spruce-leaf role through the shared profile-to-client tint seam without changing any geometry or resource output.",
+      "C92 restores C78's explicit material/profile architecture, selectively retains approved later catalog and resource behavior, and removes C79-C91 arbitrary-CNM discovery, deferred carriers, provisional identities, and post-resolution material guessing; C93 retains that boundary while adopting exact provider-owned standard roles, completing only explicit known families, and correcting shared preview, Wall, lowered-Path culling, Step UV, and directional-state contracts; C94 restores C92 item/selector presentation for Stairs, Vertical Slabs, Steps, and Walls while giving Beam Vertical Slab and Step items their authoritative axis-aware material frame without changing C93 placed resources; C95 restores Minecraft 26.2's exact fixed spruce foliage ARGB multiplier to every registered BGE spruce-leaf role through the shared profile-to-client tint seam without changing any geometry or resource output; C96 corrects the demonstrated effective client tint lookup by preempting CNM's ShapeMap-parent delegation only for the frozen eight non-root spruce geometries, and aligns both generated tinted-leaf Stair families with Minecraft 26.2's exact Stair bases across all 80 physical states without changing registration or canonical family ownership.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.39-bge.canary95.spruce-leaf-tint+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.40-bge.canary96.spruce-tint-stair-frame+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks plus five distinct Macaw soil Path blocks, six Mynx Trees log/wood/leaf sources, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, all 12 BBB beam parents including Pale Oak, 68 exact Enderscape sources, and the provider-owned Mossy Stone root. C93 adopts exact vanilla or Enderscape Slab/Stairs/Wall blocks wherever supplied, suppresses overlapping fallback registrations while Enderscape is loaded, supplies only genuinely absent standard roles plus the five BGE-specific roles, and validates exactly one visible nine-role ShapeMap variation for each explicit family. The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` remains a declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's thin Beam Wall topology remains canonical for all 12 Beam families, and the three Enderscape private Beam variants preserve that topology with their own palettes."
     ],
     "boundaries": {
@@ -49,6 +49,7 @@
         "C93 changes only explicitly cataloged provider-family ownership and the shared rendering contracts requested for Walls, item/selector previews, lowered Path culling and Step UVs, and Corrupt Overgrowth state projection. Item-only preview transforms do not alter placed blockstates or world model rotations; no arbitrary discovery, generic root inference, deferred/profile-free family, provisional block, `*_slab_wall`, or post-resolution material guessing returns.",
         "C94 changes only item/selector presentation: it removes the C93-only catalog display override, restores each affected item's C92 model chain, and routes all 15 Beam Vertical Slab and Step items through inventory-only wrappers over their unchanged direct-Y placed models. It changes no placed blockstate or block-model resource, texture artwork, registration, placement rule, geometry state, provider ownership, selector order, economy, or architecture boundary.",
         "C95 changes only the shared profile-to-client tint translation for `FOLIAGE_SPRUCE`: native and every registered BGE-derived spruce-leaf role use Minecraft 26.2's exact fixed `0xFF619961` multiplier rather than the biome foliage source. Birch retains its established fixed profile contract, ordinary `FOLIAGE_BIOME` leaves retain biome foliage tint, and all special/source-provider leaf behavior is unchanged. It changes no geometry, models, textures, UVs, lifecycle, placement, drops, family membership, selector order, CTM, registration ownership, or unrelated BGE behavior.",
+        "C96 changes only `BlockColors.getTintSources` for the frozen exact eight non-root spruce-family geometries and generated Stair model frames for `enderscape:veiled_leaves` and `mynx_trees:silver_birch_leaves`. Its empirically runtime-first priority-900 cancellable HEAD interception returns Minecraft 26.2's constant `0xFF619961` source for only those targets before CNM can substitute a ShapeMap parent source; the Stair correction uses the exact vanilla `stairs`, `inner_stairs`, and `outer_stairs` bases and preserves all 40 selectors per family. It changes no canonical spruce block, ShapeMap parent or order, block registration, physical or collision geometry, textures, family membership, placement, drops, economy, CTM, or foliage behavior outside those exact targets.",
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
         "C68 changes only normal axis-material Layer face UV rectangles: it preserves Layer bounds, placement, collision, state, texture roles, grain rotation, special visual paths, non-axis materials, all other geometries, registration, data, display transforms, and external-material support.",
@@ -68,7 +69,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C95 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C96 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -91,18 +92,18 @@
     ]
   },
   "state": {
-    "milestone": "C95 is a narrow spruce-leaf tint successor: it centralizes Minecraft 26.2's exact fixed spruce ARGB multiplier (`0xFF619961`) at BGE's shared profile-to-client registration seam so the standard/provider and BGE-derived spruce roles cannot fall through to biome foliage tint. The native spruce source remains fixed, birch retains its existing fixed contract, ordinary biome-foliage leaves remain biome-tinted, and special leaf behavior is unchanged. Java 25 controlled validation passed all 164/164 GameTests; C95 remains ACTIVE and runtime-untested pending owner confirmation that spruce BGE geometries keep one color across biomes. Accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C96 is a narrow effective spruce-tint and tinted-Stair-frame successor. It freezes the exact eight non-root BGE spruce roles after registration, intercepts their final client tint lookup ahead of CNM's ShapeMap-parent delegation with Minecraft 26.2's constant `0xFF619961` source, and aligns generated Veiled Leaves and Silver Birch Leaves Stair models with Minecraft 26.2's exact bases across 80 physical states. Java 25 controlled validation passed all 165/165 GameTests and the isolated client lookup regression; C96 remains ACTIVE and runtime-untested. The owner's observation that exact C95 still showed biome-dependent BGE spruce-geometry color under the actual pack stack is retained only as C95 failure evidence, not a C96 result. Accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C95 (Spruce Leaf Tint; embedded 4.2.39-bge.canary95.spruce-leaf-tint+26.2)",
-        "canary": 95,
-        "embedded_version": "4.2.39-bge.canary95.spruce-leaf-tint+26.2",
+        "version": "C96 (Spruce Tint and Stair Frames; embedded 4.2.40-bge.canary96.spruce-tint-stair-frame+26.2)",
+        "canary": 96,
+        "embedded_version": "4.2.40-bge.canary96.spruce-tint-stair-frame+26.2",
         "artifact": {
-          "filename": "BGE C95.jar",
-          "sha256": "cb4d1c04042588b848e8348e33f3688b28d14e8517c020162277cf596e7948b7"
+          "filename": "BGE C96.jar",
+          "sha256": "4f8ea46d2766bab183a958790ea6c696621cb9dbdec4b11bdf9ae878cfecedf7"
         },
-        "built_at": "2026-09-22T01:37:18.3405374Z",
-        "source_commit": "400a74c1f3ded757682dcd9bd5e0d8782607377b",
+        "built_at": "2026-09-22T05:50:51.8360976Z",
+        "source_commit": "4dbb425d30170faf68f45b51b017a27a43d86a59",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -111,18 +112,20 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C95 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; because it contains privately derived BBB Beam resources, this target-specific artifact is PRIVATE_LOCAL_ONLY and has no redistribution permission.",
+              "reason": "The exact C96 artifact targets the Minecraft 26.2 release and packages Fabric's same-release predicate; because it contains privately derived BBB Beam resources, this target-specific artifact is PRIVATE_LOCAL_ONLY and has no redistribution permission.",
               "regression_evidence": [
-                "Java 25 clean packaging produced exact PRIVATE_LOCAL_ONLY `BGE C95.jar`, 6,420,964 bytes, SHA-256 cb4d1c04042588b848e8348e33f3688b28d14e8517c020162277cf596e7948b7, finalized at 2026-09-22T01:37:18.3405374Z from preceding coherent implementation/artifact checkpoint 400a74c1f3ded757682dcd9bd5e0d8782607377b.",
-                "The private Beam generator accepted only locally supplied BBB dev.6 SHA-256 0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a and Enderscape 3.0.2+mc26.2 SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b; archive inspection found six generated private Beam PNG entries and zero `assets/bbb/` entries.",
-                "The C95 controlled Minecraft 26.2 GameTest suite passed 164/164, including the new all-nine-role spruce fixed-tint registration contract plus fixed birch and ordinary biome-foliage regressions. The material-profile architecture suite and 11-check Glass Corner UV audit passed. Unified artifact verification found one root descriptor, zero nested JARs or packaged CNM classes, zero forbidden architecture/provider resources or source-artwork leaks, exactly six approved private Beam PNGs, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, zero recipes, and retained exact C92 representative presentation and all 7,992 C93 placed blockstate/block-model resources.",
-                "C95 was not launched in a gameplay profile and has no runtime observation or acceptance. Owner confirmation is required for this exact SHA-256: compare the native source and every spruce family geometry across biomes and record only observed behavior.",
-                "Previously recorded owner observations remain bound only to their exact prior artifact SHA-256 values. C95 retains C94's item presentation and C93's provider-role completion, explicit-family boundary, Wall topology, lowered-Path culling and Step UV, Mossy Stone, and Corrupt Overgrowth corrections."
+                "Java 25 clean packaging produced exact PRIVATE_LOCAL_ONLY `BGE C96.jar`, 6,423,305 bytes, SHA-256 4f8ea46d2766bab183a958790ea6c696621cb9dbdec4b11bdf9ae878cfecedf7, finalized at 2026-09-22T05:50:51.8360976Z from preceding coherent implementation/artifact checkpoint 4dbb425d30170faf68f45b51b017a27a43d86a59.",
+                "The private Beam generator accepted only locally supplied BBB dev.6 SHA-256 0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a and Enderscape 3.0.2+mc26.2 SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b; verification found six approved private Beam PNGs, zero provider-resource entries, and zero forbidden source-artwork leakage.",
+                "A read-only audit of the locally supplied resource packs found visible spruce and BGE leaf model faces still using tint index 0, but no custom-color selector or replacement contract that could itself explain a biome callback for only the derived roles. The available evidence did not recover pack order, so none was invented. Runtime-path tracing instead found CNM 2.0.7's cancellable `BlockColors.getTintSources` HEAD injection delegating ShapeMap children to their parent and thereby bypassing C95's direct derived-role tint registrations.",
+                "The C96 controlled Minecraft 26.2 suite passed 165/165 GameTests, including exact frozen membership and canonical spruce ShapeMap parents for all eight non-root roles plus exact vanilla model-frame and physical-shape agreement for all 80 Veiled Leaves and Silver Birch Leaves Stair states. An isolated client GameTest exercised the real CNM/BGE final lookup for eight targets in two sentinel contexts while retaining canonical spruce and oak controls, emitting `SPRUCE_FINAL_TINT_LOOKUP|targets=8|contexts=2|canonicalControls=2|result=PASS`. All 109 architecture checks and the 11-check Glass Corner UV audit passed.",
+                "Unified verification retained one descriptor, zero nested JARs or packaged CNM classes, six approved private Beam PNGs, zero provider-resource leakage, 875 blockstates, 314 families, 7,067 block models, 875 loot tables, zero recipes, six exact C92 representative presentation resources, and all 7,992 C93 placed blockstate/block-model resources. The shared generated tinted-stair path currently has exactly two users: `enderscape:veiled_leaves` and `mynx_trees:silver_birch_leaves`.",
+                "The owner reported that exact C95 `BGE C95.jar`, SHA-256 cb4d1c04042588b848e8348e33f3688b28d14e8517c020162277cf596e7948b7, did not fix the original problem under the actual pack stack: BGE spruce-leaf geometries still visibly received biome-dependent foliage color rather than matching spruce leaves' fixed color. That observation binds only to exact C95. C96 was not launched in a gameplay profile and has no runtime result or acceptance.",
+                "C96 retains C94 item presentation and C93 provider-role completion, explicit-family ownership, Wall topology, lowered-Path culling, Step UVs, Mossy Stone, and Corrupt Overgrowth behavior. Outside the two corrected generated tinted Stair families, placed resources and prior foliage contracts remain unchanged."
               ]
             }
           ]
         },
-        "summary": "Restores Minecraft 26.2's exact fixed spruce foliage tint across every standard and BGE-derived spruce family role while preserving birch, biome foliage, special leaves, and all geometry; this artifact remains PRIVATE_LOCAL_ONLY."
+        "summary": "Overrides CNM-delegated final tint lookup for exactly eight spruce geometries and restores exact vanilla rendered model frames for both generated tinted-leaf Stair families while preserving other foliage and family contracts; this artifact remains PRIVATE_LOCAL_ONLY."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -192,10 +195,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 57,
-    "activity_at": "2026-09-22T01:37:18.3405374Z",
-    "updated_at": "2026-09-22T01:37:18.3405374Z",
-    "last_codex_at": "2026-09-22T01:37:18.3405374Z",
-    "source_commit": "400a74c1f3ded757682dcd9bd5e0d8782607377b"
+    "revision": 58,
+    "activity_at": "2026-09-22T05:50:51.8360976Z",
+    "updated_at": "2026-09-22T05:50:51.8360976Z",
+    "last_codex_at": "2026-09-22T05:50:51.8360976Z",
+    "source_commit": "4dbb425d30170faf68f45b51b017a27a43d86a59"
   }
 }
