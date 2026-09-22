@@ -22,6 +22,7 @@
     "HoeItemAccessor"
   ],
   "client": [
+    "FixedSpruceTintMixin",
     "AssetGeneratorMixin",
     "ProviderAssetRefreshMixin",
     "ProviderStepModelMixin",

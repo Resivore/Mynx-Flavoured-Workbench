@@ -16,6 +16,7 @@ import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.NativeAxisModelContract;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
+import games.twinhead.moreslabsstairsandwalls.api.material.TintProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import games.twinhead.moreslabsstairsandwalls.block.leaves.LeafDistanceCarrier;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
@@ -63,9 +64,11 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -74,6 +77,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.zip.ZipFile;
 
 /** Production-lifecycle coverage for the exact optional-provider catalog. */
 public final class ExternalMaterialFamilyGameTests implements CustomTestMethodInvoker {
@@ -1044,6 +1048,82 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
     }
 
     @GameTest(maxTicks = 80)
+    public void customTintedStairsUseTheExactVanillaFrameForEveryPhysicalState(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        ExternalMaterialGeneratedResources.generate(manager);
+
+        Map<String, JsonObject> vanillaBases = Map.of(
+                "", minecraftClientJson("assets/minecraft/models/block/stairs.json"),
+                "_inner", minecraftClientJson("assets/minecraft/models/block/inner_stairs.json"),
+                "_outer", minecraftClientJson("assets/minecraft/models/block/outer_stairs.json"));
+        Set<Identifier> affected = new LinkedHashSet<>();
+        int checkedStates = 0;
+
+        for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
+            if (!binding.isGeneratedRole("stairs")) continue;
+            if (binding.profile().tintProfile() == TintProfile.NONE
+                    && binding.profile().visualProfile() != VisualProfile.HUGE_MUSHROOM) continue;
+            Identifier stairs = BuiltInRegistries.BLOCK.getKey(binding.stairs());
+            affected.add(binding.spec().id());
+
+            for (Map.Entry<String, JsonObject> expected : vanillaBases.entrySet()) {
+                String suffix = expected.getKey();
+                JsonObject generated = generatedClientJson(Identifier.fromNamespaceAndPath(stairs.getNamespace(),
+                        "models/block/" + stairs.getPath() + suffix + ".json"));
+                helper.assertTrue(generated.get("parent").getAsString()
+                                .equals("minecraft:block/" + switch (suffix) {
+                                    case "_inner" -> "inner_stairs";
+                                    case "_outer" -> "outer_stairs";
+                                    default -> "stairs";
+                                })
+                                && elementBounds(generated).equals(elementBounds(expected.getValue()))
+                                && allFacesUseTintIndexZero(generated),
+                        "Custom stair base diverged from Minecraft 26.2's frame/tint contract: "
+                                + binding.spec().id() + suffix);
+            }
+
+            JsonObject variants = generatedClientJson(blockStateResource(binding.stairs()))
+                    .getAsJsonObject("variants");
+            helper.assertTrue(variants.size() == 40,
+                    "Custom stair blockstate did not retain all 40 vanilla selectors: " + stairs);
+            for (Direction facing : List.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST)) {
+                for (Half half : Half.values()) {
+                    for (StairsShape shape : StairsShape.values()) {
+                        BlockState state = binding.stairs().defaultBlockState()
+                                .setValue(StairBlock.FACING, facing)
+                                .setValue(StairBlock.HALF, half)
+                                .setValue(StairBlock.SHAPE, shape)
+                                .setValue(StairBlock.WATERLOGGED, false);
+                        String key = "facing=" + facing.getSerializedName() + ",half="
+                                + half.getSerializedName() + ",shape=" + shape.getSerializedName();
+                        JsonObject selection = variants.getAsJsonObject(key);
+                        helper.assertTrue(selection != null, "Missing custom stair selector " + stairs + " " + key);
+                        JsonObject model = generatedClientJson(modelResource(selection.get("model").getAsString()));
+                        Set<Integer> rendered = rotatedModelVoxels(model,
+                                selection.has("x") ? selection.get("x").getAsInt() : 0,
+                                selection.has("y") ? selection.get("y").getAsInt() : 0);
+                        Set<Integer> physical = shapeVoxels(state.getCollisionShape(helper.getLevel(),
+                                helper.absolutePos(BlockPos.ZERO), net.minecraft.world.phys.shapes.CollisionContext.empty()));
+                        helper.assertTrue(rendered.equals(physical),
+                                "Rendered custom stair orientation disagrees with its physical state: "
+                                        + stairs + " " + key + " rendered=" + rendered.size()
+                                        + " physical=" + physical.size());
+                        checkedStates++;
+                    }
+                }
+            }
+        }
+
+        helper.assertTrue(affected.equals(Set.of(
+                        Identifier.parse("enderscape:veiled_leaves"),
+                        Identifier.parse("mynx_trees:silver_birch_leaves")))
+                        && checkedStates == 80,
+                "Custom stair branch inventory/state coverage changed: affected=" + affected
+                        + " states=" + checkedStates);
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
     public void logWoodAndLeafWallsUseAcceptedNormalWallResources(GameTestHelper helper) {
         ExternalMaterialGeneratedResources.generate(clientFixtureManager());
         for (String stem : List.of("wisteria", "silver_birch")) {
@@ -1684,6 +1764,100 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         }
     }
 
+    private static List<List<Integer>> elementBounds(JsonObject model) {
+        List<List<Integer>> result = new ArrayList<>();
+        for (JsonElement element : model.getAsJsonArray("elements")) {
+            JsonObject cuboid = element.getAsJsonObject();
+            List<Integer> bounds = new ArrayList<>(6);
+            cuboid.getAsJsonArray("from").forEach(value -> bounds.add(value.getAsInt()));
+            cuboid.getAsJsonArray("to").forEach(value -> bounds.add(value.getAsInt()));
+            result.add(List.copyOf(bounds));
+        }
+        return List.copyOf(result);
+    }
+
+    private static boolean allFacesUseTintIndexZero(JsonObject model) {
+        for (JsonElement element : model.getAsJsonArray("elements")) {
+            for (Map.Entry<String, JsonElement> face : element.getAsJsonObject()
+                    .getAsJsonObject("faces").entrySet()) {
+                if (!face.getValue().getAsJsonObject().has("tintindex")
+                        || face.getValue().getAsJsonObject().get("tintindex").getAsInt() != 0) return false;
+            }
+        }
+        return true;
+    }
+
+    private static Set<Integer> rotatedModelVoxels(JsonObject model, int xRotation, int yRotation) {
+        Set<Integer> result = new HashSet<>();
+        for (JsonElement element : model.getAsJsonArray("elements")) {
+            JsonObject cuboid = element.getAsJsonObject();
+            JsonArray from = cuboid.getAsJsonArray("from");
+            JsonArray to = cuboid.getAsJsonArray("to");
+            for (int x = from.get(0).getAsInt(); x < to.get(0).getAsInt(); x++) {
+                for (int y = from.get(1).getAsInt(); y < to.get(1).getAsInt(); y++) {
+                    for (int z = from.get(2).getAsInt(); z < to.get(2).getAsInt(); z++) {
+                        int rx = x;
+                        int ry = y;
+                        int rz = z;
+                        if (xRotation == 180) {
+                            ry = 15 - ry;
+                            rz = 15 - rz;
+                        } else if (xRotation != 0) {
+                            throw new IllegalStateException("Unexpected stair x rotation " + xRotation);
+                        }
+                        for (int turns = Math.floorMod(yRotation, 360) / 90; turns > 0; turns--) {
+                            int nextX = 15 - rz;
+                            rz = rx;
+                            rx = nextX;
+                        }
+                        result.add(voxel(rx, ry, rz));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private static Set<Integer> shapeVoxels(net.minecraft.world.phys.shapes.VoxelShape shape) {
+        Set<Integer> result = new HashSet<>();
+        for (net.minecraft.world.phys.AABB box : shape.toAabbs()) {
+            int minX = (int) Math.round(box.minX * 16.0);
+            int minY = (int) Math.round(box.minY * 16.0);
+            int minZ = (int) Math.round(box.minZ * 16.0);
+            int maxX = (int) Math.round(box.maxX * 16.0);
+            int maxY = (int) Math.round(box.maxY * 16.0);
+            int maxZ = (int) Math.round(box.maxZ * 16.0);
+            for (int x = minX; x < maxX; x++) for (int y = minY; y < maxY; y++) {
+                for (int z = minZ; z < maxZ; z++) result.add(voxel(x, y, z));
+            }
+        }
+        return result;
+    }
+
+    private static int voxel(int x, int y, int z) {
+        return (x << 8) | (y << 4) | z;
+    }
+
+    private static JsonObject minecraftClientJson(String entry) {
+        return JsonParser.parseString(minecraftClientText(entry)).getAsJsonObject();
+    }
+
+    private static String minecraftClientText(String entry) {
+        String configured = System.getProperty("bge.minecraftClientJar");
+        if (configured == null || configured.isBlank()) {
+            throw new IllegalStateException("Missing bge.minecraftClientJar controlled-test input");
+        }
+        try (ZipFile archive = new ZipFile(Path.of(configured).toFile())) {
+            var resource = archive.getEntry(entry);
+            if (resource == null) throw new IllegalStateException("Minecraft 26.2 client resource absent: " + entry);
+            try (var input = archive.getInputStream(resource)) {
+                return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            }
+        } catch (Exception exception) {
+            throw new IllegalStateException("Cannot inspect Minecraft 26.2 client resource " + entry, exception);
+        }
+    }
+
     private static JsonObject resourceJson(ResourceManager manager, Identifier id) {
         try {
             Resource resource = manager.getResource(id)
@@ -1822,12 +1996,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
     private static ResourceManager clientFixtureManager() {
         Map<Identifier, String> json = new HashMap<>();
         json.put(Identifier.parse("minecraft:blockstates/oak_stairs.json"),
-                "{\"variants\":{\"facing=north,half=bottom,shape=straight\":"
-                        + "{\"model\":\"minecraft:block/oak_stairs\"},"
-                        + "\"facing=north,half=bottom,shape=inner_left\":"
-                        + "{\"model\":\"minecraft:block/oak_stairs_inner\"},"
-                        + "\"facing=north,half=bottom,shape=outer_left\":"
-                        + "{\"model\":\"minecraft:block/oak_stairs_outer\"}}}");
+                minecraftClientText("assets/minecraft/blockstates/oak_stairs.json"));
         json.put(Identifier.parse("minecraft:blockstates/cobblestone_wall.json"),
                 "{\"multipart\":[{\"when\":{\"up\":\"true\"},"
                         + "\"apply\":{\"model\":\"minecraft:block/cobblestone_wall_post\"}},"

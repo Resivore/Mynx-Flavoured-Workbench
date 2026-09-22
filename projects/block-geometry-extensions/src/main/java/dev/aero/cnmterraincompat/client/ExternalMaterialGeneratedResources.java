@@ -210,12 +210,18 @@ public final class ExternalMaterialGeneratedResources {
             write(modelResource(id, "_inner"), template("minecraft:block/inner_stairs", profile));
             write(modelResource(id, "_outer"), template("minecraft:block/outer_stairs", profile));
         } else {
-            write(modelResource(id), cuboidModel(profile, List.of(
-                    new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 8, 16, 16, 16})));
-            write(modelResource(id, "_inner"), cuboidModel(profile, List.of(
-                    new int[] {0, 0, 0, 16, 8, 16}, new int[] {0, 8, 8, 16, 16, 16},
-                    new int[] {8, 8, 0, 16, 16, 8})));
-            write(modelResource(id, "_outer"), cuboidModel(profile, List.of(
+            // These are the exact unrotated Minecraft 26.2 stairs/inner_stairs/outer_stairs
+            // coordinate frames. The copied oak_stairs blockstate supplies every facing/half/
+            // shape rotation, so rotating the authored base here would rotate placed visuals
+            // away from StairBlock's physical state. Inheriting the matching vanilla parent also
+            // keeps its authoritative display transforms while these tinted elements replace the
+            // parent's untinted geometry.
+            write(modelResource(id), cuboidModel(profile, "minecraft:block/stairs", List.of(
+                    new int[] {0, 0, 0, 16, 8, 16}, new int[] {8, 8, 0, 16, 16, 16})));
+            write(modelResource(id, "_inner"), cuboidModel(profile, "minecraft:block/inner_stairs", List.of(
+                    new int[] {0, 0, 0, 16, 8, 16}, new int[] {8, 8, 0, 16, 16, 16},
+                    new int[] {0, 8, 8, 8, 16, 16})));
+            write(modelResource(id, "_outer"), cuboidModel(profile, "minecraft:block/outer_stairs", List.of(
                     new int[] {0, 0, 0, 16, 8, 16}, new int[] {8, 8, 8, 16, 16, 16})));
         }
         return 3;
@@ -658,8 +664,13 @@ public final class ExternalMaterialGeneratedResources {
 
     /** Complete tinted geometry for the standard forms whose vanilla parents have no tint index. */
     private static JsonObject cuboidModel(NibaruMaterialProfile profile, List<int[]> cuboids) {
+        return cuboidModel(profile, "minecraft:block/block", cuboids);
+    }
+
+    /** Complete tinted geometry with an explicit structural/display parent. */
+    private static JsonObject cuboidModel(NibaruMaterialProfile profile, String parent, List<int[]> cuboids) {
         JsonObject root = new JsonObject();
-        root.addProperty("parent", "minecraft:block/block");
+        root.addProperty("parent", parent);
         root.add("textures", textures(profile));
         JsonArray elements = new JsonArray();
         for (int[] bounds : cuboids) {

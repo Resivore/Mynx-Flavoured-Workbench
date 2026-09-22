@@ -188,6 +188,7 @@ public final class CnmTerrainCompat implements ModInitializer {
     private static void validateBindingsWhenComplete() {
         if (bgeBaseRegistered && bgeGeometryRegistered) {
             BgeMaterialBindings.validateAndFreeze();
+            FoliageTintContract.freezeSpruceGeometryTargets();
         }
     }
 

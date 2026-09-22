@@ -4,6 +4,7 @@ import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfiles;
 import games.twinhead.moreslabsstairsandwalls.api.material.TintProfile;
 import games.twinhead.moreslabsstairsandwalls.block.ModBlocks;
+import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -37,7 +38,10 @@ public final class FoliageTintContractGameTests implements CustomTestMethodInvok
                 BgeMaterialBindings.Role.LAYER);
         Set<Block> nativeTargets = Set.copyOf(FoliageTintContract.nativeTargets(ModBlocks.SPRUCE_LEAVES));
         Set<Block> derivedTargets = NibaruProviderAdapter.tintTargets(spruce);
+        Set<Block> finalLookupTargets = FoliageTintContract.spruceGeometryTargets();
         Set<BgeMaterialBindings.Role> covered = EnumSet.noneOf(BgeMaterialBindings.Role.class);
+        Set<Block> expectedFinalLookupTargets = java.util.Collections.newSetFromMap(
+                new java.util.IdentityHashMap<>());
 
         for (BgeMaterialBindings.Binding binding : BgeMaterialBindings.all()) {
             if (binding.materialProfile().orElse(null) != spruce
@@ -55,10 +59,21 @@ public final class FoliageTintContractGameTests implements CustomTestMethodInvok
                 helper.assertTrue(role == BgeMaterialBindings.Role.CANONICAL_BLOCK,
                         "Unexpected spruce catalog role " + role);
             }
+            if (role != BgeMaterialBindings.Role.CANONICAL_BLOCK) {
+                expectedFinalLookupTargets.add(binding.physicalBlock());
+                helper.assertTrue(ShapeMap.getParent(binding.physicalBlock().asItem())
+                                == Blocks.SPRUCE_LEAVES.asItem(),
+                        "CNM's final tint lookup parent is not canonical spruce for " + role);
+            }
             covered.add(role);
         }
         helper.assertTrue(covered.equals(EnumSet.allOf(BgeMaterialBindings.Role.class)),
                 "Spruce did not retain complete nine-role BGE coverage: " + covered);
+        helper.assertTrue(finalLookupTargets.equals(expectedFinalLookupTargets)
+                        && finalLookupTargets.size() == 8
+                        && !finalLookupTargets.contains(Blocks.SPRUCE_LEAVES),
+                "Final spruce tint bridge does not cover exactly the eight non-root geometries: "
+                        + finalLookupTargets);
         helper.succeed();
     }
 
