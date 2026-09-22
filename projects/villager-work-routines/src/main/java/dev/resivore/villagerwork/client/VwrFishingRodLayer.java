@@ -53,7 +53,7 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                         getParentModel(), state, poseStack);
                 if (attachment.applied()) {
                     FrogVillagerRodPose.applyReferenceGrip(poseStack);
-                    Matrix4f c27Grip = new Matrix4f(poseStack.last().pose());
+                    Matrix4f c28Grip = new Matrix4f(poseStack.last().pose());
 
                     RibbitsFishermanRodRenderer.Inspection inspection =
                             RibbitsFishermanRodRenderer.submit(poseStack, collector, light);
@@ -71,12 +71,12 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                     try {
                         VwrRodDiagnostics.observeRenderPath(villager, fishingFloat.getId(),
                                 getParentModel(), inspection.submitted(), incomingEntityLayer,
-                                attachment, c27Grip, inspection, line);
+                                attachment, c28Grip, inspection, line);
                         RodDiagnosticMarkers.submit(collector, incomingEntityLayer,
                                 attachment.afterTranslateToArms(),
-                                attachment.afterEffectiveFoldedArms(), c27Grip, inspection);
+                                attachment.afterEffectiveFoldedArms(), c28Grip, inspection);
                     } catch (RuntimeException | LinkageError ignored) {
-                        // Diagnostic geometry/logging is never allowed to suppress the C27 rod/line.
+                        // Diagnostic geometry/logging is never allowed to suppress the C28 rod/line.
                     }
                 } else {
                     try {
