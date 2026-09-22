@@ -9,19 +9,23 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
-/** Small, bright VWR-owned axes and shapes retained for the focused C25 runtime trial. */
+/** Small, bright VWR-owned axes and shapes retained for the focused C26 pose comparison. */
 final class RodDiagnosticMarkers {
     private RodDiagnosticMarkers() {
     }
 
     static void submit(SubmitNodeCollector collector, Matrix4fc incomingEntityLayer,
                        Matrix4fc afterTranslateToArms, Matrix4fc afterEffectiveFoldedArms,
-                       Matrix4fc afterAuthoredGrip,
+                       Matrix4fc c24Grip, Matrix4fc c25Grip,
                        RibbitsFishermanRodRenderer.Inspection rod) {
         submitMarker(collector, incomingEntityLayer, Shape.CROSS, 0.055F, 255, 255, 255);
-        submitMarker(collector, afterTranslateToArms, Shape.SQUARE, 0.095F, 0, 255, 255);
+        submitMarker(collector, afterTranslateToArms, Shape.PLUS, 0.085F, 64, 160, 255);
         submitMarker(collector, afterEffectiveFoldedArms, Shape.PLUS, 0.085F, 64, 160, 255);
-        submitMarker(collector, afterAuthoredGrip, Shape.X, 0.080F, 255, 0, 255);
+        // Cyan square = exact C24 grip. Magenta X = current C25 grip. The long triad and
+        // white arrow are both in C24 local space, exactly where C25's +Y/+Z is applied.
+        submitMarker(collector, c24Grip, Shape.SQUARE, 0.095F, 0, 255, 255);
+        submitMarker(collector, c25Grip, Shape.X, 0.095F, 255, 0, 255);
+        submitCorrectionAxes(collector, c24Grip);
         if (rod.geometryRootMatrix() != null) {
             submitMarker(collector, rod.geometryRootMatrix(), Shape.TRIANGLE, 0.070F, 255, 112, 0);
         }
@@ -31,6 +35,23 @@ final class RodDiagnosticMarkers {
                     .translate(0.0F, 0.0F, FrogVillagerRodPose.OUTER_SHAFT_TIP_FROM_GRIP_Z);
             submitMarker(collector, tipMatrix, Shape.STAR, 0.070F, 64, 255, 64);
         }
+    }
+
+    private static void submitCorrectionAxes(SubmitNodeCollector collector, Matrix4fc c24Grip) {
+        PoseStack markerPose = new PoseStack();
+        markerPose.mulPose(c24Grip);
+        float vanillaWidth = Minecraft.getInstance().gameRenderer.gameRenderState()
+                .windowRenderState.appropriateLineWidth;
+        float width = Math.max(3.5F, vanillaWidth * 2.0F);
+        collector.submitCustomGeometry(markerPose, RenderTypes.lines(), (pose, vertices) -> {
+            float axis = 0.24F;
+            line(vertices, pose, 0, 0, 0, axis, 0, 0, 255, 48, 48, width);
+            line(vertices, pose, 0, 0, 0, 0, axis, 0, 48, 255, 48, width);
+            line(vertices, pose, 0, 0, 0, 0, 0, axis, 48, 96, 255, width);
+            line(vertices, pose, 0, 0, 0,
+                    0, FrogVillagerRodPose.FINAL_ALIGNMENT_Y,
+                    FrogVillagerRodPose.FINAL_ALIGNMENT_Z, 255, 255, 255, width);
+        });
     }
 
     private static void submitMarker(SubmitNodeCollector collector, Matrix4fc matrix, Shape shape,

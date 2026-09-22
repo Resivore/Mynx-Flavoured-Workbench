@@ -39,12 +39,22 @@ public final class FrogVillagerRodPose {
     private FrogVillagerRodPose() {
     }
 
+    /** Applies C24's immutable authored grip with its proven EMF live-axis mapping. */
+    public static void applyC24ReferenceGrip(PoseStack poseStack) {
+        poseStack.translate(RUNTIME_GRIP_X, RUNTIME_GRIP_Y, RUNTIME_GRIP_Z);
+    }
+
     /**
-     * Applies the immutable authored grip, followed by C25's final local alignment correction.
+     * Applies C25's final local alignment correction at the already-authored C24 grip.
      * Runtime positive Y is down; positive Z is toward the handle/villager, away from the tip.
      */
-    public static void applyReferenceGrip(PoseStack poseStack) {
-        poseStack.translate(RUNTIME_GRIP_X, RUNTIME_GRIP_Y, RUNTIME_GRIP_Z);
+    public static void applyC25AlignmentCorrection(PoseStack poseStack) {
         poseStack.translate(0.0F, FINAL_ALIGNMENT_Y, FINAL_ALIGNMENT_Z);
+    }
+
+    /** Applies the current C25 reference grip without changing its established transform order. */
+    public static void applyReferenceGrip(PoseStack poseStack) {
+        applyC24ReferenceGrip(poseStack);
+        applyC25AlignmentCorrection(poseStack);
     }
 }

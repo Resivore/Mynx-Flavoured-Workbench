@@ -72,17 +72,17 @@
     ]
   },
   "state": {
-    "milestone": "The supplied C23 result remains narrowly recorded as a C23 runtime FAIL for rod attachment: exact Ribbits C27 resources resolved, the baked 50-degree fishing_rod rotation was neutralized to effective zero, the authored grip and live rod pivot coincided, but the rod remained displaced high/across the Frog Villager after C23 selected arms -> EMF_arms -> EMF_arms_rotation with its shallowest-direct-geometry heuristic. C23's sole line correctly began at the captured physical shaft tip with zero displayed delta. The supplied C24 screenshot is C24-only runtime evidence: the rod now follows the folded hands closely and its line origin appears correct, with the remaining issue only that the rod/grip is slightly high and outward from the villager. No Fisherman productivity, barrel-return, Shepherd, or other runtime result is inferred. C25 preserves C24's EMF semantic parent, C27 neutralization, decoration suppression, and physical-tip line, then applies only a final folded-arm-local +2px Y (down) and +1px Z (toward the handle/villager) translation after the authored grip. C25 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
+    "milestone": "The supplied C23 result remains narrowly recorded as a C23 runtime FAIL for rod attachment: exact Ribbits C27 resources resolved, the baked 50-degree fishing_rod rotation was neutralized to effective zero, the authored grip and live rod pivot coincided, but the rod remained displaced high/across the Frog Villager after C23 selected arms -> EMF_arms -> EMF_arms_rotation with its shallowest-direct-geometry heuristic. C23's sole line correctly began at the captured physical shaft tip with zero displayed delta. The supplied C24 screenshot is C24-only runtime evidence: the rod follows the folded hands closely and its line origin appears correct, with the remaining issue only that the rod/grip is slightly high and outward from the villager. The supplied C25 screenshot is narrowly recorded as C25 runtime evidence: C25 remains incorrectly aligned, and its intended post-grip folded-arm-local +2px Y (down) / +1px Z (toward the handle/villager) correction did not visually move the rod in the intended direction. No replacement offset or broader Fisherman productivity, barrel-return, Shepherd, or other runtime result is inferred. C26 is diagnostic-only: it preserves the C25 solid rod and sole physical-tip line, adding an exact C24 C27-geometry cyan translucent comparison ghost with C25's final alignment correction omitted, plus C24/C25 grip markers and C24-local axes/vector. C26 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "canary": 25,
-        "version": "0.1.0-canary25",
+        "canary": 26,
+        "version": "0.1.0-canary26",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary25.jar",
-          "sha256": "947bb435cb3378e0c81343e0de035cac2b170fe95fedcdb7f1a0c91d80edbaee"
+          "filename": "villager-work-routines-0.1.0-canary26.jar",
+          "sha256": "326d30cbce9fd5296552f29f687702d5866d288f04b778692d0a96c6320f7edd"
         },
-        "built_at": "2026-09-22T04:07:14.8297850Z",
-        "source_commit": "88c694e61d78cf896405c3e9364a231b2268cfa8",
+        "built_at": "2026-09-22T04:30:21.3172871Z",
+        "source_commit": "066ea8c34f72b43c35c25966eb5d3a5f4c7a51fa",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -99,7 +99,7 @@
             }
           ]
         },
-        "summary": "Moves the C27 Fisherman rod 2 local pixels down and 1 local pixel inward after the proven folded-arm grip, while preserving its physical-tip line and all work routines."
+        "summary": "Adds a cyan translucent exact-C24 C27 rod-pose ghost and local grip/axis comparison markers while preserving the C25 solid rod and its sole physical-tip line."
       },
       "accepted": null,
       "rollback": null,
@@ -113,10 +113,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 25,
-    "activity_at": "2026-09-22T04:07:14.8297850Z",
-    "updated_at": "2026-09-22T04:07:14.8297850Z",
-    "last_codex_at": "2026-09-22T04:07:14.8297850Z",
-    "source_commit": "88c694e61d78cf896405c3e9364a231b2268cfa8"
+    "revision": 26,
+    "activity_at": "2026-09-22T04:30:21.3172871Z",
+    "updated_at": "2026-09-22T04:30:21.3172871Z",
+    "last_codex_at": "2026-09-22T04:30:21.3172871Z",
+    "source_commit": "066ea8c34f72b43c35c25966eb5d3a5f4c7a51fa"
   }
 }

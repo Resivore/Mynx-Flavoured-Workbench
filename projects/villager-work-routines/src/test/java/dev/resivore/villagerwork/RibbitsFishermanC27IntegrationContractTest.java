@@ -76,7 +76,13 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(pose.contains("FINAL_ALIGNMENT_Z_PIXELS = 1.0F"));
         assertMethodBodyEquals("""
                 poseStack.translate(RUNTIME_GRIP_X, RUNTIME_GRIP_Y, RUNTIME_GRIP_Z);
+                """, pose, "public static void applyC24ReferenceGrip(PoseStack poseStack)");
+        assertMethodBodyEquals("""
                 poseStack.translate(0.0F, FINAL_ALIGNMENT_Y, FINAL_ALIGNMENT_Z);
+                """, pose, "public static void applyC25AlignmentCorrection(PoseStack poseStack)");
+        assertMethodBodyEquals("""
+                applyC24ReferenceGrip(poseStack);
+                applyC25AlignmentCorrection(poseStack);
                 """, pose, "public static void applyReferenceGrip(PoseStack poseStack)");
     }
 
@@ -103,9 +109,12 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(pose.contains("OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS = -9.5F"));
 
         int rodSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submit(");
+        int c24GhostSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submitC24Ghost(");
         int physicalTip = layer.indexOf("inspection.physicalOuterTip()", rodSubmit);
         int lineSubmit = layer.indexOf("FishingFloatRenderer.submitLineFromPhysicalRod(", rodSubmit);
+        assertTrue(c24GhostSubmit >= 0 && rodSubmit > c24GhostSubmit);
         assertTrue(rodSubmit >= 0 && physicalTip > rodSubmit && lineSubmit > physicalTip);
+        assertEquals(lineSubmit, layer.lastIndexOf("FishingFloatRenderer.submitLineFromPhysicalRod("));
         assertTrue(layer.contains("inspection.exactLiveCapture()"));
         assertFalse(layer.contains("ribbitsRodTip"));
         assertFalse(layer.contains("Mth.rotLerp"));
@@ -121,7 +130,7 @@ class RibbitsFishermanC27IntegrationContractTest {
     }
 
     @Test
-    void c24DiagnosticsExposeEffectivePathMappedGripAndSharedPhysicalTip() throws IOException {
+    void c26DiagnosticsExposeC24AndC25GripComparisonWithSharedPhysicalTip() throws IOException {
         String diagnostics = read(
                 "src/main/java/dev/resivore/villagerwork/client/VwrRodDiagnostics.java");
         String markers = read("src/main/java/dev/resivore/villagerwork/client/RodDiagnosticMarkers.java");
@@ -139,6 +148,10 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(renderer.contains("addPerBoneRender"));
         assertTrue(renderer.contains("capturePhysicalRod"));
         assertTrue(renderer.contains("live_render_snapshot"));
+        assertTrue(renderer.contains("submitC24Ghost"));
+        assertTrue(renderer.contains("C24_GHOST_RENDERER"));
+        assertTrue(renderer.contains("RenderTypes.entityTranslucent(texture)"));
+        assertTrue(renderer.contains("ARGB.colorFromFloat(0.56F, 0.18F, 0.88F, 1.0F)"));
         assertTrue(diagnostics.contains("effective_folded_arm_path_actually_used"));
         assertTrue(diagnostics.contains("after_effective_folded_arm_path"));
         assertTrue(diagnostics.contains("authored_id="));
@@ -146,14 +159,18 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(diagnostics.contains(
                 "after_C25_authored_grip_[0,-7,-6]px_EMF_mapped_live_[0,+7,-6]px"));
         assertTrue(diagnostics.contains("_then_local_[0,+2,+1]px"));
-        assertTrue(diagnostics.contains("C24_line_start_authority=live_fishing_rod_physical_outer_tip"));
-        assertTrue(diagnostics.contains("C24_line_start_minus_visible_tip"));
+        assertTrue(diagnostics.contains("C25_line_start_authority=live_fishing_rod_physical_outer_tip"));
+        assertTrue(diagnostics.contains("C25_line_start_minus_visible_tip"));
         assertFalse(diagnostics.contains("C20_line_start_currently_used"));
         assertTrue(markers.contains("Shape.SQUARE"));
         assertTrue(markers.contains("Shape.PLUS"));
         assertTrue(markers.contains("Shape.X"));
         assertTrue(markers.contains("Shape.DIAMOND"));
         assertTrue(markers.contains("Shape.STAR"));
+        assertTrue(markers.contains("Matrix4fc c24Grip, Matrix4fc c25Grip"));
+        assertTrue(markers.contains("submitCorrectionAxes(collector, c24Grip)"));
+        assertTrue(markers.contains("FrogVillagerRodPose.FINAL_ALIGNMENT_Y"));
+        assertTrue(markers.contains("FrogVillagerRodPose.FINAL_ALIGNMENT_Z"));
         assertTrue(presentation.contains("villagerWork$partialTick()"));
         assertTrue(stateMixin.contains("villagerWork$partialTick"));
         assertTrue(rendererMixin.contains("villagerWork$setPartialTick(partialTick)"));

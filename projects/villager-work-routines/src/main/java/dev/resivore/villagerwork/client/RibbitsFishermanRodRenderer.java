@@ -29,8 +29,11 @@ import java.util.StringJoiner;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
@@ -55,6 +58,8 @@ final class RibbitsFishermanRodRenderer {
             "ba7c0a98b163bb69c266d988c4a0f1b9a9cbd8c6c9368f1b110b3a985adb4332";
     private static final RodVisual VISUAL = new RodVisual();
     private static final RodRenderer RENDERER = new RodRenderer();
+    private static final RodVisual C24_GHOST_VISUAL = new RodVisual();
+    private static final GhostRodRenderer C24_GHOST_RENDERER = new GhostRodRenderer();
 
     private RibbitsFishermanRodRenderer() {
     }
@@ -73,6 +78,21 @@ final class RibbitsFishermanRodRenderer {
         } catch (RuntimeException | LinkageError error) {
             return inspection.withSubmission(false,
                     error.getClass().getName() + ": " + String.valueOf(error.getMessage()));
+        }
+    }
+
+    /**
+     * Submits the exact C27 rod geometry as a cyan translucent C24 comparison pose. This never
+     * supplies a fishing-line endpoint: only the current C25 submission is line authority.
+     */
+    static boolean submitC24Ghost(PoseStack poseStack, SubmitNodeCollector collector, int light) {
+        if (!hasInstalledC27Resources()) return false;
+        try {
+            C24_GHOST_RENDERER.renderAtReferenceGrip(poseStack, collector, light,
+                    C24_GHOST_RENDERER.inspect(), C24_GHOST_VISUAL);
+            return true;
+        } catch (RuntimeException | LinkageError ignored) {
+            return false;
         }
     }
 
@@ -113,7 +133,7 @@ final class RibbitsFishermanRodRenderer {
         }
     }
 
-    private static final class RodRenderer extends GeoObjectRenderer<RodVisual, Void, GeoRenderState> {
+    private static class RodRenderer extends GeoObjectRenderer<RodVisual, Void, GeoRenderState> {
         private LiveCapture liveCapture;
         private Object fingerprintedResourceManager;
         private BakedGeoModel fingerprintedBakedModel;
@@ -123,7 +143,7 @@ final class RibbitsFishermanRodRenderer {
         private Inspection cachedInspection;
         private String cachedLiveBoneChain;
 
-        private RodRenderer() {
+        protected RodRenderer() {
             super(new RodModel());
         }
 
@@ -188,14 +208,19 @@ final class RibbitsFishermanRodRenderer {
             bones.ifPresent("fishing_rod_3", snapshot -> snapshot.skipRender(true));
         }
 
-        private Inspection renderAtReferenceGrip(PoseStack poseStack, SubmitNodeCollector collector,
-                                                  int light, Inspection inspection) {
+        protected Inspection renderAtReferenceGrip(PoseStack poseStack, SubmitNodeCollector collector,
+                                                    int light, Inspection inspection) {
+            return renderAtReferenceGrip(poseStack, collector, light, inspection, VISUAL);
+        }
+
+        protected Inspection renderAtReferenceGrip(PoseStack poseStack, SubmitNodeCollector collector,
+                                                    int light, Inspection inspection, RodVisual visual) {
             StandaloneRodBasis basis = standaloneBasis();
             liveCapture = new LiveCapture(inspection, basis.rawGripPosition());
             poseStack.pushPose();
             try {
                 basis.attachGripAtOrigin(poseStack);
-                performRenderPass(VISUAL, null, poseStack, collector,
+                performRenderPass(visual, null, poseStack, collector,
                         Minecraft.getInstance().gameRenderer.gameRenderState()
                                 .levelRenderState.cameraRenderState, light, 0.0F);
                 return liveCapture.finish();
@@ -205,7 +230,7 @@ final class RibbitsFishermanRodRenderer {
             }
         }
 
-        private Inspection inspect() {
+        protected Inspection inspect() {
             Minecraft minecraft = Minecraft.getInstance();
             String ribbitsVersion = FabricLoader.getInstance().getModContainer("ribbits")
                     .map(container -> container.getMetadata().getVersion().getFriendlyString())
@@ -468,6 +493,19 @@ final class RibbitsFishermanRodRenderer {
         }
 
         private record ResourceFingerprint(String sourcePack, String sha256, boolean exact) {
+        }
+    }
+
+    /** C26-only translucent render type/color for the exact C24 geometry comparison pass. */
+    private static final class GhostRodRenderer extends RodRenderer {
+        @Override
+        public int getRenderColor(RodVisual visual, Void relatedObject, float partialTick) {
+            return ARGB.colorFromFloat(0.56F, 0.18F, 0.88F, 1.0F);
+        }
+
+        @Override
+        public RenderType getRenderType(GeoRenderState renderState, Identifier texture) {
+            return RenderTypes.entityTranslucent(texture);
         }
     }
 

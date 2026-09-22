@@ -33,6 +33,19 @@ class FrogVillagerRodPoseTest {
                 0.000001F);
 
         PoseStack poseStack = new PoseStack();
+        FrogVillagerRodPose.applyC24ReferenceGrip(poseStack);
+        Vector4f c24Origin = poseStack.last().pose().transform(new Vector4f(0, 0, 0, 1));
+        assertEquals(0.0F, c24Origin.x(), 0.000001F);
+        assertEquals(7.0F / 16.0F, c24Origin.y(), 0.000001F);
+        assertEquals(-6.0F / 16.0F, c24Origin.z(), 0.000001F);
+
+        FrogVillagerRodPose.applyC25AlignmentCorrection(poseStack);
+        Vector4f c25IncrementalOrigin = poseStack.last().pose().transform(new Vector4f(0, 0, 0, 1));
+        assertEquals(0.0F, c25IncrementalOrigin.x(), 0.000001F);
+        assertEquals(9.0F / 16.0F, c25IncrementalOrigin.y(), 0.000001F);
+        assertEquals(-5.0F / 16.0F, c25IncrementalOrigin.z(), 0.000001F);
+
+        poseStack = new PoseStack();
         FrogVillagerRodPose.applyReferenceGrip(poseStack);
         Vector4f origin = poseStack.last().pose().transform(new Vector4f(0, 0, 0, 1));
         assertEquals(0.0F, origin.x(), 0.000001F);

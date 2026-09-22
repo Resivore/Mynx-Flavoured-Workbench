@@ -177,26 +177,27 @@ final class VwrRodDiagnostics {
 
         FishingFloatRenderer.LineSubmission line = render.line();
         if (line == null) {
-            report.append("C24_line_submitted=false line_authority=<unavailable live physical tip>\n");
+            report.append("C25_line_submitted=false line_authority=<unavailable live physical tip>\n");
         } else {
-            report.append("C24_line_submitted=").append(line.submitted())
+            report.append("C25_line_submitted=").append(line.submitted())
                     .append(" segment_count=").append(line.segmentCount()).append('\n')
-                    .append("C24_line_start_authority=live_fishing_rod_physical_outer_tip\n")
-                    .append("C24_line_first_vertex_camera_relative=")
+                    .append("C25_line_start_authority=live_fishing_rod_physical_outer_tip\n")
+                    .append("C25_line_first_vertex_camera_relative=")
                     .append(vector(line.physicalTipRender())).append('\n')
-                    .append("C24_line_start_world=").append(vector(line.physicalTipWorld())).append('\n')
+                    .append("C25_line_start_world=").append(vector(line.physicalTipWorld())).append('\n')
                     .append("float_world=").append(vector(line.floatWorld())).append('\n')
                     .append("float_camera_relative=").append(vector(line.floatRender())).append('\n');
             if (rod.physicalOuterTip() != null) {
                 Vec3 discrepancy = line.physicalTipRender().subtract(rod.physicalOuterTip());
-                report.append("C24_line_start_minus_visible_tip_camera_relative=")
+                report.append("C25_line_start_minus_visible_tip_camera_relative=")
                         .append(vector(discrepancy)).append(" distance=")
                         .append(format(discrepancy.length())).append('\n');
             }
         }
-        report.append("IMPORTANT: C24 submits the sole line from the physical tip captured by the same final fishing_rod render transform.");
+        report.append("IMPORTANT: C26 submits the sole line from the current C25 physical tip; "
+                + "the C24 comparison ghost has no line.");
 
-        LOGGER.info("[VWR C24 ROD DIAGNOSTIC: LIVE CAST TRANSFORMS]\n{}\n[/VWR C24 ROD DIAGNOSTIC]",
+        LOGGER.info("[VWR C26 ROD DIAGNOSTIC: LIVE CAST TRANSFORMS]\n{}\n[/VWR C26 ROD DIAGNOSTIC]",
                 report);
     }
 
