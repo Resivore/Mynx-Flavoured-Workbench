@@ -57,8 +57,8 @@ SOURCE_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 RFC3339_UTC_RE = re.compile(r"^(?P<whole>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(?P<fraction>\d{1,9}))?Z$")
 LIFECYCLE_ORDER = ("ACTIVE", "PLANNED", "ACCEPTED", "BLOCKED", "PARKED")
 LIFECYCLE_PRIORITY = {lifecycle: index for index, lifecycle in enumerate(LIFECYCLE_ORDER)}
-# Presentation-only labels for legacy/nonstandard canonical versions.  Each
-# record is pinned to the complete current release identity, so a successor
+# Presentation-only labels for legacy/nonstandard canonical versions. Each
+# record is pinned to its version/SHA-256 release identity, so a successor
 # cannot inherit a plausible-looking but stale Canary number.
 CANARY_DISPLAY_OVERRIDES: dict[str, dict[str, str | int]] = {
     "5d42f47f-b006-4125-840d-dec0d2728afa": {
@@ -167,8 +167,10 @@ def canary_number_for_release(
 ) -> int | None:
     """Resolve a release's visible Canary, with guarded legacy overrides.
 
-    A changed bound release first gets the ordinary parser.  If that cannot
-    determine a Canary, fail instead of retaining the old display mapping.
+    Prefer a Canary carried by the current canonical version, embedded version,
+    or artifact filename. A legacy mapping applies only to the exact
+    version/SHA-256 identity it describes. A stale mapping is ignored, leaving
+    the canonical current version visible rather than inheriting an old ordinal.
     """
 
     if current_release is None:
@@ -184,10 +186,7 @@ def canary_number_for_release(
     checksum = artifact.get("sha256") if isinstance(artifact, Mapping) else None
     if current_release.get("version") == override["version"] and checksum == override["sha256"]:
         return int(override["canary"])
-    raise DashboardError(
-        f"{project_uuid}: Canary display override no longer matches the current release; "
-        "add a new bounded override or use a canonical Canary version"
-    )
+    return None
 
 
 def server_pill_label(server_status: str, deployed_release: Mapping[str, Any] | None) -> str:

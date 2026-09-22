@@ -430,36 +430,86 @@ class WorkbenchDashboardTests(unittest.TestCase):
         filename = release("release label", "project-0.1.0-canary13.jar")
         self.assertEqual(dashboard.canary_number_for_release("ordinary", filename), 13)
 
-    def test_current_main_legacy_canary_display_overrides_are_exactly_bound(self) -> None:
+    def test_legacy_canary_display_overrides_apply_only_to_their_exact_releases(self) -> None:
         root = Path(__file__).resolve().parents[1]
         statuses = dashboard.load_repository_statuses(root)
         for project_uuid, override in dashboard.CANARY_DISPLAY_OVERRIDES.items():
             with self.subTest(project_uuid=project_uuid):
                 self.assertIn(project_uuid, statuses)
-                manifest = statuses[project_uuid][1]
-                current = manifest["state"]["releases"]["current"]
-                artifact = current["artifact"]
-                filename = None if artifact is None else artifact["filename"]
-                ordinary = dashboard.resolve_canary_number(
-                    current["version"],
-                    current.get("embedded_version"),
-                    filename,
+                exact_legacy_release = release(
+                    str(override["version"]),
+                    "legacy.jar",
+                    str(override["sha256"]),
                 )
-                number = dashboard.canary_number_for_release(project_uuid, current)
-                if ordinary is not None:
-                    self.assertEqual(number, ordinary)
-                else:
-                    self.assertEqual(current["version"], override["version"])
-                    self.assertEqual(artifact["sha256"], override["sha256"])
-                    self.assertEqual(number, override["canary"])
+                self.assertEqual(
+                    dashboard.canary_number_for_release(project_uuid, exact_legacy_release),
+                    override["canary"],
+                )
 
-    def test_changed_override_identity_requires_a_new_override_or_canary(self) -> None:
+    def test_parseable_successor_uses_its_own_current_canary(self) -> None:
         uuid = "5d42f47f-b006-4125-840d-dec0d2728afa"
-        stale = release("2.0pre4+26.2-pale-oak-dev.7", "bbb.jar", "f" * 64)
-        with self.assertRaisesRegex(dashboard.DashboardError, "override no longer matches"):
-            dashboard.canary_number_for_release(uuid, stale)
         successor = release("C9", "bbb.jar", "f" * 64)
         self.assertEqual(dashboard.canary_number_for_release(uuid, successor), 9)
+
+    def test_unparseable_successor_does_not_inherit_a_stale_legacy_canary(self) -> None:
+        uuid = "5d42f47f-b006-4125-840d-dec0d2728afa"
+        version = "2.0pre4+26.2-enderscape-dev.7"
+        successor = release(version, "bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar", "f" * 64)
+        self.assertIsNone(dashboard.canary_number_for_release(uuid, successor))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            _, directory, manifest = write_project(
+                Path(temporary),
+                "building-but-better",
+                "Building But Better",
+                current=successor,
+            )
+            manifest["identity"]["uuid"] = uuid  # type: ignore[index]
+            records = dashboard.build_project_records(
+                {uuid: (directory / "WORKBENCH_STATUS.json", manifest)},
+                {},
+            )
+
+        self.assertEqual(len(records), 1)
+        self.assertIsNone(records[0].current_canary)
+        payload = dashboard._project_payload(records[0])
+        self.assertEqual(payload["version"], version)
+        self.assertEqual(payload["versionDisplay"], version)
+        self.assertIsNone(payload["versionCanary"])
+
+    def test_current_main_bbb_dev7_builds_and_generates_without_the_dev6_canary(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        statuses, records = dashboard.discover_projects(root)
+        bbb_uuid = "5d42f47f-b006-4125-840d-dec0d2728afa"
+        bbb_current = statuses[bbb_uuid][1]["state"]["releases"]["current"]
+        bbb = next(record for record in records if record.uuid == bbb_uuid)
+        version = "2.0pre4+26.2-enderscape-dev.7"
+
+        self.assertEqual(bbb_current["version"], version)
+        self.assertEqual(
+            bbb_current["artifact"]["filename"],
+            "bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar",
+        )
+        self.assertEqual(
+            bbb_current["artifact"]["sha256"],
+            "57ddb5dfe62f2eb9f4a2ce22fbeeb5cce4386bbd93aab3f7df0dd8e6d19ddaf0",
+        )
+        self.assertEqual(bbb.current_version, version)
+        self.assertIsNone(bbb.current_canary)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "dashboard.html"
+            dashboard.generate_dashboard(root, output)
+            html = output.read_text(encoding="utf-8")
+
+        payload_match = re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL)
+        self.assertIsNotNone(payload_match)
+        payload = json.loads(payload_match.group(1))  # type: ignore[union-attr]
+        bbb_payload = next(project for project in payload["projects"] if project["uuid"] == bbb_uuid)
+        self.assertEqual(bbb_payload["version"], version)
+        self.assertEqual(bbb_payload["versionDisplay"], version)
+        self.assertIsNone(bbb_payload["versionCanary"])
+        self.assertNotEqual(bbb_payload["versionDisplay"], "C8")
 
     def test_current_main_lifecycles_server_identity_and_no_testing_group(self) -> None:
         root = Path(__file__).resolve().parents[1]
