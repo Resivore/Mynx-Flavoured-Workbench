@@ -21,3 +21,14 @@
 - Artifact: `enderscape-overlays-0.1.0-canary2.zip`; SHA-256 `7d6e72e8bba770e88f0fe1d58d25aa3bc9990e16826a355cce0638285415867b`; finalized `2026-09-20T14:19:58Z`.
 - Result: ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.
 - Next state: Retain this exact local artifact and perform the targeted Canary 2 manual Continuity matrix in TESTING.md before any owner acceptance decision.
+
+## 2026-09-22T05:15:06Z — Generate Enderscape Overlays Canary 3
+
+- Revision: 3
+- Source checkpoint: `d82d1eb6394c3254b09b50c77bfeb29e3fc8669e`
+- Changes: Replaced the Canary 2 natural-terrain order with the complete directed hierarchy `Celestial Overgrowth > Corrupt Overgrowth > Veiled End Stone > Alluring Magnia > Repulsive Magnia > Mirestone > Veradite > End Stone > Void Shale`. Void Shale is now target-only: its stress-state side/top/bottom source properties, tiles, and emissive source tiles are removed. Inspected pinned Enderscape blockstates/models confirm Alluring and Repulsive Magnia are `cube_all` blocks using their own named textures; their 17-tile overlays preserve that RGB while Matcha v37 Cobblestone provides alpha topology only. The final End Stone to Void Shale pair uses the inspected, hash-pinned local Minecraft 26.2 End Stone RGB with that same topology.
+- Build/static: Exact nine-member hierarchy and every sole higher-to-lower owner, reverse-rule rejection, no double overlays, target-only Void Shale, removal of old Void Shale source artifact entries, Magnia RGB/alpha provenance per tile, pinned Enderscape/Minecraft/Matcha inputs, donor-set topology, existing directed corruption/cap checks, PNG decoding, and deterministic archive regeneration passed. Minecraft runtime validation was not performed.
+- Runtime: RUNTIME_UNTESTED; no Minecraft runtime test, resource-pack deployment, or gameplay profile access occurred.
+- Artifact: `enderscape-overlays-0.1.0-canary3.zip`; SHA-256 `845cec5fb6c957673090c3fa9910399b8834489d5693e581094a966116f74cd9`; finalized `2026-09-22T05:15:06Z`.
+- Result: ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.
+- Next state: Retain this exact local artifact and perform the targeted Canary 3 manual Continuity matrix in TESTING.md before any owner acceptance decision.

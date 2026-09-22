@@ -30,6 +30,32 @@ FACE_SETS = {
     "east": frozenset(("east",)),
     "west": frozenset(("west",)),
 }
+TERRAIN_HIERARCHY = (
+    "enderscape:celestial_overgrowth",
+    "enderscape:corrupt_overgrowth",
+    "enderscape:veiled_end_stone",
+    "enderscape:alluring_magnia",
+    "enderscape:repulsive_magnia",
+    "enderscape:mirestone",
+    "enderscape:veradite",
+    "minecraft:end_stone",
+    "enderscape:void_shale",
+)
+TERRAIN_SOURCE_RULES = {
+    "enderscape:celestial_overgrowth": ("celestial-overgrowth",),
+    "enderscape:corrupt_overgrowth": ("corrupt-overgrowth",),
+    "enderscape:veiled_end_stone": ("veiled-end-stone",),
+    "enderscape:alluring_magnia": ("alluring-magnia",),
+    "enderscape:repulsive_magnia": ("repulsive-magnia",),
+    "enderscape:mirestone": ("mirestone",),
+    "enderscape:veradite": ("veradite",),
+    "minecraft:end_stone": ("end-stone",),
+}
+MAGNIA_TERRAIN_SOURCES = {
+    "alluring-magnia": ("enderscape:alluring_magnia", "alluring_magnia.png"),
+    "repulsive-magnia": ("enderscape:repulsive_magnia", "repulsive_magnia.png"),
+}
+REMOVED_VOID_SHALE_SOURCE_IDS = frozenset(("void-shale-sides", "void-shale-top", "void-shale-bottom"))
 
 
 class GenerationError(RuntimeError):
@@ -226,11 +252,15 @@ def check_required_donor_sets(manifest: dict, matcha: zipfile.ZipFile) -> None:
                 raise GenerationError(f"Matcha donor alpha is unusable: {donor}/{tile}.png")
 
 
-def check_asset_evidence(manifest: dict, enderscape: zipfile.ZipFile) -> None:
-    """Keep block-ID/model/texture evidence tied to the pinned Enderscape JAR."""
+def check_asset_evidence(manifest: dict, archives: dict[str, zipfile.ZipFile]) -> None:
+    """Keep declared block-ID/model/texture evidence tied to its pinned source archive."""
     for check in manifest.get("asset_evidence_checks", []):
+        try:
+            archive = archives[check.get("input", "enderscape")]
+        except KeyError as error:
+            raise GenerationError(f"unknown asset-evidence input for {check['name']}") from error
         blockstate_path = check["blockstate"]
-        blockstate = json.loads(read_entry(enderscape, blockstate_path))
+        blockstate = json.loads(read_entry(archive, blockstate_path))
         for state, model in check["variants"].items():
             actual = blockstate.get("variants", {}).get(state, {}).get("model")
             if actual != model:
@@ -238,7 +268,7 @@ def check_asset_evidence(manifest: dict, enderscape: zipfile.ZipFile) -> None:
                     f"{check['block_id']} does not resolve {state} to {model}: {actual!r}"
                 )
         for model_check in check["models"]:
-            model = json.loads(read_entry(enderscape, model_check["path"]))
+            model = json.loads(read_entry(archive, model_check["path"]))
             if model.get("parent") != model_check["parent"]:
                 raise GenerationError(f"unexpected parent for {model_check['path']}")
             if model.get("textures") != model_check["textures"]:
@@ -254,7 +284,7 @@ def check_asset_evidence(manifest: dict, enderscape: zipfile.ZipFile) -> None:
                 if actual_faces != model_check["face_textures"]:
                     raise GenerationError(f"unexpected face textures for {model_check['path']}")
         for texture_path in check["required_textures"]:
-            width, height, _ = png_rgba(read_entry(enderscape, texture_path), texture_path)
+            width, height, _ = png_rgba(read_entry(archive, texture_path), texture_path)
             if width <= 0 or height <= 0:
                 raise GenerationError(f"empty required texture: {texture_path}")
 
@@ -353,6 +383,65 @@ def check_priority_chains(manifest: dict) -> None:
                     )
 
 
+def check_terrain_hierarchy(manifest: dict) -> None:
+    """Enforce Canary 3's complete, directed natural-terrain ownership table."""
+    chains = [chain for chain in manifest.get("priority_chains", []) if chain.get("id") == "nine-material-natural-terrain"]
+    if len(chains) != 1:
+        raise GenerationError("Canary 3 requires exactly one nine-material-natural-terrain chain")
+    chain = chains[0]
+    if tuple(chain.get("members", ())) != TERRAIN_HIERARCHY:
+        raise GenerationError("natural terrain hierarchy must be Celestial > Corrupt > Veiled > Alluring > Repulsive > Mirestone > Veradite > End Stone > Void Shale")
+    actual_rules = {source: tuple(ids) for source, ids in chain.get("source_rule_ids", {}).items()}
+    if actual_rules != TERRAIN_SOURCE_RULES:
+        raise GenerationError("natural terrain hierarchy must retain its exact sole source-rule owners")
+    if manifest.get("block_roles", {}).get("enderscape:void_shale") != "target-only":
+        raise GenerationError("Void Shale must be target-only in the natural terrain hierarchy")
+    source_relationships = [
+        relationship["id"]
+        for relationship in manifest["relationships"]
+        if relationship["source_blocks"] == ["enderscape:void_shale"]
+    ]
+    if source_relationships:
+        raise GenerationError(f"Void Shale must not generate terrain source overlays: {source_relationships}")
+    relationship_ids = {relationship["id"] for relationship in manifest["relationships"]}
+    remaining_void_shale_sources = REMOVED_VOID_SHALE_SOURCE_IDS & relationship_ids
+    if remaining_void_shale_sources:
+        raise GenerationError(f"removed Void Shale source rules remain declared: {sorted(remaining_void_shale_sources)}")
+    by_id = {relationship["id"]: relationship for relationship in manifest["relationships"]}
+    for relationship_id, (source, material) in MAGNIA_TERRAIN_SOURCES.items():
+        relationship = by_id.get(relationship_id)
+        if relationship is None or relationship.get("source_blocks") != [source]:
+            raise GenerationError(f"{relationship_id} must use its inspected Enderscape Magnia block as source")
+        if relationship.get("material") != material or relationship.get("template") != "cobblestone":
+            raise GenerationError(f"{relationship_id} must retain Enderscape RGB with Matcha Cobblestone alpha topology")
+
+
+def check_no_void_shale_source_artifacts(entries: dict[str, bytes]) -> None:
+    """Reject the former stress-face Void Shale source properties and tile folders."""
+    forbidden_folders = tuple(f"/enderscape_overlays/{relationship_id}/" for relationship_id in REMOVED_VOID_SHALE_SOURCE_IDS)
+    for name, value in entries.items():
+        if any(folder in name for folder in forbidden_folders):
+            raise GenerationError(f"generated artifact still contains removed Void Shale source entry: {name}")
+        if name.endswith(".properties") and b"connectBlocks=enderscape:void_shale\n" in value:
+            raise GenerationError(f"generated artifact still uses Void Shale as an overlay source: {name}")
+
+
+def check_magnia_tile_provenance(output: bytes, material: bytes, donor: bytes, label: str) -> None:
+    """Prove each Magnia tile carries source RGB and donor alpha, with no donor artwork."""
+    width, height, output_rgba = png_rgba(output, f"generated {label}")
+    material_width, material_height, material_rgba = png_rgba(material, f"material {label}")
+    donor_width, donor_height, donor_rgba = png_rgba(donor, f"donor {label}")
+    for y in range(height):
+        for x in range(width):
+            output_index = (y * width + x) * 4
+            material_index = ((y % material_height) * material_width + x % material_width) * 4
+            donor_index = ((y % donor_height) * donor_width + x % donor_width) * 4
+            if output_rgba[output_index:output_index + 3] != material_rgba[material_index:material_index + 3]:
+                raise GenerationError(f"generated Magnia tile does not retain Enderscape RGB: {label}")
+            if output_rgba[output_index + 3] != donor_rgba[donor_index + 3]:
+                raise GenerationError(f"generated Magnia tile does not retain Matcha Cobblestone alpha: {label}")
+
+
 def validate_relationship_semantics(manifest: dict) -> None:
     by_id = {relationship["id"]: relationship for relationship in manifest["relationships"]}
     if len(by_id) != len(manifest["relationships"]):
@@ -364,6 +453,7 @@ def validate_relationship_semantics(manifest: dict) -> None:
     check_no_double_overlays(manifest)
     check_directed_pair_checks(manifest)
     check_priority_chains(manifest)
+    check_terrain_hierarchy(manifest)
 
 
 def properties(relationship: dict, template: dict) -> bytes:
@@ -423,42 +513,54 @@ def merged_metadata(material: bytes | None, donor: bytes | None, label: str) -> 
 def generated_entries(root: pathlib.Path, manifest: dict, source_commit: str, built_at: str) -> dict[str, bytes]:
     validate_relationship_semantics(manifest)
     enderscape_path = verified_input(root, manifest["inputs"]["enderscape"], "Enderscape")
+    minecraft_client_path = verified_input(root, manifest["inputs"]["minecraft_client"], "Minecraft client")
     matcha_path = verified_input(root, manifest["inputs"]["matcha_overlays"], "Matcha Overlays")
     project = manifest["project"]
     entries: dict[str, bytes] = {}
-    with zipfile.ZipFile(enderscape_path) as enderscape, zipfile.ZipFile(matcha_path) as matcha:
+    with zipfile.ZipFile(enderscape_path) as enderscape, zipfile.ZipFile(minecraft_client_path) as minecraft_client, zipfile.ZipFile(matcha_path) as matcha:
+        material_archives = {"enderscape": enderscape, "minecraft_client": minecraft_client}
         check_alpha_equivalence(manifest, matcha)
         check_required_donor_sets(manifest, matcha)
-        check_asset_evidence(manifest, enderscape)
-        texture_prefix = manifest["inputs"]["enderscape"]["texture_prefix"]
+        check_asset_evidence(manifest, material_archives)
         tile_prefix = manifest["inputs"]["matcha_overlays"]["tile_prefix"]
         for relationship in manifest["relationships"]:
             template = manifest["templates"][relationship["template"]]
             folder = f"assets/enderscape/optifine/ctm/enderscape_overlays/{relationship['id']}"
             entries[f"{folder}/{relationship['id']}.properties"] = properties(relationship, template)
+            material_input = relationship.get("material_input", "enderscape")
+            try:
+                material_archive = material_archives[material_input]
+                texture_prefix = manifest["inputs"][material_input]["texture_prefix"]
+            except KeyError as error:
+                raise GenerationError(f"unknown material input for {relationship['id']}: {material_input}") from error
             for tile in range(TILE_COUNT):
                 donor_path = donor_entry(template, tile, tile_prefix)
                 material_path = f"{texture_prefix}{relationship['material']}"
                 donor = read_entry(matcha, donor_path)
-                material = read_entry(enderscape, material_path)
+                material = read_entry(material_archive, material_path)
                 width, height, pixels = combine(material, donor, f"{relationship['id']}/{tile}")
-                entries[f"{folder}/{tile}.png"] = png_encode(width, height, pixels)
-                metadata = merged_metadata(optional_metadata(enderscape, material_path), optional_metadata(matcha, donor_path), f"{relationship['id']}/{tile}")
+                encoded = png_encode(width, height, pixels)
+                if relationship["id"] in MAGNIA_TERRAIN_SOURCES:
+                    check_magnia_tile_provenance(encoded, material, donor, f"{relationship['id']}/{tile}")
+                entries[f"{folder}/{tile}.png"] = encoded
+                metadata = merged_metadata(optional_metadata(material_archive, material_path), optional_metadata(matcha, donor_path), f"{relationship['id']}/{tile}")
                 if metadata:
                     entries[f"{folder}/{tile}.png.mcmeta"] = metadata
                 if relationship.get("emissive_material"):
                     emissive_path = f"{texture_prefix}{relationship['emissive_material']}"
-                    emissive = read_entry(enderscape, emissive_path)
+                    emissive = read_entry(material_archive, emissive_path)
                     width, height, pixels = combine(emissive, donor, f"{relationship['id']}/{tile}_e")
                     entries[f"{folder}/{tile}_e.png"] = png_encode(width, height, pixels)
-                    metadata = merged_metadata(optional_metadata(enderscape, emissive_path), optional_metadata(matcha, donor_path), f"{relationship['id']}/{tile}_e")
+                    metadata = merged_metadata(optional_metadata(material_archive, emissive_path), optional_metadata(matcha, donor_path), f"{relationship['id']}/{tile}_e")
                     if metadata:
                         entries[f"{folder}/{tile}_e.png.mcmeta"] = metadata
+    check_no_void_shale_source_artifacts(entries)
     source_identity = {
         "built_at": built_at,
         "generated_by": "tools/generate_enderscape_overlays.py",
         "inputs": {
             "enderscape": {"filename": enderscape_path.name, "license": manifest["inputs"]["enderscape"]["license"], "sha256": manifest["inputs"]["enderscape"]["sha256"]},
+            "minecraft_client": {"filename": minecraft_client_path.name, "license": manifest["inputs"]["minecraft_client"]["license"], "sha256": manifest["inputs"]["minecraft_client"]["sha256"]},
             "matcha_overlays": {"filename": matcha_path.name, "license": manifest["inputs"]["matcha_overlays"]["license"], "sha256": manifest["inputs"]["matcha_overlays"]["sha256"]}
         },
         "relationship_manifest_sha256": hashlib.sha256(json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest(),
@@ -470,7 +572,7 @@ def generated_entries(root: pathlib.Path, manifest: dict, source_commit: str, bu
     entries["source_identity.json"] = (json.dumps(source_identity, indent=2, sort_keys=True) + "\n").encode("utf-8")
     entries["NOTICE.md"] = (
         "Enderscape Overlays is a generated, locally retained CTM resource pack.\n\n"
-        "Generated tiles combine Enderscape 3.0.2+mc26.2 texture RGB with alpha/mask topology from Matcha Overlays v37. "
+        "Generated tiles combine pinned Enderscape or Minecraft 26.2 texture RGB with alpha/mask topology from Matcha Overlays v37. "
         "Enderscape declares MIT in fabric.mod.json. Matcha Overlays v37 supplies CC BY-NC 4.0 in its LICENSE. "
         "The generated tiles are adapted material and may be shared only under the applicable non-commercial attribution terms. "
         "License: https://creativecommons.org/licenses/by-nc/4.0/\n\n"

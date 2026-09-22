@@ -15,7 +15,7 @@
       "Generate restrained, Continuity-compatible Enderscape CTM overlays from pinned Enderscape material RGB and verified Matcha alpha topology."
     ],
     "scope": [
-      "Celestial, Veiled, Corrupt, Void Shale, wood, plank, End Stone construction, Mirestone, Veradite, Kurodite, ore, brick, cap, and evidence-backed Void Lachryma transition relationships declared in relationship_manifest.json."
+      "Celestial, Veiled, Corrupt, Alluring and Repulsive Magnia, target-only Void Shale, wood, plank, End Stone construction, Mirestone, Veradite, Kurodite, ore, brick, cap, and evidence-backed Void Lachryma transition relationships declared in relationship_manifest.json."
     ],
     "boundaries": {
       "owned_paths": [
@@ -24,7 +24,7 @@
       "exclusions": [
         "The Enderscape JAR and Matcha Overlays v37 archive under originals are immutable, ignored source inputs and are never changed or redistributed.",
         "Generated derivative tiles remain in ignored local artifacts because Matcha Overlays v37 is CC BY-NC 4.0; the public repository retains only the generator, manifest, and provenance.",
-        "BGE-specific geometry, leaves, lamps, Magnia, Drift Jelly, decorative sources, and deferred construction families remain outside the declared canary scope."
+        "BGE-specific geometry, leaves, lamps, Magnia derivatives, Drift Jelly, decorative sources, and deferred construction families remain outside the declared canary scope."
       ]
     },
     "dependencies": [
@@ -33,6 +33,12 @@
         "identifier": "enderscape",
         "requirement": "3.0.2+mc26.2 exact generator input",
         "reason": "Provides the target block IDs, models, material textures, emissive companions, and Void Lachryma relationship data."
+      },
+      {
+        "type": "OTHER",
+        "identifier": "minecraft-client",
+        "requirement": "26.2 exact local generator input",
+        "reason": "Provides the inspected native End Stone model and RGB for the required End Stone to Void Shale terrain edge."
       },
       {
         "type": "RESOURCE_PACK",
@@ -49,19 +55,19 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 is a locally retained, static-validated generator output with a directed natural-terrain hierarchy and singular Celestial-to-Murublight cap seam; Minecraft runtime testing remains outstanding.",
+    "milestone": "Canary 3 is a locally retained, static-validated generator output with the complete directed natural-terrain hierarchy and singular Celestial-to-Murublight cap seam; Minecraft runtime testing remains outstanding.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
-        "canary": 2,
-        "embedded_version": "0.1.0-canary2",
-        "summary": "Adds a deterministic Void Shale > Celestial > Corrupt > Veiled > Mirestone > Veradite > End Stone CTM hierarchy and singular Celestial-to-Murublight cap seam.",
-        "built_at": "2026-09-20T14:19:58Z",
+        "version": "0.1.0-canary3",
+        "canary": 3,
+        "embedded_version": "0.1.0-canary3",
+        "summary": "Makes Void Shale target-only and adds Alluring and Repulsive Magnia to the complete directed natural-terrain hierarchy.",
+        "built_at": "2026-09-22T05:15:06Z",
         "artifact": {
-          "filename": "enderscape-overlays-0.1.0-canary2.zip",
-          "sha256": "7d6e72e8bba770e88f0fe1d58d25aa3bc9990e16826a355cce0638285415867b"
+          "filename": "enderscape-overlays-0.1.0-canary3.zip",
+          "sha256": "845cec5fb6c957673090c3fa9910399b8834489d5693e581094a966116f74cd9"
         },
-        "source_commit": "6d375d74f92aa804c754e28803ad0b93fd664f43",
+        "source_commit": "d82d1eb6394c3254b09b50c77bfeb29e3fc8669e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
@@ -79,10 +85,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-20T14:19:58Z",
-    "updated_at": "2026-09-20T14:19:58Z",
-    "last_codex_at": "2026-09-20T14:19:58Z",
-    "source_commit": "6d375d74f92aa804c754e28803ad0b93fd664f43"
+    "revision": 3,
+    "activity_at": "2026-09-22T05:15:06Z",
+    "updated_at": "2026-09-22T05:15:06Z",
+    "last_codex_at": "2026-09-22T05:15:06Z",
+    "source_commit": "d82d1eb6394c3254b09b50c77bfeb29e3fc8669e"
   }
 }
