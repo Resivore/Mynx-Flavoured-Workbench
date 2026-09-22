@@ -3,7 +3,7 @@
   "id": "enderscape_integration",
   "version": "${version}",
   "name": "Enderscape Integration",
-  "description": "Modpack-specific Enderscape adjustment and integration layer; C4 retains C1-C3 behavior and adds optional Veiled Leaves shader-wind compatibility.",
+  "description": "Modpack-specific Enderscape adjustment and integration layer; C5 retains C1-C4 behavior and orders optional Veiled Leaves shader-wind compatibility before generic BGE inheritance.",
   "authors": ["Resivore compatibility workbench"],
   "license": "MIT",
   "environment": "*",

@@ -8,8 +8,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.resivore.enderscapeintegration.client.VeiledLeavesShaderMaterialFallback;
+import dev.resivore.enderscapeintegration.mixin.IrisVeiledLeavesMaterialMappingMixin;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipFile;
 import org.junit.jupiter.api.Test;
+import org.spongepowered.asm.mixin.injection.Inject;
 
 class VeiledLeavesShaderMaterialFallbackTest {
     private static final String OAK_LEAVES = "minecraft:oak_leaves[distance=7,persistent=false,waterlogged=false]";
@@ -87,7 +90,7 @@ class VeiledLeavesShaderMaterialFallbackTest {
     }
 
     @Test
-    void currentProjectIdentityRetainsThePriorIdentityAndAllC1ToC3Artifacts() throws Exception {
+    void currentProjectIdentityRetainsThePriorIdentityAndAllHistoricalReleaseMetadata() throws Exception {
         JsonObject status = JsonParser.parseString(Files.readString(projectRoot().resolve("WORKBENCH_STATUS.json")))
                 .getAsJsonObject();
         JsonObject identity = status.getAsJsonObject("identity");
@@ -98,14 +101,46 @@ class VeiledLeavesShaderMaterialFallbackTest {
         assertTrue(strings(identity.getAsJsonArray("legacy_ids")).contains("enderscape-pruning"));
 
         String log = Files.readString(projectRoot().resolve("CODEX_LOG.md"));
-        Map<String, String> historicalArtifacts = Map.of(
-                "enderscape-pruning-0.1.0-canary1.jar", "93e8b9ae4f4bc010f6ca18b74a0a8ac1744b298e96f3ddfce2c3f876589a2fd5",
-                "enderscape-pruning-0.1.0-canary2.jar", "1da6a13cbd5a0027159a45d66cff89261aa5dd53cd9c438a5c3a1b17f4a0039b",
-                "enderscape-pruning-0.1.0-canary3.jar", "3fd52a2204be416558609706a88f289c2ec1cd50d2897942be57d6946e522e3b");
-        historicalArtifacts.forEach((filename, sha256) -> {
-            assertTrue(log.contains(filename), filename);
-            assertTrue(log.contains(sha256), sha256);
-        });
+        List<String> historicalMetadata = List.of(
+                "Source checkpoint: `a3bcd02bda69cf6d2413f1ec59c0a9acf62d8558`",
+                "`enderscape-pruning-0.1.0-canary1.jar`, version `0.1.0-canary1`, SHA-256 `93e8b9ae4f4bc010f6ca18b74a0a8ac1744b298e96f3ddfce2c3f876589a2fd5`, built `2026-09-19T07:29:22.9774388Z`",
+                "Source checkpoint: `cb0707e9af08f230280dd7f73994153443233924`",
+                "`enderscape-pruning-0.1.0-canary2.jar`, version `0.1.0-canary2`, SHA-256 `1da6a13cbd5a0027159a45d66cff89261aa5dd53cd9c438a5c3a1b17f4a0039b`, built `2026-09-20T01:52:05.0944502Z`",
+                "Source checkpoint: `95f85bbe309ccd4c146414e121880ca4c21968c9`",
+                "`enderscape-pruning-0.1.0-canary3.jar`, version `0.1.0-canary3`, SHA-256 `3fd52a2204be416558609706a88f289c2ec1cd50d2897942be57d6946e522e3b`, built `2026-09-21T19:37:06.3977108Z`",
+                "Source checkpoint: `7fd96db9504606ca65ee8b3ed21583987646b175`",
+                "`enderscape-integration-0.1.0-canary4.jar`, version `0.1.0-canary4`, SHA-256 `20ac7360850f6b62335d333e9328acc2475b248f74c0b4826ed8aadf283bab30`, built `2026-09-22T01:23:24.3593451Z`");
+        historicalMetadata.forEach(value -> assertTrue(log.contains(value), value));
+    }
+
+    @Test
+    void canonicalSeedRunsBeforeTheGenericBgeCompletedMapPass() throws Exception {
+        Method callback = java.util.Arrays.stream(IrisVeiledLeavesMaterialMappingMixin.class.getDeclaredMethods())
+                .filter(method -> method.getName().contains("inheritVeiledLeavesMaterialId"))
+                .findFirst()
+                .orElseThrow();
+        Inject injection = callback.getAnnotation(Inject.class);
+        int defaultInjectOrder = (Integer) Inject.class.getMethod("order").getDefaultValue();
+
+        assertEquals(900, injection.order());
+        assertEquals(1000, defaultInjectOrder);
+        assertTrue(injection.order() < defaultInjectOrder);
+
+        String canonical = VEILED_STATES.getFirst();
+        String physical = "bge:veiled_leaves_layer[layers=1,facing=up,distance=1,persistent=false]";
+        Map<String, Integer> classifications = new LinkedHashMap<>();
+        classifications.put(OAK_LEAVES, 31);
+
+        VeiledLeavesShaderMaterialFallback.inheritMissing(classifications, List.of(canonical), OAK_LEAVES);
+        VeiledLeavesShaderMaterialFallback.inheritMissing(classifications, List.of(physical), canonical);
+
+        assertEquals(31, classifications.get(canonical));
+        assertEquals(31, classifications.get(physical));
+
+        String bgeMixin = Files.readString(workbenchRoot().resolve(
+                "projects/bge-complementary/src/client/java/dev/resivore/bgecomplementary/mixin/"
+                        + "IrisBgeMaterialMappingMixin.java"));
+        assertFalse(bgeMixin.contains("order ="));
     }
 
     @Test
@@ -124,7 +159,8 @@ class VeiledLeavesShaderMaterialFallbackTest {
         assertFalse(bridge.contains("10009"));
         assertFalse(bridge.contains("bge:"));
         assertTrue(mixin.contains("createBlockStateIdMap(Lit/unimi/dsi/fastutil/ints/Int2ObjectLinkedOpenHashMap;"));
-        assertTrue(mixin.contains("priority = 1100"));
+        assertTrue(mixin.contains("order = 900"));
+        assertFalse(mixin.contains("priority = 1100"));
         assertFalse(allIntegrationSource.contains("block.10009"));
         assertFalse(bgeBridge.toLowerCase(java.util.Locale.ROOT).contains("enderscape"));
         assertFalse(bgeBridge.toLowerCase(java.util.Locale.ROOT).contains("veiled"));

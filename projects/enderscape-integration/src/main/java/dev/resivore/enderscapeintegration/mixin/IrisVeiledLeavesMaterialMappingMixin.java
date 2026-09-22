@@ -10,14 +10,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Runs before the lower-priority generic BGE bridge, so BGE's existing canonical-parent path
- * observes the completed canonical Veiled Leaves classification rather than an Enderscape rule.
+ * Seeds the canonical classification in an earlier injector-order pass than the generic BGE
+ * bridge, so BGE observes Veiled Leaves through its existing canonical-parent path.
  */
 @Pseudo
-@Mixin(targets = "net.irisshaders.iris.shaderpack.materialmap.BlockMaterialMapping", remap = false, priority = 1100)
+@Mixin(targets = "net.irisshaders.iris.shaderpack.materialmap.BlockMaterialMapping", remap = false)
 public abstract class IrisVeiledLeavesMaterialMappingMixin {
     @Inject(method = "createBlockStateIdMap(Lit/unimi/dsi/fastutil/ints/Int2ObjectLinkedOpenHashMap;Lit/unimi/dsi/fastutil/ints/Int2ObjectLinkedOpenHashMap;)Lit/unimi/dsi/fastutil/objects/Object2IntMap;",
-            at = @At("RETURN"), remap = false)
+            at = @At("RETURN"), remap = false, order = 900)
     private static void enderscapeIntegration$inheritVeiledLeavesMaterialId(
             CallbackInfoReturnable<Object2IntMap<BlockState>> cir) {
         VeiledLeavesShaderMaterialBridge.inheritMaterialIds(cir.getReturnValue());

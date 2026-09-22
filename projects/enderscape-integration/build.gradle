@@ -93,7 +93,7 @@ tasks.register('generateEnderscapeIntegrationData') {
         dataRoot.mkdirs()
         new File(packRoot, 'pack.mcmeta').text = JsonOutput.prettyPrint(JsonOutput.toJson([
             pack: [min_format: 88.0, max_format: 107.1,
-                   description: 'Enderscape Integration C4 data overlay']
+                   description: 'Enderscape Integration C5 data overlay']
         ])) + System.lineSeparator()
 
         def slurper = new JsonSlurper()
@@ -291,7 +291,7 @@ test {
 
 tasks.register('stageCanaryArtifact', Copy) {
     group = 'distribution'
-    description = 'Stages the exact ignored C4 JAR for canonical local retention.'
+    description = 'Stages the exact ignored C5 JAR for canonical local retention.'
     dependsOn tasks.named('test')
     from(packagedJarTask)
     into(layout.projectDirectory.dir('artifacts'))
