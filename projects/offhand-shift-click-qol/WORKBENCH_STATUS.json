@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "9009daaf-90e8-5827-9f03-90566460f908",
     "name": "Offhand Shift-Click QoL",
@@ -92,6 +92,7 @@
     "releases": {
       "current": {
         "version": "0.3.4-routed-pickup-audio-fallback-canary1",
+        "canary": 8,
         "embedded_version": "0.3.4-routed-pickup-audio-fallback-canary1",
         "artifact": {
           "filename": "offhand-shift-click-qol-0.3.4-routed-pickup-audio-fallback-canary1.jar",
@@ -107,6 +108,7 @@
       },
       "accepted": {
         "version": "0.3.4-routed-pickup-audio-fallback-canary1",
+        "canary": 8,
         "embedded_version": "0.3.4-routed-pickup-audio-fallback-canary1",
         "artifact": {
           "filename": "offhand-shift-click-qol-0.3.4-routed-pickup-audio-fallback-canary1.jar",
@@ -122,6 +124,7 @@
       },
       "rollback": {
         "version": "0.3.3-acquisition-priority-fix-canary",
+        "canary": 7,
         "artifact": {
           "filename": "offhand-shift-click-qol-0.3.3-acquisition-priority-fix-canary.jar",
           "sha256": "d0c2ebe7cd2d1a6dcbe2654dbee42dd9f5dce4fd710ea3748f3d15dad6f2b04a"

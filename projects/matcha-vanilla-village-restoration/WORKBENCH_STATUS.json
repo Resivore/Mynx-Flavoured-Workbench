@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "dda2c3b4-5099-4842-a755-29e964cd2192",
     "name": "Matcha Vanilla Village Restoration",
@@ -76,6 +76,7 @@
     "releases": {
       "current": {
         "version": "0.2.0-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "matcha-vanilla-village-restoration-0.2.0-canary2.jar",
           "sha256": "5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd"
@@ -86,6 +87,7 @@
       },
       "accepted": {
         "version": "0.2.0-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "matcha-vanilla-village-restoration-0.2.0-canary2.jar",
           "sha256": "5d5164a89881239400cd2b6776b9b54177b699e2a16a1c97b761cde06e7d8bcd"

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "d364e2bb-536a-4987-8044-6c0daae16470",
     "name": "Wearable Lanterns",
@@ -141,6 +141,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary6",
+        "canary": 6,
         "artifact": {
           "filename": "wearable-lanterns-0.1.0-canary6.jar",
           "sha256": "e6ae0178676dc8f12b6e5bb2ded0986d8e17edd4a3eeb026f862b4666ef72591"
@@ -155,6 +156,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary5",
+        "canary": 5,
         "artifact": {
           "filename": "wearable-lanterns-0.1.0-canary5.jar",
           "sha256": "0d05d2af86dfb8f41e7cb7c0dde75aed681cfb657fa2cb8de4a42f40344dd0e6"

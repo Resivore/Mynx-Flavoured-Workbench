@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "680476b9-5336-5422-a575-779f2efd1eff",
     "name": "Nibaru 26.2 Port",
@@ -55,6 +55,7 @@
     "releases": {
       "current": {
         "version": "C46",
+        "canary": 46,
         "embedded_version": "4.2.0+26.2-port-canary46-bge-layer-contract",
         "artifact": {
           "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary46-bge-layer-contract.jar",
@@ -66,6 +67,7 @@
       },
       "accepted": {
         "version": "C45 (legacy Canary 43)",
+        "canary": 45,
         "embedded_version": "4.2.0+26.2-port-canary43-native-directional-material-axis",
         "artifact": {
           "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar",
@@ -75,6 +77,7 @@
       },
       "rollback": {
         "version": "C45 (legacy Canary 43)",
+        "canary": 45,
         "embedded_version": "4.2.0+26.2-port-canary43-native-directional-material-axis",
         "artifact": {
           "filename": "more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar",

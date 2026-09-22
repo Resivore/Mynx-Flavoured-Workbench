@@ -18,6 +18,14 @@ jobs:
         with:
           python-version: "3.12"
       - name: Validate repository and Python contracts
+        env:
+          WORKBENCH_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+          WORKBENCH_COMPARE_TRANSITIONS: ${{ github.event_name == 'pull_request' || (github.ref_type == 'branch' && github.event.deleted != true) }}
         run: |
           python tools/workbench.py validate-repository --root .
+          if [[ "$WORKBENCH_COMPARE_TRANSITIONS" == "true" && -n "$WORKBENCH_BASE_REF" && ! "$WORKBENCH_BASE_REF" =~ ^0+$ ]]; then
+            python tools/workbench.py validate-transitions --root . --base-ref "$WORKBENCH_BASE_REF"
+          else
+            echo "Skipping transition comparison for this event or because it has no parent commit."
+          fi
           python -m unittest discover -s tests -v

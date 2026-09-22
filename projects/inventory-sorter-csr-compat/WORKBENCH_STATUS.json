@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "ce3609d2-8841-4a36-bc95-18f65fe94e72",
     "name": "Inventory Sorter CSR Compatibility",
@@ -101,6 +101,7 @@
     "releases": {
       "current": {
         "version": "C3 (0.1.0-canary3)",
+        "canary": 3,
         "embedded_version": "0.1.0-canary3",
         "artifact": {
           "filename": "inventory-sorter-csr-compat-0.1.0-canary3.jar",
@@ -116,6 +117,7 @@
       },
       "accepted": {
         "version": "C3 (0.1.0-canary3)",
+        "canary": 3,
         "embedded_version": "0.1.0-canary3",
         "artifact": {
           "filename": "inventory-sorter-csr-compat-0.1.0-canary3.jar",

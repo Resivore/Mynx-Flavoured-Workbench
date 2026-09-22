@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "5747a309-1bd5-4280-b25c-98669e149928",
     "name": "BGE × CTM",
@@ -82,6 +82,7 @@
     "releases": {
       "current": {
         "version": "0.12.0-canary12",
+        "canary": 12,
         "artifact": {
           "filename": "bge-ctm-0.12.0-canary12.jar",
           "sha256": "a2b44e09dd333e8bb6cca0ded9501878e37dafaf9c1557a28644c58c0acd3b75"

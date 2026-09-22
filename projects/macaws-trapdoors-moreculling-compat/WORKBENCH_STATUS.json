@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "4fcf330a-9726-4b76-b7ac-b75d5e662883",
     "name": "Macaw's Trapdoors / MoreCulling Compatibility",
@@ -89,6 +89,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
+        "canary": 1,
         "embedded_version": "0.1.0-canary1",
         "artifact": {
           "filename": "macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar",
@@ -125,6 +126,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary1",
+        "canary": 1,
         "embedded_version": "0.1.0-canary1",
         "artifact": {
           "filename": "macaws-trapdoors-moreculling-compat-0.1.0-canary1.jar",

@@ -24,7 +24,7 @@ def sha256(content: bytes) -> str:
 def manifest(container: str, project_id: str, filename: str, artifact_hash: str) -> dict:
     return {
         "$schema": "../../schemas/workbench-status.schema.json",
-        "schema_version": 2,
+        "schema_version": 3,
         "identity": {
             "uuid": "9c9592a8-8692-48c5-9127-715825ce9c47",
             "name": "Private Retention Fixture",
@@ -47,6 +47,7 @@ def manifest(container: str, project_id: str, filename: str, artifact_hash: str)
             "milestone": "Current private artifact finalized.",
             "releases": {
                 "current": {
+                    "canary": 1,
                     "version": "Canary 1",
                     "artifact": {"filename": filename, "sha256": artifact_hash},
                     "source_commit": "a" * 40,

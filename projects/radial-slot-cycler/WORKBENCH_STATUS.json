@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "b41da80e-9928-568b-b8ef-ee2175ed2285",
     "name": "Radial Slot Cycler",
@@ -93,6 +93,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary2-private",
+        "canary": 2,
         "artifact": {
           "filename": "radial-slot-cycler-0.1.0-canary2-private.jar",
           "sha256": "3fe7e539eaafda97ab5a5a301544b25563f896fee354b729607074f404bdbc21"
@@ -102,6 +103,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary2-private",
+        "canary": 2,
         "artifact": {
           "filename": "radial-slot-cycler-0.1.0-canary2-private.jar",
           "sha256": "3fe7e539eaafda97ab5a5a301544b25563f896fee354b729607074f404bdbc21"
@@ -111,6 +113,7 @@
       },
       "rollback": {
         "version": "0.1.0-canary1",
+        "canary": 1,
         "artifact": {
           "filename": "radial-slot-cycler-0.1.0-canary1.jar",
           "sha256": "7393321a6ac7ff1d16b918075c47a26bbc90005b3a784f4d2b661f93cca4f2e4"

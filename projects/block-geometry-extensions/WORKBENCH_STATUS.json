@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
     "name": "Block Geometry Extensions (BGE)",
@@ -95,6 +95,7 @@
     "releases": {
       "current": {
         "version": "C95 (Spruce Leaf Tint; embedded 4.2.39-bge.canary95.spruce-leaf-tint+26.2)",
+        "canary": 95,
         "embedded_version": "4.2.39-bge.canary95.spruce-leaf-tint+26.2",
         "artifact": {
           "filename": "BGE C95.jar",
@@ -125,6 +126,7 @@
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
+        "canary": 70,
         "embedded_version": "4.2.14-bge.canary70.stone-native-slab+26.2",
         "artifact": {
           "filename": "cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar",
@@ -152,6 +154,7 @@
       },
       "rollback": {
         "version": "C72 (Farmland Slab Low Water; embedded 4.2.16-bge.canary72.farmland-slab-low-water+26.2)",
+        "canary": 72,
         "embedded_version": "4.2.16-bge.canary72.farmland-slab-low-water+26.2",
         "artifact": {
           "filename": "cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar",

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "97d76c44-7c17-4b36-be84-57525f884e40",
     "name": "YUNG's API 26.2 Compatibility",
@@ -96,6 +96,7 @@
     "releases": {
       "current": {
         "version": "26.2-Fabric-6.1.1-compat.2",
+        "canary": 2,
         "artifact": {
           "filename": "YungsApi-26.2-Fabric-6.1.1-compat.2.jar",
           "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7"
@@ -110,6 +111,7 @@
       },
       "accepted": {
         "version": "26.2-Fabric-6.1.1-compat.2",
+        "canary": 2,
         "artifact": {
           "filename": "YungsApi-26.2-Fabric-6.1.1-compat.2.jar",
           "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7"

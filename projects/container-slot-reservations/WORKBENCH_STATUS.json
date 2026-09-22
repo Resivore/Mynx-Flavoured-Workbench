@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "3ab36584-8732-554f-840e-28a75c422660",
     "name": "Container Slot Reservations",
@@ -142,6 +142,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary27",
+        "canary": 27,
         "embedded_version": "0.1.0-canary27",
         "artifact": {
           "filename": "container-slot-reservations-0.1.0-canary27.jar",
@@ -157,6 +158,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary19",
+        "canary": 19,
         "embedded_version": "0.1.0-canary19",
         "artifact": {
           "filename": "container-slot-reservations-0.1.0-canary19.jar",
@@ -170,6 +172,7 @@
       },
       "rollback": {
         "version": "0.1.0-canary4",
+        "canary": 4,
         "embedded_version": "0.1.0-canary4",
         "artifact": {
           "filename": "container-slot-reservations-0.1.0-canary4.jar",

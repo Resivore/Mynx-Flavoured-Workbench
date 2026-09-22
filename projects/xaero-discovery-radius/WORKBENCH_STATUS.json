@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "8ff207a2-9049-4519-ad3f-3100a80abcc2",
     "name": "Xaero Discovery Radius",
@@ -102,6 +102,7 @@
     "releases": {
       "current": {
         "version": "0.1.2-canary3",
+        "canary": 3,
         "artifact": {
           "filename": "xaero-discovery-radius-0.1.2-canary3.jar",
           "sha256": "5524dfa84e35ea5c31263df4705daca3718df7a095f5c544bb731190dcc0cf95"
@@ -116,6 +117,7 @@
       },
       "accepted": {
         "version": "0.1.2-canary3",
+        "canary": 3,
         "artifact": {
           "filename": "xaero-discovery-radius-0.1.2-canary3.jar",
           "sha256": "5524dfa84e35ea5c31263df4705daca3718df7a095f5c544bb731190dcc0cf95"

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "b35bd259-b6c4-4a04-8957-1b3b8d751d56",
     "name": "Enderscape Overlays",
@@ -53,6 +53,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary2",
+        "canary": 2,
         "embedded_version": "0.1.0-canary2",
         "summary": "Adds a deterministic Void Shale > Celestial > Corrupt > Veiled > Mirestone > Veradite > End Stone CTM hierarchy and singular Celestial-to-Murublight cap seam.",
         "built_at": "2026-09-20T14:19:58Z",

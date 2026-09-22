@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "65e3eebd-a8d1-4fb5-87c6-af12ac4c9b40",
     "name": "Naturalist × Xaero Entity Icon Compatibility",
@@ -77,6 +77,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary34",
+        "canary": 34,
         "artifact": {
           "filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar",
           "sha256": "5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8"
@@ -91,6 +92,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary34",
+        "canary": 34,
         "artifact": {
           "filename": "naturalist-xaero-entity-icons-compat-0.1.0-canary34.jar",
           "sha256": "5c8c2b955cb2ac6219dcb3199de7956dd3efe02460579d634e0da242e4241fb8"

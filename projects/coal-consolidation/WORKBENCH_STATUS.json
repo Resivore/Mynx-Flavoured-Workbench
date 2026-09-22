@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "2371b6eb-a4fb-4f1e-8203-580b82ce846b",
     "name": "Coal Consolidation",
@@ -94,6 +94,7 @@
     "releases": {
       "current": {
         "version": "0.1.2-canary3",
+        "canary": 3,
         "artifact": {
           "filename": "coal-consolidation-0.1.2-canary3.jar",
           "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"
@@ -104,6 +105,7 @@
       },
       "accepted": {
         "version": "0.1.2-canary3",
+        "canary": 3,
         "artifact": {
           "filename": "coal-consolidation-0.1.2-canary3.jar",
           "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"

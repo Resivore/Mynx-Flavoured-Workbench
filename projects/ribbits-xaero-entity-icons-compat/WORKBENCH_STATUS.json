@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "7d2e42bd-c917-43bf-99a8-94edc24c5948",
     "name": "Ribbits × Xaero Entity Icon Compatibility",
@@ -139,6 +139,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary5",
+        "canary": 5,
         "artifact": {
           "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar",
           "sha256": "d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413"
@@ -153,6 +154,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary5",
+        "canary": 5,
         "artifact": {
           "filename": "ribbits-xaero-entity-icons-compat-0.1.0-canary5.jar",
           "sha256": "d48d45ec47604250ae45c8f20e03741f9f6613d5ada462cda436ce14876c3413"

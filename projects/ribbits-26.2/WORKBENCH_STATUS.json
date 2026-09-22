@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "2a650718-ec62-568f-8dff-71258a4d6f3f",
     "name": "Mynx Ribbits 26.2",
@@ -191,6 +191,7 @@
     "releases": {
       "current": {
       "version": "4.1.6+26.2-mynx-canary27",
+      "canary": 27,
       "artifact": {
         "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar",
         "sha256": "088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd"
@@ -205,6 +206,7 @@
       },
       "accepted": {
         "version": "4.1.6+26.2-mynx-canary24",
+        "canary": 24,
         "artifact": {
           "filename": "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary24.jar",
           "sha256": "e2c62bd1ab3884d4e1bd0c583801774af0fc2f2b54d9483eecc2fbb7dd6e2657"

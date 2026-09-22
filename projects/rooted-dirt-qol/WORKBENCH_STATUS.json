@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "6b8b6166-fd59-4e4e-ab1d-d1140cdbfab8",
     "name": "Rooted Dirt QoL",
@@ -75,6 +75,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
+        "canary": 1,
         "artifact": {
           "filename": "rooted-dirt-qol-0.1.0-canary1.jar",
           "sha256": "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee"
@@ -85,6 +86,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary1",
+        "canary": 1,
         "artifact": {
           "filename": "rooted-dirt-qol-0.1.0-canary1.jar",
           "sha256": "3642f55e0cef611f2dd56478b8aaf2491fd81d370023a04ca71e6852b37307ee"

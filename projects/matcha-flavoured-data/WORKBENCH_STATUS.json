@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "a0a522b0-bc02-48dc-81de-efc8757171c5",
     "name": "Matcha Flavoured Data",
@@ -71,6 +71,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "matcha-flavoured-data-0.1.0-canary2.jar",
           "sha256": "0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639"
@@ -85,6 +86,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "matcha-flavoured-data-0.1.0-canary2.jar",
           "sha256": "0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639"

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "357cd94a-4ab2-54c9-ac6c-4049fea08bb9",
     "name": "Inherent 3×3 Inventory Crafting",
@@ -91,6 +91,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary4",
+        "canary": 4,
         "artifact": {
           "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
           "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33"
@@ -101,6 +102,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary4",
+        "canary": 4,
         "artifact": {
           "filename": "inherent-3x3-inventory-crafting-0.1.0-canary4.jar",
           "sha256": "6e797291dd6c68f5afe65f91177ad2653f7c4a99e10bd20e078fafd7aaf6cb33"
@@ -111,6 +113,7 @@
       },
       "rollback": {
         "version": "0.1.0-canary3",
+        "canary": 3,
         "artifact": {
           "filename": "inherent-3x3-inventory-crafting-0.1.0-canary3.jar",
           "sha256": "776918c5e5a76a8f81e5f67a481d819a5586ce1ca45ccdc0effaf04622aaef08"

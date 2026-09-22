@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "9b4cd3fb-8ae6-58c7-8b88-9b0878c6333e",
     "name": "StrippingToggle × FallingTree Compatibility",
@@ -94,6 +94,7 @@
     "releases": {
       "current": {
         "version": "0.1.1-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
           "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846"
@@ -104,6 +105,7 @@
       },
       "accepted": {
         "version": "0.1.1-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "strippingtoggle-fallingtree-compat-0.1.1-canary2.jar",
           "sha256": "d948c23db8b6c73e764f96422d8359afb85ba39689352e512fd7b4aa91644846"

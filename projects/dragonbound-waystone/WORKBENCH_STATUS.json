@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "28c84ead-5e0a-57b5-942c-1ee58b02cadb",
     "name": "Dragonbound Waystone",
@@ -93,6 +93,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary19",
+        "canary": 19,
         "artifact": {
           "filename": "dragonbound-waystone-0.1.0-canary19.jar",
           "sha256": "280005bb80ce4e7fde76ca57ecbee45b8a6ba2c5121253e6632210071a2eaea5"
@@ -120,6 +121,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary12",
+        "canary": 12,
         "artifact": {
           "filename": "dragonbound-waystone-0.1.0-canary12.jar",
           "sha256": "6f621b16652baf9caad89ba923b8792ebc0ba08706a9f507fd17aabfc3121ad6"
@@ -135,6 +137,7 @@
       },
       "rollback": {
         "version": "0.1.0-canary5",
+        "canary": 5,
         "artifact": {
           "filename": "dragonbound-waystone-0.1.0-canary5.jar",
           "sha256": "ff29582cc50f391a3ebb79b5ab1dff2f8fb7abb92363bca46fb8a9608a481ad3"

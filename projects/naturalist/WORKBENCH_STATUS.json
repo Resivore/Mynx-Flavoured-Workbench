@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "c92ad4fe-c210-46c4-ba1d-59828d2bcbcd",
     "name": "Naturalist 26.2 Port",
@@ -93,6 +93,7 @@
     "releases": {
       "current": {
         "version": "2.0.3+26.2-port-canary8",
+        "canary": 8,
         "artifact": {
           "filename": "naturalist-2.0.3+26.2-port-canary8.jar",
           "sha256": "65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d"
@@ -107,6 +108,7 @@
       },
       "accepted": {
         "version": "2.0.3+26.2-port-canary8",
+        "canary": 8,
         "artifact": {
           "filename": "naturalist-2.0.3+26.2-port-canary8.jar",
           "sha256": "65e9ff11e94f17011acbac25ee40f42723516fe6b04c78d93662800461317b3d"

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "ecd785d2-4112-4ad2-9eae-1458e19b704e",
     "name": "Notebook",
@@ -82,6 +82,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary11",
+        "canary": 11,
         "embedded_version": "0.1.0-canary11",
         "artifact": {
           "filename": "notebook-0.1.0-canary11.jar",
@@ -97,6 +98,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary11",
+        "canary": 11,
         "embedded_version": "0.1.0-canary11",
         "artifact": {
           "filename": "notebook-0.1.0-canary11.jar",

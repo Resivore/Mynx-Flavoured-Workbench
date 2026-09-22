@@ -57,36 +57,6 @@ SOURCE_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 RFC3339_UTC_RE = re.compile(r"^(?P<whole>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(?P<fraction>\d{1,9}))?Z$")
 LIFECYCLE_ORDER = ("ACTIVE", "PLANNED", "ACCEPTED", "BLOCKED", "PARKED")
 LIFECYCLE_PRIORITY = {lifecycle: index for index, lifecycle in enumerate(LIFECYCLE_ORDER)}
-# Presentation-only labels for legacy/nonstandard canonical versions. Each
-# record is pinned to its version/SHA-256 release identity, so a successor
-# cannot inherit a plausible-looking but stale Canary number.
-CANARY_DISPLAY_OVERRIDES: dict[str, dict[str, str | int]] = {
-    "5d42f47f-b006-4125-840d-dec0d2728afa": {
-        "version": "2.0pre4+26.2-pale-oak-dev.6",
-        "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a",
-        "canary": 8,
-    },
-    "97d76c44-7c17-4b36-be84-57525f884e40": {
-        "version": "26.2-Fabric-6.1.1-compat.2",
-        "sha256": "ff22a6b509ba559988d7a9352dc94ac612c4b099517acac7da7c81322d797ed7",
-        "canary": 2,
-    },
-    "6cb36c64-0780-5343-9fef-66cbb686cfc2": {
-        "version": "0.2.0",
-        "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6",
-        "canary": 2,
-    },
-    "0b54727d-db44-57dd-aa66-424ce93bb0c3": {
-        "version": "0.2.1",
-        "sha256": "31e6f1fae99bfc787ed91fabc33e8b7cf258f1deda4dbe0f000e693eae3d7c3d",
-        "canary": 3,
-    },
-    "71ae25e0-3ebe-4108-a17e-931ba98b8dea": {
-        "version": "2",
-        "sha256": "331ee9d0857aded60f7720ee7b32bdec3e339e5f4cc7300f6c61f7926b7b0453",
-        "canary": 2,
-    },
-}
 CHUNK_SIZE = 1024 * 1024
 WINDOWS_REPARSE_POINT = 0x400
 
@@ -109,95 +79,16 @@ class DashboardProject:
     deployed_release: dict[str, Any] | None
     current_summary: str | None = None
     current_canary: int | None = None
+    deployed_canary: int | None = None
 
 
-def _canary_number_in_text(value: str | None) -> int | None:
-    """Find the public Canary ordinal in one release-identity text field.
-
-    A leading/public ``C11`` is deliberately considered before any verbose
-    Canary spelling.  This keeps provenance such as ``Private Canary 10`` or
-    an embedded artifact version from replacing the human-facing C11.
-    """
-
-    if not value:
-        return None
-    public_portion = value.split("(", 1)[0]
-    public = re.search(r"(?i)(?<![a-z0-9])c[._ -]?(\d+)(?!\d)", public_portion)
-    if public:
-        return int(public.group(1))
-    canary = re.search(r"(?i)(?<![a-z0-9])canary[._ -]?(\d+)(?!\d)", value)
-    if canary:
-        return int(canary.group(1))
-    return None
-
-
-def resolve_canary_number(
-    version: str | None,
-    embedded_version: str | None = None,
-    artifact_filename: str | None = None,
-) -> int | None:
-    """Resolve the display-only Canary ordinal from current release identity.
-
-    The canonical human-facing version always has priority.  Embedded version
-    and filename are deterministic fallbacks for releases whose canonical
-    spelling does not carry the ordinal itself.
-    """
-
-    for value in (version, embedded_version, artifact_filename):
-        number = _canary_number_in_text(value)
-        if number is not None:
-            return number
-    return None
-
-
-def display_canary_version(version: str | None) -> str | None:
-    """Return a compact Canary label when the version carries an ordinal."""
-
-    number = resolve_canary_number(version)
-    return version if number is None else f"C{number}"
-
-
-def canary_number(version: str | None) -> int | None:
-    return resolve_canary_number(version)
-
-
-def canary_number_for_release(
-    project_uuid: str,
-    current_release: Mapping[str, Any] | None,
-) -> int | None:
-    """Resolve a release's visible Canary, with guarded legacy overrides.
-
-    Prefer a Canary carried by the current canonical version, embedded version,
-    or artifact filename. A legacy mapping applies only to the exact
-    version/SHA-256 identity it describes. A stale mapping is ignored, leaving
-    the canonical current version visible rather than inheriting an old ordinal.
-    """
-
-    if current_release is None:
-        return None
-    artifact = current_release.get("artifact")
-    filename = artifact.get("filename") if isinstance(artifact, Mapping) else None
-    ordinary = resolve_canary_number(current_release.get("version"), current_release.get("embedded_version"), filename)
-    if ordinary is not None:
-        return ordinary
-    override = CANARY_DISPLAY_OVERRIDES.get(project_uuid)
-    if override is None:
-        return None
-    checksum = artifact.get("sha256") if isinstance(artifact, Mapping) else None
-    if current_release.get("version") == override["version"] and checksum == override["sha256"]:
-        return int(override["canary"])
-    return None
-
-
-def server_pill_label(server_status: str, deployed_release: Mapping[str, Any] | None) -> str:
+def server_pill_label(server_status: str, deployed_canary: int | None) -> str:
     """Return the intentionally compact, release-aware server-state label."""
 
     if server_status not in SERVER_STATES:
         raise DashboardError(f"unsupported dashboard server status {server_status!r}")
     if server_status != "OUTDATED":
         return server_status.replace("_", " ")
-    deployed_version = None if deployed_release is None else deployed_release.get("version")
-    deployed_canary = canary_number(deployed_version)
     return "OUTDATED" if deployed_canary is None else f"OUTDATED · C{deployed_canary}"
 
 
@@ -231,6 +122,21 @@ def canonical_release_identity(current_release: Mapping[str, Any] | None) -> dic
         {"version": current_release["version"], "artifact": current_release["artifact"]},
         "current release",
     )
+
+
+def deployed_canary_for_release(
+    releases: Mapping[str, Any],
+    deployed_release: Mapping[str, Any] | None,
+) -> int | None:
+    """Return canonical Canary metadata for an exact retained release identity."""
+
+    if deployed_release is None:
+        return None
+    for slot in ("current", "accepted", "rollback"):
+        release = releases[slot]
+        if release is not None and canonical_release_identity(release) == deployed_release:
+            return release.get("canary")
+    return None
 
 
 def _normalized_token(value: str) -> str:
@@ -424,7 +330,8 @@ def build_project_records(
         lifecycle = manifest["definition"]["lifecycle"]
         if lifecycle not in LIFECYCLE_PRIORITY:
             raise DashboardError(f"{manifest_path}: unsupported dashboard lifecycle {lifecycle!r}")
-        current = manifest["state"]["releases"]["current"]
+        releases = manifest["state"]["releases"]
+        current = releases["current"]
         version, mtime_ns, mtime_iso, jar_note = _jar_details(manifest_path.parent, current)
         current_identity = canonical_release_identity(current)
         deployed_release = server_state.get(project_uuid)
@@ -449,7 +356,8 @@ def build_project_records(
                 server_status=server_status,
                 deployed_release=deployed_release,
                 current_summary=None if current is None else current.get("summary"),
-                current_canary=canary_number_for_release(project_uuid, current),
+                current_canary=None if current is None else current["canary"],
+                deployed_canary=deployed_canary_for_release(releases, deployed_release),
             )
         )
     return sort_projects_default(projects)
@@ -511,28 +419,25 @@ def _json_for_html(value: Any) -> str:
 
 
 def _project_payload(project: DashboardProject) -> dict[str, Any]:
-    deployed_version = None if project.deployed_release is None else project.deployed_release["version"]
     current_canary = project.current_canary
-    deployed_canary = canary_number(deployed_version)
+    deployed_canary = project.deployed_canary
+    current_label = None if current_canary is None else f"C{current_canary}"
+    deployed_label = None if deployed_canary is None else f"C{deployed_canary}"
     return {
         "uuid": project.uuid,
         "projectId": project.project_id,
         "name": project.name,
         "lifecycle": project.lifecycle,
-        "version": project.current_version,
-        "versionDisplay": (
-            f"C{current_canary}"
-            if current_canary is not None
-            else project.current_version
-        ),
+        "version": current_label,
+        "versionDisplay": current_label,
         "versionCanary": current_canary,
         "jarMtimeMs": None if project.jar_mtime_ns is None else project.jar_mtime_ns // 1_000_000,
         "jarMtimeIso": project.jar_mtime_iso,
         "jarNote": project.jar_note,
         "server": project.server_status,
-        "serverDisplay": server_pill_label(project.server_status, project.deployed_release),
-        "deployedVersion": deployed_version,
-        "deployedVersionDisplay": display_canary_version(deployed_version),
+        "serverDisplay": server_pill_label(project.server_status, deployed_canary),
+        "deployedVersion": deployed_label,
+        "deployedVersionDisplay": deployed_label,
         "deployedCanary": deployed_canary,
         "summary": project.current_summary,
     }

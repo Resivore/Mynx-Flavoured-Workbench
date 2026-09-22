@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "62e67860-8a3b-50a7-9c48-9878c01d899d",
     "name": "Slab Decorations",
@@ -135,6 +135,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary12",
+        "canary": 12,
         "embedded_version": "0.1.0-canary12",
         "artifact": {
           "filename": "slab-decorations-0.1.0-canary12.jar",

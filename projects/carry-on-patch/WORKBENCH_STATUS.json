@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "4048a9cf-f8c3-4fc0-8c3c-b8f1caebab46",
     "name": "Carry On Patch",
@@ -83,6 +83,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary3",
+        "canary": 3,
         "artifact": {
           "filename": "carry-on-patch-0.1.0-canary3.jar",
           "sha256": "fd888c429d37cbfebd50a00afef0c92ca36f3ec338bc4f006284f31b66d49f90"
@@ -97,6 +98,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary3",
+        "canary": 3,
         "artifact": {
           "filename": "carry-on-patch-0.1.0-canary3.jar",
           "sha256": "fd888c429d37cbfebd50a00afef0c92ca36f3ec338bc4f006284f31b66d49f90"

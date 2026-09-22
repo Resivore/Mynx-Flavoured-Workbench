@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "9a8ccdea-f984-51af-a14f-6b26b4824e01",
     "name": "BGE × Complementary",
@@ -90,6 +90,7 @@
     "releases": {
       "current": {
         "version": "0.1.0+26.2-canary4",
+        "canary": 4,
         "embedded_version": "0.1.0+26.2-canary4",
         "artifact": {
           "filename": "bge-complementary-0.1.0+26.2-canary4.jar",

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "4ad00b52-881c-5d50-92b2-1191f74c7ef4",
     "name": "BedrockIfy × Nemo's Bonemeal Compatibility",
@@ -85,6 +85,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
+        "canary": 1,
         "artifact": {
           "filename": "bedrockify-nemos-bonemeal-compat-0.1.0-canary1.jar",
           "sha256": "2720dafff71ef2779f08905899bc9d55bcb7db80811020492de47f977c669273"

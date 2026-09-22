@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "6cb36c64-0780-5343-9fef-66cbb686cfc2",
     "name": "Workbench Test Marker",
@@ -62,6 +62,7 @@
     "releases": {
       "current": {
         "version": "0.2.0",
+        "canary": 2,
         "artifact": {
           "filename": "workbench-test-marker-0.2.0.jar",
           "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6"
@@ -72,6 +73,7 @@
       },
       "accepted": {
         "version": "0.2.0",
+        "canary": 2,
         "artifact": {
           "filename": "workbench-test-marker-0.2.0.jar",
           "sha256": "9147664302721976461dbbc1064260fc4309575182a8b050458d0446eafec6a6"

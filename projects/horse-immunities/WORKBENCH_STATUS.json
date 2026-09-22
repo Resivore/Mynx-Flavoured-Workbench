@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "2dc7b47a-f3b4-5fbe-a1fa-53e4f0aaa446",
     "name": "Horse Immunities",
@@ -55,6 +55,7 @@
     "releases": {
       "current": {
         "version": "C3",
+        "canary": 3,
         "artifact": {
           "filename": "sweet-berry-horse-immunity-0.1.0-canary3.jar",
           "sha256": "ab947253c5a6bc1910f05367ca9cc5ed7b5388f1d343b4889605d7b15a10060b"
@@ -65,6 +66,7 @@
       },
       "accepted": {
         "version": "C3",
+        "canary": 3,
         "artifact": {
           "filename": "sweet-berry-horse-immunity-0.1.0-canary3.jar",
           "sha256": "ab947253c5a6bc1910f05367ca9cc5ed7b5388f1d343b4889605d7b15a10060b"
@@ -75,6 +77,7 @@
       },
       "rollback": {
         "version": "C2",
+        "canary": 2,
         "artifact": {
           "filename": "sweet-berry-horse-immunity-0.1.0-canary2.jar",
           "sha256": "caddc47f9db0d374d44da4beb21605ad5bcb28ecf162136b774733e9dfe37697"

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "d2fdf877-314a-539c-a5df-bd26ba8b6e6c",
     "name": "Double Barrels 26.2",
@@ -87,6 +87,7 @@
     "releases": {
       "current": {
         "version": "1.0.1+26.2-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
           "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"
@@ -97,6 +98,7 @@
       },
       "accepted": {
         "version": "1.0.1+26.2-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
           "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"
@@ -107,6 +109,7 @@
       },
       "rollback": {
         "version": "1.0.1+26.2-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "doublebarrels-fabric-26.2-1.0.1+26.2-canary2.jar",
           "sha256": "b2119e05c508880c7977551091515f0076dd3cdc2733e51340ac813925b553c0"

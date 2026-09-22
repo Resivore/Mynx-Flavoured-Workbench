@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "850b2838-7f90-4685-8ba6-3ec282693003",
     "name": "Matcha Frost Protection",
@@ -78,6 +78,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "matcha-frost-protection-0.1.0-canary2.jar",
           "sha256": "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742"
@@ -88,6 +89,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "matcha-frost-protection-0.1.0-canary2.jar",
           "sha256": "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742"

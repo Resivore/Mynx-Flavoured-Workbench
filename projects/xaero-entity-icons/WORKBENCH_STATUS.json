@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "3f28bc98-058b-57a2-967b-81ad8e35f957",
     "name": "Xaero Minimap × EMF Entity Icon Compatibility",
@@ -122,6 +122,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary12",
+        "canary": 12,
         "artifact": {
           "filename": "xaero-emf-entity-icon-compat-0.1.0-canary12.jar",
           "sha256": "dcf65d6e97007c03bf490b27189f76ee88b882d1b59d4b88315093dea10180bc"
@@ -136,6 +137,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary12",
+        "canary": 12,
         "artifact": {
           "filename": "xaero-emf-entity-icon-compat-0.1.0-canary12.jar",
           "sha256": "dcf65d6e97007c03bf490b27189f76ee88b882d1b59d4b88315093dea10180bc"

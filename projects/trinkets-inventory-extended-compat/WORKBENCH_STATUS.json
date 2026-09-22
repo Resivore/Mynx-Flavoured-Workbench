@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "19c2de9e-c363-54c7-98ee-96f3fccc439b",
     "name": "Trinkets × Inventory Extended",
@@ -100,6 +100,7 @@
     "releases": {
       "current": {
         "version": "0.5.0-canary5",
+        "canary": 5,
         "artifact": {
           "filename": "trinkets-inventory-extended-compat-0.5.0-canary5.jar",
           "sha256": "76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6c"
@@ -110,6 +111,7 @@
       },
       "accepted": {
         "version": "0.5.0-canary5",
+        "canary": 5,
         "artifact": {
           "filename": "trinkets-inventory-extended-compat-0.5.0-canary5.jar",
           "sha256": "76c8c735219ceebfc7ec9a7b103e4cd4f027e43b2489cbc71f8b025b103efa6c"

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "2702d54e-aab2-467f-8769-4eb28da0aba9",
     "name": "Villager POI Reachability",
@@ -51,6 +51,7 @@
     "releases": {
       "current": {
         "version": "0.1.0+26.2-canary1",
+        "canary": 1,
         "artifact": {
           "filename": "villager-poi-reachability-0.1.0+26.2-canary1.jar",
           "sha256": "b7342e3c0833d08139482263ea454575e94ba24338aa8b23c330db348dbb6848"
@@ -65,6 +66,7 @@
       },
       "accepted": {
         "version": "0.1.0+26.2-canary1",
+        "canary": 1,
         "artifact": {
           "filename": "villager-poi-reachability-0.1.0+26.2-canary1.jar",
           "sha256": "b7342e3c0833d08139482263ea454575e94ba24338aa8b23c330db348dbb6848"

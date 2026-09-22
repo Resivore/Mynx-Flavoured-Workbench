@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "4d983099-3bfc-5df1-9788-32683ddfc6db",
     "name": "Matcha Flavoured × JEI Integration",
@@ -87,6 +87,7 @@
     "releases": {
       "current": {
         "version": "C8 (0.3.4-canonical-food-catalog-canary8)",
+        "canary": 8,
         "embedded_version": "0.3.4-canonical-food-catalog-canary8",
         "artifact": {
           "filename": "matcha-jei-integration-0.3.4-canonical-food-catalog-canary8.jar",
@@ -102,6 +103,7 @@
       },
       "accepted": {
         "version": "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
+        "canary": 3,
         "artifact": {
           "filename": "matcha-jei-integration-0.2.0-nonrecipe-discovery-canary1.jar",
           "sha256": "1e4941e2353c1696505f243e86eb58f0239dd1144d544897370b021f6748a455"
@@ -110,6 +112,7 @@
       },
       "rollback": {
         "version": "C2 (0.1.1-subtype-registration-fix-canary)",
+        "canary": 2,
         "artifact": {
           "filename": "matcha-jei-integration-0.1.1-subtype-registration-fix-canary.jar",
           "sha256": "4ef3ddde44ec06e2ee852dd64f5f5d1cf25c1f4f908282f854e9f49b2d5fb60d"

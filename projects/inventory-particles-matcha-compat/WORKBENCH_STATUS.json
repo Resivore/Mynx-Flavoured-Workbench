@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "b9b72ddd-49a5-4ff2-bdfa-c10c4a6be6e4",
     "name": "Inventory Particles Matcha Compatibility",
@@ -90,6 +90,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary4",
+        "canary": 4,
         "artifact": {
           "filename": "inventory-particles-matcha-compat-0.1.0-canary4.jar",
           "sha256": "e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b"
@@ -104,6 +105,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary4",
+        "canary": 4,
         "artifact": {
           "filename": "inventory-particles-matcha-compat-0.1.0-canary4.jar",
           "sha256": "e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b"

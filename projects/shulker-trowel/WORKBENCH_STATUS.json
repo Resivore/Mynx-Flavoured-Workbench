@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "e28154da-0649-5da7-b6d5-3bff2891719e",
     "name": "Shulker Trowel",
@@ -88,6 +88,7 @@
     "releases": {
       "current": {
         "version": "C11 (Private Canary 10; embedded 0.1.0-canary10)",
+        "canary": 11,
         "embedded_version": "0.1.0-canary10",
         "artifact": {
           "filename": "shulker-trowel-0.1.0-canary10-private.jar",
@@ -103,6 +104,7 @@
       },
       "accepted": {
         "version": "C11 (Private Canary 10; embedded 0.1.0-canary10)",
+        "canary": 11,
         "embedded_version": "0.1.0-canary10",
         "artifact": {
           "filename": "shulker-trowel-0.1.0-canary10-private.jar",
@@ -118,6 +120,7 @@
       },
       "rollback": {
         "version": "C10 (Private Canary 9; embedded 0.1.0-canary9)",
+        "canary": 10,
         "embedded_version": "0.1.0-canary9",
         "artifact": {
           "filename": "shulker-trowel-0.1.0-canary9-private.jar",

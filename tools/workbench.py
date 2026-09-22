@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
+import subprocess
 import sys
 import unicodedata
 from datetime import datetime
@@ -262,19 +264,23 @@ def _runtime_dependency_policy(value: Any, path: str) -> dict[str, Any]:
     return value
 
 
-def _release(value: Any, path: str) -> dict[str, Any] | None:
+def _release(value: Any, path: str, *, require_canary: bool = False) -> dict[str, Any] | None:
     if value is None:
         return None
     if not isinstance(value, dict):
         _fail(path, "must be an object")
     required = {"version", "artifact", "source_commit"}
-    allowed = required | {"embedded_version", "summary", "built_at", "runtime_dependency_policy"}
+    allowed = required | {"canary", "embedded_version", "summary", "built_at", "runtime_dependency_policy"}
     missing = sorted(required - set(value))
     extra = sorted(set(value) - allowed)
     if missing:
         _fail(path, f"missing keys: {', '.join(missing)}")
     if extra:
         _fail(path, f"unknown keys: {', '.join(extra)}")
+    if require_canary and "canary" not in value:
+        _fail(f"{path}.canary", "is required for every current release")
+    if "canary" in value:
+        _integer(value["canary"], f"{path}.canary", 1)
     _nonblank(value["version"], f"{path}.version")
     if "embedded_version" in value:
         _nonblank(value["embedded_version"], f"{path}.embedded_version")
@@ -297,10 +303,11 @@ def _release(value: Any, path: str) -> dict[str, Any] | None:
 def _release_identity(value: dict[str, Any] | None) -> tuple[Any, Any, Any] | None:
     """Return the pre-existing artifact identity used for grandfathering.
 
-    ``embedded_version``, ``built_at``, and the source checkpoint are additive
-    provenance/evidence. Adding truthful metadata does not create new artifact
-    bytes and therefore must not turn a historical artifact into a newly built
-    candidate which requires release-artifact metadata.
+    ``canary``, ``embedded_version``, ``built_at``, and the source checkpoint
+    are additive release metadata/provenance. Adding truthful metadata does not
+    create a new exact release identity and therefore must not turn a historical
+    artifact into a newly built candidate which requires release-artifact
+    metadata.
     """
 
     if value is None:
@@ -313,14 +320,59 @@ def _release_identity(value: dict[str, Any] | None) -> tuple[Any, Any, Any] | No
     )
 
 
+def _canary_release_identity(value: dict[str, Any]) -> tuple[Any, ...]:
+    """Return the byte identity which owns one Workbench Canary ordinal.
+
+    A filename, internal version, source checkpoint, or other metadata correction
+    must not create a new Canary when the finalized bytes are unchanged. Releases
+    without a concrete artifact fall back to the broader release identity.
+    """
+
+    artifact = value["artifact"]
+    if artifact is not None:
+        return ("sha256", artifact["sha256"])
+    return ("release", *_release_identity(value))
+
+
+def _release_canaries(releases: dict[str, Any]) -> dict[tuple[Any, ...], int]:
+    """Return known byte-identity Canary ordinals and reject conflicts.
+
+    Historical accepted/rollback releases may predate the Workbench Canary
+    convention and therefore omit ``canary``. Once an ordinal is known for an
+    exact identity in any slot, every other retained copy must preserve it.
+    """
+
+    known: dict[tuple[Any, ...], tuple[int, str]] = {}
+    missing: list[tuple[tuple[Any, ...], str]] = []
+    for slot in ("current", "accepted", "rollback"):
+        release = releases[slot]
+        if release is None:
+            continue
+        identity = _canary_release_identity(release)
+        path = f"$.state.releases.{slot}.canary"
+        canary = release.get("canary")
+        if canary is None:
+            missing.append((identity, path))
+            continue
+        previous = known.get(identity)
+        if previous is not None and previous[0] != canary:
+            _fail(path, f"must equal C{previous[0]} already recorded for these exact artifact bytes")
+        known[identity] = (canary, path)
+    for identity, path in missing:
+        previous = known.get(identity)
+        if previous is not None:
+            _fail(path, f"must preserve C{previous[0]} already recorded for these exact artifact bytes")
+    return {identity: canary for identity, (canary, _) in known.items()}
+
+
 def validate_status(data: dict[str, Any], project_directory: Path | None = None) -> dict[str, Any]:
     """Validate exact manifest shape plus cross-field semantics."""
 
     root = _object(data, "$", {"$schema", "schema_version", "identity", "definition", "state", "synchronization"})
     if root["$schema"] != STATUS_SCHEMA_REF:
         _fail("$.$schema", f"must equal {STATUS_SCHEMA_REF}")
-    if root["schema_version"] != 2:
-        _fail("$.schema_version", "must equal 2")
+    if root["schema_version"] != 3:
+        _fail("$.schema_version", "must equal 3")
 
     identity = _object(root["identity"], "$.identity", {"uuid", "name", "project_id", "aliases", "legacy_names", "legacy_ids"})
     project_uuid = _uuid(identity["uuid"], "$.identity.uuid")
@@ -362,9 +414,10 @@ def validate_status(data: dict[str, Any], project_directory: Path | None = None)
     state = _object(root["state"], "$.state", {"milestone", "releases", "validation", "blocker"})
     _nonblank(state["milestone"], "$.state.milestone")
     releases = _object(state["releases"], "$.state.releases", {"current", "accepted", "rollback", "accepted_current", "accepted_rollback"})
-    current = _release(releases["current"], "$.state.releases.current")
+    current = _release(releases["current"], "$.state.releases.current", require_canary=True)
     accepted = _release(releases["accepted"], "$.state.releases.accepted")
     rollback = _release(releases["rollback"], "$.state.releases.rollback")
+    _release_canaries(releases)
     accepted_current = _enum(releases["accepted_current"], "$.state.releases.accepted_current", ACCEPTED_CURRENT_STATES)
     accepted_rollback = _enum(releases["accepted_rollback"], "$.state.releases.accepted_rollback", ACCEPTED_ROLLBACK_STATES)
     if accepted_current == "NO_ACCEPTED" and accepted is not None:
@@ -459,6 +512,36 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
 
     before_release = previous["state"]["releases"]["current"]
     after_release = current["state"]["releases"]["current"]
+    before_canaries = _release_canaries(previous["state"]["releases"])
+    if after_release is not None:
+        after_canary = after_release["canary"]
+        historical_canary = before_canaries.get(_canary_release_identity(after_release))
+        if historical_canary is not None:
+            expected_canary = historical_canary
+            relationship = "previously recorded exact artifact bytes"
+        elif before_release is None:
+            expected_canary = 1
+            relationship = "the first current release"
+        else:
+            expected_canary = before_release["canary"] + 1
+            relationship = "new finalized artifact bytes"
+        if after_canary != expected_canary:
+            _fail(
+                "$.state.releases.current.canary",
+                f"must be C{expected_canary} for {relationship}",
+            )
+
+    for slot in ("current", "accepted", "rollback"):
+        release = current["state"]["releases"][slot]
+        if release is None:
+            continue
+        identity = _canary_release_identity(release)
+        previous_canary = before_canaries.get(identity)
+        if previous_canary is not None and release.get("canary") != previous_canary:
+            _fail(
+                f"$.state.releases.{slot}.canary",
+                f"must preserve C{previous_canary} already recorded for these exact artifact bytes",
+            )
     if after_release is not None and after_release["artifact"] is not None:
         policy_present = "runtime_dependency_policy" in after_release
         artifact_changed = _release_identity(before_release) != _release_identity(after_release)
@@ -505,6 +588,160 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
                 "$.state.releases.current",
                 "an external runtime result requires one exact pre-existing artifact/version/hash/source identity",
             )
+
+
+def _without_v3_canary_metadata(manifest: dict[str, Any]) -> dict[str, Any]:
+    normalized = copy.deepcopy(manifest)
+    normalized["schema_version"] = 2
+    releases = normalized.get("state", {}).get("releases", {})
+    if isinstance(releases, dict):
+        for slot in ("current", "accepted", "rollback"):
+            release = releases.get(slot)
+            if isinstance(release, dict):
+                release.pop("canary", None)
+    return normalized
+
+
+def validate_status_transition_from_base(previous: dict[str, Any], current: dict[str, Any]) -> str:
+    """Validate one status change, including the additive-only V2 migration.
+
+    Returns ``migration`` or ``transition`` for the caller's integration summary.
+    """
+
+    previous_schema = previous.get("schema_version")
+    current_schema = current.get("schema_version")
+    if previous_schema == 2 and current_schema == 3:
+        validate_status(current)
+        if _without_v3_canary_metadata(current) == previous:
+            return "migration"
+        _fail(
+            "$.schema_version",
+            "the V2-to-V3 exception permits only schema_version and release.canary metadata; "
+            "project transitions require a V3 base",
+        )
+    validate_status_transition(previous, current)
+    return "transition"
+
+
+def _git_text(root: Path, *arguments: str) -> str:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), *arguments],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+    except OSError as exc:
+        raise ValidationError(f"cannot run git: {exc}") from exc
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
+        raise ValidationError(f"git {' '.join(arguments[:2])} failed: {detail}")
+    return result.stdout
+
+
+def _json_from_text(text: str, source: str) -> dict[str, Any]:
+    try:
+        value = json.loads(text, object_pairs_hook=_reject_duplicate_keys)
+    except json.JSONDecodeError as exc:
+        raise ValidationError(f"{source}: cannot read valid JSON: {exc}") from exc
+    if not isinstance(value, dict):
+        raise ValidationError(f"{source}: root must be an object")
+    return value
+
+
+def load_git_statuses(
+    root: Path,
+    base_ref: str,
+) -> tuple[str, dict[str, tuple[PurePosixPath, dict[str, Any]]]]:
+    """Load canonical project manifests from one immutable Git commit."""
+
+    root = root.resolve()
+    commit = _git_text(root, "rev-parse", "--verify", "--end-of-options", f"{base_ref}^{{commit}}").strip()
+    if not COMMIT_RE.fullmatch(commit):
+        raise ValidationError(f"base ref {base_ref!r} did not resolve to one commit")
+    listing = _git_text(
+        root,
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        commit,
+        "--",
+        "projects",
+        "resourcepacks",
+    )
+    statuses: dict[str, tuple[PurePosixPath, dict[str, Any]]] = {}
+    for raw_path in listing.split("\0"):
+        path = PurePosixPath(raw_path)
+        if not raw_path or len(path.parts) != 3 or path.name != "WORKBENCH_STATUS.json":
+            continue
+        manifest = _json_from_text(
+            _git_text(root, "show", f"{commit}:{path.as_posix()}"),
+            f"{commit}:{path.as_posix()}",
+        )
+        identity = manifest.get("identity")
+        project_uuid = identity.get("uuid") if isinstance(identity, dict) else None
+        if not isinstance(project_uuid, str):
+            raise ValidationError(f"{commit}:{path.as_posix()}: missing project UUID")
+        if project_uuid in statuses:
+            raise ValidationError(
+                f"{commit}: duplicate project UUID {project_uuid}: "
+                f"{statuses[project_uuid][0]} and {path.as_posix()}"
+            )
+        statuses[project_uuid] = (path, manifest)
+    return commit, statuses
+
+
+def validate_repository_transitions(root: Path, base_ref: str) -> dict[str, int | str]:
+    """Validate one integration step per changed project against a stable base.
+
+    A base-to-worktree range containing multiple revisions of the same project is
+    deliberately rejected; integrate those status transitions as separate ranges.
+    """
+
+    root = root.resolve()
+    commit, previous_statuses = load_git_statuses(root, base_ref)
+    current_statuses = load_repository_statuses(root)
+    removed = sorted(set(previous_statuses) - set(current_statuses))
+    if removed:
+        descriptions = [
+            f"{uuid} ({previous_statuses[uuid][0].as_posix()})"
+            for uuid in removed
+        ]
+        raise ValidationError("project status deletion has no transition policy: " + ", ".join(descriptions))
+
+    added = sorted(set(current_statuses) - set(previous_statuses))
+    for project_uuid in added:
+        current_path, current = current_statuses[project_uuid]
+        release = current["state"]["releases"]["current"]
+        if release is not None and release["canary"] != 1:
+            raise ValidationError(
+                f"{current_path}: a newly added project must begin with C1; "
+                "no higher-Canary import exception is defined"
+            )
+
+    counts = {
+        "base_commit": commit,
+        "added": len(added),
+        "transition": 0,
+        "migration": 0,
+    }
+    shared = sorted(
+        set(previous_statuses) & set(current_statuses),
+        key=lambda uuid: str(current_statuses[uuid][0]).casefold(),
+    )
+    for project_uuid in shared:
+        _, previous = previous_statuses[project_uuid]
+        current_path, current = current_statuses[project_uuid]
+        if previous == current:
+            continue
+        try:
+            kind = validate_status_transition_from_base(previous, current)
+        except ValidationError as exc:
+            raise ValidationError(f"{current_path} against {commit}: {exc}") from exc
+        counts[kind] = int(counts[kind]) + 1
+    return counts
 
 
 def _parse_codex_log(log: str) -> list[dict[str, str]]:
@@ -704,6 +941,12 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     repository = subparsers.add_parser("validate-repository", help="validate repository layout and all project manifests")
     repository.add_argument("--root", type=Path, default=Path("."))
+    transitions = subparsers.add_parser(
+        "validate-transitions",
+        help="validate one status step per changed project against an immutable Git base",
+    )
+    transitions.add_argument("--root", type=Path, default=Path("."))
+    transitions.add_argument("--base-ref", required=True)
     status = subparsers.add_parser("validate-status", help="validate one WORKBENCH_STATUS.json")
     status.add_argument("path", type=Path)
     scope = subparsers.add_parser("check-scope", help="validate explicit project path ownership")
@@ -720,6 +963,15 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "validate-repository":
             statuses = validate_repository(args.root)
             print(f"Workbench validation passed ({len(statuses)} project manifest(s)).")
+        elif args.command == "validate-transitions":
+            counts = validate_repository_transitions(args.root, args.base_ref)
+            print(
+                "Workbench transition validation passed "
+                f"against {counts['base_commit']} "
+                f"({counts['transition']} strict transition(s), "
+                f"{counts['migration']} metadata migration(s), "
+                f"{counts['added']} added project(s))."
+            )
         elif args.command == "validate-status":
             validate_status(load_json(args.path), args.path.parent)
             print(f"Status validation passed: {args.path}")

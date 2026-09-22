@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "1988a317-2307-4d57-9b6e-6c828cbf5f7f",
     "name": "Mynx Trees",
@@ -65,6 +65,7 @@
     "releases": {
       "current": {
         "version": "0.1.0+26.2-canary8",
+        "canary": 8,
         "artifact": {
           "filename": "mynx-trees-private-0.1.0+26.2-canary8.jar",
           "sha256": "7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634"
@@ -79,6 +80,7 @@
       },
       "accepted": {
         "version": "0.1.0+26.2-canary8",
+        "canary": 8,
         "artifact": {
           "filename": "mynx-trees-private-0.1.0+26.2-canary8.jar",
           "sha256": "7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634"

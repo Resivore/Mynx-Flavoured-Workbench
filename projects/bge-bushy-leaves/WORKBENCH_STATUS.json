@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "eb72daef-8565-4e9a-a94b-f77f9f72fcba",
     "name": "BGE × Bushy Leaves",
@@ -74,6 +74,7 @@
     "releases": {
       "current": {
         "version": "0.2.4-canary6",
+        "canary": 6,
         "embedded_version": "0.2.4-canary6",
         "artifact": {
           "filename": "bge-bushy-leaves-0.2.4-canary6.jar",

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "71ae25e0-3ebe-4108-a17e-931ba98b8dea",
     "name": "Ribbit Villagers Florist Private Successor",
@@ -41,6 +41,7 @@
     "releases": {
       "current": {
         "version": "2",
+        "canary": 2,
         "artifact": {
           "filename": "ribbit-villagers-florist-private-v2.zip",
           "sha256": "331ee9d0857aded60f7720ee7b32bdec3e339e5f4cc7300f6c61f7926b7b0453"
@@ -54,6 +55,7 @@
       },
       "accepted": {
         "version": "2",
+        "canary": 2,
         "artifact": {
           "filename": "ribbit-villagers-florist-private-v2.zip",
           "sha256": "331ee9d0857aded60f7720ee7b32bdec3e339e5f4cc7300f6c61f7926b7b0453"

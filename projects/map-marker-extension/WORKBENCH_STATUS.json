@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "cada1b33-d1d8-5ef1-845b-9c6224ff114a",
     "name": "Map Marker Extensions (MME)",
@@ -105,6 +105,7 @@
     "releases": {
       "current": {
         "version": "C12 (0.4.0-canary12)",
+        "canary": 12,
         "artifact": {
           "filename": "map-marker-extension-0.4.0-canary12.jar",
           "sha256": "f5c539b7535149fb936e241f72722a87e0474af855f2a98e6e3cf88c3290243e"
@@ -119,6 +120,7 @@
       },
       "accepted": {
         "version": "C12 (0.4.0-canary12)",
+        "canary": 12,
         "artifact": {
           "filename": "map-marker-extension-0.4.0-canary12.jar",
           "sha256": "f5c539b7535149fb936e241f72722a87e0474af855f2a98e6e3cf88c3290243e"
@@ -133,6 +135,7 @@
       },
       "rollback": {
         "version": "Treasure X C4 (0.2.0-canary4)",
+        "canary": 4,
         "artifact": {
           "filename": "treasure-x-xaero-0.2.0-canary4.jar",
           "sha256": "9d5e5c22873417346247ead34d87795e3f4aa84eaf0674345d4ca477ef3ae6e7"

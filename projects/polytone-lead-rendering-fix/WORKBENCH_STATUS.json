@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "04d9a8db-0aac-48a8-be17-393334df57ac",
     "name": "Polytone Lead Rendering Fix",
@@ -75,6 +75,7 @@
     "releases": {
       "current": {
         "version": "C4",
+        "canary": 4,
         "embedded_version": "0.1.0+26.2-canary4",
         "artifact": {
           "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary4.jar",
@@ -90,6 +91,7 @@
       },
       "accepted": {
         "version": "C4",
+        "canary": 4,
         "embedded_version": "0.1.0+26.2-canary4",
         "artifact": {
           "filename": "polytone-lead-rendering-fix-0.1.0+26.2-canary4.jar",

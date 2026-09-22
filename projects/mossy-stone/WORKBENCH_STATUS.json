@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "9f1c5aa4-09c1-4de3-9921-4b045e8abcd2",
     "name": "Mossy Stone",
@@ -103,6 +103,7 @@
     "releases": {
       "current": {
         "version": "0.4.0-canary4",
+        "canary": 4,
         "artifact": {
           "filename": "mossy-stone-0.4.0-canary4.jar",
           "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14"
@@ -113,6 +114,7 @@
       },
       "accepted": {
         "version": "0.4.0-canary4",
+        "canary": 4,
         "artifact": {
           "filename": "mossy-stone-0.4.0-canary4.jar",
           "sha256": "b0e7be5651d622789b848ba1a48073af8078ba4d834e34c1255ec9ce72042f14"

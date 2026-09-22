@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "7ad81f01-e236-5b65-836f-f4440a869a5a",
     "name": "Wool Soundproof Chests",
@@ -60,6 +60,7 @@
     "releases": {
       "current": {
         "version": "C1 (legacy Alpha 1; 0.1.0-alpha1)",
+        "canary": 1,
         "artifact": {
           "filename": "wool-soundproof-chests-0.1.0-alpha1.jar",
           "sha256": "e8f0d10dff823e97a4f4ab39029bf7a71b13501f2294544c55e38f7e1ca9d020"
@@ -70,6 +71,7 @@
       },
       "accepted": {
         "version": "C1 (legacy Alpha 1; 0.1.0-alpha1)",
+        "canary": 1,
         "artifact": {
           "filename": "wool-soundproof-chests-0.1.0-alpha1.jar",
           "sha256": "e8f0d10dff823e97a4f4ab39029bf7a71b13501f2294544c55e38f7e1ca9d020"
@@ -80,6 +82,7 @@
       },
       "rollback": {
         "version": "C1 (legacy Alpha 1; 0.1.0-alpha1)",
+        "canary": 1,
         "artifact": {
           "filename": "wool-soundproof-chests-0.1.0-alpha1.jar",
           "sha256": "e8f0d10dff823e97a4f4ab39029bf7a71b13501f2294544c55e38f7e1ca9d020"

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "4fa0f3c6-988a-42a5-bdcf-8f1be17a3f27",
     "name": "Mynx Regions Unexplored",
@@ -62,6 +62,7 @@
     "releases": {
       "current": {
         "version": "0.1.0+26.2-canary4",
+        "canary": 4,
         "artifact": {
           "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary4.jar",
           "sha256": "8f81b38e74832e8c4b8ad2a70b68dea39d38c82b231cf17982a0a6ad93f163b6"
@@ -76,6 +77,7 @@
       },
       "accepted": {
         "version": "0.1.0+26.2-canary3",
+        "canary": 3,
         "artifact": {
           "filename": "mynx-regions-unexplored-private-0.1.0+26.2-canary3.jar",
           "sha256": "20460eac76b1712be8d0c6d39b5bcb755f2a7664e51eb70e73ad4ef071fd99a5"

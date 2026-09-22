@@ -7,7 +7,7 @@
   "required": ["$schema", "schema_version", "identity", "definition", "state", "synchronization"],
   "properties": {
     "$schema": { "const": "../../schemas/workbench-status.schema.json" },
-    "schema_version": { "const": 2 },
+    "schema_version": { "const": 3 },
     "identity": {
       "type": "object",
       "additionalProperties": false,
@@ -58,7 +58,7 @@
           "additionalProperties": false,
           "required": ["current", "accepted", "rollback", "accepted_current", "accepted_rollback"],
           "properties": {
-            "current": { "$ref": "#/$defs/nullableRelease" },
+            "current": { "$ref": "#/$defs/nullableCurrentRelease" },
             "accepted": { "$ref": "#/$defs/nullableRelease" },
             "rollback": { "$ref": "#/$defs/nullableRelease" },
             "accepted_current": { "enum": ["NO_ACCEPTED", "CURRENT_IS_ACCEPTED", "CURRENT_DIFFERS_FROM_ACCEPTED"] },
@@ -154,6 +154,11 @@
       "additionalProperties": false,
       "required": ["version", "artifact", "source_commit"],
       "properties": {
+        "canary": {
+          "description": "Positive Workbench Canary ordinal for this exact release identity. It is independent of internal/package version strings and project synchronization revisions.",
+          "type": "integer",
+          "minimum": 1
+        },
         "version": { "$ref": "#/$defs/nonblank" },
         "embedded_version": {
           "description": "Exact packaged release version used for runtime-unit binding when the human-facing version is a logical label.",
@@ -183,6 +188,13 @@
         }
       ]
     },
+    "currentRelease": {
+      "allOf": [
+        { "$ref": "#/$defs/release" },
+        { "required": ["canary"] }
+      ]
+    },
+    "nullableCurrentRelease": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/currentRelease" }] },
     "nullableRelease": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/release" }] },
     "dependency": {
       "type": "object",

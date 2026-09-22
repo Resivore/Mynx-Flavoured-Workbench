@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "58086966-05a1-4237-9f4f-ffca6c05da87",
     "name": "Stacks Are Stacks — Container Fixes",
@@ -103,6 +103,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary2",
+        "canary": 2,
         "embedded_version": "0.1.0-canary2",
         "artifact": {
           "filename": "stacks-are-stacks-container-fixes-0.1.0-canary2.jar",
@@ -129,6 +130,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary2",
+        "canary": 2,
         "embedded_version": "0.1.0-canary2",
         "artifact": {
           "filename": "stacks-are-stacks-container-fixes-0.1.0-canary2.jar",

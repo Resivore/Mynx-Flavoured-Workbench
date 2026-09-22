@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "5d42f47f-b006-4125-840d-dec0d2728afa",
     "name": "Building But Better 26.2",
@@ -118,6 +118,7 @@
     "releases": {
       "current": {
         "version": "2.0pre4+26.2-enderscape-dev.7",
+        "canary": 9,
         "artifact": {
           "filename": "bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar",
           "sha256": "57ddb5dfe62f2eb9f4a2ce22fbeeb5cce4386bbd93aab3f7df0dd8e6d19ddaf0"
@@ -132,6 +133,7 @@
       },
       "accepted": {
         "version": "2.0pre4+26.2-pale-oak-dev.6",
+        "canary": 8,
         "artifact": {
           "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar",
           "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a"
@@ -146,6 +148,7 @@
       },
       "rollback": {
         "version": "2.0pre4+26.2-pale-oak-dev.6",
+        "canary": 8,
         "artifact": {
           "filename": "bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar",
           "sha256": "0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a"

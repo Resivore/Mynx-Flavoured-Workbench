@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "fcb7d036-c756-5114-abe1-01c4331e7ea8",
     "name": "Carried Container Auto-Routing",
@@ -102,6 +102,7 @@
     "releases": {
       "current": {
         "version": "0.3.15-shulker-pick-block-canary1",
+        "canary": 20,
         "embedded_version": "0.3.15-shulker-pick-block-canary1",
         "artifact": {
           "filename": "carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar",
@@ -117,6 +118,7 @@
       },
       "accepted": {
         "version": "0.3.15-shulker-pick-block-canary1",
+        "canary": 20,
         "embedded_version": "0.3.15-shulker-pick-block-canary1",
         "artifact": {
           "filename": "carried-container-auto-routing-0.3.15-shulker-pick-block-canary1.jar",
@@ -132,6 +134,7 @@
       },
       "rollback": {
         "version": "C11 (legacy 0.3.6-external-quick-move-priority-fix-canary)",
+        "canary": 11,
         "artifact": {
           "filename": "carried-container-auto-routing-0.3.6-external-quick-move-priority-fix-canary.jar",
           "sha256": "01913b0455d961d20174c601b0544c178ed47868113e6f1173e132290fe4ca02"

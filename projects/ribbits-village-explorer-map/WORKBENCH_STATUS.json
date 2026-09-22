@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "3ef3a962-1caa-4384-b524-7ebff348774f",
     "name": "Ribbits × Matcha Integration",

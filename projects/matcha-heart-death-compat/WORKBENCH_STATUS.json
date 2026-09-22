@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "937d7ccc-44c9-55cb-8d33-0dc0bff5fe45",
     "name": "Matcha Death Rebalance",
@@ -89,6 +89,7 @@
     "releases": {
       "current": {
         "version": "0.1.10-canary11",
+        "canary": 11,
         "artifact": {
           "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
           "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
@@ -99,6 +100,7 @@
       },
       "accepted": {
         "version": "0.1.10-canary11",
+        "canary": 11,
         "artifact": {
           "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
           "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
@@ -109,6 +111,7 @@
       },
       "rollback": {
         "version": "0.1.7-canary8",
+        "canary": 8,
         "artifact": {
           "filename": "matcha-heart-death-compat-0.1.7-canary8.jar",
           "sha256": "cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2"

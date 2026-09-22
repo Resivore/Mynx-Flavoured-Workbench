@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "a8917eab-4a89-4af0-8aa7-13b12049dd8a",
     "name": "Mynx Flora Trades",
@@ -63,6 +63,7 @@
     "releases": {
       "current": {
         "version": "0.1.0+26.2-canary4",
+        "canary": 4,
         "artifact": {
           "filename": "mynx-flora-trades-0.1.0+26.2-canary4.jar",
           "sha256": "58585c2133396d9f173c47391d81e0e6d5f6f549252e3e99f6f9f52ea111e146"
@@ -77,6 +78,7 @@
       },
       "accepted": {
         "version": "0.1.0+26.2-canary4",
+        "canary": 4,
         "artifact": {
           "filename": "mynx-flora-trades-0.1.0+26.2-canary4.jar",
           "sha256": "58585c2133396d9f173c47391d81e0e6d5f6f549252e3e99f6f9f52ea111e146"

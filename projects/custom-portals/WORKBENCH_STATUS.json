@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "26065ff3-182f-5314-a5f6-976d6ffd394a",
     "name": "Custom Portals 26.2",
@@ -101,6 +101,7 @@
     "releases": {
       "current": {
         "version": "4.0.0+26.2-port-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "custom-portals-26.2-4.0.0+26.2-port-canary2.jar",
           "sha256": "13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148"
@@ -111,6 +112,7 @@
       },
       "accepted": {
         "version": "4.0.0+26.2-port-canary2",
+        "canary": 2,
         "artifact": {
           "filename": "custom-portals-26.2-4.0.0+26.2-port-canary2.jar",
           "sha256": "13fd0e76748fcc3ef963bcc2f4a820d5fc2d473a90ad5d5988cbe0129c2be148"

@@ -23,9 +23,15 @@ STATUS_COMMIT = "a" * 40
 SOURCE_COMMIT = "b" * 40
 
 
-def release(version: str = "1.0.0", filename: str | None = None, sha256: str | None = None) -> dict[str, object]:
+def release(
+    version: str = "1.0.0",
+    filename: str | None = None,
+    sha256: str | None = None,
+    *,
+    canary: int = 1,
+) -> dict[str, object]:
     artifact = None if filename is None else {"filename": filename, "sha256": sha256 or "0" * 64}
-    return {"version": version, "artifact": artifact, "source_commit": STATUS_COMMIT}
+    return {"canary": canary, "version": version, "artifact": artifact, "source_commit": STATUS_COMMIT}
 
 
 def write_project(
@@ -45,7 +51,7 @@ def write_project(
     accepted = copy.deepcopy(current) if lifecycle == "ACCEPTED" else None
     manifest: dict[str, object] = {
         "$schema": "../../schemas/workbench-status.schema.json",
-        "schema_version": 2,
+        "schema_version": 3,
         "identity": {
             "uuid": project_uuid,
             "name": name,
@@ -369,7 +375,7 @@ class WorkbenchDashboardTests(unittest.TestCase):
     def test_release_summary_is_escaped_and_available_for_expandable_rows(self) -> None:
         hostile = "Keeps <exact> data & avoids </script> injection."
         project = model("Alpha", "ACTIVE")
-        project = replace(project, current_summary=hostile, current_version="C1")
+        project = replace(project, current_summary=hostile, current_version="internal-1.0.0", current_canary=1)
         html = dashboard.render_dashboard([project])
         self.assertNotIn("</script> injection", html)
         payload = json.loads(re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL).group(1))  # type: ignore[union-attr]
@@ -414,74 +420,53 @@ class WorkbenchDashboardTests(unittest.TestCase):
             self.assertNotIn("C:\\\\Users\\\\", html)
             self.assertIn('"commit":"' + "d" * 40 + '"', html)
 
-    def test_canary_display_is_conservative_and_numeric(self) -> None:
-        self.assertEqual(dashboard.display_canary_version("C11"), "C11")
-        self.assertEqual(dashboard.display_canary_version("canary1"), "C1")
-        self.assertEqual(dashboard.display_canary_version("0.1.0-canary12"), "C12")
-        self.assertEqual(dashboard.display_canary_version("C11 (Private Canary 10)"), "C11")
-        self.assertEqual(dashboard.resolve_canary_number("C11 (Private Canary 10; embedded 0.1.0-canary10)"), 11)
-        self.assertEqual(dashboard.display_canary_version("release candidate"), "release candidate")
-        self.assertLess(dashboard.canary_number("C2") or 0, dashboard.canary_number("C10") or 0)
-
-    def test_current_release_canary_uses_embedded_version_then_artifact_filename(self) -> None:
-        embedded = release("release label", "unrelated.jar")
-        embedded["embedded_version"] = "0.1.0-canary12"
-        self.assertEqual(dashboard.canary_number_for_release("ordinary", embedded), 12)
-        filename = release("release label", "project-0.1.0-canary13.jar")
-        self.assertEqual(dashboard.canary_number_for_release("ordinary", filename), 13)
-
-    def test_legacy_canary_display_overrides_apply_only_to_their_exact_releases(self) -> None:
-        root = Path(__file__).resolve().parents[1]
-        statuses = dashboard.load_repository_statuses(root)
-        for project_uuid, override in dashboard.CANARY_DISPLAY_OVERRIDES.items():
-            with self.subTest(project_uuid=project_uuid):
-                self.assertIn(project_uuid, statuses)
-                exact_legacy_release = release(
-                    str(override["version"]),
-                    "legacy.jar",
-                    str(override["sha256"]),
-                )
-                self.assertEqual(
-                    dashboard.canary_number_for_release(project_uuid, exact_legacy_release),
-                    override["canary"],
-                )
-
-    def test_parseable_successor_uses_its_own_current_canary(self) -> None:
-        uuid = "5d42f47f-b006-4125-840d-dec0d2728afa"
-        successor = release("C9", "bbb.jar", "f" * 64)
-        self.assertEqual(dashboard.canary_number_for_release(uuid, successor), 9)
-
-    def test_unparseable_successor_does_not_inherit_a_stale_legacy_canary(self) -> None:
-        uuid = "5d42f47f-b006-4125-840d-dec0d2728afa"
-        version = "2.0pre4+26.2-enderscape-dev.7"
-        successor = release(version, "bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar", "f" * 64)
-        self.assertIsNone(dashboard.canary_number_for_release(uuid, successor))
-
+    def test_current_release_uses_explicit_canary_not_internal_release_strings(self) -> None:
+        internal_version = "C99 (embedded 0.1.0-canary77)"
+        current = release(internal_version, "project-0.1.0-canary66.jar", "f" * 64, canary=12)
         with tempfile.TemporaryDirectory() as temporary:
-            _, directory, manifest = write_project(
-                Path(temporary),
-                "building-but-better",
-                "Building But Better",
-                current=successor,
-            )
-            manifest["identity"]["uuid"] = uuid  # type: ignore[index]
-            records = dashboard.build_project_records(
-                {uuid: (directory / "WORKBENCH_STATUS.json", manifest)},
-                {},
-            )
+            item = write_project(Path(temporary), "explicit", "Explicit", current=current)
+            record = dashboard.build_project_records(statuses_for(item), {})[0]
 
-        self.assertEqual(len(records), 1)
-        self.assertIsNone(records[0].current_canary)
-        payload = dashboard._project_payload(records[0])
-        self.assertEqual(payload["version"], version)
-        self.assertEqual(payload["versionDisplay"], version)
-        self.assertIsNone(payload["versionCanary"])
+        self.assertEqual(record.current_version, internal_version)
+        self.assertEqual(record.current_canary, 12)
+        payload = dashboard._project_payload(record)
+        self.assertEqual(payload["version"], "C12")
+        self.assertEqual(payload["versionDisplay"], "C12")
+        self.assertEqual(payload["versionCanary"], 12)
 
-    def test_current_main_bbb_dev7_builds_and_generates_without_the_dev6_canary(self) -> None:
+    def test_deployed_canary_requires_an_exact_canonical_release_match(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            current = release("internal-current", "current.jar", "b" * 64, canary=10)
+            item = write_project(Path(temporary), "release-match", "Release Match", current=current)
+            releases = item[2]["state"]["releases"]  # type: ignore[index]
+            accepted = release("internal-accepted", "accepted.jar", "a" * 64, canary=9)
+            releases["accepted"] = accepted
+            releases["rollback"] = copy.deepcopy(accepted)
+            releases["accepted_current"] = "CURRENT_DIFFERS_FROM_ACCEPTED"
+            releases["accepted_rollback"] = "ACCEPTED_IS_ROLLBACK"
+
+            deployed = dashboard.canonical_release_identity(accepted)
+            record = dashboard.build_project_records(statuses_for(item), {item[0]: deployed})[0]
+            payload = dashboard._project_payload(record)
+            self.assertEqual(record.deployed_canary, 9)
+            self.assertEqual(payload["deployedVersion"], "C9")
+            self.assertEqual(payload["deployedVersionDisplay"], "C9")
+            self.assertEqual(payload["serverDisplay"], "OUTDATED · C9")
+
+            unmatched = {"version": "0.1.0-canary88", "artifact": {"filename": "old.jar", "sha256": "8" * 64}}
+            record = dashboard.build_project_records(statuses_for(item), {item[0]: unmatched})[0]
+            payload = dashboard._project_payload(record)
+            self.assertIsNone(record.deployed_canary)
+            self.assertIsNone(payload["deployedVersion"])
+            self.assertIsNone(payload["deployedVersionDisplay"])
+            self.assertEqual(payload["serverDisplay"], "OUTDATED")
+
+    def test_current_main_bbb_dev7_is_c9_and_preserves_dev6_as_c8(self) -> None:
         root = Path(__file__).resolve().parents[1]
         statuses, records = dashboard.discover_projects(root)
         bbb_uuid = "5d42f47f-b006-4125-840d-dec0d2728afa"
-        bbb_current = statuses[bbb_uuid][1]["state"]["releases"]["current"]
+        bbb_releases = statuses[bbb_uuid][1]["state"]["releases"]
+        bbb_current = bbb_releases["current"]
         bbb = next(record for record in records if record.uuid == bbb_uuid)
         version = "2.0pre4+26.2-enderscape-dev.7"
 
@@ -494,8 +479,12 @@ class WorkbenchDashboardTests(unittest.TestCase):
             bbb_current["artifact"]["sha256"],
             "57ddb5dfe62f2eb9f4a2ce22fbeeb5cce4386bbd93aab3f7df0dd8e6d19ddaf0",
         )
+        self.assertEqual(bbb_current["canary"], 9)
+        self.assertEqual(bbb_releases["accepted"]["canary"], 8)
+        self.assertEqual(bbb_releases["rollback"]["canary"], 8)
         self.assertEqual(bbb.current_version, version)
-        self.assertIsNone(bbb.current_canary)
+        self.assertEqual(bbb.current_canary, 9)
+        self.assertEqual(bbb.deployed_canary, 8)
 
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "dashboard.html"
@@ -506,10 +495,25 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertIsNotNone(payload_match)
         payload = json.loads(payload_match.group(1))  # type: ignore[union-attr]
         bbb_payload = next(project for project in payload["projects"] if project["uuid"] == bbb_uuid)
-        self.assertEqual(bbb_payload["version"], version)
-        self.assertEqual(bbb_payload["versionDisplay"], version)
-        self.assertIsNone(bbb_payload["versionCanary"])
-        self.assertNotEqual(bbb_payload["versionDisplay"], "C8")
+        self.assertEqual(bbb_payload["version"], "C9")
+        self.assertEqual(bbb_payload["versionDisplay"], "C9")
+        self.assertEqual(bbb_payload["versionCanary"], 9)
+        self.assertEqual(bbb_payload["deployedVersion"], "C8")
+        self.assertEqual(bbb_payload["deployedVersionDisplay"], "C8")
+        self.assertEqual(bbb_payload["deployedCanary"], 8)
+        self.assertEqual(bbb_payload["serverDisplay"], "OUTDATED · C8")
+
+    def test_current_main_dashboard_exposes_only_compact_canary_version_labels(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        _, records = dashboard.discover_projects(root)
+        html = dashboard.render_dashboard(records, generated_at=datetime(2026, 9, 16, 5, 10, tzinfo=timezone.utc))
+        payload = json.loads(re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL).group(1))  # type: ignore[union-attr]
+
+        for project in payload["projects"]:
+            for field in ("version", "versionDisplay", "deployedVersion", "deployedVersionDisplay"):
+                with self.subTest(project=project["projectId"], field=field):
+                    label = project[field]
+                    self.assertTrue(label is None or re.fullmatch(r"C[1-9]\d*", label), label)
 
     def test_current_main_lifecycles_server_identity_and_no_testing_group(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -533,7 +537,8 @@ class WorkbenchDashboardTests(unittest.TestCase):
         expected_deployed_release = dashboard.canonical_release_identity(bge_accepted)
         self.assertEqual(bge.lifecycle, "ACTIVE")
         self.assertEqual(bge.current_version, bge_current["version"])
-        self.assertEqual(bge.current_canary, dashboard.canary_number_for_release(bge.uuid, bge_current))
+        self.assertEqual(bge.current_canary, bge_current["canary"])
+        self.assertEqual(bge.deployed_canary, bge_accepted["canary"])
         self.assertEqual(server_state[bge.uuid], expected_deployed_release)
         self.assertNotEqual(expected_deployed_release, dashboard.canonical_release_identity(bge_current))
         self.assertEqual(bge.server_status, "OUTDATED")
@@ -548,7 +553,7 @@ class WorkbenchDashboardTests(unittest.TestCase):
         payload = json.loads(re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL).group(1))  # type: ignore[union-attr]
         payload_by_id = {project["projectId"]: project for project in payload["projects"]}
         expected_bge_payload = dashboard._project_payload(bge)
-        self.assertEqual(payload_by_id[bge.project_id]["version"], bge_current["version"])
+        self.assertEqual(payload_by_id[bge.project_id]["version"], f'C{bge_current["canary"]}')
         self.assertEqual(payload_by_id[bge.project_id]["versionDisplay"], expected_bge_payload["versionDisplay"])
         self.assertFalse(any(project["lifecycle"] == "TESTING" for project in payload["projects"]))
         self.assertEqual(len(payload["projects"]), len(records))
@@ -613,12 +618,11 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertNotIn("class=", favicon)
         self.assertEqual(favicon.count("<path "), 4)
 
-    def test_server_pill_labels_keep_versions_only_for_outdated_canaries(self) -> None:
-        deployed = {"version": "C10 (Private Canary 9)", "artifact": None}
-        self.assertEqual(dashboard.server_pill_label("CURRENT", deployed), "CURRENT")
-        self.assertEqual(dashboard.server_pill_label("OUTDATED", deployed), "OUTDATED · C10")
-        self.assertEqual(dashboard.server_pill_label("NOT_DEPLOYED", deployed), "NOT DEPLOYED")
-        self.assertEqual(dashboard.server_pill_label("OUTDATED", {"version": "1.0.0", "artifact": None}), "OUTDATED")
+    def test_server_pill_labels_use_only_canonical_deployed_canaries(self) -> None:
+        self.assertEqual(dashboard.server_pill_label("CURRENT", 10), "CURRENT")
+        self.assertEqual(dashboard.server_pill_label("OUTDATED", 10), "OUTDATED · C10")
+        self.assertEqual(dashboard.server_pill_label("NOT_DEPLOYED", 10), "NOT DEPLOYED")
+        self.assertEqual(dashboard.server_pill_label("OUTDATED", None), "OUTDATED")
 
     def test_generated_page_has_no_runtime_network_dependencies(self) -> None:
         html = dashboard.render_dashboard(

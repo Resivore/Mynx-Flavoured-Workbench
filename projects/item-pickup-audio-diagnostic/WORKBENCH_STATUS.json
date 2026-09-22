@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "786620d5-4731-425c-a599-83b4dcd9920b",
     "name": "Item Pickup Audio Diagnostic",
@@ -56,6 +56,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
+        "canary": 1,
         "embedded_version": "0.1.0-canary1",
         "artifact": {
           "filename": "item-pickup-audio-diagnostic-0.1.0-canary1.jar",
@@ -71,6 +72,7 @@
       },
       "accepted": {
         "version": "0.1.0-canary1",
+        "canary": 1,
         "embedded_version": "0.1.0-canary1",
         "artifact": {
           "filename": "item-pickup-audio-diagnostic-0.1.0-canary1.jar",

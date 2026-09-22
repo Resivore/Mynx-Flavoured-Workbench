@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "b55e1fb7-64b8-41c1-8210-0b785e55c386",
     "name": "BGE Glass Face Culling",
@@ -81,6 +81,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary3",
+        "canary": 3,
         "embedded_version": "0.1.0-canary3",
         "artifact": {
           "filename": "bge-glass-face-culling-0.1.0-canary3.jar",

@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "ee8a20f8-d0a8-515c-9a74-3b19f238227d",
     "name": "Interchangeable Block Families",
@@ -151,6 +151,7 @@
     "releases": {
       "current": {
         "version": "C9 (0.1.0-canary9)",
+        "canary": 9,
         "embedded_version": "0.1.0-canary9",
         "artifact": {
           "filename": "interchangeable-block-families-0.1.0-canary9.jar",
@@ -179,6 +180,7 @@
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
+        "canary": 7,
         "embedded_version": "0.1.0-canary7",
         "artifact": {
           "filename": "interchangeable-block-families-0.1.0-canary7.jar",
@@ -194,6 +196,7 @@
       },
       "rollback": {
         "version": "C3 (0.1.0-canary3)",
+        "canary": 3,
         "artifact": {
           "filename": "interchangeable-block-families-0.1.0-canary3.jar",
           "sha256": "d0150aea777dd7837d0c9b4f5cf41ce45f510c60ef416fb7001d06a36a6b0e87"

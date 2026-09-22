@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "41c327e0-b896-5a02-a30c-62f98b8123ae",
     "name": "Dramatic Doors 26.2",
@@ -83,6 +83,7 @@
     "releases": {
       "current": {
         "version": "C9 (legacy Canary 8)",
+        "canary": 9,
         "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary8",
         "artifact": {
           "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary8.jar",
@@ -98,6 +99,7 @@
       },
       "accepted": {
         "version": "C8 (legacy Canary 7)",
+        "canary": 8,
         "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary7",
         "artifact": {
           "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar",
@@ -113,6 +115,7 @@
       },
       "rollback": {
         "version": "C8 (legacy Canary 7)",
+        "canary": 8,
         "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary7",
         "artifact": {
           "filename": "dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary7.jar",

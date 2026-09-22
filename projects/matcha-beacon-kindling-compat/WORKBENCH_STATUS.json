@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "34763a2a-1cee-59c3-89ae-28a7294ea2cb",
     "name": "Matcha Beacon Kindling Compatibility",
@@ -86,6 +86,7 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary1",
+        "canary": 1,
         "artifact": {
           "filename": "matcha-beacon-kindling-compat-0.1.0-canary1.jar",
           "sha256": "b343dd5f000913731a9e256126f18adf085c7e364645ce9f9940692d693e1e0e"
