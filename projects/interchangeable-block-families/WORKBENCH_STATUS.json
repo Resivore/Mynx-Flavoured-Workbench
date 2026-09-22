@@ -20,13 +20,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Preserve exact accepted C7 byte-for-byte as the accepted baseline while C8 extends only the literal audited ShapeMap catalog with the approved display-fixture and Enderscape families and remains runtime-untested."
+      "Preserve exact accepted C7 byte-for-byte as the accepted baseline while C9 preserves the approved C8 catalog and adds only the audited BBB Enderscape extensions; C9 remains runtime-untested."
     ],
     "scope": [
-      "Preserve every accepted C7 family and canonical parent while adding exactly 15 literal Sign/Hanging Sign/Shelf display-fixture families, three Enderscape Fence/Fence Gate families, seven Enderscape Button/Pressure Plate families, and one Enderscape Shadoline Bars/Chain family, yielding 179 families, 1,384 unique item IDs, and a 22-member maximum without suffix, tag, or namespace inference.",
+      "Preserve every accepted C7 family, every C8 addition, and every canonical parent while extending exactly three C8 Enderscape Fence/Fence Gate families with matching BBB Frame/Lattice pairs and adding exactly three four-member BBB Enderscape Trim/Balustrade/Support/Pallet detail families, yielding 182 families, 1,402 unique item IDs, and a 22-member maximum without suffix, tag, or namespace inference.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain exact accepted C7 and historical rollback C3 artifacts while C8 is the current candidate; no owner acceptance or manual Minecraft runtime result is inferred from controlled build and GameTest evidence."
+      "Retain exact accepted C7 and historical rollback C3 artifacts while C9 is the current candidate; no owner acceptance or manual Minecraft runtime result is inferred from controlled build and GameTest evidence."
     ],
     "boundaries": {
       "owned_paths": [
@@ -37,7 +37,7 @@
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
         "Partial provider materialization, dynamic discovery, registry-name or tag inference, cross-material or cross-finish collapsing, and Macaw paving/full/slab/stair forms remain outside the audited contract.",
-        "C8 is an unaccepted candidate and does not alter the exact accepted C7 release identity, any Minecraft testing profile, or the separate human-owned server-release record.",
+        "C9 is an unaccepted candidate and does not alter the exact accepted C7 release identity, any Minecraft testing profile, or the separate human-owned server-release record.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -46,7 +46,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version targeted by C8; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
+        "reason": "Exact game version targeted by C9; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
       },
       {
         "type": "MOD",
@@ -75,14 +75,14 @@
       {
         "type": "PROJECT",
         "identifier": "5d42f47f-b006-4125-840d-dec0d2728afa",
-        "requirement": "BBB provider capability (any installed BBB version); controlled C7 input bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.3.jar SHA-256 d0928b9316e3f6b323151fac73df3be1056aba05b56d4909b419cc15c09fc4d0",
-        "reason": "Owns the literal wood, stone, Frame/Lattice, and Iron Fence IDs added by C6; C8 retains BBB as a packaged required dependency while deliberately applying no BBB version predicate. The exact local controlled-validation bytes are recorded separately from the runtime requirement."
+        "requirement": "=2.0pre4+26.2-enderscape-dev.7; bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar, 1,363,575 bytes, SHA-256 57ddb5dfe62f2eb9f4a2ce22fbeeb5cce4386bbd93aab3f7df0dd8e6d19ddaf0",
+        "reason": "Owns the literal wood, stone, Frame/Lattice, and Iron Fence IDs added by C6 and the 18 C9 Enderscape IDs. The exact Fabric equality predicate is intentional: this BBB version is not Fabric Extended SemVer and C9 needs its specific provider package rather than an ordered range or inferred capability."
       },
       {
         "type": "MOD",
         "identifier": "enderscape",
         "requirement": ">=3.0.2; controlled input enderscape-fabric-3.0.2+mc26.2.jar, 104,162,822 bytes, SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b",
-        "reason": "Required only as the real provider of C8's literal Veiled, Celestial, Murublight, polished-stone accessory, and Shadoline inventory IDs; Enderscape remains external and IBF neither scans its namespace nor bundles its classes."
+        "reason": "Required only as the real provider of C8's literal Veiled, Celestial, Murublight, polished-stone accessory, and Shadoline inventory IDs and C9's existing Enderscape fence anchors; Enderscape remains external and IBF neither scans its namespace nor bundles its classes."
       },
       {
         "type": "OTHER",
@@ -112,7 +112,7 @@
         "type": "PROJECT",
         "identifier": "41c327e0-b896-5a02-a30c-62f98b8123ae",
         "requirement": "C9 (legacy Canary 8), dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary8.jar, 13,178,481 bytes, SHA-256 4e77603b3337ee2a2571900395b89273e7053440ea0c325223da1556c1f14b34",
-        "reason": "Exact required Dramatic Doors provider used for C8 controlled validation; its narrow Enderscape compatibility correction uses the real Murublight door while preserving Dramatic Doors' existing public Murushroom IDs."
+        "reason": "Exact required Dramatic Doors provider used for C9 controlled validation; its narrow Enderscape compatibility correction uses the real Murublight door while preserving Dramatic Doors' existing public Murushroom IDs."
       },
       {
         "type": "PROJECT",
@@ -136,33 +136,46 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "=25",
-        "reason": "Required Java release for Minecraft 26.2 and the controlled C8 build."
+        "reason": "Required Java release for Minecraft 26.2 and the controlled C9 build."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1 with Fabric Loom 1.17.19",
-        "reason": "Exact build-tool baseline used for the controlled C8 build and GameTest validation."
+        "reason": "Exact build-tool baseline used for the controlled C9 build and GameTest validation."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 8 is the current ACTIVE candidate after exact Minecraft 26.2 and Enderscape 3.0.2 registry audit, clean controlled validation, and retained-artifact verification. Exact C7 remains the byte-for-byte accepted baseline until explicit owner acceptance; no manual Minecraft runtime result is recorded.",
+    "milestone": "Canary 9 is the current ACTIVE candidate after exact BBB Enderscape dev.7 provider audit, clean controlled validation, and retained-artifact verification. Exact C7 remains the byte-for-byte accepted baseline until explicit owner acceptance; no manual Minecraft runtime result is recorded.",
     "releases": {
       "current": {
-        "version": "C8 (0.1.0-canary8)",
-        "embedded_version": "0.1.0-canary8",
+        "version": "C9 (0.1.0-canary9)",
+        "embedded_version": "0.1.0-canary9",
         "artifact": {
-          "filename": "interchangeable-block-families-0.1.0-canary8.jar",
-          "sha256": "496335c83a8fa990d0ac7267c5920cf8918598be16af3e5f3b1a0cfe8816d043"
+          "filename": "interchangeable-block-families-0.1.0-canary9.jar",
+          "sha256": "0e3d487170870d1e7e60c34d9bde250aa0999074cb4c0b6851e2d80f9864d25e"
         },
-        "built_at": "2026-09-21T19:28:10.1759522Z",
-        "source_commit": "745714aadb669409a172ec7a4e0cacb9a6dcf98f",
+        "built_at": "2026-09-22T02:08:09.1416977Z",
+        "source_commit": "464b8b334581c17277aa1512af12017c51355345",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
-          "exceptions": []
+          "exceptions": [
+            {
+              "consumer_id": "interchangeable_block_families",
+              "relationship": "depends",
+              "dependency_id": "bbb",
+              "predicate": "=2.0pre4+26.2-enderscape-dev.7",
+              "reason": "C9 relies on BBB's audited Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package; the provider version is not Fabric Extended SemVer, so an equality predicate is the narrow valid contract rather than an ordered range.",
+              "regression_evidence": [
+                "BuildingButBetterEnderscapeProviderContractTest verifies the exact BBB artifact filename, size, SHA-256, required package resources, and Fabric metadata predicate.",
+                "The Fabric VersionPredicate exact match accepts dev.7 and rejects pre-C9 pale-oak dev.6 before ShapeMap resolution.",
+                "Controlled C9 GameTests passed all 26 tests with the exact BBB dev.7 provider and 182-family/1,402-member catalog."
+              ]
+            }
+          ]
         },
-        "summary": "Adds audited Sign/Hanging Sign/Shelf fixtures and approved Enderscape fence, accessory, and Shadoline families to Clutter No More ShapeMap."
+        "summary": "Extends three audited Enderscape fence families with BBB Frame/Lattice and adds three BBB Enderscape detail families."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -197,10 +210,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-21T19:30:02.3302694Z",
-    "updated_at": "2026-09-21T19:30:02.3302694Z",
-    "last_codex_at": "2026-09-21T19:30:02.3302694Z",
-    "source_commit": "745714aadb669409a172ec7a4e0cacb9a6dcf98f"
+    "revision": 9,
+    "activity_at": "2026-09-22T02:08:38.0352945Z",
+    "updated_at": "2026-09-22T02:08:38.0352945Z",
+    "last_codex_at": "2026-09-22T02:08:38.0352945Z",
+    "source_commit": "464b8b334581c17277aa1512af12017c51355345"
   }
 }
