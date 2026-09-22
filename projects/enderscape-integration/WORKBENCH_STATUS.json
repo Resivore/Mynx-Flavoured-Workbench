@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "4029bb0e-1167-4eb2-a658-44733d415b3b",
     "name": "Enderscape Integration",
@@ -28,14 +28,16 @@
       "Remove Rubble Chitin from future normal acquisition and discovery while retaining its registry identity and changing only the Rubblemite reward identity to Nebulite Shards.",
       "Replace the Void Campfire recipe with exact current Matcha Flavoured Kindling plus Void Shale, and move Veiled Sapling acquisition from passive leaf drops to a one-to-one Veiled Leaves recipe.",
       "Expose the effective post-pruning Void Campfire and Veiled Sapling crafting recipes through optional JEI without creating parallel recipe definitions or reviving blocked recipes.",
-      "Override only the three selected Enderscape English terrain-block names while preserving registry, world, model, texture, CTM, BGE, recipe, loot, and saved-world identities."
+      "Override only the three selected Enderscape English terrain-block names while preserving registry, world, model, texture, CTM, BGE, recipe, loot, and saved-world identities.",
+      "Classify otherwise-unmapped canonical Veiled Leaves from the active vanilla leaf shader classification while preserving explicit shader-pack mappings and leaving BGE geometry propagation generic."
     ],
     "scope": [
       "Generate an always-enabled companion layer from the SHA-256-pinned Enderscape input, preserving audited loot-pool math while making only explicit, narrow modpack adjustments and optional client compatibility additions.",
       "Filter only the owner-selected recipes, advancement branches, ordinary Creative/JEI discovery identities, normal enchantment availability, and exact Enderscape-specific direct hunger behavior through Fabric APIs and narrow 3.0.2 mixins.",
       "Package, statically verify, retain, and document Canary 1 without launching Minecraft or changing any testing profile.",
       "Generate C2 overrides for the exact Rubblemite and Veiled Leaves loot tables, the Void Campfire recipe, and the Veiled Sapling recipe; use one narrow custom crafting serializer only because current Matcha Kindling is a component-bearing vanilla item rather than a separate registry entry.",
-      "For C3, synchronize that existing custom serializer through Fabric's recipe API so JEI consumes the resolved holder/display, provide only a conflict-free component-subtype fallback when Matcha x JEI Integration is absent, and add one three-key English companion language override ordered after Enderscape."
+      "For C3, synchronize that existing custom serializer through Fabric's recipe API so JEI consumes the resolved holder/display, provide only a conflict-free component-subtype fallback when Matcha x JEI Integration is absent, and add one three-key English companion language override ordered after Enderscape.",
+      "For C4 and C5, own only the Enderscape-specific canonical Veiled Leaves shader classification, apply it before generic BGE canonical-parent propagation, and keep every common adjustment independent of Iris and shaders."
     ],
     "boundaries": {
       "owned_paths": [
@@ -114,13 +116,13 @@
         "type": "MOD",
         "identifier": "iris",
         "requirement": "=1.11.2+mc26.2 (optional client compatibility target)",
-        "reason": "C4's client-only callback is gated to the inspected completed material-map descriptor of this optional Iris version; absent or different Iris leaves all common Enderscape Integration behavior inert and unaffected."
+        "reason": "C5 gates only the client-side callback to the inspected completed material-map descriptor of this optional Iris version; absent or different Iris leaves every common Enderscape Integration adjustment active and unaffected."
       },
       {
         "type": "OTHER",
         "identifier": "Complementary Unbound r5.8.1",
         "requirement": "Retained inspection reference SHA-256 bb89b1fc54687d4147a837fb2e3c3f7261a13bee51819761e9b6a91cb7915965",
-        "reason": "C4 inspects the retained shader pack's vanilla leaf classification only; no Complementary content is modified, packaged, redistributed, or made a required runtime dependency."
+        "reason": "C5 inspects the retained shader pack's vanilla leaf classification only; no Complementary content is modified, packaged, redistributed, or made a required runtime dependency."
       },
       {
         "type": "TOOL",
@@ -131,17 +133,18 @@
     ]
   },
   "state": {
-    "milestone": "Canary 4 formally renames and rescopes the immutable project as Enderscape Integration while retaining every C1-C3 pruning, loot, food, Kindling, Veiled Sapling, advancement, discovery, JEI, localization, registry-retention, Magnia, Rebound, and Void-system boundary. Its optional Iris 1.11.2 client callback gives unmapped canonical Veiled Leaves states the active map's vanilla oak-leaf classification without overwriting an explicit Veiled Leaves assignment; generic BGE canonical-parent inheritance then remains the sole route for BGE geometries. Controlled build/static validation passed; no Minecraft, Iris, Complementary, BGE, or JEI runtime observation has been supplied.",
+    "milestone": "Canary 5 preserves the Enderscape Integration identity and every C1-C4 adjustment while correcting two statically discovered optional-client ordering gates. Its Iris callback now seeds otherwise-unmapped canonical Veiled Leaves at injector order 900 before BGE's default-order generic canonical-parent pass, and its mixin plugin gates only that optional Iris callback so all common pruning, loot, food, recipe, advancement, JEI, and localization behavior remains active without Iris. Explicit canonical and physical shader assignments still win; controlled build/static validation passed, and no Minecraft, Iris, Complementary, BGE, or JEI runtime observation has been supplied.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary4",
-        "embedded_version": "0.1.0-canary4",
+        "version": "0.1.0-canary5",
+        "canary": 5,
+        "embedded_version": "0.1.0-canary5",
         "artifact": {
-          "filename": "enderscape-integration-0.1.0-canary4.jar",
-          "sha256": "20ac7360850f6b62335d333e9328acc2475b248f74c0b4826ed8aadf283bab30"
+          "filename": "enderscape-integration-0.1.0-canary5.jar",
+          "sha256": "fb1b5d94d434c76d6350b495294a72904a4e1d42611faef8912fd03ad30db560"
         },
-        "built_at": "2026-09-22T01:23:24.3593451Z",
-        "source_commit": "7fd96db9504606ca65ee8b3ed21583987646b175",
+        "built_at": "2026-09-22T04:14:49.3068769Z",
+        "source_commit": "d3836552f464612ef5c330b9ca9d27e8056fda0c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -150,10 +153,10 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "=26.2",
-              "reason": "Canary 4 retains the controlled Minecraft 26.2 recipe synchronization/display, advancement, tag, Creative, food, component, language-resource, and resource-pack interfaces, and adds only a client-side completed material-map fallback.",
+              "reason": "Canary 5 retains the controlled Minecraft 26.2 recipe synchronization/display, advancement, tag, Creative, food, component, language-resource, and resource-pack interfaces while correcting only optional client callback ordering and gating.",
               "regression_evidence": [
-                "A clean Java 25 Gradle stageCanaryArtifact build produced enderscape-integration-0.1.0-canary4.jar, SHA-256 20ac7360850f6b62335d333e9328acc2475b248f74c0b4826ed8aadf283bab30, from implementation checkpoint 7fd96db9504606ca65ee8b3ed21583987646b175.",
-                "Focused JUnit coverage retains C1-C3 resource, recipe, JEI, localization, and discovery contracts while proving all canonical Veiled Leaves states inherit only a live mapped vanilla leaf classification when they are otherwise unmapped."
+                "A clean Java 25 Gradle 9.5.1 stageCanaryArtifact build produced enderscape-integration-0.1.0-canary5.jar, SHA-256 fb1b5d94d434c76d6350b495294a72904a4e1d42611faef8912fd03ad30db560, from implementation checkpoint d3836552f464612ef5c330b9ca9d27e8056fda0c.",
+                "Thirty focused JUnit tests retain C1-C4 resource, recipe, JEI, localization, discovery, identity, and shader-fallback contracts while proving every common mixin remains eligible when the exact optional Iris hook is unavailable."
               ]
             },
             {
@@ -161,7 +164,7 @@
               "relationship": "depends",
               "dependency_id": "enderscape",
               "predicate": "=3.0.2+mc26.2",
-              "reason": "The generated overlay, retained C2 Void Campfire serializer, three-key language override, string-targeted Chorus Cake Roll mixin, and C4 canonical Veiled Leaves registry lookup are intentionally bound to the audited Enderscape 3.0.2 data and bytecode shape.",
+              "reason": "The generated overlay, retained C2 Void Campfire serializer, three-key language override, string-targeted Chorus Cake Roll mixin, and C5 canonical Veiled Leaves registry lookup are intentionally bound to the audited Enderscape 3.0.2 data and bytecode shape.",
               "regression_evidence": [
                 "The generator and tests fail closed unless enderscape-fabric-3.0.2+mc26.2.jar matches SHA-256 9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b.",
                 "The focused suite verifies the upstream Veiled Leaves model remains a minecraft:block/leaves model with its original texture reference; it adds no Enderscape asset or state rewrite and packages no upstream Enderscape classes or assets beyond the existing companion-owned language override."
@@ -172,7 +175,7 @@
               "relationship": "depends",
               "dependency_id": "matcha_flavoured_data",
               "predicate": "=0.1.0-canary2",
-              "reason": "C4 retains C2's custom Void Campfire serializer and exact Matcha C2 component-bearing Beacon Kindling identity; a normal item-only recipe would accept ordinary chicken spawn eggs.",
+              "reason": "C5 retains C2's custom Void Campfire serializer and exact Matcha C2 component-bearing Beacon Kindling identity; a normal item-only recipe would accept ordinary chicken spawn eggs.",
               "regression_evidence": [
                 "The generator pins Matcha's beacon_kindling recipe SHA-256 e2a91a3d1f9f29c183561bf720967bc41b87e8be1693d6918d07462181ba1fb1 and fails closed if its item, model, marker, or beacon_kindling tag changes.",
                 "fabric.mod.json still requires matcha_flavoured_data =0.1.0-canary2, and executable tests verify the custom matcher/display and actual JEI recipe UID preserve the authoritative base item/model identity rather than a vanilla stick or ordinary chicken spawn egg."
@@ -185,13 +188,13 @@
               "predicate": "=1.11.2+mc26.2",
               "reason": "Only the optional client compatibility callback is tied to Iris's inspected completed BlockMaterialMapping return descriptor; no common Enderscape Integration feature requires Iris or shaders.",
               "regression_evidence": [
-                "The exact Iris 1.11.2+mc26.2 material mapping implementation was inspected: it completes its state map using putIfAbsent before returning it, so the C4 callback uses containsKey to preserve explicit Veiled Leaves entries and copies the live vanilla oak-leaf value only into absent states.",
-                "The mixin-bootstrap gate declines absent or different Iris; focused tests verify that the Fabric metadata merely suggests Iris and that the bootstrap plugin has no Iris class linkage."
+                "The exact Iris 1.11.2+mc26.2 material mapping implementation was inspected: it completes its state map using putIfAbsent before returning it, so the C5 callback uses containsKey to preserve explicit Veiled Leaves entries and copies the live vanilla oak-leaf value only into absent states.",
+                "Exact Sponge Mixin 0.17.3+mixin.0.8.7 (SHA-256 9e90efec71d2bad5b96c9089f019d14a8603227d3c5f408d12f53fae89d99d41) inspection and executable coverage establish that injector order 900 runs before BGE's default 1000 pass; the plugin gates only IrisVeiledLeavesMaterialMappingMixin and has no Iris class linkage."
               ]
             }
           ]
         },
-        "summary": "Renames the companion to Enderscape Integration and adds optional canonical Veiled Leaves foliage classification derived from the active vanilla leaf mapping, preserving all C1-C3 behavior and generic BGE inheritance."
+        "summary": "Orders canonical Veiled Leaves classification before generic BGE inheritance and keeps every common Enderscape Integration mixin active without Iris."
       },
       "accepted": null,
       "rollback": null,
@@ -205,10 +208,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-22T01:23:24.3593451Z",
-    "updated_at": "2026-09-22T01:23:24.3593451Z",
-    "last_codex_at": "2026-09-22T01:23:24.3593451Z",
-    "source_commit": "7fd96db9504606ca65ee8b3ed21583987646b175"
+    "revision": 6,
+    "activity_at": "2026-09-22T04:14:49.3068769Z",
+    "updated_at": "2026-09-22T04:14:49.3068769Z",
+    "last_codex_at": "2026-09-22T04:14:49.3068769Z",
+    "source_commit": "d3836552f464612ef5c330b9ca9d27e8056fda0c"
   }
 }
