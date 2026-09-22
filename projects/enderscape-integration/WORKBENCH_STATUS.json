@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 3,
+  "schema_version": 2,
   "identity": {
     "uuid": "4029bb0e-1167-4eb2-a658-44733d415b3b",
     "name": "Enderscape Integration",
@@ -137,7 +137,6 @@
     "releases": {
       "current": {
         "version": "0.1.0-canary5",
-        "canary": 5,
         "embedded_version": "0.1.0-canary5",
         "artifact": {
           "filename": "enderscape-integration-0.1.0-canary5.jar",
