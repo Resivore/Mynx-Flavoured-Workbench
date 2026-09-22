@@ -21,9 +21,10 @@ public final class FrogVillagerRodPose {
     public static final float RUNTIME_GRIP_X_PIXELS = -AUTHORED_GRIP_X_PIXELS;
     public static final float RUNTIME_GRIP_Y_PIXELS = -AUTHORED_GRIP_Y_PIXELS;
     public static final float RUNTIME_GRIP_Z_PIXELS = AUTHORED_GRIP_Z_PIXELS;
-    /* C28: applied after the authored C24 grip in the live folded-arm local coordinate system. */
+    /* C29: applied after the authored C24 grip in the live folded-arm local coordinate system. */
+    public static final float FINAL_ALIGNMENT_X_PIXELS = 0.0F;
     public static final float FINAL_ALIGNMENT_Y_PIXELS = 2.0F;
-    public static final float FINAL_ALIGNMENT_Z_PIXELS = 3.0F;
+    public static final float FINAL_ALIGNMENT_Z_PIXELS = 5.0F;
 
     /* Minecraft model units are one sixteenth of a Blockbench/JEM model pixel. */
     public static final float AUTHORED_GRIP_X = AUTHORED_GRIP_X_PIXELS / 16.0F;
@@ -32,6 +33,7 @@ public final class FrogVillagerRodPose {
     public static final float RUNTIME_GRIP_X = RUNTIME_GRIP_X_PIXELS / 16.0F;
     public static final float RUNTIME_GRIP_Y = RUNTIME_GRIP_Y_PIXELS / 16.0F;
     public static final float RUNTIME_GRIP_Z = RUNTIME_GRIP_Z_PIXELS / 16.0F;
+    public static final float FINAL_ALIGNMENT_X = FINAL_ALIGNMENT_X_PIXELS / 16.0F;
     public static final float FINAL_ALIGNMENT_Y = FINAL_ALIGNMENT_Y_PIXELS / 16.0F;
     public static final float FINAL_ALIGNMENT_Z = FINAL_ALIGNMENT_Z_PIXELS / 16.0F;
     public static final float OUTER_SHAFT_TIP_FROM_GRIP_Z = OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS / 16.0F;
@@ -45,16 +47,16 @@ public final class FrogVillagerRodPose {
     }
 
     /**
-     * Applies C28's final local alignment correction at the already-authored C24 grip.
+     * Applies C29's final local alignment correction at the already-authored C24 grip.
      * Runtime positive Y is down; positive Z moves the rod inward toward the folded hands.
      */
-    public static void applyC28AlignmentCorrection(PoseStack poseStack) {
-        poseStack.translate(0.0F, FINAL_ALIGNMENT_Y, FINAL_ALIGNMENT_Z);
+    public static void applyC29AlignmentCorrection(PoseStack poseStack) {
+        poseStack.translate(FINAL_ALIGNMENT_X, FINAL_ALIGNMENT_Y, FINAL_ALIGNMENT_Z);
     }
 
-    /** Applies the current C28 reference grip without changing its established transform order. */
+    /** Applies the current C29 reference grip without changing its established transform order. */
     public static void applyReferenceGrip(PoseStack poseStack) {
         applyC24ReferenceGrip(poseStack);
-        applyC28AlignmentCorrection(poseStack);
+        applyC29AlignmentCorrection(poseStack);
     }
 }

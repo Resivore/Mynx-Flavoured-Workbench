@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
-/** Small, bright VWR-owned checkpoints retained for focused C28 rod diagnostics. */
+/** Small, bright VWR-owned checkpoints retained for focused C29 rod diagnostics. */
 final class RodDiagnosticMarkers {
     private RodDiagnosticMarkers() {
     }
