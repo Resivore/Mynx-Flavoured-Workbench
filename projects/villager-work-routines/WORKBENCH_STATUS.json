@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/workbench-status.schema.json",
-  "schema_version": 2,
+  "schema_version": 3,
   "identity": {
     "uuid": "9b9d5a98-36f5-4fce-853e-70730cad6d5f",
     "name": "Villager Work Routines",
@@ -72,16 +72,17 @@
     ]
   },
   "state": {
-    "milestone": "The supplied C23 result is narrowly recorded as a C23 runtime FAIL for rod attachment: exact Ribbits C27 resources resolved, the baked 50-degree fishing_rod rotation was neutralized to effective zero, the authored grip and live rod pivot coincided, but the rod remained displaced high/across the Frog Villager after C23 selected arms -> EMF_arms -> EMF_arms_rotation with its shallowest-direct-geometry heuristic. C23's sole line correctly began at the captured physical shaft tip with zero displayed delta. No Fisherman productivity, barrel-return, Shepherd, or other C23 runtime result is inferred. C24 instead follows EMF 3.2.6's public authored metadata to the direct arms_rotation parent, preserves authored [0,-7,-6] and applies its proven invertAxis xy mapping as live [0,+7,-6], while retaining the C27 neutralization, decoration suppression, and physical-tip line. C24 also uses a 180-419 tick dwell, an exact one-in-four pre-loot production gate, the existing 100-tick cooldown, and receiver-specific collision-clear navigation with a live body-to-barrel AABB gap no greater than 0.5 plus a later visible-facing tick before fish or wool can transfer. C24 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
+    "milestone": "The supplied C23 result remains narrowly recorded as a C23 runtime FAIL for rod attachment: exact Ribbits C27 resources resolved, the baked 50-degree fishing_rod rotation was neutralized to effective zero, the authored grip and live rod pivot coincided, but the rod remained displaced high/across the Frog Villager after C23 selected arms -> EMF_arms -> EMF_arms_rotation with its shallowest-direct-geometry heuristic. C23's sole line correctly began at the captured physical shaft tip with zero displayed delta. The supplied C24 screenshot is C24-only runtime evidence: the rod now follows the folded hands closely and its line origin appears correct, with the remaining issue only that the rod/grip is slightly high and outward from the villager. No Fisherman productivity, barrel-return, Shepherd, or other runtime result is inferred. C25 preserves C24's EMF semantic parent, C27 neutralization, decoration suppression, and physical-tip line, then applies only a final folded-arm-local +2px Y (down) and +1px Z (toward the handle/villager) translation after the authored grip. C25 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary24",
+        "canary": 25,
+        "version": "0.1.0-canary25",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary24.jar",
-          "sha256": "aef1fabf9d5ca9fd596d842567b83420447f756ca08fb2cc50d968c7c9139616"
+          "filename": "villager-work-routines-0.1.0-canary25.jar",
+          "sha256": "947bb435cb3378e0c81343e0de035cac2b170fe95fedcdb7f1a0c91d80edbaee"
         },
-        "built_at": "2026-09-22T02:51:26.0867526Z",
-        "source_commit": "c747126e5685bffb8c1850d01d5794d988e7d2ef",
+        "built_at": "2026-09-22T04:07:14.8297850Z",
+        "source_commit": "88c694e61d78cf896405c3e9364a231b2268cfa8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -98,7 +99,7 @@
             }
           ]
         },
-        "summary": "Maps the exact C27 rod through EMF's authored parent and axis conversion, reduces fish output without suppressing visible retrieves, and requires physical arrival plus facing at each real fish or wool receiver."
+        "summary": "Moves the C27 Fisherman rod 2 local pixels down and 1 local pixel inward after the proven folded-arm grip, while preserving its physical-tip line and all work routines."
       },
       "accepted": null,
       "rollback": null,
@@ -112,10 +113,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 24,
-    "activity_at": "2026-09-22T02:51:47Z",
-    "updated_at": "2026-09-22T02:51:47Z",
-    "last_codex_at": "2026-09-22T02:51:47Z",
-    "source_commit": "c747126e5685bffb8c1850d01d5794d988e7d2ef"
+    "revision": 25,
+    "activity_at": "2026-09-22T04:07:14.8297850Z",
+    "updated_at": "2026-09-22T04:07:14.8297850Z",
+    "last_codex_at": "2026-09-22T04:07:14.8297850Z",
+    "source_commit": "88c694e61d78cf896405c3e9364a231b2268cfa8"
   }
 }
