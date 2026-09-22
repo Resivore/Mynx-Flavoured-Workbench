@@ -73,16 +73,16 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(pose.contains("AUTHORED_INVERT_AXIS = \"xy\""));
         assertTrue(pose.contains("RUNTIME_GRIP_Y_PIXELS = -AUTHORED_GRIP_Y_PIXELS"));
         assertTrue(pose.contains("FINAL_ALIGNMENT_Y_PIXELS = 2.0F"));
-        assertTrue(pose.contains("FINAL_ALIGNMENT_Z_PIXELS = -2.0F"));
+        assertTrue(pose.contains("FINAL_ALIGNMENT_Z_PIXELS = 3.0F"));
         assertMethodBodyEquals("""
                 poseStack.translate(RUNTIME_GRIP_X, RUNTIME_GRIP_Y, RUNTIME_GRIP_Z);
                 """, pose, "public static void applyC24ReferenceGrip(PoseStack poseStack)");
         assertMethodBodyEquals("""
                 poseStack.translate(0.0F, FINAL_ALIGNMENT_Y, FINAL_ALIGNMENT_Z);
-                """, pose, "public static void applyC27AlignmentCorrection(PoseStack poseStack)");
+                """, pose, "public static void applyC28AlignmentCorrection(PoseStack poseStack)");
         assertMethodBodyEquals("""
                 applyC24ReferenceGrip(poseStack);
-                applyC27AlignmentCorrection(poseStack);
+                applyC28AlignmentCorrection(poseStack);
                 """, pose, "public static void applyReferenceGrip(PoseStack poseStack)");
     }
 
@@ -160,10 +160,10 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(diagnostics.contains("authored_id="));
         assertTrue(diagnostics.contains("part_to_be_attached="));
         assertTrue(diagnostics.contains(
-                "after_C27_authored_grip_[0,-7,-6]px_EMF_mapped_live_[0,+7,-6]px"));
-        assertTrue(diagnostics.contains("_then_local_[0,+2,-2]px"));
-        assertTrue(diagnostics.contains("C27_line_start_authority=live_fishing_rod_physical_outer_tip"));
-        assertTrue(diagnostics.contains("C27_line_start_minus_visible_tip"));
+                "after_C28_authored_grip_[0,-7,-6]px_EMF_mapped_live_[0,+7,-6]px"));
+        assertTrue(diagnostics.contains("_then_local_[0,+2,+3]px"));
+        assertTrue(diagnostics.contains("C28_line_start_authority=live_fishing_rod_physical_outer_tip"));
+        assertTrue(diagnostics.contains("C28_line_start_minus_visible_tip"));
         assertFalse(diagnostics.contains("C20_line_start_currently_used"));
         assertTrue(markers.contains("Shape.SQUARE"));
         assertTrue(markers.contains("Shape.PLUS"));

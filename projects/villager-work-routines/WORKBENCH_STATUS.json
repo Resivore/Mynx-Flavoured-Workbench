@@ -72,17 +72,17 @@
     ]
   },
   "state": {
-    "milestone": "The supplied C26 comparison screenshot is narrowly recorded as C26 runtime diagnostic evidence only: C25/C26's +2px folded-arm-local Y correction visibly moved the rod downward in the useful direction, while its +1px local Z correction moved in the wrong visual direction for the intended inward correction. C27 therefore retains +2px local Y and changes only final local Z to -2px, exactly -3px from the C25/C26 solid pose, while removing C26's cyan C24 ghost and comparison-only markers. No other rod, Fisherman productivity/deposit, Shepherd, or general runtime result is inferred. C27 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
+    "milestone": "The supplied C27 screenshot is recorded narrowly as C27 runtime FAIL evidence for Fisherman rod placement only: its -2px folded-arm-local Z experiment moved the rod substantially outward/away from the Frog Villager's hands, while the proven +2px local-Y/down correction remains useful. C28 keeps final local Y +2px and changes only final local Z to +3px, exactly (X 0px, Y +2px, Z +3px) relative to the resolved C24 grip: +2px inward from C25/C26 and +5px opposite C27. No broader Fisherman, deposit, Shepherd, productivity, or general runtime result is inferred. C28 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "canary": 27,
-        "version": "0.1.0-canary27",
+        "canary": 28,
+        "version": "0.1.0-canary28",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary27.jar",
-          "sha256": "8caf9de485c8abaf9e0441b68a14c225e8e4d9642d2f1f7360d16edc364cc82f"
+          "filename": "villager-work-routines-0.1.0-canary28.jar",
+          "sha256": "3526e6495c22c64998f0d7ccf8bcaeaeb76dc01ddc6f4ba6d2d61a291d454767"
         },
-        "built_at": "2026-09-22T04:47:41.9375791Z",
-        "source_commit": "cf8e1ef9ce56fabb00b4df9c0b1134eb185b2b85",
+        "built_at": "2026-09-22T05:16:24.5117186Z",
+        "source_commit": "d82d1eb6394c3254b09b50c77bfeb29e3fc8669e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -99,7 +99,7 @@
             }
           ]
         },
-        "summary": "Keeps the C26-proven downward +2px local-Y correction and moves the solid rod three local Z pixels opposite C25, to final +2px Y / -2px Z, with only one physical-tip-lined rod."
+        "summary": "Keeps the proven downward +2px local-Y correction and moves only the rod +3px in folded-arm-local Z, inward toward the Frog Villager's folded hands."
       },
       "accepted": null,
       "rollback": null,
@@ -113,10 +113,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 27,
-    "activity_at": "2026-09-22T04:49:15.1498020Z",
-    "updated_at": "2026-09-22T04:49:15.1498020Z",
-    "last_codex_at": "2026-09-22T04:49:15.1498020Z",
-    "source_commit": "cf8e1ef9ce56fabb00b4df9c0b1134eb185b2b85"
+    "revision": 28,
+    "activity_at": "2026-09-22T05:16:53.6333158Z",
+    "updated_at": "2026-09-22T05:16:53.6333158Z",
+    "last_codex_at": "2026-09-22T05:16:53.6333158Z",
+    "source_commit": "d82d1eb6394c3254b09b50c77bfeb29e3fc8669e"
   }
 }
