@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "package": "dev.resivore.enderscapeintegration.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "plugin": "dev.resivore.enderscapeintegration.client.IrisEnderscapeIntegrationMixinPlugin",
+  "mixins": [
+    "ChorusCakeRollMixin",
+    "EnchantmentHelperMixin",
+    "FoodPropertiesMixin",
+    "RecipeManagerMixin",
+    "ServerAdvancementManagerMixin",
+    "TagLoaderMixin"
+  ],
+  "client": [
+    "IrisVeiledLeavesMaterialMappingMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

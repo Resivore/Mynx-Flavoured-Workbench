@@ -1,0 +1,306 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+def workbenchRoot = providers.gradleProperty('workbench_root')
+        .orElse(rootProject.projectDir.parentFile.parentFile.absolutePath)
+        .get()
+def enderscapeJar = file("${workbenchRoot}/originals/mods/enderscape-fabric-3.0.2+mc26.2.jar")
+def jeiJar = file("${workbenchRoot}/originals/mods/jei-26.2-fabric-30.18.0.144.jar")
+def matchaDataRoot = file("${workbenchRoot}/projects/matcha-flavoured-data/src/main/resources/resourcepacks/matcha_flavoured_1_12/data")
+def matchaKindlingSource = file("${matchaDataRoot}/crafting/recipe/beacon_kindling.json")
+def generatedIntegrationData = layout.buildDirectory.dir('generated/enderscape-integration-data')
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    compileOnly files(jeiJar)
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation files(jeiJar)
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+/**
+ * Generates the small data-pack overlay from the exact audited Enderscape
+ * input. It deliberately edits only selected entries and Matcha identities,
+ * leaving every other pool, roll, condition, weight, count function, and
+ * unrelated entry structurally intact.
+ */
+tasks.register('generateEnderscapeIntegrationData') {
+    inputs.file(enderscapeJar)
+    inputs.dir(matchaDataRoot)
+    inputs.file(matchaKindlingSource)
+    outputs.dir(generatedIntegrationData)
+
+    doLast {
+        if (!enderscapeJar.isFile()) {
+            throw new GradleException("Missing exact audited Enderscape input: ${enderscapeJar}")
+        }
+        def sha256 = { File file ->
+            MessageDigest digest = MessageDigest.getInstance('SHA-256')
+            file.withInputStream { input ->
+                byte[] buffer = new byte[8192]
+                for (int count; (count = input.read(buffer)) > 0;) digest.update(buffer, 0, count)
+            }
+            return digest.digest().encodeHex().toString()
+        }
+        if (sha256(enderscapeJar) != '9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b') {
+            throw new GradleException('Enderscape input SHA-256 differs from the exact C1 audit target')
+        }
+
+        // These source fingerprints make a Matcha identity change explicit at
+        // build time instead of silently shipping a stale component projection.
+        def matchaFingerprints = [
+            'food/recipe/bread.json': 'af1b66671b199b4fe6d7f828e3354928c570c6d8af71a3c93e01ca5342ccc3cb',
+            'food/recipe/golden_carrot.json': 'e2a10c7adecfa1f5c543de7faff54398f94bcf66e3a8d5fd955589a6010e8ba9',
+            'minecraft/loot_table/food/carrot.json': '3a835cbbbb03bd1f44c6ab69b321746527f9d22308a95f8075f7299cd05f80d4',
+            'minecraft/loot_table/food/golden_apple.json': 'e0bc60586726b342e6e588dccebe4b1970c39618cc6dcfc1e12d6fbed1ae0563',
+            'minecraft/loot_table/food/enchanted_golden_apple.json': '98cd922eb2666c0235072eab4fc9cf4a1ad2e8834da44dff17da86bdac1dfa44',
+            'minecraft/loot_table/blocks/chorus_plant.json': '9e3bf88454f5badccadda87d962913df073776b35b64d4731856e8b87b849a4e',
+            'crafting/recipe/beacon_kindling.json': 'e2a91a3d1f9f29c183561bf720967bc41b87e8be1693d6918d07462181ba1fb1'
+        ]
+        matchaFingerprints.each { relative, expected ->
+            File source = new File(matchaDataRoot, relative)
+            if (!source.isFile() || sha256(source) != expected) {
+                throw new GradleException("Matcha canonical source changed: ${relative}; review C1 identity fingerprints")
+            }
+        }
+
+        File root = generatedIntegrationData.get().asFile
+        delete(root)
+        File packRoot = new File(root, 'resourcepacks/enderscape_integration')
+        File dataRoot = new File(packRoot, 'data/enderscape')
+        dataRoot.mkdirs()
+        new File(packRoot, 'pack.mcmeta').text = JsonOutput.prettyPrint(JsonOutput.toJson([
+            pack: [min_format: 88.0, max_format: 107.1,
+                   description: 'Enderscape Integration C4 data overlay']
+        ])) + System.lineSeparator()
+
+        def slurper = new JsonSlurper()
+        def detached = { Object value -> slurper.parseText(JsonOutput.toJson(value)) }
+        def matchaKindling = slurper.parse(matchaKindlingSource)
+        def kindlingComponents = matchaKindling.result.components
+        if (matchaKindling.result.id != 'minecraft:chicken_spawn_egg'
+                || kindlingComponents['minecraft:item_model'] != 'minecraft:beacon_kindling'
+                || kindlingComponents['minecraft:entity_data']?.id != 'minecraft:marker'
+                || !kindlingComponents['minecraft:entity_data']?.Tags?.contains('beacon_kindling')) {
+            throw new GradleException('Matcha Kindling identity changed; review the C2 Void Campfire contract')
+        }
+        Closure findComponents
+        findComponents = { Object node, String carrier ->
+            if (node instanceof Map) {
+                if (node.name == carrier && node.functions instanceof List) {
+                    def match = node.functions.find { it instanceof Map && it.function == 'minecraft:set_components' }
+                    if (match != null) return detached(match.components)
+                }
+                for (Object child : node.values()) {
+                    def found = findComponents(child, carrier)
+                    if (found != null) return found
+                }
+            } else if (node instanceof List) {
+                for (Object child : node) {
+                    def found = findComponents(child, carrier)
+                    if (found != null) return found
+                }
+            }
+            return null
+        }
+        def recipeComponents = { String relative ->
+            def parsed = slurper.parse(new File(matchaDataRoot, relative))
+            return detached(parsed.result.components)
+        }
+        def lootComponents = { String relative, String carrier ->
+            def found = findComponents(slurper.parse(new File(matchaDataRoot, relative)), carrier)
+            if (found == null) throw new GradleException("No Matcha component identity for ${carrier} in ${relative}")
+            return found
+        }
+        def canonicalFoodComponents = [
+            'minecraft:bread': recipeComponents('food/recipe/bread.json'),
+            'minecraft:carrot': lootComponents('minecraft/loot_table/food/carrot.json', 'minecraft:carrot'),
+            'minecraft:golden_carrot': recipeComponents('food/recipe/golden_carrot.json'),
+            'minecraft:golden_apple': lootComponents('minecraft/loot_table/food/golden_apple.json', 'minecraft:golden_apple'),
+            'minecraft:enchanted_golden_apple': lootComponents('minecraft/loot_table/food/enchanted_golden_apple.json', 'minecraft:enchanted_golden_apple'),
+            'minecraft:chorus_fruit': lootComponents('minecraft/loot_table/blocks/chorus_plant.json', 'minecraft:chorus_fruit')
+        ]
+        def suppressedItems = ['enderscape:mirror', 'enderscape:dagger'] as Set
+        def replacementLootItems = ['enderscape:rubble_chitin': 'enderscape:nebulite_shards']
+        def suppressedEnchantments = ['enderscape:bundling', 'enderscape:stun_burst', 'enderscape:transdimensional'] as Set
+        def makeEmpty = { Map entry ->
+            def preserved = [:]
+            ['weight', 'quality', 'conditions'].each { key -> if (entry.containsKey(key)) preserved[key] = entry[key] }
+            entry.clear()
+            entry.type = 'minecraft:empty'
+            entry.putAll(preserved)
+        }
+        Closure rewriteLoot
+        rewriteLoot = { Object node ->
+            if (node instanceof Map) {
+                if (node.type == 'minecraft:item' && replacementLootItems.containsKey(node.name)) {
+                    node.name = replacementLootItems[node.name]
+                } else if (node.type == 'minecraft:item' && suppressedItems.contains(node.name)) {
+                    makeEmpty(node)
+                } else if (node.type == 'minecraft:item' && canonicalFoodComponents.containsKey(node.name)) {
+                    def functions = node.functions instanceof List ? node.functions : []
+                    functions.add([function: 'minecraft:set_components', components: detached(canonicalFoodComponents[node.name])])
+                    node.functions = functions
+                }
+                if (node.type == 'minecraft:item' && node.functions instanceof List) {
+                    boolean onlySuppressedBook = node.functions.any { function ->
+                        function instanceof Map && function.function == 'minecraft:enchant_randomly'
+                                && suppressedEnchantments.contains(function.options)
+                    }
+                    if (onlySuppressedBook) {
+                        makeEmpty(node)
+                    } else {
+                        node.functions.each { function ->
+                            if (function instanceof Map && function.function == 'minecraft:enchant_randomly'
+                                    && function.options instanceof List) {
+                                function.options.removeAll(suppressedEnchantments)
+                            }
+                        }
+                    }
+                }
+                node.values().toList().each { child -> rewriteLoot(child) }
+            } else if (node instanceof List) {
+                node.each { child -> rewriteLoot(child) }
+            }
+        }
+
+        def targetTables = [
+            'end_city/chest', 'end_city/elytra_vault', 'end_city/vault', 'end_city/spawner/basic',
+            'end_haven/chest', 'mirestone_ruins/chest', 'stronghold/chest/altar',
+            'stronghold/chest/armory', 'stronghold/chest/bedroom', 'stronghold/chest/garden',
+            'stronghold/chest/library', 'stronghold/chest/mansion', 'stronghold/chest/secret',
+            'stronghold/spawner/basic', 'supplements/end_city_treasure', 'supplements/stronghold_library'
+        ]
+        ZipFile archive = new ZipFile(enderscapeJar)
+        try {
+            targetTables.each { table ->
+                def entry = archive.getEntry("data/enderscape/loot_table/${table}.json")
+                if (entry == null) throw new GradleException("Audited loot table vanished: ${table}")
+                def parsed = archive.getInputStream(entry).withCloseable { input -> slurper.parse(input) }
+                rewriteLoot(parsed)
+                File output = new File(dataRoot, "loot_table/${table}.json")
+                output.parentFile.mkdirs()
+                output.text = JsonOutput.prettyPrint(JsonOutput.toJson(parsed)) + System.lineSeparator()
+            }
+            def exploration = archive.getEntry('data/enderscape/advancement/explore_end.json')
+            def exploreData = archive.getInputStream(exploration).withCloseable { input -> slurper.parse(input) }
+            exploreData.display.icon = [id: 'enderscape:magnia_attractor']
+            File exploreOutput = new File(dataRoot, 'advancement/explore_end.json')
+            exploreOutput.parentFile.mkdirs()
+            exploreOutput.text = JsonOutput.prettyPrint(JsonOutput.toJson(exploreData)) + System.lineSeparator()
+
+            def rubblemite = archive.getEntry('data/enderscape/loot_table/entities/rubblemite.json')
+            if (rubblemite == null) throw new GradleException('Audited Rubblemite loot table vanished')
+            def rubblemiteData = archive.getInputStream(rubblemite).withCloseable { input -> slurper.parse(input) }
+            rewriteLoot(rubblemiteData)
+            File rubblemiteOutput = new File(dataRoot, 'loot_table/entities/rubblemite.json')
+            rubblemiteOutput.parentFile.mkdirs()
+            rubblemiteOutput.text = JsonOutput.prettyPrint(JsonOutput.toJson(rubblemiteData)) + System.lineSeparator()
+
+            Closure suppressVeiledSapling
+            suppressVeiledSapling = { Object node ->
+                if (node instanceof Map) {
+                    if (node.type == 'minecraft:item' && node.name == 'enderscape:veiled_sapling') {
+                        makeEmpty(node)
+                    }
+                    node.values().toList().each { child -> suppressVeiledSapling(child) }
+                } else if (node instanceof List) {
+                    node.each { child -> suppressVeiledSapling(child) }
+                }
+            }
+            def veiledLeaves = archive.getEntry('data/enderscape/loot_table/blocks/veiled_leaves.json')
+            if (veiledLeaves == null) throw new GradleException('Audited Veiled Leaves loot table vanished')
+            def veiledLeavesData = archive.getInputStream(veiledLeaves).withCloseable { input -> slurper.parse(input) }
+            suppressVeiledSapling(veiledLeavesData)
+            File veiledLeavesOutput = new File(dataRoot, 'loot_table/blocks/veiled_leaves.json')
+            veiledLeavesOutput.parentFile.mkdirs()
+            veiledLeavesOutput.text = JsonOutput.prettyPrint(JsonOutput.toJson(veiledLeavesData)) + System.lineSeparator()
+
+            File voidCampfireRecipe = new File(dataRoot, 'recipe/void_campfire.json')
+            voidCampfireRecipe.parentFile.mkdirs()
+            voidCampfireRecipe.text = JsonOutput.prettyPrint(JsonOutput.toJson([
+                type: 'enderscape_integration:matcha_void_campfire'
+            ])) + System.lineSeparator()
+
+            File veiledSaplingRecipe = new File(dataRoot, 'recipe/veiled_sapling.json')
+            veiledSaplingRecipe.parentFile.mkdirs()
+            veiledSaplingRecipe.text = JsonOutput.prettyPrint(JsonOutput.toJson([
+                type: 'minecraft:crafting_shapeless',
+                ingredients: ['enderscape:veiled_leaves'],
+                result: [id: 'enderscape:veiled_sapling']
+            ])) + System.lineSeparator()
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+sourceSets.main.resources.srcDir(generatedIntegrationData)
+
+processResources {
+    dependsOn tasks.named('generateEnderscapeIntegrationData')
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    includeEmptyDirs = false
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+def packagedJarTask = tasks.named('jar')
+
+test {
+    dependsOn packagedJarTask
+    inputs.file(jeiJar)
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+    systemProperty 'workbenchRoot', workbenchRoot
+    systemProperty 'packagedJar', packagedJarTask.flatMap { it.archiveFile }.get().asFile.absolutePath
+    systemProperty 'jeiJar', jeiJar.absolutePath
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the exact ignored C4 JAR for canonical local retention.'
+    dependsOn tasks.named('test')
+    from(packagedJarTask)
+    into(layout.projectDirectory.dir('artifacts'))
+}
+
+java {
+    withSourcesJar()
+}
+
+tasks.named('sourcesJar') {
+    dependsOn tasks.named('generateEnderscapeIntegrationData')
+}
