@@ -1,6 +1,6 @@
 # Testing
 
-Candidate `villager-work-routines-0.1.0-canary27.jar` identity is authoritative only when it matches `WORKBENCH_STATUS.json`, together with exact retained Ribbits Canary 27 `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar` / SHA-256 `088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd`. Use the normal Frog Villager resource pack. Build and static validation are not runtime evidence. Do not install the Real Working Villagers reference JAR or access a protected Minecraft profile.
+Candidate `villager-work-routines-0.1.0-canary27.jar` / SHA-256 `8caf9de485c8abaf9e0441b68a14c225e8e4d9642d2f1f7360d16edc364cc82f` / source `cf8e1ef9ce56fabb00b4df9c0b1134eb185b2b85` is a user-managed Minecraft Java 26.2/Fabric trial. Verify that identity against `WORKBENCH_STATUS.json`, together with exact retained Ribbits Canary 27 `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar` / SHA-256 `088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd`. Use the normal Frog Villager resource pack. Build and static validation are not runtime evidence. Do not install the Real Working Villagers reference JAR or access a protected Minecraft profile.
 
 ## Canary 27 Fisherman rod micro-alignment and routine regression trial
 
