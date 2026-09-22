@@ -21,7 +21,7 @@ import org.joml.Vector4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Throttled diagnostics retained for direct verification of the focused C24 correction. */
+/** Throttled diagnostics retained for direct verification of the focused C25 correction. */
 final class VwrRodDiagnostics {
     private static final Logger LOGGER = LoggerFactory.getLogger("villager_work_routines/rod_diagnostic");
     private static final int MAX_TRACKED_CASTS = 64;
@@ -143,7 +143,8 @@ final class VwrRodDiagnostics {
                 "after_effective_folded_arm_path (authored-parent-local -> camera-relative)",
                 render.attachment().afterEffectiveFoldedArms(), effectiveArmsOrigin, cameraWorld);
         appendCheckpoint(report,
-                "after_C24_authored_grip_[0,-7,-6]px_EMF_mapped_live_[0,+7,-6]px "
+                "after_C25_authored_grip_[0,-7,-6]px_EMF_mapped_live_[0,+7,-6]px"
+                        + "_then_local_[0,+2,+1]px "
                         + "(rod-group-local -> camera-relative)",
                 render.afterAuthoredGrip(), authoredGripOrigin, cameraWorld);
 

@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
-/** Small, bright VWR-owned axes and shapes retained for the focused C24 runtime trial. */
+/** Small, bright VWR-owned axes and shapes retained for the focused C25 runtime trial. */
 final class RodDiagnosticMarkers {
     private RodDiagnosticMarkers() {
     }

@@ -21,6 +21,9 @@ public final class FrogVillagerRodPose {
     public static final float RUNTIME_GRIP_X_PIXELS = -AUTHORED_GRIP_X_PIXELS;
     public static final float RUNTIME_GRIP_Y_PIXELS = -AUTHORED_GRIP_Y_PIXELS;
     public static final float RUNTIME_GRIP_Z_PIXELS = AUTHORED_GRIP_Z_PIXELS;
+    /* C25: applied after the authored grip in the live folded-arm local coordinate system. */
+    public static final float FINAL_ALIGNMENT_Y_PIXELS = 2.0F;
+    public static final float FINAL_ALIGNMENT_Z_PIXELS = 1.0F;
 
     /* Minecraft model units are one sixteenth of a Blockbench/JEM model pixel. */
     public static final float AUTHORED_GRIP_X = AUTHORED_GRIP_X_PIXELS / 16.0F;
@@ -29,13 +32,19 @@ public final class FrogVillagerRodPose {
     public static final float RUNTIME_GRIP_X = RUNTIME_GRIP_X_PIXELS / 16.0F;
     public static final float RUNTIME_GRIP_Y = RUNTIME_GRIP_Y_PIXELS / 16.0F;
     public static final float RUNTIME_GRIP_Z = RUNTIME_GRIP_Z_PIXELS / 16.0F;
+    public static final float FINAL_ALIGNMENT_Y = FINAL_ALIGNMENT_Y_PIXELS / 16.0F;
+    public static final float FINAL_ALIGNMENT_Z = FINAL_ALIGNMENT_Z_PIXELS / 16.0F;
     public static final float OUTER_SHAFT_TIP_FROM_GRIP_Z = OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS / 16.0F;
 
     private FrogVillagerRodPose() {
     }
 
-    /** Applies exactly the live ModelPart pivot produced from the immutable authored group. */
+    /**
+     * Applies the immutable authored grip, followed by C25's final local alignment correction.
+     * Runtime positive Y is down; positive Z is toward the handle/villager, away from the tip.
+     */
     public static void applyReferenceGrip(PoseStack poseStack) {
         poseStack.translate(RUNTIME_GRIP_X, RUNTIME_GRIP_Y, RUNTIME_GRIP_Z);
+        poseStack.translate(0.0F, FINAL_ALIGNMENT_Y, FINAL_ALIGNMENT_Z);
     }
 }
