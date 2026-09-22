@@ -6,13 +6,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class IrisEnderscapeIntegrationMixinPluginTest {
     @Test
-    void absentOrDifferentIrisVersionDoesNotActivateTheOptionalCompatibilityCallback() {
-        assertTrue(IrisEnderscapeIntegrationMixinPlugin.activationAllowed(true));
-        assertFalse(IrisEnderscapeIntegrationMixinPlugin.activationAllowed(false));
+    void onlyTheOptionalIrisCallbackIsVersionGated() {
+        String irisMixin = IrisEnderscapeIntegrationMixinPlugin.IRIS_MIXIN_CLASS;
+        assertTrue(IrisEnderscapeIntegrationMixinPlugin.activationAllowed(irisMixin, true));
+        assertFalse(IrisEnderscapeIntegrationMixinPlugin.activationAllowed(irisMixin, false));
+
+        for (String commonMixin : List.of(
+                "dev.resivore.enderscapeintegration.mixin.ChorusCakeRollMixin",
+                "dev.resivore.enderscapeintegration.mixin.EnchantmentHelperMixin",
+                "dev.resivore.enderscapeintegration.mixin.FoodPropertiesMixin",
+                "dev.resivore.enderscapeintegration.mixin.RecipeManagerMixin",
+                "dev.resivore.enderscapeintegration.mixin.ServerAdvancementManagerMixin",
+                "dev.resivore.enderscapeintegration.mixin.TagLoaderMixin")) {
+            assertTrue(IrisEnderscapeIntegrationMixinPlugin.activationAllowed(commonMixin, false), commonMixin);
+        }
     }
 
     @Test
@@ -25,6 +37,7 @@ class IrisEnderscapeIntegrationMixinPluginTest {
         assertTrue(metadata.contains("\"suggests\""));
         assertFalse(metadata.substring(metadata.indexOf("\"depends\""), metadata.indexOf("\"recommends\""))
                 .contains("iris"));
+        assertTrue(plugin.contains("if (!IRIS_MIXIN_CLASS.equals(mixinClassName))"));
         assertTrue(plugin.contains("hasExactVersion(\"iris\", IRIS_VERSION)"));
         assertFalse(plugin.contains("net.irisshaders"));
 

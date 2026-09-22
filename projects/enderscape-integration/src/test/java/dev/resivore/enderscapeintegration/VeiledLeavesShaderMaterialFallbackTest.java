@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
 import org.junit.jupiter.api.Test;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -140,19 +141,16 @@ class VeiledLeavesShaderMaterialFallbackTest {
         String bgeMixin = Files.readString(workbenchRoot().resolve(
                 "projects/bge-complementary/src/client/java/dev/resivore/bgecomplementary/mixin/"
                         + "IrisBgeMaterialMappingMixin.java"));
-        assertFalse(bgeMixin.contains("order ="));
+        assertFalse(Pattern.compile("\\border\\s*=").matcher(bgeMixin).find());
     }
 
     @Test
     void compatibilityIsCanonicalOnlyAndLeavesBgeComplementaryGeneric() throws Exception {
         String bridge = mainSource("client/VeiledLeavesShaderMaterialBridge.java");
         String mixin = mainSource("mixin/IrisVeiledLeavesMaterialMappingMixin.java");
-        String allIntegrationSource = Files.walk(projectRoot().resolve("src/main/java"))
-                .filter(Files::isRegularFile)
-                .map(path -> readPath(path))
-                .reduce("", String::concat);
-        String bgeBridge = Files.readString(workbenchRoot().resolve(
-                "projects/bge-complementary/src/client/java/dev/resivore/bgecomplementary/BgeShaderMaterialBridge.java"));
+        String allIntegrationSource = javaSources(projectRoot().resolve("src/main/java"));
+        Path bgeSource = workbenchRoot().resolve("projects/bge-complementary/src");
+        String allBgeProductionSource = javaSources(bgeSource.resolve("main/java"), bgeSource.resolve("client/java"));
 
         assertTrue(bridge.contains("enderscape\", \"veiled_leaves"));
         assertTrue(bridge.contains("Blocks.OAK_LEAVES.defaultBlockState()"));
@@ -162,8 +160,8 @@ class VeiledLeavesShaderMaterialFallbackTest {
         assertTrue(mixin.contains("order = 900"));
         assertFalse(mixin.contains("priority = 1100"));
         assertFalse(allIntegrationSource.contains("block.10009"));
-        assertFalse(bgeBridge.toLowerCase(java.util.Locale.ROOT).contains("enderscape"));
-        assertFalse(bgeBridge.toLowerCase(java.util.Locale.ROOT).contains("veiled"));
+        assertFalse(allBgeProductionSource.toLowerCase(java.util.Locale.ROOT).contains("enderscape"));
+        assertFalse(allBgeProductionSource.toLowerCase(java.util.Locale.ROOT).contains("veiled"));
     }
 
     private static List<String> strings(JsonArray values) {
@@ -186,6 +184,19 @@ class VeiledLeavesShaderMaterialFallbackTest {
         } catch (IOException exception) {
             throw new AssertionError(exception);
         }
+    }
+
+    private static String javaSources(Path... roots) throws IOException {
+        StringBuilder sources = new StringBuilder();
+        for (Path root : roots) {
+            try (var paths = Files.walk(root)) {
+                paths.filter(Files::isRegularFile)
+                        .filter(path -> path.getFileName().toString().endsWith(".java"))
+                        .map(VeiledLeavesShaderMaterialFallbackTest::readPath)
+                        .forEach(sources::append);
+            }
+        }
+        return sources.toString();
     }
 
     private static Path projectRoot() {

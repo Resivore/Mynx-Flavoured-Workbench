@@ -10,14 +10,19 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 /** Gates the version-coupled Iris callback without making Iris a normal runtime dependency. */
 public final class IrisEnderscapeIntegrationMixinPlugin implements IMixinConfigPlugin {
     static final String IRIS_VERSION = "1.11.2+mc26.2";
+    static final String IRIS_MIXIN_CLASS = "dev.resivore.enderscapeintegration.mixin."
+            + "IrisVeiledLeavesMaterialMappingMixin";
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        return activationAllowed(hasExactVersion("iris", IRIS_VERSION));
+        if (!IRIS_MIXIN_CLASS.equals(mixinClassName)) {
+            return true;
+        }
+        return activationAllowed(mixinClassName, hasExactVersion("iris", IRIS_VERSION));
     }
 
-    static boolean activationAllowed(boolean exactIrisHook) {
-        return exactIrisHook;
+    static boolean activationAllowed(String mixinClassName, boolean exactIrisHook) {
+        return !IRIS_MIXIN_CLASS.equals(mixinClassName) || exactIrisHook;
     }
 
     private static boolean hasExactVersion(String modId, String expected) {
