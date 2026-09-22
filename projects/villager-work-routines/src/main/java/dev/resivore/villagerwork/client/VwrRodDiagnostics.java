@@ -21,7 +21,7 @@ import org.joml.Vector4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Throttled diagnostics retained for direct verification of the focused C25 correction. */
+/** Throttled diagnostics retained for direct verification of the focused C27 correction. */
 final class VwrRodDiagnostics {
     private static final Logger LOGGER = LoggerFactory.getLogger("villager_work_routines/rod_diagnostic");
     private static final int MAX_TRACKED_CASTS = 64;
@@ -143,8 +143,8 @@ final class VwrRodDiagnostics {
                 "after_effective_folded_arm_path (authored-parent-local -> camera-relative)",
                 render.attachment().afterEffectiveFoldedArms(), effectiveArmsOrigin, cameraWorld);
         appendCheckpoint(report,
-                "after_C25_authored_grip_[0,-7,-6]px_EMF_mapped_live_[0,+7,-6]px"
-                        + "_then_local_[0,+2,+1]px "
+                "after_C27_authored_grip_[0,-7,-6]px_EMF_mapped_live_[0,+7,-6]px"
+                        + "_then_local_[0,+2,-2]px "
                         + "(rod-group-local -> camera-relative)",
                 render.afterAuthoredGrip(), authoredGripOrigin, cameraWorld);
 
@@ -177,27 +177,27 @@ final class VwrRodDiagnostics {
 
         FishingFloatRenderer.LineSubmission line = render.line();
         if (line == null) {
-            report.append("C25_line_submitted=false line_authority=<unavailable live physical tip>\n");
+            report.append("C27_line_submitted=false line_authority=<unavailable live physical tip>\n");
         } else {
-            report.append("C25_line_submitted=").append(line.submitted())
+            report.append("C27_line_submitted=").append(line.submitted())
                     .append(" segment_count=").append(line.segmentCount()).append('\n')
-                    .append("C25_line_start_authority=live_fishing_rod_physical_outer_tip\n")
-                    .append("C25_line_first_vertex_camera_relative=")
+                    .append("C27_line_start_authority=live_fishing_rod_physical_outer_tip\n")
+                    .append("C27_line_first_vertex_camera_relative=")
                     .append(vector(line.physicalTipRender())).append('\n')
-                    .append("C25_line_start_world=").append(vector(line.physicalTipWorld())).append('\n')
+                    .append("C27_line_start_world=").append(vector(line.physicalTipWorld())).append('\n')
                     .append("float_world=").append(vector(line.floatWorld())).append('\n')
                     .append("float_camera_relative=").append(vector(line.floatRender())).append('\n');
             if (rod.physicalOuterTip() != null) {
                 Vec3 discrepancy = line.physicalTipRender().subtract(rod.physicalOuterTip());
-                report.append("C25_line_start_minus_visible_tip_camera_relative=")
+                report.append("C27_line_start_minus_visible_tip_camera_relative=")
                         .append(vector(discrepancy)).append(" distance=")
                         .append(format(discrepancy.length())).append('\n');
             }
         }
-        report.append("IMPORTANT: C26 submits the sole line from the current C25 physical tip; "
-                + "the C24 comparison ghost has no line.");
+        report.append("IMPORTANT: C27 submits the sole line from the physical tip captured by "
+                + "the same final fishing_rod render transform.");
 
-        LOGGER.info("[VWR C26 ROD DIAGNOSTIC: LIVE CAST TRANSFORMS]\n{}\n[/VWR C26 ROD DIAGNOSTIC]",
+        LOGGER.info("[VWR C27 ROD DIAGNOSTIC: LIVE CAST TRANSFORMS]\n{}\n[/VWR C27 ROD DIAGNOSTIC]",
                 report);
     }
 

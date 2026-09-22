@@ -52,20 +52,8 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                 FoldedArmRenderPath.Attachment attachment = FoldedArmRenderPath.apply(
                         getParentModel(), state, poseStack);
                 if (attachment.applied()) {
-                    Matrix4f c24Grip;
-                    poseStack.pushPose();
-                    try {
-                        // C26 comparison only: omit C25's final local +Y/+Z correction while
-                        // retaining the exact attachment, authored grip, C27 geometry, and
-                        // C27 neutralization/decorations path used by the real rod.
-                        FrogVillagerRodPose.applyC24ReferenceGrip(poseStack);
-                        c24Grip = new Matrix4f(poseStack.last().pose());
-                        RibbitsFishermanRodRenderer.submitC24Ghost(poseStack, collector, light);
-                    } finally {
-                        poseStack.popPose();
-                    }
                     FrogVillagerRodPose.applyReferenceGrip(poseStack);
-                    Matrix4f c25Grip = new Matrix4f(poseStack.last().pose());
+                    Matrix4f c27Grip = new Matrix4f(poseStack.last().pose());
 
                     RibbitsFishermanRodRenderer.Inspection inspection =
                             RibbitsFishermanRodRenderer.submit(poseStack, collector, light);
@@ -83,12 +71,12 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                     try {
                         VwrRodDiagnostics.observeRenderPath(villager, fishingFloat.getId(),
                                 getParentModel(), inspection.submitted(), incomingEntityLayer,
-                                attachment, c25Grip, inspection, line);
+                                attachment, c27Grip, inspection, line);
                         RodDiagnosticMarkers.submit(collector, incomingEntityLayer,
                                 attachment.afterTranslateToArms(),
-                                attachment.afterEffectiveFoldedArms(), c24Grip, c25Grip, inspection);
+                                attachment.afterEffectiveFoldedArms(), c27Grip, inspection);
                     } catch (RuntimeException | LinkageError ignored) {
-                        // Diagnostic geometry/logging is never allowed to suppress the C25 rod/line.
+                        // Diagnostic geometry/logging is never allowed to suppress the C27 rod/line.
                     }
                 } else {
                     try {

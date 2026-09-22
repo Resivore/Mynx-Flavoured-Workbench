@@ -21,9 +21,9 @@ public final class FrogVillagerRodPose {
     public static final float RUNTIME_GRIP_X_PIXELS = -AUTHORED_GRIP_X_PIXELS;
     public static final float RUNTIME_GRIP_Y_PIXELS = -AUTHORED_GRIP_Y_PIXELS;
     public static final float RUNTIME_GRIP_Z_PIXELS = AUTHORED_GRIP_Z_PIXELS;
-    /* C25: applied after the authored grip in the live folded-arm local coordinate system. */
+    /* C27: applied after the authored C24 grip in the live folded-arm local coordinate system. */
     public static final float FINAL_ALIGNMENT_Y_PIXELS = 2.0F;
-    public static final float FINAL_ALIGNMENT_Z_PIXELS = 1.0F;
+    public static final float FINAL_ALIGNMENT_Z_PIXELS = -2.0F;
 
     /* Minecraft model units are one sixteenth of a Blockbench/JEM model pixel. */
     public static final float AUTHORED_GRIP_X = AUTHORED_GRIP_X_PIXELS / 16.0F;
@@ -45,16 +45,17 @@ public final class FrogVillagerRodPose {
     }
 
     /**
-     * Applies C25's final local alignment correction at the already-authored C24 grip.
-     * Runtime positive Y is down; positive Z is toward the handle/villager, away from the tip.
+     * Applies C27's final local alignment correction at the already-authored C24 grip.
+     * Runtime positive Y is down; negative Z is the opposite local direction from C25's
+     * mistaken positive-Z correction.
      */
-    public static void applyC25AlignmentCorrection(PoseStack poseStack) {
+    public static void applyC27AlignmentCorrection(PoseStack poseStack) {
         poseStack.translate(0.0F, FINAL_ALIGNMENT_Y, FINAL_ALIGNMENT_Z);
     }
 
-    /** Applies the current C25 reference grip without changing its established transform order. */
+    /** Applies the current C27 reference grip without changing its established transform order. */
     public static void applyReferenceGrip(PoseStack poseStack) {
         applyC24ReferenceGrip(poseStack);
-        applyC25AlignmentCorrection(poseStack);
+        applyC27AlignmentCorrection(poseStack);
     }
 }
