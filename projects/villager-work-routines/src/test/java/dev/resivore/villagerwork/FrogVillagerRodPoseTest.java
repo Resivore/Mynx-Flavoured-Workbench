@@ -19,8 +19,8 @@ class FrogVillagerRodPoseTest {
         assertEquals(7.0F, FrogVillagerRodPose.RUNTIME_GRIP_Y_PIXELS, 0.000001F);
         assertEquals(-6.0F, FrogVillagerRodPose.RUNTIME_GRIP_Z_PIXELS, 0.000001F);
         assertEquals(0.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_X_PIXELS, 0.000001F);
-        assertEquals(2.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_Y_PIXELS, 0.000001F);
-        assertEquals(5.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_Z_PIXELS, 0.000001F);
+        assertEquals(1.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_Y_PIXELS, 0.000001F);
+        assertEquals(7.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_Z_PIXELS, 0.000001F);
         assertEquals(-9.5F, FrogVillagerRodPose.OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS, 0.000001F);
         assertEquals(0.0F, FrogVillagerRodPose.AUTHORED_GRIP_X, 0.000001F);
         assertEquals(-7.0F / 16.0F, FrogVillagerRodPose.AUTHORED_GRIP_Y, 0.000001F);
@@ -29,8 +29,8 @@ class FrogVillagerRodPoseTest {
         assertEquals(7.0F / 16.0F, FrogVillagerRodPose.RUNTIME_GRIP_Y, 0.000001F);
         assertEquals(-6.0F / 16.0F, FrogVillagerRodPose.RUNTIME_GRIP_Z, 0.000001F);
         assertEquals(0.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_X, 0.000001F);
-        assertEquals(2.0F / 16.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_Y, 0.000001F);
-        assertEquals(5.0F / 16.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_Z, 0.000001F);
+        assertEquals(1.0F / 16.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_Y, 0.000001F);
+        assertEquals(7.0F / 16.0F, FrogVillagerRodPose.FINAL_ALIGNMENT_Z, 0.000001F);
         assertEquals(-9.5F / 16.0F, FrogVillagerRodPose.OUTER_SHAFT_TIP_FROM_GRIP_Z,
                 0.000001F);
 
@@ -41,20 +41,22 @@ class FrogVillagerRodPoseTest {
         assertEquals(7.0F / 16.0F, c24Origin.y(), 0.000001F);
         assertEquals(-6.0F / 16.0F, c24Origin.z(), 0.000001F);
 
-        FrogVillagerRodPose.applyC29AlignmentCorrection(poseStack);
-        Vector4f c29IncrementalOrigin = poseStack.last().pose().transform(new Vector4f(0, 0, 0, 1));
-        assertEquals(0.0F, c29IncrementalOrigin.x(), 0.000001F);
-        assertEquals(9.0F / 16.0F, c29IncrementalOrigin.y(), 0.000001F);
-        assertEquals(-1.0F / 16.0F, c29IncrementalOrigin.z(), 0.000001F);
-        // C29 is exactly +2px farther inward than C28 while retaining C28's +2px Y correction.
+        FrogVillagerRodPose.applyC30AlignmentCorrection(poseStack);
+        Vector4f c30IncrementalOrigin = poseStack.last().pose().transform(new Vector4f(0, 0, 0, 1));
+        assertEquals(0.0F, c30IncrementalOrigin.x(), 0.000001F);
+        assertEquals(8.0F / 16.0F, c30IncrementalOrigin.y(), 0.000001F);
+        assertEquals(1.0F / 16.0F, c30IncrementalOrigin.z(), 0.000001F);
+        // C30 is exactly -1px Y/up and +2px Z/inward relative to C29's (0,+2,+5)px correction.
+        assertEquals(-1.0F / 16.0F,
+                FrogVillagerRodPose.FINAL_ALIGNMENT_Y - (2.0F / 16.0F), 0.000001F);
         assertEquals(2.0F / 16.0F,
-                c29IncrementalOrigin.z() - (-3.0F / 16.0F), 0.000001F);
+                FrogVillagerRodPose.FINAL_ALIGNMENT_Z - (5.0F / 16.0F), 0.000001F);
 
         poseStack = new PoseStack();
         FrogVillagerRodPose.applyReferenceGrip(poseStack);
         Vector4f origin = poseStack.last().pose().transform(new Vector4f(0, 0, 0, 1));
         assertEquals(0.0F, origin.x(), 0.000001F);
-        assertEquals(9.0F / 16.0F, origin.y(), 0.000001F);
-        assertEquals(-1.0F / 16.0F, origin.z(), 0.000001F);
+        assertEquals(8.0F / 16.0F, origin.y(), 0.000001F);
+        assertEquals(1.0F / 16.0F, origin.z(), 0.000001F);
     }
 }

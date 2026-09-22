@@ -72,17 +72,17 @@
     ]
   },
   "state": {
-    "milestone": "The supplied C28 screenshot is recorded narrowly as C28 Fisherman rod-placement runtime evidence only: positive local Z is confirmed inward/toward the folded hands; the rod is substantially closer than C27; the existing +2px local-Y/down correction and orientation remain correct; and the line remains attached to the physical shaft tip. The remaining small error is that the grip appears slightly outward. C29 preserves X 0px and Y +2px, changes only local Z from +3px to +5px, and is exactly +2px farther inward relative to the resolved C24 grip. No broader Fisherman, deposit, Shepherd, productivity, or general runtime result is inferred. C29 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
+    "milestone": "The supplied C29 screenshot is recorded narrowly as C29 Fisherman rod-placement runtime evidence only: the rod is close to the intended folded-hand position but slightly too low and too far outward from the villager. It establishes only that positive local Y moves down and positive local Z moves inward toward the Frog Villager/folded hands. C30 preserves X 0px, changes only final folded-arm-local Y from +2px to +1px (exactly 1px upward) and Z from +5px to +7px (exactly 2px farther inward) relative to the resolved C24 grip. The C24 semantic EMF arms -> arms_rotation mapping, authored [0,-7,-6] reference, invertAxis=xy conversion, C27 baked rotation neutralization, -9.5px physical shaft-tip capture, sole 16-segment VWR line, Fisherman behavior/deposit, Shepherd behavior/deposit, and C27 provider boundary remain unchanged. Diagnostic placement overlays and noisy per-cast rod diagnostics are removed from normal presentation. No broader Fisherman productivity/deposit, Shepherd, or general runtime result is inferred. C30 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "canary": 29,
-        "version": "0.1.0-canary29",
+        "canary": 30,
+        "version": "0.1.0-canary30",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary29.jar",
-          "sha256": "a4f0020dabc55ab2b247bdd8c26f738e5f740a714d24da3dd748b7e06dc81e59"
+          "filename": "villager-work-routines-0.1.0-canary30.jar",
+          "sha256": "c262a5e920fda944a22aaf239f42d73304b4d8cf9c0a5e79c204622ba2382f72"
         },
-        "built_at": "2026-09-22T14:54:20.0107277Z",
-        "source_commit": "d91ec458e857e65d4661437a84dc610f15d65edb",
+        "built_at": "2026-09-22T15:12:56.7754287Z",
+        "source_commit": "c9be1f91b4e0ed5f76f921cb65f48db04462fe67",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -99,7 +99,7 @@
             }
           ]
         },
-        "summary": "Keeps local X 0px and the C28-proven downward +2px local-Y correction, then moves only the rod to +5px in folded-arm-local Z, exactly 2px farther inward toward the folded hands."
+        "summary": "Changes only the final folded-arm-local rod alignment from C29's (0,+2,+5)px to (0,+1,+7)px: exactly 1px upward and 2px inward, while removing normal-placement diagnostic overlays."
       },
       "accepted": null,
       "rollback": null,
@@ -113,10 +113,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 29,
-    "activity_at": "2026-09-22T14:54:20.0107277Z",
-    "updated_at": "2026-09-22T14:54:20.0107277Z",
-    "last_codex_at": "2026-09-22T14:54:20.0107277Z",
-    "source_commit": "d91ec458e857e65d4661437a84dc610f15d65edb"
+    "revision": 30,
+    "activity_at": "2026-09-22T15:12:56.7754287Z",
+    "updated_at": "2026-09-22T15:12:56.7754287Z",
+    "last_codex_at": "2026-09-22T15:12:56.7754287Z",
+    "source_commit": "c9be1f91b4e0ed5f76f921cb65f48db04462fe67"
   }
 }

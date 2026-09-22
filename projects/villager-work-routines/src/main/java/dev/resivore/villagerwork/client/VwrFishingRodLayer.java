@@ -16,7 +16,6 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.joml.Matrix4f;
 
 /**
  * A single client-only Fisherman prop posed at crossed villager arms while this villager owns a
@@ -48,41 +47,22 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
         if (fishing) {
             poseStack.pushPose();
             try {
-                Matrix4f incomingEntityLayer = new Matrix4f(poseStack.last().pose());
                 FoldedArmRenderPath.Attachment attachment = FoldedArmRenderPath.apply(
                         getParentModel(), state, poseStack);
                 if (attachment.applied()) {
                     FrogVillagerRodPose.applyReferenceGrip(poseStack);
-                    Matrix4f c29Grip = new Matrix4f(poseStack.last().pose());
 
                     RibbitsFishermanRodRenderer.Inspection inspection =
                             RibbitsFishermanRodRenderer.submit(poseStack, collector, light);
-                    FishingFloatRenderer.LineSubmission line = null;
                     if (inspection.submitted() && inspection.exactLiveCapture()
                             && inspection.physicalOuterTip() != null) {
                         try {
-                            line = FishingFloatRenderer.submitLineFromPhysicalRod(
+                            FishingFloatRenderer.submitLineFromPhysicalRod(
                                     inspection.physicalOuterTip(), collector,
                                     fishingFloat.getPosition(presentation.villagerWork$partialTick()));
                         } catch (RuntimeException | LinkageError ignored) {
                             // Never substitute an analytical or duplicate line after a live-tip failure.
                         }
-                    }
-                    try {
-                        VwrRodDiagnostics.observeRenderPath(villager, fishingFloat.getId(),
-                                getParentModel(), inspection.submitted(), incomingEntityLayer,
-                                attachment, c29Grip, inspection, line);
-                        RodDiagnosticMarkers.submit(collector, incomingEntityLayer,
-                                attachment.afterTranslateToArms(),
-                                attachment.afterEffectiveFoldedArms(), c29Grip, inspection);
-                    } catch (RuntimeException | LinkageError ignored) {
-                        // Diagnostic geometry/logging is never allowed to suppress the C29 rod/line.
-                    }
-                } else {
-                    try {
-                        VwrRodDiagnostics.observeAttachmentPath(getParentModel(), attachment);
-                    } catch (RuntimeException | LinkageError ignored) {
-                        // A diagnostic failure must not affect any other render layer.
                     }
                 }
             } finally {
