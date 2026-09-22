@@ -478,7 +478,7 @@ final class RibbitsFishermanRodRenderer {
         }
     }
 
-    /** Immutable copies of the live stages used by C23's rod, line, markers, and diagnostics. */
+    /** Immutable copies of the live stages used by C24's rod, line, markers, and diagnostics. */
     record Inspection(String resourceSignature, String resourceReport,
                       Matrix4f geometryRootMatrix, Matrix4f rodPivotMatrix,
                       Vec3 geometryRootOrigin, Vec3 physicalGrip,

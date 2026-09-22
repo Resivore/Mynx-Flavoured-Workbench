@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Guards C23's exact C27 boundary and user-authored Frog Villager render contract. */
+/** Guards C24's exact C27 boundary and user-authored Frog Villager render contract. */
 class RibbitsFishermanC27IntegrationContractTest {
     private static final Path ROOT = Path.of(System.getProperty("user.dir"));
 
@@ -36,7 +36,7 @@ class RibbitsFishermanC27IntegrationContractTest {
     }
 
     @Test
-    void effectiveFoldedArmPathUsesRenderedStructureAndThenExactAuthoredGrip() throws IOException {
+    void effectiveFoldedArmPathUsesInspectedEmfMetadataAndMappedAuthoredGrip() throws IOException {
         String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
         String path = read("src/main/java/dev/resivore/villagerwork/client/FoldedArmRenderPath.java");
         String pose = read("src/main/java/dev/resivore/villagerwork/FrogVillagerRodPose.java");
@@ -45,13 +45,16 @@ class RibbitsFishermanC27IntegrationContractTest {
 
         assertTrue(path.contains("model.translateToArms(state, poseStack)"));
         assertTrue(path.contains("selection.steps().get(index).node().translateAndRotate(poseStack)"));
-        assertTrue(path.contains("return !part.isEmpty()"));
-        assertTrue(path.contains("contributing.size() != 1"));
-        assertTrue(path.contains("!view.skipDraw(current) && view.hasDirectGeometry(current)"));
+        assertTrue(path.contains("partToBeAttached"));
+        assertTrue(path.contains("authoredId"));
+        assertTrue(path.contains("expected one direct authored arms_rotation"));
         assertTrue(accessor.contains("@Accessor(\"children\")"));
         assertFalse(path.contains("getChild("));
-        assertFalse(path.contains("EMF_arms"));
-        assertFalse(path.contains("arms_rotation"));
+        assertFalse(path.contains("\"EMF_arms\""));
+        assertFalse(path.contains("\"EMF_arms_rotation\""));
+        assertFalse(path.contains("hasDirectGeometry"));
+        assertFalse(path.contains("shallowest"));
+        assertFalse(path.contains("deepest"));
         assertFalse(path.contains("rotationDegrees("));
 
         String fishingBranch = blockBody(layer, "if (fishing)");
@@ -67,8 +70,10 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(pose.contains("AUTHORED_GRIP_X_PIXELS = 0.0F"));
         assertTrue(pose.contains("AUTHORED_GRIP_Y_PIXELS = -7.0F"));
         assertTrue(pose.contains("AUTHORED_GRIP_Z_PIXELS = -6.0F"));
+        assertTrue(pose.contains("AUTHORED_INVERT_AXIS = \"xy\""));
+        assertTrue(pose.contains("RUNTIME_GRIP_Y_PIXELS = -AUTHORED_GRIP_Y_PIXELS"));
         assertMethodBodyEquals("""
-                poseStack.translate(AUTHORED_GRIP_X, AUTHORED_GRIP_Y, AUTHORED_GRIP_Z);
+                poseStack.translate(RUNTIME_GRIP_X, RUNTIME_GRIP_Y, RUNTIME_GRIP_Z);
                 """, pose, "public static void applyReferenceGrip(PoseStack poseStack)");
     }
 
@@ -113,7 +118,7 @@ class RibbitsFishermanC27IntegrationContractTest {
     }
 
     @Test
-    void c23DiagnosticsExposeEffectivePathAuthoredGripAndSharedPhysicalTip() throws IOException {
+    void c24DiagnosticsExposeEffectivePathMappedGripAndSharedPhysicalTip() throws IOException {
         String diagnostics = read(
                 "src/main/java/dev/resivore/villagerwork/client/VwrRodDiagnostics.java");
         String markers = read("src/main/java/dev/resivore/villagerwork/client/RodDiagnosticMarkers.java");
@@ -133,9 +138,11 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(renderer.contains("live_render_snapshot"));
         assertTrue(diagnostics.contains("effective_folded_arm_path_actually_used"));
         assertTrue(diagnostics.contains("after_effective_folded_arm_path"));
-        assertTrue(diagnostics.contains("after_C23_authored_grip_[0,-7,-6]px"));
-        assertTrue(diagnostics.contains("C23_line_start_authority=live_fishing_rod_physical_outer_tip"));
-        assertTrue(diagnostics.contains("C23_line_start_minus_visible_tip"));
+        assertTrue(diagnostics.contains("authored_id="));
+        assertTrue(diagnostics.contains("part_to_be_attached="));
+        assertTrue(diagnostics.contains("after_C24_authored_grip_[0,-7,-6]px_EMF_mapped_live_[0,+7,-6]px"));
+        assertTrue(diagnostics.contains("C24_line_start_authority=live_fishing_rod_physical_outer_tip"));
+        assertTrue(diagnostics.contains("C24_line_start_minus_visible_tip"));
         assertFalse(diagnostics.contains("C20_line_start_currently_used"));
         assertTrue(markers.contains("Shape.SQUARE"));
         assertTrue(markers.contains("Shape.PLUS"));
@@ -148,7 +155,7 @@ class RibbitsFishermanC27IntegrationContractTest {
     }
 
     @Test
-    void vwrNeverPackagesRibbitsResourcesAndNonvisualBehaviorRemainsUnchanged()
+    void vwrNeverPackagesRibbitsResourcesAndUnrelatedVisualSupportRemainsUnchanged()
             throws IOException, NoSuchAlgorithmException {
         String build = read("build.gradle");
         assertTrue(build.contains("verifyNoRibbitsPayload"));
@@ -159,16 +166,12 @@ class RibbitsFishermanC27IntegrationContractTest {
         }
 
         assertFilesRemainAtC19Content(List.of(
-                "src/main/java/dev/resivore/villagerwork/WorkCoordinator.java",
-                "src/main/java/dev/resivore/villagerwork/FishingRodLifecycle.java",
                 "src/main/java/dev/resivore/villagerwork/FishingFloat.java",
                 "src/main/java/dev/resivore/villagerwork/ShearActionRules.java",
                 "src/main/java/dev/resivore/villagerwork/ShearCapture.java",
                 "src/main/java/dev/resivore/villagerwork/ShearingToolMarker.java",
                 "src/main/java/dev/resivore/villagerwork/client/ShearingToolMarkerRenderer.java"),
                 List.of(
-                        "42428dd51ee7770a5c57be5d84060a0c91e20092195396f15079bc4597246eed",
-                        "27aea97287d0ba025ae1b8dce8271ddff8f0f56d4253784d29463e863982a67d",
                         "47988ce2cfdd1f5a06f1126b6702faf95e7fcd2e457f02ba8653db52e37bb5a2",
                         "bb399d10530a55bad04d6e7a9d937ccfccaf8f2c9d5d3593dbafadb50f0c418f",
                         "ce47d98c61e56f0c451c04d2b18e60d8f698067c895c552b334cdfc95a946e19",

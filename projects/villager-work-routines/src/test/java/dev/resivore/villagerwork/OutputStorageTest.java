@@ -87,4 +87,43 @@ class OutputStorageTest {
         assertEquals(List.of(second, first), accepted,
                 "the matching barrel is reported before the later empty-slot transfer");
     }
+
+    @Test void nextReceiverIsNonmutatingAndPreservesGlobalPassPriority() {
+        SimpleContainer first = new SimpleContainer(2);
+        SimpleContainer second = new SimpleContainer(2);
+        SimpleContainer third = new SimpleContainer(2);
+        second.setItem(0, new ItemStack(Blocks.WOOL.white(), 63));
+        third.setItem(1, new ItemStack(Blocks.WOOL.white(), 62));
+        ItemStack incoming = new ItemStack(Blocks.WOOL.white(), 5);
+        List<SimpleContainer> barrels = List.of(first, second, third);
+
+        OutputStorage.Target target = OutputStorage.nextTarget(barrels, incoming).orElseThrow();
+        assertEquals(new OutputStorage.Target(1, OutputStorage.Pass.MATCHING), target);
+        assertTrue(first.getItem(0).isEmpty(), "selection must not mutate an earlier empty barrel");
+
+        assertEquals(1, OutputStorage.insertTarget(barrels.get(target.containerIndex()), incoming,
+                incoming.getCount(), target.pass()));
+        target = OutputStorage.nextTarget(barrels, incoming).orElseThrow();
+        assertEquals(new OutputStorage.Target(2, OutputStorage.Pass.MATCHING), target,
+                "the next matching receiver still precedes the first empty barrel");
+        assertEquals(2, OutputStorage.insertTarget(barrels.get(target.containerIndex()), incoming,
+                incoming.getCount(), target.pass()));
+
+        target = OutputStorage.nextTarget(barrels, incoming).orElseThrow();
+        assertEquals(new OutputStorage.Target(0, OutputStorage.Pass.EMPTY), target);
+        assertEquals(5, incoming.getCount(), "receiver selection and target insertion never consume source");
+    }
+
+    @Test void targetSelectionRejectsFullOrComponentIncompatibleMatchingSlots() {
+        SimpleContainer full = new SimpleContainer(1);
+        full.setItem(0, new ItemStack(Blocks.WOOL.white(), 64));
+        SimpleContainer componentMismatch = new SimpleContainer(1);
+        ItemStack named = new ItemStack(Blocks.WOOL.white(), 1);
+        named.set(DataComponents.CUSTOM_NAME, Component.literal("different"));
+        componentMismatch.setItem(0, named);
+
+        assertTrue(OutputStorage.nextTarget(List.of(full, componentMismatch),
+                new ItemStack(Blocks.WOOL.white(), 1)).isEmpty());
+        assertTrue(OutputStorage.nextTarget(List.of(full), ItemStack.EMPTY).isEmpty());
+    }
 }

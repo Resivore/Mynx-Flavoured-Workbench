@@ -76,7 +76,7 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                                 attachment.afterTranslateToArms(),
                                 attachment.afterEffectiveFoldedArms(), afterAuthoredGrip, inspection);
                     } catch (RuntimeException | LinkageError ignored) {
-                        // Diagnostic geometry/logging is never allowed to suppress the C23 rod/line.
+                        // Diagnostic geometry/logging is never allowed to suppress the C24 rod/line.
                     }
                 } else {
                     try {

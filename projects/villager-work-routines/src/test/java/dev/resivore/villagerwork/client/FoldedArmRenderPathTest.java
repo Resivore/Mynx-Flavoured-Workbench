@@ -11,109 +11,83 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FoldedArmRenderPathTest {
     private static final FoldedArmRenderPath.NodeView<Node> VIEW = new FoldedArmRenderPath.NodeView<>() {
         @Override public boolean visible(Node node) { return node.visible; }
-        @Override public boolean skipDraw(Node node) { return node.skipDraw; }
-        @Override public boolean hasDirectGeometry(Node node) { return node.directGeometry; }
+        @Override public String attachedPart(Node node) { return node.attachedPart; }
+        @Override public String authoredId(Node node) { return node.authoredId; }
         @Override public List<FoldedArmRenderPath.NamedNode<Node>> children(Node node) {
             return List.copyOf(node.children);
         }
     };
 
     @Test
-    void arbitraryWrapperNamesResolveToShallowestDirectGeometryOwner() {
-        Node flipped = node(true, false, true);
-        Node folded = node(true, false, true,
-                child("generated_deeper_branch", flipped));
-        Node wrapper = node(true, false, false,
-                child("anything_runtime_generated", folded));
-        Node arms = node(true, false, false,
-                child("unrelated_wrapper_spelling", wrapper));
+    void resolvesAuthoredParentByEmfMetadataNotMapNamesOrCubeDepth() {
+        Node flipped = node("arms_flipped", null, true);
+        Node authoredParent = node("arms_rotation", null, true,
+                child("generated_deeper_key", flipped));
+        Node authoredArms = node("arms", "arms", true,
+                child("unrelated_rotation_key", authoredParent));
+        Node arms = node(null, null, true,
+                child("unrelated_top_level_key", authoredArms));
 
         FoldedArmRenderPath.PathSelection<Node> selection = FoldedArmRenderPath.select(arms, VIEW);
 
         assertTrue(selection.resolved());
-        assertEquals(List.of("arms", "unrelated_wrapper_spelling",
-                        "anything_runtime_generated"),
+        assertEquals(List.of("arms", "unrelated_top_level_key", "unrelated_rotation_key"),
                 selection.steps().stream().map(FoldedArmRenderPath.NamedNode::name).toList());
         assertFalse(selection.steps().stream()
-                .anyMatch(step -> step.name().equals("generated_deeper_branch")),
-                "the authored group is a sibling of the deeper flipped-arm branch");
+                .anyMatch(step -> step.name().equals("generated_deeper_key")),
+                "arms_flipped is the authored grip group's sibling, not its parent");
     }
 
     @Test
-    void skipDrawSuppressesOnlyCurrentCubesAndContinuesToRenderableChild() {
-        Node visibleChild = node(true, false, true);
-        Node skippedWrapper = node(true, true, true, child("live_child", visibleChild));
-        Node arms = node(true, false, false, child("wrapper", skippedWrapper));
+    void ignoresTemptingDeepMatchBecauseAuthoredParentMustBeDirect() {
+        Node deepRotation = node("arms_rotation", null, true);
+        Node flipped = node("arms_flipped", null, true, child("tempting", deepRotation));
+        Node authoredArms = node("arms", "arms", true, child("flipped", flipped));
+        Node arms = node(null, null, true, child("custom", authoredArms));
 
         FoldedArmRenderPath.PathSelection<Node> selection = FoldedArmRenderPath.select(arms, VIEW);
 
-        assertTrue(selection.resolved());
-        assertEquals("live_child", selection.steps().getLast().name());
-    }
-
-    @Test
-    void ambiguityMissingGeometryAndInvisibleBranchesFailClosed() {
-        Node ambiguous = node(true, false, false,
-                child("left", node(true, false, true)),
-                child("right", node(true, false, true)));
-        Node missing = node(true, false, false);
-        Node hidden = node(true, false, false,
-                child("hidden", node(false, false, true)));
-
-        assertFalse(FoldedArmRenderPath.select(ambiguous, VIEW).resolved());
-        assertFalse(FoldedArmRenderPath.select(missing, VIEW).resolved());
-        assertFalse(FoldedArmRenderPath.select(hidden, VIEW).resolved());
-    }
-
-    @Test
-    void cyclesNeverBecomeAnAttachmentGuess() {
-        Node arms = node(true, false, false);
-        Node wrapper = node(true, false, false);
-        arms.children.add(child("wrapper", wrapper));
-        wrapper.children.add(child("back_to_arms", arms));
-
-        assertFalse(FoldedArmRenderPath.select(arms, VIEW).resolved());
-    }
-
-    @Test
-    void malformedSiblingCannotBeIgnoredInFavorOfAConvenientBranch() {
-        Node malformed = node(true, false, false);
-        malformed.children.add(child("self", malformed));
-        Node arms = node(true, false, false,
-                child("valid", node(true, false, true)),
-                child("malformed", malformed));
-
-        FoldedArmRenderPath.PathSelection<Node> selection =
-                FoldedArmRenderPath.select(arms, VIEW);
-
         assertFalse(selection.resolved());
-        assertTrue(selection.failure().contains("cycle detected"));
+        assertTrue(selection.failure().contains("direct authored arms_rotation"));
     }
 
     @Test
-    void overDeepSiblingCannotBeIgnoredInFavorOfAConvenientBranch() {
-        Node tooDeep = node(true, false, false);
-        Node cursor = tooDeep;
-        for (int index = 0; index < 18; index++) {
-            Node next = node(true, false, false);
-            cursor.children.add(child("wrapper_" + index, next));
-            cursor = next;
-        }
-        cursor.directGeometry = true;
-        Node arms = node(true, false, false,
-                child("valid", node(true, false, true)),
-                child("too_deep", tooDeep));
+    void missingWrongInvisibleAndAmbiguousMetadataFailClosed() {
+        Node validRotation = node("arms_rotation", null, true);
+        Node missingTopMetadata = node(null, null, true, child("rotation", validRotation));
+        Node wrongAttachment = node("arms", "head", true, child("rotation", validRotation));
+        Node invisibleTop = node("arms", "arms", false, child("rotation", validRotation));
+        Node first = node("arms", "arms", true, child("rotation", validRotation));
+        Node second = node("arms", "arms", true, child("rotation", validRotation));
 
-        FoldedArmRenderPath.PathSelection<Node> selection =
-                FoldedArmRenderPath.select(arms, VIEW);
-
-        assertFalse(selection.resolved());
-        assertTrue(selection.failure().contains("depth exceeds"));
+        assertFalse(FoldedArmRenderPath.select(
+                node(null, null, true, child("missing", missingTopMetadata)), VIEW).resolved());
+        assertFalse(FoldedArmRenderPath.select(
+                node(null, null, true, child("wrong", wrongAttachment)), VIEW).resolved());
+        assertFalse(FoldedArmRenderPath.select(
+                node(null, null, true, child("hidden", invisibleTop)), VIEW).resolved());
+        assertFalse(FoldedArmRenderPath.select(node(null, null, true,
+                child("one", first), child("two", second)), VIEW).resolved());
     }
 
-    private static Node node(boolean visible, boolean skipDraw, boolean directGeometry,
+    @Test
+    void duplicateOrAttachedNestedParentFailsClosed() {
+        Node firstRotation = node("arms_rotation", null, true);
+        Node secondRotation = node("arms_rotation", null, true);
+        Node duplicate = node("arms", "arms", true,
+                child("one", firstRotation), child("two", secondRotation));
+        Node wronglyAttached = node("arms", "arms", true,
+                child("rotation", node("arms_rotation", "arms", true)));
+
+        assertFalse(FoldedArmRenderPath.select(
+                node(null, null, true, child("custom", duplicate)), VIEW).resolved());
+        assertFalse(FoldedArmRenderPath.select(
+                node(null, null, true, child("custom", wronglyAttached)), VIEW).resolved());
+    }
+
+    private static Node node(String authoredId, String attachedPart, boolean visible,
                              FoldedArmRenderPath.NamedNode<Node>... children) {
-        Node node = new Node(visible, skipDraw, directGeometry);
+        Node node = new Node(authoredId, attachedPart, visible);
         node.children.addAll(List.of(children));
         return node;
     }
@@ -123,15 +97,15 @@ class FoldedArmRenderPathTest {
     }
 
     private static final class Node {
+        private final String authoredId;
+        private final String attachedPart;
         private final boolean visible;
-        private final boolean skipDraw;
-        private boolean directGeometry;
         private final List<FoldedArmRenderPath.NamedNode<Node>> children = new ArrayList<>();
 
-        private Node(boolean visible, boolean skipDraw, boolean directGeometry) {
+        private Node(String authoredId, String attachedPart, boolean visible) {
+            this.authoredId = authoredId;
+            this.attachedPart = attachedPart;
             this.visible = visible;
-            this.skipDraw = skipDraw;
-            this.directGeometry = directGeometry;
         }
     }
 }

@@ -3,11 +3,21 @@ package dev.resivore.villagerwork;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 /** Only inserts: matching component-identical stacks first, then permitted empty slots. */
 public final class OutputStorage {
     private OutputStorage() {}
+
+    public enum Pass {
+        MATCHING,
+        EMPTY
+    }
+
+    /** The next real receiver under the same global matching-before-empty insertion order. */
+    public record Target(int containerIndex, Pass pass) {
+    }
 
     public static boolean fits(Container container, ItemStack sample, int count) {
         int room = 0;
@@ -27,6 +37,24 @@ public final class OutputStorage {
     public static int insert(Container container, ItemStack source, int requested) {
         int matched = insertPass(container, source, requested, false);
         return matched + insertPass(container, source, requested - matched, true);
+    }
+
+    /** Selects without mutation; container order breaks ties inside each global pass. */
+    public static Optional<Target> nextTarget(List<? extends Container> containers,
+                                              ItemStack source) {
+        if (source.isEmpty()) return Optional.empty();
+        for (Pass pass : Pass.values()) {
+            for (int index = 0; index < containers.size(); index++) {
+                if (hasCapacity(containers.get(index), source, pass))
+                    return Optional.of(new Target(index, pass));
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** Inserts only through the selected pass so a later matching stack cannot be bypassed. */
+    public static int insertTarget(Container container, ItemStack source, int requested, Pass pass) {
+        return insertPass(container, source, requested, pass == Pass.EMPTY);
     }
 
     /** All matching stacks across eligible containers precede any empty slot; input order breaks ties. */
@@ -59,6 +87,21 @@ public final class OutputStorage {
 
     public static int insertEmpty(Container container, ItemStack source, int requested) {
         return insertPass(container, source, requested, true);
+    }
+
+    private static boolean hasCapacity(Container container, ItemStack source, Pass pass) {
+        for (int slot = 0; slot < container.getContainerSize(); slot++) {
+            if (!container.canPlaceItem(slot, source)) continue;
+            ItemStack present = container.getItem(slot);
+            if (pass == Pass.MATCHING && !present.isEmpty()
+                    && ItemStack.isSameItemSameComponents(present, source)
+                    && present.getCount() < Math.min(container.getMaxStackSize(source),
+                    present.getMaxStackSize())) return true;
+            if (pass == Pass.EMPTY && present.isEmpty()
+                    && Math.min(container.getMaxStackSize(source), source.getMaxStackSize()) > 0)
+                return true;
+        }
+        return false;
     }
 
     private static int insertPass(Container container, ItemStack source, int requested, boolean emptyOnly) {

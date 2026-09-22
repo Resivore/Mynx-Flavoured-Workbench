@@ -21,7 +21,7 @@ import org.joml.Vector4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Throttled diagnostics retained for direct verification of the focused C23 correction. */
+/** Throttled diagnostics retained for direct verification of the focused C24 correction. */
 final class VwrRodDiagnostics {
     private static final Logger LOGGER = LoggerFactory.getLogger("villager_work_routines/rod_diagnostic");
     private static final int MAX_TRACKED_CASTS = 64;
@@ -56,7 +56,7 @@ final class VwrRodDiagnostics {
         String resourceState = inspection.resourceSignature()
                 + "|exactLiveCapture=" + inspection.exactLiveCapture();
         if (addBounded(REPORTED_RESOURCE_STATES, resourceState)) {
-            LOGGER.info("[VWR C23 ROD DIAGNOSTIC: RESOURCE/MODEL]\n{}\n[/VWR C23 ROD DIAGNOSTIC]",
+            LOGGER.info("[VWR C24 ROD DIAGNOSTIC: RESOURCE/MODEL]\n{}\n[/VWR C24 ROD DIAGNOSTIC]",
                     inspection.resourceReport());
         }
         reportHierarchy(model, attachment);
@@ -92,10 +92,12 @@ final class VwrRodDiagnostics {
                 if (!path.isEmpty()) path.append('/');
                 path.append(step.name());
                 report.append('\n').append("  ").append(path).append(' ')
+                        .append("authored_id=").append(step.authoredId()).append(' ')
+                        .append("part_to_be_attached=").append(step.attachedPart()).append(' ')
                         .append(partState(step.part()));
             }
         }
-        LOGGER.info("[VWR C23 ROD DIAGNOSTIC: LIVE VILLAGER MODEL]\n{}\n[/VWR C23 ROD DIAGNOSTIC]",
+        LOGGER.info("[VWR C24 ROD DIAGNOSTIC: LIVE VILLAGER MODEL]\n{}\n[/VWR C24 ROD DIAGNOSTIC]",
                 report);
     }
 
@@ -141,7 +143,8 @@ final class VwrRodDiagnostics {
                 "after_effective_folded_arm_path (authored-parent-local -> camera-relative)",
                 render.attachment().afterEffectiveFoldedArms(), effectiveArmsOrigin, cameraWorld);
         appendCheckpoint(report,
-                "after_C23_authored_grip_[0,-7,-6]px (rod-group-local -> camera-relative)",
+                "after_C24_authored_grip_[0,-7,-6]px_EMF_mapped_live_[0,+7,-6]px "
+                        + "(rod-group-local -> camera-relative)",
                 render.afterAuthoredGrip(), authoredGripOrigin, cameraWorld);
 
         report.append("rod_submission_succeeded=").append(render.submitted())
@@ -173,26 +176,26 @@ final class VwrRodDiagnostics {
 
         FishingFloatRenderer.LineSubmission line = render.line();
         if (line == null) {
-            report.append("C23_line_submitted=false line_authority=<unavailable live physical tip>\n");
+            report.append("C24_line_submitted=false line_authority=<unavailable live physical tip>\n");
         } else {
-            report.append("C23_line_submitted=").append(line.submitted())
+            report.append("C24_line_submitted=").append(line.submitted())
                     .append(" segment_count=").append(line.segmentCount()).append('\n')
-                    .append("C23_line_start_authority=live_fishing_rod_physical_outer_tip\n")
-                    .append("C23_line_first_vertex_camera_relative=")
+                    .append("C24_line_start_authority=live_fishing_rod_physical_outer_tip\n")
+                    .append("C24_line_first_vertex_camera_relative=")
                     .append(vector(line.physicalTipRender())).append('\n')
-                    .append("C23_line_start_world=").append(vector(line.physicalTipWorld())).append('\n')
+                    .append("C24_line_start_world=").append(vector(line.physicalTipWorld())).append('\n')
                     .append("float_world=").append(vector(line.floatWorld())).append('\n')
                     .append("float_camera_relative=").append(vector(line.floatRender())).append('\n');
             if (rod.physicalOuterTip() != null) {
                 Vec3 discrepancy = line.physicalTipRender().subtract(rod.physicalOuterTip());
-                report.append("C23_line_start_minus_visible_tip_camera_relative=")
+                report.append("C24_line_start_minus_visible_tip_camera_relative=")
                         .append(vector(discrepancy)).append(" distance=")
                         .append(format(discrepancy.length())).append('\n');
             }
         }
-        report.append("IMPORTANT: C23 submits the sole line from the physical tip captured by the same final fishing_rod render transform.");
+        report.append("IMPORTANT: C24 submits the sole line from the physical tip captured by the same final fishing_rod render transform.");
 
-        LOGGER.info("[VWR C23 ROD DIAGNOSTIC: LIVE CAST TRANSFORMS]\n{}\n[/VWR C23 ROD DIAGNOSTIC]",
+        LOGGER.info("[VWR C24 ROD DIAGNOSTIC: LIVE CAST TRANSFORMS]\n{}\n[/VWR C24 ROD DIAGNOSTIC]",
                 report);
     }
 

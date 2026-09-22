@@ -3,8 +3,7 @@ package dev.resivore.villagerwork.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.resivore.villagerwork.mixin.client.ModelPartChildrenAccessor;
 import dev.resivore.villagerwork.mixin.client.VillagerModelArmsAccessor;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -13,20 +12,13 @@ import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import org.joml.Matrix4f;
 
-/**
- * Replays the effective live {@link ModelPart} path used to draw the visible folded arms.
- *
- * <p>Minecraft and EMF render a part by applying its transform, drawing its direct cubes, and
- * then recursively rendering its children. The authored rod group is a child of the first part
- * on the folded-arm branch that owns visible cubes. Wrapper names are deliberately irrelevant:
- * this resolver follows the unique contributing branch and stops at that shallowest direct-cube
- * owner. Ambiguous or non-rendering trees fail closed instead of guessing an attachment.</p>
- */
+/** Replays the live EMF path for the authored {@code arms_rotation} parent. */
 final class FoldedArmRenderPath {
     static final String SELECTION_RULE =
-            "unique visible child branch to shallowest non-skipDraw direct-cube owner";
-    private static final int MAX_DEPTH = 16;
-    private static final int MAX_PARTS = 128;
+            "EMF authored mapping: top-level partToBeAttached=arms, then direct authored id=arms_rotation";
+    private static final String ARMS = "arms";
+    private static final String ARMS_ROTATION = "arms_rotation";
+    private static final String EMF_ID_PREFIX = "EMF_";
 
     private FoldedArmRenderPath() {
     }
@@ -40,14 +32,17 @@ final class FoldedArmRenderPath {
             model.translateToArms(state, poseStack);
             Matrix4f afterTranslateToArms = new Matrix4f(poseStack.last().pose());
 
-            // translateToArms already applies the root and outer arms part. Replay only the
-            // selected descendants, exactly as ModelPart/EMF recursive rendering does.
+            // translateToArms already applies the vanilla root and arms wrapper. EMF attaches its
+            // top-level custom part to that wrapper; the authored rod group is then a direct child
+            // of the authored arms_rotation part. Replay exactly those two live transforms.
             for (int index = 1; index < selection.steps().size(); index++) {
                 selection.steps().get(index).node().translateAndRotate(poseStack);
             }
             Matrix4f afterEffectiveFoldedArms = new Matrix4f(poseStack.last().pose());
             List<PartStep> steps = selection.steps().stream()
-                    .map(step -> new PartStep(step.name(), step.node()))
+                    .map(step -> new PartStep(step.name(), step.node(),
+                            MODEL_PART_VIEW.authoredId(step.node()),
+                            MODEL_PART_VIEW.attachedPart(step.node())))
                     .toList();
             return new Attachment(true, path(steps), null, steps,
                     afterTranslateToArms, afterEffectiveFoldedArms);
@@ -57,73 +52,39 @@ final class FoldedArmRenderPath {
         }
     }
 
-    /** Package-visible generic seam for focused structural tests. */
+    /** Package-visible generic seam for focused tests of the inspected EMF mapping contract. */
     static <N> PathSelection<N> select(N root, NodeView<N> view) {
         if (root == null) return PathSelection.failure("arms part is absent");
+        if (!view.visible(root)) return PathSelection.failure("arms part is not visible");
 
-        List<NamedNode<N>> steps = new ArrayList<>();
-        steps.add(new NamedNode<>("arms", root));
-        IdentityHashMap<N, Boolean> pathVisited = new IdentityHashMap<>();
-        N current = root;
-
-        for (int depth = 0; depth <= MAX_DEPTH; depth++) {
-            if (pathVisited.put(current, Boolean.TRUE) != null) {
-                return PathSelection.failure("cycle in folded-arm render path");
-            }
-            if (!view.visible(current)) {
-                return PathSelection.failure("selected folded-arm part is not visible");
-            }
-            if (!view.skipDraw(current) && view.hasDirectGeometry(current)) {
-                return PathSelection.success(steps);
-            }
-            if (depth == MAX_DEPTH) {
-                return PathSelection.failure("folded-arm render path exceeds depth " + MAX_DEPTH);
-            }
-
-            List<NamedNode<N>> contributing = new ArrayList<>();
-            int[] inspectedParts = {0};
-            for (NamedNode<N> child : view.children(current)) {
-                GeometryProbe probe = probeGeometry(child.node(), view,
-                        new IdentityHashMap<>(), 0, inspectedParts);
-                if (probe.failure() != null) {
-                    return PathSelection.failure("invalid folded-arm subtree " + child.name()
-                            + " beneath " + path(steps) + ": " + probe.failure());
-                }
-                if (probe.contributes()) contributing.add(child);
-            }
-            contributing.sort((left, right) -> left.name().compareTo(right.name()));
-            if (contributing.size() != 1) {
-                return PathSelection.failure("expected one contributing child beneath "
-                        + path(steps) + " but found " + names(contributing));
-            }
-            NamedNode<N> next = contributing.getFirst();
-            steps.add(next);
-            current = next.node();
+        List<NamedNode<N>> attachedArms = view.children(root).stream()
+                .filter(step -> view.visible(step.node()))
+                .filter(step -> ARMS.equals(view.attachedPart(step.node())))
+                .filter(step -> ARMS.equals(view.authoredId(step.node())))
+                .toList();
+        if (attachedArms.size() != 1) {
+            return PathSelection.failure("expected one EMF top-level authored arms part attached to arms, found "
+                    + descriptions(attachedArms, view));
         }
-        return PathSelection.failure("folded-arm render path was not resolved");
+
+        NamedNode<N> authoredArms = attachedArms.getFirst();
+        List<NamedNode<N>> authoredParents = view.children(authoredArms.node()).stream()
+                .filter(step -> view.visible(step.node()))
+                .filter(step -> view.attachedPart(step.node()) == null)
+                .filter(step -> ARMS_ROTATION.equals(view.authoredId(step.node())))
+                .toList();
+        if (authoredParents.size() != 1) {
+            return PathSelection.failure("expected one direct authored arms_rotation beneath "
+                    + authoredArms.name() + ", found " + descriptions(authoredParents, view));
+        }
+
+        return PathSelection.success(List.of(
+                new NamedNode<>(ARMS, root), authoredArms, authoredParents.getFirst()));
     }
 
-    private static <N> GeometryProbe probeGeometry(N node, NodeView<N> view,
-                                                    IdentityHashMap<N, Boolean> visited,
-                                                    int depth, int[] count) {
-        if (node == null) return GeometryProbe.invalid("null model part");
-        if (depth > MAX_DEPTH) return GeometryProbe.invalid("depth exceeds " + MAX_DEPTH);
-        if (count[0] >= MAX_PARTS) return GeometryProbe.invalid("part count exceeds " + MAX_PARTS);
-        if (visited.put(node, Boolean.TRUE) != null) return GeometryProbe.invalid("cycle detected");
-        count[0]++;
-        if (!view.visible(node)) return GeometryProbe.none();
-        if (!view.skipDraw(node) && view.hasDirectGeometry(node)) return GeometryProbe.found();
-        boolean contributes = false;
-        for (NamedNode<N> child : view.children(node)) {
-            GeometryProbe childProbe = probeGeometry(child.node(), view, visited, depth + 1, count);
-            if (childProbe.failure() != null) return childProbe;
-            contributes |= childProbe.contributes();
-        }
-        return contributes ? GeometryProbe.found() : GeometryProbe.none();
-    }
-
-    private static String names(List<? extends NamedPart> nodes) {
-        return nodes.stream().map(NamedPart::name).toList().toString();
+    private static <N> String descriptions(List<NamedNode<N>> nodes, NodeView<N> view) {
+        return nodes.stream().map(node -> node.name() + "{id=" + view.authoredId(node.node())
+                + ",attached=" + view.attachedPart(node.node()) + "}").toList().toString();
     }
 
     private static String path(List<? extends NamedPart> steps) {
@@ -139,13 +100,15 @@ final class FoldedArmRenderPath {
         }
 
         @Override
-        public boolean skipDraw(ModelPart part) {
-            return part.skipDraw;
+        public String attachedPart(ModelPart part) {
+            return EMF_FIELDS.get(part.getClass()).readAttachedPart(part);
         }
 
         @Override
-        public boolean hasDirectGeometry(ModelPart part) {
-            return !part.isEmpty();
+        public String authoredId(ModelPart part) {
+            String runtimeId = EMF_FIELDS.get(part.getClass()).readId(part);
+            return runtimeId != null && runtimeId.startsWith(EMF_ID_PREFIX)
+                    ? runtimeId.substring(EMF_ID_PREFIX.length()) : null;
         }
 
         @Override
@@ -158,12 +121,49 @@ final class FoldedArmRenderPath {
         }
     };
 
+    /** Public EMF 3.2.6 semantic fields, cached without a compile-time EMF dependency. */
+    private static final ClassValue<EmfFields> EMF_FIELDS = new ClassValue<>() {
+        @Override
+        protected EmfFields computeValue(Class<?> type) {
+            return new EmfFields(publicStringField(type, "id"),
+                    publicStringField(type, "partToBeAttached"));
+        }
+    };
+
+    private static Field publicStringField(Class<?> type, String name) {
+        try {
+            Field field = type.getField(name);
+            return field.getType() == String.class ? field : null;
+        } catch (NoSuchFieldException | SecurityException ignored) {
+            return null;
+        }
+    }
+
+    private record EmfFields(Field id, Field attachedPart) {
+        private String readId(Object owner) {
+            return read(id, owner);
+        }
+
+        private String readAttachedPart(Object owner) {
+            return read(attachedPart, owner);
+        }
+
+        private static String read(Field field, Object owner) {
+            if (field == null) return null;
+            try {
+                return (String) field.get(owner);
+            } catch (IllegalAccessException | IllegalArgumentException ignored) {
+                return null;
+            }
+        }
+    }
+
     interface NodeView<N> {
         boolean visible(N node);
 
-        boolean skipDraw(N node);
+        String attachedPart(N node);
 
-        boolean hasDirectGeometry(N node);
+        String authoredId(N node);
 
         List<NamedNode<N>> children(N node);
     }
@@ -181,21 +181,8 @@ final class FoldedArmRenderPath {
         }
     }
 
-    private record GeometryProbe(boolean contributes, String failure) {
-        private static GeometryProbe found() {
-            return new GeometryProbe(true, null);
-        }
-
-        private static GeometryProbe none() {
-            return new GeometryProbe(false, null);
-        }
-
-        private static GeometryProbe invalid(String failure) {
-            return new GeometryProbe(false, failure);
-        }
-    }
-
-    record PartStep(String name, ModelPart part) implements NamedPart {
+    record PartStep(String name, ModelPart part, String authoredId, String attachedPart)
+            implements NamedPart {
     }
 
     private interface NamedPart {

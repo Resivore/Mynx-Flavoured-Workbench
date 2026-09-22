@@ -162,15 +162,10 @@ public final class WorkCoordinator {
         if (state.gateRoute != null && isGateExitStage(state.gateRoute.stage)
                 && tickGateReturn(villager, level, loom, state)) return;
         if (containsWool(owned)) {
-            if (state.gateRoute == null && villager.tickCount % 20 == 0)
-                depositWool(villager, level, loom, owned, state);
-            if (villager.distanceToSqr(Vec3.atCenterOf(loom)) > 4 * 4) {
-                if (villager.tickCount % 20 == 0) moveNearSite(villager, level, loom, 0.6);
-                return;
-            }
-            if (villager.tickCount % 20 == 0) depositWool(villager, level, loom, owned, state);
+            if (state.gateRoute == null) depositWool(villager, level, loom, owned, state);
             return;
         }
+        clearBarrelApproach(villager, state);
         Sheep target = state.sheep;
         String targetInvalid = target == null ? null : sheepInvalidReason(target, villager, loom, state);
         if (targetInvalid != null) {
@@ -1204,58 +1199,73 @@ public final class WorkCoordinator {
         return count;
     }
 
-    private static void depositWool(Villager villager, ServerLevel level, BlockPos loom, SimpleContainer owned, State state) {
-        if (villager.distanceToSqr(Vec3.atCenterOf(loom)) > 4 * 4) return;
-        int before = woolCount(owned);
-        List<BarrelBlockEntity> barrels = new ArrayList<>();
+    private static void depositWool(Villager villager, ServerLevel level, BlockPos loom,
+                                    SimpleContainer owned, State state) {
+        List<AdjacentBarrel> barrels = adjacentLoomBarrels(level, loom);
+        WoolTransferPlan plan = nextWoolTransfer(owned, barrels);
+        if (plan == null) {
+            clearBarrelApproach(villager, state);
+            if (villager.tickCount >= state.nextDepositLog) {
+                log(villager, "wool retained: no eligible receiving capacity loom={} adjacentBarrels={} retained={}",
+                        loom, barrels.stream().map(AdjacentBarrel::pos).toList(), woolCount(owned));
+                state.nextDepositLog = villager.tickCount + SCAN_LOG_INTERVAL;
+            }
+            return;
+        }
+
+        if (!approachBarrel(villager, level, plan.barrel(), state, "wool")) return;
+
+        // Contents and block entities can change while walking. Replan immediately before any
+        // mutation and never bypass a newly selected higher-priority receiver.
+        List<AdjacentBarrel> currentBarrels = adjacentLoomBarrels(level, loom);
+        WoolTransferPlan current = nextWoolTransfer(owned, currentBarrels);
+        if (current == null || !current.equals(plan)) return;
+        if (!atBarrelInteractionPosition(villager, level, current.barrel())) return;
+
+        ItemStack stack = owned.getItem(current.ownedSlot());
+        int attempted = stack.getCount();
+        int moved = OutputStorage.insertTarget(current.receiver().barrel(), stack, attempted,
+                current.pass());
+        if (moved <= 0) return;
+        owned.removeItem(current.ownedSlot(), moved);
+        presentWoolInteraction(villager, level, current.barrel());
+        state.woolDepositFeedback.scheduleIfSuccessful(moved, List.of(current.barrel()),
+                villager.tickCount);
+        log(villager, "wool deposit loom={} receivingBarrel={} pass={} attempted={} inserted={} retained={} boundaryGapMax={}",
+                loom, current.barrel(), current.pass(), attempted, moved, woolCount(owned),
+                BarrelInteractionRules.MAX_BOUNDARY_GAP);
+        state.nextDepositLog = villager.tickCount + SCAN_LOG_INTERVAL;
+    }
+
+    private static List<AdjacentBarrel> adjacentLoomBarrels(ServerLevel level, BlockPos loom) {
+        List<AdjacentBarrel> barrels = new ArrayList<>();
         for (Direction direction : Direction.values()) {
             BlockPos pos = loom.relative(direction);
             if (!level.hasChunkAt(pos) || !level.getBlockState(pos).is(Blocks.BARREL)) continue;
-            if (!(level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel) || barrel.getLootTable() != null) continue;
-            barrels.add(barrel);
+            if (level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel
+                    && barrel.getLootTable() == null)
+                barrels.add(new AdjacentBarrel(pos.immutable(), barrel));
         }
-        Set<BarrelBlockEntity> depositedInto = new LinkedHashSet<>();
-        // Ordered directions make ties deterministic; matching stacks win before any empty slot.
-        for (int i = 0; i < owned.getContainerSize(); i++) {
-            ItemStack stack = owned.getItem(i);
+        return List.copyOf(barrels);
+    }
+
+    private static WoolTransferPlan nextWoolTransfer(SimpleContainer owned,
+                                                      List<AdjacentBarrel> barrels) {
+        List<BarrelBlockEntity> containers = barrels.stream().map(AdjacentBarrel::barrel).toList();
+        for (int slot = 0; slot < owned.getContainerSize(); slot++) {
+            ItemStack stack = owned.getItem(slot);
             if (stack.isEmpty() || !stack.is(net.minecraft.tags.ItemTags.WOOL)) continue;
-            int moved = OutputStorage.insertAcross(barrels, stack, stack.getCount(), (container, accepted) -> {
-                if (container instanceof BarrelBlockEntity barrel) depositedInto.add(barrel);
-            });
-            if (moved > 0) owned.removeItem(i, moved);
+            OutputStorage.Target target = OutputStorage.nextTarget(containers, stack).orElse(null);
+            if (target != null) {
+                AdjacentBarrel receiver = barrels.get(target.containerIndex());
+                return new WoolTransferPlan(slot, receiver, target.pass());
+            }
         }
-        int deposited = before - woolCount(owned);
-        if (deposited > 0)
-            for (BarrelBlockEntity barrel : depositedInto)
-                presentWoolInteraction(villager, level, barrel.getBlockPos());
-        state.woolDepositFeedback.scheduleIfSuccessful(deposited,
-                depositedInto.stream().map(BarrelBlockEntity::getBlockPos).toList(), villager.tickCount);
-        if (deposited > 0 || villager.tickCount >= state.nextDepositLog) {
-            log(villager, "wool deposit loom={} adjacentBarrels={} barrelPositions={} attempted={} inserted={} retained={}",
-                    loom, barrels.size(), barrels.stream().map(BarrelBlockEntity::getBlockPos).toList(),
-                    before, deposited, woolCount(owned));
-            state.nextDepositLog = villager.tickCount + SCAN_LOG_INTERVAL;
-        }
+        return null;
     }
 
     private static void fisherman(Villager villager, ServerLevel level, BlockPos site, State state) {
         SimpleContainer owned = ((OwnedOutput)villager).villagerWork$ownedOutput();
-        if (villager.tickCount % 20 == 0 && villager.distanceToSqr(Vec3.atCenterOf(site)) <= 4 * 4) {
-            BarrelBlockEntity barrel = claimedBarrel(level, site);
-            if (barrel != null && containsFish(owned)) {
-                int attempted = fishCount(owned);
-                int inserted = deposit(owned, barrel, false);
-                if (inserted > 0) {
-                    presentFishDeposit(villager, level, site);
-                    state.fishDepositFeedback.scheduleIfSuccessful(inserted, site, villager.tickCount);
-                }
-                if (inserted > 0 || villager.tickCount >= state.nextDepositLog) {
-                    log(villager, "fish deposit claimedBarrel={} attempted={} inserted={} retained={}",
-                            site, attempted, inserted, fishCount(owned));
-                    state.nextDepositLog = villager.tickCount + SCAN_LOG_INTERVAL;
-                }
-            }
-        }
         if (state.floatEntity != null) {
             if (state.floatEntity.isRemoved() || state.water == null || !level.hasChunkAt(state.water)
                     || !openWater(level, state.water)) { cancel(villager, state, "float lost or water vanished"); return; }
@@ -1272,31 +1282,58 @@ public final class WorkCoordinator {
                         SoundSource.NEUTRAL, 0.6f, 1.0f);
                 state.floatEntity.discard();
                 state.floatEntity = null;
-                ItemStack caught = rollFish(level, state.water, villager);
+                int gateRoll = villager.getRandom().nextInt(FishingRodLifecycle.PRODUCTION_GATE_BOUND);
+                boolean productive = FishingRodLifecycle.productiveRetrieve(gateRoll);
+                ItemStack caught = productive ? rollFish(level, state.water, villager) : ItemStack.EMPTY;
                 int inserted = 0;
                 if (!caught.isEmpty() && isFish(caught) && OutputStorage.fits(owned, caught, caught.getCount()))
                     inserted = OutputStorage.insert(owned, caught, caught.getCount());
-                log(villager, "fish result={} count={} insertedIntoOwned={} retainedTotal={}",
-                        caught.isEmpty() ? "none" : caught.getItem(), caught.getCount(), inserted, fishCount(owned));
+                log(villager, "retrieve productionGate={} gateRoll={}/{} lootResult={} count={} insertedIntoOwned={} retainedTotal={}",
+                        productive ? "loot_attempt" : "intentional_empty", gateRoll,
+                        FishingRodLifecycle.PRODUCTION_GATE_BOUND,
+                        caught.isEmpty() ? "none" : caught.getItem(), caught.getCount(), inserted,
+                        fishCount(owned));
                 state.water = null;
                 state.bank = null;
                 state.rodAt = 0;
-                state.cooldown = villager.tickCount + 100;
+                state.cooldown = villager.tickCount
+                        + FishingRodLifecycle.POST_RETRIEVE_COOLDOWN_TICKS;
                 state.fishingPhase = FishingRodLifecycle.afterRetrieve(containsFish(owned));
             }
             return;
         }
         if (containsFish(owned)) {
             state.fishingPhase = FishingRodLifecycle.Phase.RETURNING_TO_BARREL;
-            if (villager.distanceToSqr(Vec3.atCenterOf(site)) > 3 * 3 && villager.tickCount % 20 == 0) {
+            BarrelBlockEntity barrel = claimedBarrel(level, site);
+            if (barrel == null) {
+                clearBarrelApproach(villager, state);
                 if (state.nextReturnLog <= villager.tickCount) {
-                    log(villager, "returning with fish={} to claimed barrel={}", fishCount(owned), site);
+                    log(villager, "fish retained: exact claimed barrel unavailable at {} retained={}",
+                            site, fishCount(owned));
                     state.nextReturnLog = villager.tickCount + SCAN_LOG_INTERVAL;
                 }
-                moveNearSite(villager, level, site, 0.6);
+                return;
             }
+            if (!approachBarrel(villager, level, site, state, "fish")) return;
+
+            BarrelBlockEntity current = claimedBarrel(level, site);
+            if (current == null || !atBarrelInteractionPosition(villager, level, site)) return;
+            int attempted = fishCount(owned);
+            int inserted = deposit(owned, current, false);
+            if (inserted > 0) {
+                presentFishDeposit(villager, level, site);
+                state.fishDepositFeedback.scheduleIfSuccessful(inserted, site, villager.tickCount);
+            }
+            if (inserted > 0 || villager.tickCount >= state.nextDepositLog) {
+                log(villager, "fish deposit claimedBarrel={} attempted={} inserted={} retained={} boundaryGapMax={}",
+                        site, attempted, inserted, fishCount(owned),
+                        BarrelInteractionRules.MAX_BOUNDARY_GAP);
+                state.nextDepositLog = villager.tickCount + SCAN_LOG_INTERVAL;
+            }
+            if (!containsFish(owned)) clearBarrelApproach(villager, state);
             return;
         }
+        clearBarrelApproach(villager, state);
         if (villager.tickCount < state.cooldown) return;
         if (!canHoldAnyFish(owned)) {
             if (villager.tickCount >= state.nextScanLog) {
@@ -1353,7 +1390,8 @@ public final class WorkCoordinator {
         FishingFloat bobber = new FishingFloat(level, villager, state.water);
         if (level.addFreshEntity(bobber)) {
             state.floatEntity = bobber;
-            state.catchAt = villager.tickCount + 120 + villager.getRandom().nextInt(180);
+            state.catchAt = villager.tickCount
+                    + FishingRodLifecycle.nextDwellTicks(villager.getRandom()::nextInt);
             log(villager, "cast water={} bank={} floatEntity={} spawned; retrieveAt={}",
                     state.water, state.bank, bobber.getId(), state.catchAt);
             level.playSound(null, villager.blockPosition(), SoundEvents.FISHING_BOBBER_THROW,
@@ -1575,6 +1613,106 @@ public final class WorkCoordinator {
         }
     }
 
+    /**
+     * Navigates normally to a collision-clear standing block whose predicted body is within the
+     * barrel-boundary invariant. This method never transfers inventory or selects a fallback
+     * receiver; a false result means the caller must retain its owned output.
+     */
+    private static boolean approachBarrel(Villager villager, ServerLevel level, BlockPos barrel,
+                                          State state, String outputKind) {
+        if (!barrel.equals(state.depositBarrel)) {
+            clearBarrelApproach(villager, state);
+            state.depositBarrel = barrel.immutable();
+            state.depositDeadline = villager.tickCount + NAVIGATION_TIMEOUT;
+        }
+        villager.getLookControl().setLookAt(Vec3.atCenterOf(barrel));
+
+        boolean physicallyArrived = atBarrelInteractionPosition(villager, level, barrel);
+        boolean readyToTransfer = state.barrelArrival.ready(barrel, villager.tickCount,
+                physicallyArrived, physicallyArrived && BarrelInteractionRules.facing(
+                        villager.getHeadLookAngle(), villager.getEyePosition(), barrel));
+        if (physicallyArrived) {
+            stopCustomNavigation(villager, state);
+            state.depositFeet = villager.blockPosition().immutable();
+            return readyToTransfer;
+        }
+
+        if (villager.tickCount > state.depositDeadline) {
+            stopCustomNavigation(villager, state);
+            state.depositFeet = null;
+            state.depositDeadline = villager.tickCount + NAVIGATION_TIMEOUT;
+            state.nextDepositPathAt = villager.tickCount + 20;
+            if (villager.tickCount >= state.nextReturnLog) {
+                log(villager, "{} retained: approach timed out receivingBarrel={} boundaryGapMax={}",
+                        outputKind, barrel, BarrelInteractionRules.MAX_BOUNDARY_GAP);
+                state.nextReturnLog = villager.tickCount + SCAN_LOG_INTERVAL;
+            }
+            return false;
+        }
+        if (villager.tickCount < state.nextDepositPathAt) return false;
+        state.nextDepositPathAt = villager.tickCount + 10;
+
+        List<BlockPos> candidates = new ArrayList<>();
+        for (int dy = -1; dy <= 1; dy++) {
+            for (Direction side : Direction.Plane.HORIZONTAL) {
+                BlockPos feet = barrel.offset(0, dy, 0).relative(side);
+                if (!standingIsClear(level, villager, feet)) continue;
+                AABB predicted = BarrelInteractionRules.bodyAtFeet(villager.getBoundingBox(),
+                        villager.position(), feet);
+                if (BarrelInteractionRules.withinReach(predicted, barrel))
+                    candidates.add(feet.immutable());
+            }
+        }
+        candidates.sort(Comparator
+                .comparingDouble((BlockPos pos) -> pos.distSqr(villager.blockPosition()))
+                .thenComparingInt(BlockPos::getY)
+                .thenComparingInt(BlockPos::getX)
+                .thenComparingInt(BlockPos::getZ));
+
+        for (BlockPos candidate : candidates) {
+            Path path = villager.getNavigation().createPath(candidate, 0);
+            if (path == null || !path.canReach() || !exactEndpoint(path, candidate)) continue;
+            if (!villager.getNavigation().moveTo(path, 0.6)) continue;
+            state.depositFeet = candidate;
+            state.customNavigation = true;
+            state.customPath = path;
+            if (villager.tickCount >= state.nextReturnLog) {
+                log(villager, "approaching actual {} receiver={} standing={} pathEndpoint={} boundaryGapMax={}",
+                        outputKind, barrel, candidate, pathEndpoint(path),
+                        BarrelInteractionRules.MAX_BOUNDARY_GAP);
+                state.nextReturnLog = villager.tickCount + SCAN_LOG_INTERVAL;
+            }
+            return false;
+        }
+
+        stopCustomNavigation(villager, state);
+        state.depositFeet = null;
+        state.nextDepositPathAt = villager.tickCount + 20;
+        if (villager.tickCount >= state.nextReturnLog) {
+            log(villager, "{} retained: no reachable collision-clear position for receivingBarrel={} candidates={}",
+                    outputKind, barrel, candidates);
+            state.nextReturnLog = villager.tickCount + SCAN_LOG_INTERVAL;
+        }
+        return false;
+    }
+
+    private static boolean atBarrelInteractionPosition(Villager villager, ServerLevel level,
+                                                        BlockPos barrel) {
+        return standingIsClear(level, villager, villager.blockPosition())
+                && level.noCollision(villager, villager.getBoundingBox())
+                && BarrelInteractionRules.withinReach(villager.getBoundingBox(), barrel);
+    }
+
+    private static void clearBarrelApproach(Villager villager, State state) {
+        if (state.depositBarrel == null && state.depositFeet == null) return;
+        stopCustomNavigation(villager, state);
+        state.depositBarrel = null;
+        state.depositFeet = null;
+        state.depositDeadline = 0;
+        state.nextDepositPathAt = 0;
+        state.barrelArrival.clear();
+    }
+
     /** A live bobber is the Fisherman's committed action: do not let ambient navigation wander it. */
     private static void holdFishingPosition(Villager villager) {
         villager.getNavigation().stop();
@@ -1707,6 +1845,11 @@ public final class WorkCoordinator {
         if (state.floatEntity != null) state.floatEntity.discard();
         clearShearingTool(state);
         stopCustomNavigation(villager, state);
+        state.depositBarrel = null;
+        state.depositFeet = null;
+        state.depositDeadline = 0;
+        state.nextDepositPathAt = 0;
+        state.barrelArrival.clear();
         if (state.gateRoute != null && villager.level() instanceof ServerLevel level) {
             GateRoute route = state.gateRoute;
             GateRouteRules.GateSide side = gateSide(villager, level, route);
@@ -1767,6 +1910,13 @@ public final class WorkCoordinator {
 
     private record Profile(ResourceKey<PoiType> poi, Block block) {}
     private record SiteCheck(BlockPos site, String reason) {}
+    private record AdjacentBarrel(BlockPos pos, BarrelBlockEntity barrel) {}
+    private record WoolTransferPlan(int ownedSlot, AdjacentBarrel receiver,
+                                    OutputStorage.Pass pass) {
+        BlockPos barrel() {
+            return receiver.pos();
+        }
+    }
     private record PendingExit(BlockPos gate, BlockPos near, BlockPos far, BlockPos loom,
                                Direction facing, boolean initiallyOpen, boolean ownsOpen,
                                boolean restoreOnly, UUID routeId) {}
@@ -1821,6 +1971,8 @@ public final class WorkCoordinator {
         PendingExit pendingExit;
         BlockPos bank;
         BlockPos water;
+        BlockPos depositBarrel;
+        BlockPos depositFeet;
         BlockPos site;
         ResourceKey<VillagerProfession> profession;
         FishingFloat floatEntity;
@@ -1830,6 +1982,8 @@ public final class WorkCoordinator {
         int clearPropAt;
         int rodAt;
         int navigationDeadline;
+        int depositDeadline;
+        int nextDepositPathAt;
         int nextScanLog;
         int nextDepositLog;
         int nextReturnLog;
@@ -1841,6 +1995,7 @@ public final class WorkCoordinator {
         final TemporaryHandProp.Slot propSlot = new TemporaryHandProp.Slot();
         final SuccessfulWoolDepositFeedback woolDepositFeedback = new SuccessfulWoolDepositFeedback();
         final SuccessfulFishDepositFeedback fishDepositFeedback = new SuccessfulFishDepositFeedback();
+        final BarrelArrivalGate barrelArrival = new BarrelArrivalGate();
         int nextPropConflictLog;
         boolean eligible;
         boolean repositioningSheep;
