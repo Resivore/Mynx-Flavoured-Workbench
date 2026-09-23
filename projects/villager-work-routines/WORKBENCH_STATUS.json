@@ -72,16 +72,16 @@
     ]
   },
   "state": {
-    "milestone": "The supplied annotated C30 screenshot is recorded narrowly as C30 Fisherman rod-placement runtime evidence only: the rod is close but its grip remains somewhat outside the folded arms, and the requested remaining movement is approximately two model pixels straight upward in villager/entity parent space. C31 retains C30's exact local correction (0,+1,+7)px as a translucent C30 geometry ghost, then derives the solid rod's local delta from the live linear folded-arm-to-parent basis: parent (0,-2,0)px becomes normal-reference local (0,-1.462707,+1.363997)px, for normal-reference C31 (0,-0.462707,+8.363997)px relative to C24. The C24 semantic EMF arms -> arms_rotation mapping, authored [0,-7,-6] reference, invertAxis=xy conversion, C27 baked rotation neutralization, -9.5px physical shaft-tip capture, sole solid 16-segment VWR line, Fisherman behavior/deposit, Shepherd behavior/deposit, and C27 provider boundary remain unchanged. No marker suite is restored and no broader runtime result is inferred. C31 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
+    "milestone": "The supplied C31 screenshot is recorded narrowly as C31 Fisherman rod-placement runtime evidence only: its grip is an acceptable baseline, and the requested remaining movement is two model pixels from the grip toward the physical outer shaft tip, parallel to the rod's actual shaft. C32 preserves the exact C31 pose, including C30's (0,+1,+7)px correction and C31's live folded-arm-basis-derived parent (0,-2,0)px delta (normal-reference local (0,-1.462707,+1.363997)px). Its translucent ghost receives that unmodified C31 pose and zero C32 translation. The solid C32 rod alone receives the normalized authoritative rod-local grip-to-tip vector (0,0,-9.5)px multiplied by 2px: (0,0,-2)px or (0,0,-0.125) model/block units. It is applied after C31's attachment/reference correction and grip rebase, immediately before C27 geometry submission and same-pass physical-tip capture, so the sole 16-segment line follows the translated tip. The C24 semantic EMF arms -> arms_rotation mapping, authored [0,-7,-6] reference, invertAxis=xy conversion, C27 baked rotation neutralization, decoration suppression, rod scale/rotation, physical-tip authority, Fisherman/Shepherd behavior, and C27 provider boundary remain unchanged. No marker suite is restored and no broader runtime result is inferred. C32 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "canary": 31,
-        "version": "0.1.0-canary31",
+        "canary": 32,
+        "version": "0.1.0-canary32",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary31.jar",
-          "sha256": "3e3081619c3b1e90d8b348e8c073ad38f9fcc489c7b88a9290e386dcdf18a996"
+          "filename": "villager-work-routines-0.1.0-canary32.jar",
+          "sha256": "4fd99bd8c17b676585ab4945cd9167c38301cf66f88d0bbf2b42911c0f394298"
         },
-        "built_at": "2026-09-23T01:49:49.6330678Z",
+        "built_at": "2026-09-23T05:53:19.9671622Z",
         "source_commit": "ad61618988ff0c3f3711bf90746f713cbbb14f6e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
@@ -99,7 +99,7 @@
             }
           ]
         },
-        "summary": "Moves the solid C30 rod exactly 2 model pixels upward in villager/entity parent space through a live folded-arm-basis translation, alongside a translucent exact-C30 comparison ghost."
+        "summary": "Keeps the exact C31 pose as a translucent ghost while moving only the solid rod 2 model pixels toward its physical outer tip along its shaft axis."
       },
       "accepted": null,
       "rollback": null,
@@ -113,10 +113,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 31,
-    "activity_at": "2026-09-23T01:49:49.6330678Z",
-    "updated_at": "2026-09-23T01:49:49.6330678Z",
-    "last_codex_at": "2026-09-23T01:49:49.6330678Z",
+    "revision": 32,
+    "activity_at": "2026-09-23T05:53:19.9671622Z",
+    "updated_at": "2026-09-23T05:53:19.9671622Z",
+    "last_codex_at": "2026-09-23T05:53:19.9671622Z",
     "source_commit": "ad61618988ff0c3f3711bf90746f713cbbb14f6e"
   }
 }

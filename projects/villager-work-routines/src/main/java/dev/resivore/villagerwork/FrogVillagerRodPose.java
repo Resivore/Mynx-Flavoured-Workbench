@@ -18,7 +18,14 @@ public final class FrogVillagerRodPose {
     public static final float AUTHORED_GRIP_X_PIXELS = 0.0F;
     public static final float AUTHORED_GRIP_Y_PIXELS = -7.0F;
     public static final float AUTHORED_GRIP_Z_PIXELS = -6.0F;
+    /** The rendered C27 rod's authoritative local grip; it is its shaft-axis origin. */
+    public static final float ROD_LOCAL_GRIP_X_PIXELS = 0.0F;
+    public static final float ROD_LOCAL_GRIP_Y_PIXELS = 0.0F;
+    public static final float ROD_LOCAL_GRIP_Z_PIXELS = 0.0F;
+    public static final float ROD_LOCAL_OUTER_SHAFT_TIP_X_PIXELS = 0.0F;
+    public static final float ROD_LOCAL_OUTER_SHAFT_TIP_Y_PIXELS = 0.0F;
     public static final float OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS = -9.5F;
+    public static final float C32_SHAFT_TRANSLATION_PIXELS = 2.0F;
 
     public static final String AUTHORED_INVERT_AXIS = "xy";
     public static final float RUNTIME_GRIP_X_PIXELS = -AUTHORED_GRIP_X_PIXELS;
@@ -106,7 +113,35 @@ public final class FrogVillagerRodPose {
         return new LocalTranslation(localDelta.x, localDelta.y, localDelta.z);
     }
 
+    /**
+     * Derives C32's rigid rod-local shift from the authoritative grip-to-physical-tip vector.
+     * This is intentionally not a villager-space Y/Z correction: it is exactly two model pixels
+     * in the normalized shaft direction, converted to Minecraft model/block units.
+     */
+    public static RodLocalTranslation deriveC32ShaftAxisTranslation() {
+        Vector3f gripToPhysicalTip = new Vector3f(
+                ROD_LOCAL_OUTER_SHAFT_TIP_X_PIXELS - ROD_LOCAL_GRIP_X_PIXELS,
+                ROD_LOCAL_OUTER_SHAFT_TIP_Y_PIXELS - ROD_LOCAL_GRIP_Y_PIXELS,
+                OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS - ROD_LOCAL_GRIP_Z_PIXELS);
+        float lengthPixels = gripToPhysicalTip.length();
+        if (!(lengthPixels > 0.0F) || !Float.isFinite(lengthPixels)) {
+            throw new IllegalStateException("C32 rod shaft axis must have a finite positive length");
+        }
+        gripToPhysicalTip.mul(C32_SHAFT_TRANSLATION_PIXELS / (lengthPixels * 16.0F));
+        return new RodLocalTranslation(gripToPhysicalTip.x, gripToPhysicalTip.y, gripToPhysicalTip.z);
+    }
+
+    /** Applies only C32's complete-rod shaft-axis translation at the post-C31 rod seam. */
+    public static void applyC32ShaftAxisTranslation(PoseStack poseStack) {
+        RodLocalTranslation translation = deriveC32ShaftAxisTranslation();
+        poseStack.translate(translation.x(), translation.y(), translation.z());
+    }
+
     /** The derived folded-arm-local C31 delta in Minecraft model/block units. */
     public record LocalTranslation(float x, float y, float z) {
+    }
+
+    /** A translation expressed in the C27 rod's local model/block coordinate basis. */
+    public record RodLocalTranslation(float x, float y, float z) {
     }
 }
