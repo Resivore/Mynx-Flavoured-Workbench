@@ -2,6 +2,9 @@ package dev.resivore.villagerwork;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.junit.jupiter.api.Test;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,10 +56,47 @@ class FrogVillagerRodPoseTest {
                 FrogVillagerRodPose.FINAL_ALIGNMENT_Z - (5.0F / 16.0F), 0.000001F);
 
         poseStack = new PoseStack();
-        FrogVillagerRodPose.applyReferenceGrip(poseStack);
+        FrogVillagerRodPose.applyC30ReferenceGrip(poseStack);
         Vector4f origin = poseStack.last().pose().transform(new Vector4f(0, 0, 0, 1));
         assertEquals(0.0F, origin.x(), 0.000001F);
         assertEquals(8.0F / 16.0F, origin.y(), 0.000001F);
         assertEquals(1.0F / 16.0F, origin.z(), 0.000001F);
+    }
+
+    @Test
+    void c31ConvertsEntityParentUpThroughTheActualFoldedArmLinearBasis() {
+        // Include unrelated pivots/translations and a parent rotation to prove that only the
+        // relative 3x3 basis influences the vector conversion.
+        Matrix4f parent = new Matrix4f().translation(23.0F, -17.0F, 11.0F)
+                .rotateY(0.37F);
+        Matrix4f effective = new Matrix4f(parent).translate(4.0F, -3.0F, 9.0F)
+                .rotateX((float) Math.toRadians(FrogVillagerRodPose.JEM_ARMS_ROTATION_DEGREES));
+
+        FrogVillagerRodPose.LocalTranslation local =
+                FrogVillagerRodPose.deriveC31FoldedArmLocalDelta(parent, effective);
+        assertEquals(0.0F, local.x(), 0.000001F);
+        assertEquals(FrogVillagerRodPose.C31_REFERENCE_LOCAL_DELTA_Y_PIXELS / 16.0F,
+                local.y(), 0.000001F);
+        assertEquals(FrogVillagerRodPose.C31_REFERENCE_LOCAL_DELTA_Z_PIXELS / 16.0F,
+                local.z(), 0.000001F);
+
+        Matrix3f foldedToParent = new Matrix3f(parent).invert().mul(new Matrix3f(effective));
+        Vector3f restoredParentDelta = foldedToParent.transform(
+                new Vector3f(local.x(), local.y(), local.z()));
+        assertEquals(FrogVillagerRodPose.C31_PARENT_DELTA_X, restoredParentDelta.x, 0.000001F);
+        assertEquals(FrogVillagerRodPose.C31_PARENT_DELTA_Y, restoredParentDelta.y, 0.000001F);
+        assertEquals(FrogVillagerRodPose.C31_PARENT_DELTA_Z, restoredParentDelta.z, 0.000001F);
+
+        PoseStack poseStack = new PoseStack();
+        FrogVillagerRodPose.applyC31ReferenceGrip(poseStack, parent, effective);
+        Vector4f c31Origin = poseStack.last().pose().transform(new Vector4f(0, 0, 0, 1));
+        assertEquals((FrogVillagerRodPose.FINAL_ALIGNMENT_Y_PIXELS
+                        + FrogVillagerRodPose.C31_REFERENCE_LOCAL_DELTA_Y_PIXELS) / 16.0F
+                        + FrogVillagerRodPose.RUNTIME_GRIP_Y,
+                c31Origin.y(), 0.000001F);
+        assertEquals((FrogVillagerRodPose.FINAL_ALIGNMENT_Z_PIXELS
+                        + FrogVillagerRodPose.C31_REFERENCE_LOCAL_DELTA_Z_PIXELS) / 16.0F
+                        + FrogVillagerRodPose.RUNTIME_GRIP_Z,
+                c31Origin.z(), 0.000001F);
     }
 }

@@ -50,7 +50,18 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                 FoldedArmRenderPath.Attachment attachment = FoldedArmRenderPath.apply(
                         getParentModel(), state, poseStack);
                 if (attachment.applied()) {
-                    FrogVillagerRodPose.applyReferenceGrip(poseStack);
+                    poseStack.pushPose();
+                    try {
+                        // C31's only comparison aid: the same C27 geometry at the exact retained
+                        // C30 `(0,+1,+7)px` post-grip correction, with no ghost fishing line.
+                        FrogVillagerRodPose.applyC30ReferenceGrip(poseStack);
+                        RibbitsFishermanRodRenderer.submitC30Ghost(poseStack, collector, light);
+                    } finally {
+                        poseStack.popPose();
+                    }
+
+                    FrogVillagerRodPose.applyC31ReferenceGrip(poseStack,
+                            attachment.afterTranslateToArms(), attachment.afterEffectiveFoldedArms());
 
                     RibbitsFishermanRodRenderer.Inspection inspection =
                             RibbitsFishermanRodRenderer.submit(poseStack, collector, light);

@@ -29,8 +29,11 @@ import java.util.StringJoiner;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
@@ -55,6 +58,8 @@ final class RibbitsFishermanRodRenderer {
             "ba7c0a98b163bb69c266d988c4a0f1b9a9cbd8c6c9368f1b110b3a985adb4332";
     private static final RodVisual VISUAL = new RodVisual();
     private static final RodRenderer RENDERER = new RodRenderer();
+    private static final RodVisual C30_GHOST_VISUAL = new RodVisual();
+    private static final GhostRodRenderer C30_GHOST_RENDERER = new GhostRodRenderer();
 
     private RibbitsFishermanRodRenderer() {
     }
@@ -73,6 +78,21 @@ final class RibbitsFishermanRodRenderer {
         } catch (RuntimeException | LinkageError error) {
             return inspection.withSubmission(false,
                     error.getClass().getName() + ": " + String.valueOf(error.getMessage()));
+        }
+    }
+
+    /**
+     * Submits the exact C27 rod geometry as C30's translucent comparison pose. It deliberately
+     * exposes neither a physical tip nor a line authority; the C31 solid pass alone owns the line.
+     */
+    static boolean submitC30Ghost(PoseStack poseStack, SubmitNodeCollector collector, int light) {
+        if (!hasInstalledC27Resources()) return false;
+        try {
+            C30_GHOST_RENDERER.renderAtReferenceGrip(poseStack, collector, light,
+                    C30_GHOST_RENDERER.inspect(), C30_GHOST_VISUAL);
+            return true;
+        } catch (RuntimeException | LinkageError ignored) {
+            return false;
         }
     }
 
@@ -473,6 +493,19 @@ final class RibbitsFishermanRodRenderer {
         }
 
         private record ResourceFingerprint(String sourcePack, String sha256, boolean exact) {
+        }
+    }
+
+    /** C31-only subdued violet translucent render pass for the exact C30 geometry comparison. */
+    private static final class GhostRodRenderer extends RodRenderer {
+        @Override
+        public int getRenderColor(RodVisual visual, Void relatedObject, float partialTick) {
+            return ARGB.colorFromFloat(0.42F, 0.64F, 0.22F, 0.94F);
+        }
+
+        @Override
+        public RenderType getRenderType(GeoRenderState renderState, Identifier texture) {
+            return RenderTypes.entityTranslucent(texture);
         }
     }
 

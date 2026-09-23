@@ -1,6 +1,9 @@
 package dev.resivore.villagerwork;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 /**
  * The user-authored Frog Villager CEM reference expressed in Minecraft 26.2 model units.
@@ -25,6 +28,16 @@ public final class FrogVillagerRodPose {
     public static final float FINAL_ALIGNMENT_X_PIXELS = 0.0F;
     public static final float FINAL_ALIGNMENT_Y_PIXELS = 1.0F;
     public static final float FINAL_ALIGNMENT_Z_PIXELS = 7.0F;
+    /* C31 asks for this entity-parent displacement, not a direct local-axis adjustment. */
+    public static final float C31_PARENT_DELTA_X_PIXELS = 0.0F;
+    public static final float C31_PARENT_DELTA_Y_PIXELS = -2.0F;
+    public static final float C31_PARENT_DELTA_Z_PIXELS = 0.0F;
+    /* The inspected 43-degree reference basis gives these reporting values in the normal pose. */
+    public static final float C31_REFERENCE_LOCAL_DELTA_X_PIXELS = 0.0F;
+    public static final float C31_REFERENCE_LOCAL_DELTA_Y_PIXELS =
+            -2.0F * (float) Math.cos(Math.toRadians(JEM_ARMS_ROTATION_DEGREES));
+    public static final float C31_REFERENCE_LOCAL_DELTA_Z_PIXELS =
+            2.0F * (float) Math.sin(Math.toRadians(JEM_ARMS_ROTATION_DEGREES));
 
     /* Minecraft model units are one sixteenth of a Blockbench/JEM model pixel. */
     public static final float AUTHORED_GRIP_X = AUTHORED_GRIP_X_PIXELS / 16.0F;
@@ -36,6 +49,9 @@ public final class FrogVillagerRodPose {
     public static final float FINAL_ALIGNMENT_X = FINAL_ALIGNMENT_X_PIXELS / 16.0F;
     public static final float FINAL_ALIGNMENT_Y = FINAL_ALIGNMENT_Y_PIXELS / 16.0F;
     public static final float FINAL_ALIGNMENT_Z = FINAL_ALIGNMENT_Z_PIXELS / 16.0F;
+    public static final float C31_PARENT_DELTA_X = C31_PARENT_DELTA_X_PIXELS / 16.0F;
+    public static final float C31_PARENT_DELTA_Y = C31_PARENT_DELTA_Y_PIXELS / 16.0F;
+    public static final float C31_PARENT_DELTA_Z = C31_PARENT_DELTA_Z_PIXELS / 16.0F;
     public static final float OUTER_SHAFT_TIP_FROM_GRIP_Z = OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS / 16.0F;
 
     private FrogVillagerRodPose() {
@@ -54,9 +70,43 @@ public final class FrogVillagerRodPose {
         poseStack.translate(FINAL_ALIGNMENT_X, FINAL_ALIGNMENT_Y, FINAL_ALIGNMENT_Z);
     }
 
-    /** Applies the current C30 reference grip without changing its established transform order. */
-    public static void applyReferenceGrip(PoseStack poseStack) {
+    /** Applies the exact retained C30 pose, including its immutable post-C24 correction. */
+    public static void applyC30ReferenceGrip(PoseStack poseStack) {
         applyC24ReferenceGrip(poseStack);
         applyC30AlignmentCorrection(poseStack);
+    }
+
+    /**
+     * Applies C31 at C30's existing correction seam. The requested displacement is specified in
+     * the parent of the authored folded-arm rotation: one model-space vertical direction, rather
+     * than a camera direction. Only the relative matrices' linear 3x3 portions participate, so
+     * pivots/translations cannot contaminate the vector conversion.
+     */
+    public static void applyC31ReferenceGrip(PoseStack poseStack, Matrix4f afterTranslateToArms,
+                                              Matrix4f afterEffectiveFoldedArms) {
+        applyC30ReferenceGrip(poseStack);
+        LocalTranslation delta = deriveC31FoldedArmLocalDelta(afterTranslateToArms,
+                afterEffectiveFoldedArms);
+        poseStack.translate(delta.x(), delta.y(), delta.z());
+    }
+
+    /**
+     * Converts C31's exact `(0,-2,0)` model-pixel parent vector through the live folded-arm basis.
+     * This is intentionally a vector transformation (3x3 rotation/scale only), not a point
+     * transformation. The returned values are Minecraft model/block units.
+     */
+    public static LocalTranslation deriveC31FoldedArmLocalDelta(Matrix4f afterTranslateToArms,
+                                                                  Matrix4f afterEffectiveFoldedArms) {
+        Matrix3f parentLinear = new Matrix3f(afterTranslateToArms);
+        Matrix3f foldedLinear = new Matrix3f(afterEffectiveFoldedArms);
+        Matrix3f foldedToParent = parentLinear.invert().mul(foldedLinear);
+        Vector3f parentDelta = new Vector3f(C31_PARENT_DELTA_X, C31_PARENT_DELTA_Y,
+                C31_PARENT_DELTA_Z);
+        Vector3f localDelta = foldedToParent.invert().transform(parentDelta);
+        return new LocalTranslation(localDelta.x, localDelta.y, localDelta.z);
+    }
+
+    /** The derived folded-arm-local C31 delta in Minecraft model/block units. */
+    public record LocalTranslation(float x, float y, float z) {
     }
 }

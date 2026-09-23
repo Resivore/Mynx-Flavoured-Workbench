@@ -72,17 +72,17 @@
     ]
   },
   "state": {
-    "milestone": "The supplied C29 screenshot is recorded narrowly as C29 Fisherman rod-placement runtime evidence only: the rod is close to the intended folded-hand position but slightly too low and too far outward from the villager. It establishes only that positive local Y moves down and positive local Z moves inward toward the Frog Villager/folded hands. C30 preserves X 0px, changes only final folded-arm-local Y from +2px to +1px (exactly 1px upward) and Z from +5px to +7px (exactly 2px farther inward) relative to the resolved C24 grip. The C24 semantic EMF arms -> arms_rotation mapping, authored [0,-7,-6] reference, invertAxis=xy conversion, C27 baked rotation neutralization, -9.5px physical shaft-tip capture, sole 16-segment VWR line, Fisherman behavior/deposit, Shepherd behavior/deposit, and C27 provider boundary remain unchanged. Diagnostic placement overlays and noisy per-cast rod diagnostics are removed from normal presentation. No broader Fisherman productivity/deposit, Shepherd, or general runtime result is inferred. C30 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
+    "milestone": "The supplied annotated C30 screenshot is recorded narrowly as C30 Fisherman rod-placement runtime evidence only: the rod is close but its grip remains somewhat outside the folded arms, and the requested remaining movement is approximately two model pixels straight upward in villager/entity parent space. C31 retains C30's exact local correction (0,+1,+7)px as a translucent C30 geometry ghost, then derives the solid rod's local delta from the live linear folded-arm-to-parent basis: parent (0,-2,0)px becomes normal-reference local (0,-1.462707,+1.363997)px, for normal-reference C31 (0,-0.462707,+8.363997)px relative to C24. The C24 semantic EMF arms -> arms_rotation mapping, authored [0,-7,-6] reference, invertAxis=xy conversion, C27 baked rotation neutralization, -9.5px physical shaft-tip capture, sole solid 16-segment VWR line, Fisherman behavior/deposit, Shepherd behavior/deposit, and C27 provider boundary remain unchanged. No marker suite is restored and no broader runtime result is inferred. C31 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "canary": 30,
-        "version": "0.1.0-canary30",
+        "canary": 31,
+        "version": "0.1.0-canary31",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary30.jar",
-          "sha256": "c262a5e920fda944a22aaf239f42d73304b4d8cf9c0a5e79c204622ba2382f72"
+          "filename": "villager-work-routines-0.1.0-canary31.jar",
+          "sha256": "3e3081619c3b1e90d8b348e8c073ad38f9fcc489c7b88a9290e386dcdf18a996"
         },
-        "built_at": "2026-09-22T15:12:56.7754287Z",
-        "source_commit": "c9be1f91b4e0ed5f76f921cb65f48db04462fe67",
+        "built_at": "2026-09-23T01:49:49.6330678Z",
+        "source_commit": "ad61618988ff0c3f3711bf90746f713cbbb14f6e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -99,7 +99,7 @@
             }
           ]
         },
-        "summary": "Changes only the final folded-arm-local rod alignment from C29's (0,+2,+5)px to (0,+1,+7)px: exactly 1px upward and 2px inward, while removing normal-placement diagnostic overlays."
+        "summary": "Moves the solid C30 rod exactly 2 model pixels upward in villager/entity parent space through a live folded-arm-basis translation, alongside a translucent exact-C30 comparison ghost."
       },
       "accepted": null,
       "rollback": null,
@@ -113,10 +113,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 30,
-    "activity_at": "2026-09-22T15:12:56.7754287Z",
-    "updated_at": "2026-09-22T15:12:56.7754287Z",
-    "last_codex_at": "2026-09-22T15:12:56.7754287Z",
-    "source_commit": "c9be1f91b4e0ed5f76f921cb65f48db04462fe67"
+    "revision": 31,
+    "activity_at": "2026-09-23T01:49:49.6330678Z",
+    "updated_at": "2026-09-23T01:49:49.6330678Z",
+    "last_codex_at": "2026-09-23T01:49:49.6330678Z",
+    "source_commit": "ad61618988ff0c3f3711bf90746f713cbbb14f6e"
   }
 }
