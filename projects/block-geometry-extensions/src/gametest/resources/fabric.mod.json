@@ -30,8 +30,7 @@
       "dev.aero.cnmterraincompat.EnderscapeProviderOwnershipGameTests",
       "dev.aero.cnmterraincompat.CanonicalMaterialBindingGameTests",
       "dev.aero.cnmterraincompat.RenderingContractGameTests",
-      "dev.aero.cnmterraincompat.BgeSurfaceGeometryGameTests",
-      "dev.aero.cnmterraincompat.FoliageTintContractGameTests"
+      "dev.aero.cnmterraincompat.BgeSurfaceGeometryGameTests"
     ]
   },
   "depends": {

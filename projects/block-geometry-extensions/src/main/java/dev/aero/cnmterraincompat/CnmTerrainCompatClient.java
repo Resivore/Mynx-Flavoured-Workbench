@@ -10,7 +10,6 @@ import net.minecraft.client.color.block.BlockTintSources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import games.twinhead.moreslabsstairsandwalls.api.material.NibaruMaterialProfile;
 import net.minecraft.client.renderer.entity.FallingBlockRenderer;
@@ -33,8 +32,8 @@ public final class CnmTerrainCompatClient implements ClientModInitializer {
         return switch (profile.tintProfile()) {
             case GRASS_BIOME -> BlockTintSources.grass();
             case FOLIAGE_BIOME -> BlockTintSources.foliage();
-            case FOLIAGE_SPRUCE, FOLIAGE_BIRCH ->
-                    BlockTintSources.constant(FoliageTintContract.fixedArgb(profile.tintProfile()));
+            case FOLIAGE_SPRUCE -> BlockTintSources.constant(0x619961);
+            case FOLIAGE_BIRCH -> BlockTintSources.constant(0x80A755);
             case SOURCE_PROVIDER -> sourceProvider(profile.canonicalParent().defaultBlockState());
             case NONE -> throw new IllegalArgumentException("NONE tint must not be registered");
         };
@@ -74,7 +73,11 @@ public final class CnmTerrainCompatClient implements ClientModInitializer {
         for (ModBlocks block : ModBlocks.values()) {
             List<BlockTintSource> tintSources = nativeTintSources(block);
             if (tintSources.isEmpty()) continue;
-            BlockColorRegistry.register(tintSources, FoliageTintContract.nativeTargets(block).toArray(Block[]::new));
+            for (ModBlocks.BlockType type : ModBlocks.BlockType.values()) {
+                if (block.hasBlock(type)) {
+                    BlockColorRegistry.register(tintSources, block.getBlock(type));
+                }
+            }
         }
         EntityRendererRegistry.register(ModRegistry.FALLING_SLAB_BLOCK_ENTITY, FallingBlockRenderer::new);
     }
@@ -84,7 +87,7 @@ public final class CnmTerrainCompatClient implements ClientModInitializer {
             case GRASS_BLOCK -> List.of(BlockTintSources.grassBlock());
             case OAK_LEAVES, JUNGLE_LEAVES, ACACIA_LEAVES, DARK_OAK_LEAVES, MANGROVE_LEAVES ->
                     List.of(BlockTintSources.foliage());
-            case SPRUCE_LEAVES -> List.of(BlockTintSources.constant(FoliageTintContract.SPRUCE_FIXED_ARGB));
+            case SPRUCE_LEAVES -> List.of(BlockTintSources.constant(0xFF619961));
             case BIRCH_LEAVES -> List.of(BlockTintSources.constant(0xFF80A755));
             case PALE_OAK_LEAVES -> List.of();
             default -> List.of();

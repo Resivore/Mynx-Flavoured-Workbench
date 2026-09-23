@@ -54,7 +54,8 @@ public final class LayerGeneratedResources {
                     binding.profile(), binding.id(), canonicalFull);
             writeClient(blockStateResource(binding.id()), projection.blockState());
             for (Map.Entry<String, JsonObject> model : projection.models().entrySet()) {
-                writeClient(modelResource(model.getKey()), model.getValue());
+                writeClient(modelResource(model.getKey()),
+                        BookshelfResourceTextures.apply(manager, binding.profile(), model.getValue()));
             }
             writeClient(itemResource(binding.id()), GeneratedItemModelSupport.itemDefinition(
                     manager, binding.profile(), projection.itemModel()));

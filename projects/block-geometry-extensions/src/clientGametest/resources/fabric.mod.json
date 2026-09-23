@@ -6,7 +6,7 @@
   "environment": "client",
   "entrypoints": {
     "fabric-client-gametest": [
-      "dev.aero.cnmterraincompat.SpruceTintClientGameTest"
+      "dev.aero.cnmterraincompat.SpruceRollbackClientGameTest"
     ]
   },
   "depends": {

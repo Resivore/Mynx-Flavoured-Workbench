@@ -76,6 +76,22 @@ try {
     $archive.Dispose()
 }
 
+# The pristine Bookshelf Stair predates Minecraft 26.2's UV-locked Stair states.
+# Keep its existing model and physical rotations, but lock the wooden horizontal
+# faces to the world frame exactly where vanilla Oak Stairs lock their UVs.
+$bookshelfStairStatePath = Join-Path $resolvedOutput "assets\$namespace\blockstates\bookshelf_stairs.json"
+$bookshelfStairState = Get-Content -LiteralPath $bookshelfStairStatePath -Raw | ConvertFrom-Json
+foreach ($variant in $bookshelfStairState.variants.PSObject.Properties) {
+    if ($variant.Value.PSObject.Properties.Name -contains 'x' -or
+        $variant.Value.PSObject.Properties.Name -contains 'y') {
+        $variant.Value | Add-Member -NotePropertyName 'uvlock' -NotePropertyValue $true -Force
+    }
+}
+[System.IO.File]::WriteAllText(
+    "\\?\$bookshelfStairStatePath",
+    ($bookshelfStairState | ConvertTo-Json -Depth 10),
+    [System.Text.UTF8Encoding]::new($false))
+
 # Minecraft 26.2 added these canonical materials after the pristine upstream catalog.
 # Clone only the proven counterpart resource structures; retain the target materials'
 # own identifiers and canonical vanilla texture names.

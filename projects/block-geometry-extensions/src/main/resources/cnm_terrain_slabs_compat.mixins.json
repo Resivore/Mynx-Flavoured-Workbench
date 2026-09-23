@@ -22,9 +22,6 @@
     "HoeItemAccessor"
   ],
   "client": [
-    "FixedSpruceTintMixin",
-    "SpruceTintRendererTraceMixin",
-    "SodiumSpruceTerrainTraceMixin",
     "AssetGeneratorMixin",
     "ProviderAssetRefreshMixin",
     "ProviderStepModelMixin",

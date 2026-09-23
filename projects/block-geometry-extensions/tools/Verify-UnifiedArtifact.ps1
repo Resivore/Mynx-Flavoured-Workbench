@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C98.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C99.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
     [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C78.jar'),
     [string]$C92Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C92.jar'),
@@ -127,6 +127,7 @@ function Test-AllowedChangedEntry([string]$Name) {
             $Name -eq 'cnm_terrain_slabs_compat.mixins.json' -or
             $Name -eq 'assets/cnm_terrain_slabs_compat/lang/en_us.json' -or
             $Name -eq 'assets/more_slabs_stairs_and_walls/lang/en_us.json' -or
+            $Name -eq 'assets/more_slabs_stairs_and_walls/blockstates/bookshelf_stairs.json' -or
             $Name -eq 'data/minecraft/tags/block/mineable/shovel.json' -or
             $Name -match '^data/minecraft/tags/block/(?:slabs|stairs|walls|mineable/pickaxe)\.json$' -or
             $Name -match '^data/more_slabs_stairs_and_walls/loot_table/blocks/(?:end_stone_(?:slab|stairs|wall)|purpur_wall)\.json$' -or
@@ -134,9 +135,6 @@ function Test-AllowedChangedEntry([string]$Name) {
             $Name -eq 'dev/aero/cnmterraincompat/CanonicalGeometryRegistry.class' -or
             $Name -eq 'games/twinhead/moreslabsstairsandwalls/registry/fabric/ModRegistry.class' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/FoliageTintContract(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/SodiumSpruceTerrainTrace(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/mixin/SodiumSpruceTerrainTraceMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/NibaruProviderAdapter(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/ShapeMapOrderMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/BgeGeneratedResources(?:\$.*)?\.class$' -or
@@ -170,13 +168,12 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -match '^assets/cnm_terrain_slabs_compat/models/block/farmland_slab(?:_top|_double)?(?:_moist)?\.json$' -or
             $Name -match '^data/cnm_terrain_slabs_compat/loot_table/blocks/farmland_slab\.json$' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/FoliageTintContract(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/mixin/FixedSpruceTintMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/CanonicalShapeMapAudit(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ExplicitShapeMapFamilies(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/(?:EnderscapeMaterialGeometry|ExternalMaterialStateBridge)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ExternalMaterial(?:Blocks|Catalog|Families|GeneratedData)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/client/BookshelfResourceTextures(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ProviderModelTextureResolver(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/(?:MacawsPaths|MynxTrees|Ribbits|Bbb|Enderscape|MossyStone)InitializationMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/BgeGeneratedResourceWriter(?:\$.*)?\.class$' -or
@@ -219,8 +216,8 @@ Require ((Get-FileSha256 $c93Path) -eq '16087d67acb3554f8a6aeee3652f4d75ff00b8a0
         'Exact BGE C93 placed-resource baseline hash mismatch'
 Require ((Get-FileSha256 $bbbPath) -eq '0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a') `
         'Exact locally supplied BBB Beam source artifact hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C98.jar') `
-        'Private local-only artifact filename is not exactly BGE C98.jar'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C99.jar') `
+        'Private local-only artifact filename is not exactly BGE C99.jar'
 
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
@@ -236,8 +233,8 @@ try {
     $c93Map = Get-EntryMap $c93
     $bbbMap = Get-EntryMap $bbb
 
-    # C94 is inventory-only. Every packaged resource that can select or render placed
-    # block geometry must remain byte-for-byte identical to the exact C93 artifact.
+    # Retain the exact C93 placed-resource inventory. C99 intentionally changes only
+    # the Bookshelf Stair blockstate UV lock among packaged placed resources.
     $c93PlacedResources = New-StringSet @($c93Map.Keys | Where-Object {
         $_ -match '^assets/[^/]+/blockstates/.+\.json$' -or
         $_ -match '^assets/[^/]+/models/block/.+\.json$'
@@ -248,9 +245,15 @@ try {
     })
     Require $c94PlacedResources.SetEquals($c93PlacedResources) `
             "C94 added or removed packaged placed blockstate/model resources relative to exact C93"
+    $c99PlacedException = 'assets/more_slabs_stairs_and_walls/blockstates/bookshelf_stairs.json'
+    Require $c93PlacedResources.Contains($c99PlacedException) 'C93 Bookshelf Stair baseline is absent'
+    Require $c94PlacedResources.Contains($c99PlacedException) 'C99 Bookshelf Stair blockstate is absent'
+    Require ((Get-EntrySha256 $unifiedMap[$c99PlacedException]) -ne (Get-EntrySha256 $c93Map[$c99PlacedException])) `
+            'C99 Bookshelf Stair blockstate did not change'
     foreach ($name in @($c93PlacedResources | Sort-Object)) {
+        if ($name -eq $c99PlacedException) { continue }
         Require ((Get-EntrySha256 $unifiedMap[$name]) -eq (Get-EntrySha256 $c93Map[$name])) `
-                "C94 changed exact C93 placed blockstate/model bytes: $name"
+                "C99 changed an unrelated exact C93 placed blockstate/model: $name"
     }
 
     # Dynamic Vertical Slab and Step presentation is exercised through the production
@@ -354,10 +357,10 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.42-bge.canary98.sodium-iris-spruce-trace+26.2') `
-            'Unified Fabric version is not exact C98'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 98 ' + [char]0x2014 + ' Sodium/Iris Spruce Trace')) `
-            'Unified Fabric display name is not exact C98'
+    Require ($metadata.version -eq '4.2.43-bge.canary99.spruce-rollback-bookshelf+26.2') `
+            'Unified Fabric version is not exact C99'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 99 ' + [char]0x2014 + ' Spruce Rollback and Bookshelf')) `
+            'Unified Fabric display name is not exact C99'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -377,6 +380,19 @@ try {
     Require $actualMixins.SetEquals($expectedMixins) 'Unified mixin configuration set is incomplete or duplicated'
     foreach ($mixin in $expectedMixins) { Require $unifiedMap.ContainsKey($mixin) "Packaged mixin config missing: $mixin" }
     $integrationMixins = Get-EntryText $unifiedMap['cnm_terrain_slabs_compat.mixins.json']
+    $removedSpruceMachinery = @($unifiedMap.Keys | Where-Object {
+        $_ -match '^dev/aero/cnmterraincompat/(?:FoliageTintContract|SpruceTintRenderTrace|SodiumSpruceTerrainTrace)(?:\$.*)?\.class$' -or
+        $_ -match '^dev/aero/cnmterraincompat/mixin/(?:FixedSpruceTintMixin|SpruceTintRendererTraceMixin|SodiumSpruceTerrainTraceMixin)(?:\$.*)?\.class$'
+    })
+    Require ($removedSpruceMachinery.Count -eq 0) `
+            "C99 packages removed spruce tint/trace machinery: $($removedSpruceMachinery -join ', ')"
+    Require ($integrationMixins -notmatch 'FixedSpruceTintMixin|SpruceTintRendererTraceMixin|SodiumSpruceTerrainTraceMixin') `
+            'C99 still registers a removed spruce tint/trace mixin'
+    $nativeSpruceAssets = @($unifiedMap.Keys | Where-Object {
+        $_ -match '^assets/minecraft/(?:blockstates/spruce_leaves\.json|models/block/spruce_leaves[^/]*\.json|textures/block/spruce_leaves[^/]*)$'
+    })
+    Require ($nativeSpruceAssets.Count -eq 0) `
+            "C99 shadows native spruce blockstate/model/texture assets: $($nativeSpruceAssets -join ', ')"
     foreach ($providerHook in @('MacawsPathsInitializationMixin', 'MynxTreesInitializationMixin', 'RibbitsInitializationMixin', 'BbbInitializationMixin', 'EnderscapeInitializationMixin', 'MossyStoneInitializationMixin')) {
         Require ($integrationMixins -match [regex]::Escape($providerHook)) "Provider completion hook is not packaged: $providerHook"
     }
@@ -644,7 +660,7 @@ try {
 
     [ordered]@{
         result = 'PASS'
-        c97 = [ordered]@{
+        c99 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
@@ -672,7 +688,8 @@ try {
         }
         exact_placed_c93_baseline = [ordered]@{
             predecessor_sha256 = Get-FileSha256 $c93Path
-            byte_identical_blockstate_and_block_model_resources = $c93PlacedResources.Count
+            byte_identical_blockstate_and_block_model_resources = $c93PlacedResources.Count - 1
+            intentional_changed_blockstates = 1
             added_or_deleted_resources = 0
         }
         beam_decorative_band = [ordered]@{
