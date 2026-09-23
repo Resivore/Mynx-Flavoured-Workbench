@@ -59,11 +59,11 @@ class RibbitsFishermanC27IntegrationContractTest {
 
         String fishingBranch = blockBody(layer, "if (fishing)");
         int effectivePath = fishingBranch.indexOf("FoldedArmRenderPath.apply(");
-        int c31GhostGrip = fishingBranch.indexOf("FrogVillagerRodPose.applyC31ReferenceGrip(poseStack,");
-        int ghostSubmit = fishingBranch.indexOf("RibbitsFishermanRodRenderer.submitC31Ghost(");
+        int c32GhostGrip = fishingBranch.indexOf("FrogVillagerRodPose.applyC31ReferenceGrip(poseStack,");
+        int ghostSubmit = fishingBranch.indexOf("RibbitsFishermanRodRenderer.submitC32Ghost(");
         int c31SolidGrip = fishingBranch.lastIndexOf("FrogVillagerRodPose.applyC31ReferenceGrip(poseStack,");
-        int rodSubmit = fishingBranch.indexOf("RibbitsFishermanRodRenderer.submitC32ShaftTranslated(");
-        assertTrue(effectivePath >= 0 && c31GhostGrip > effectivePath && ghostSubmit > c31GhostGrip
+        int rodSubmit = fishingBranch.indexOf("RibbitsFishermanRodRenderer.submitC33ShaftTranslated(");
+        assertTrue(effectivePath >= 0 && c32GhostGrip > effectivePath && ghostSubmit > c32GhostGrip
                 && c31SolidGrip > ghostSubmit && rodSubmit > c31SolidGrip);
         assertFalse(fishingBranch.contains("poseStack.translate("));
         assertFalse(fishingBranch.contains("poseStack.mulPose("));
@@ -118,11 +118,11 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(renderer.contains("FrogVillagerRodPose.OUTER_SHAFT_TIP_FROM_GRIP_Z"));
         assertTrue(pose.contains("OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS = -9.5F"));
 
-        int rodSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submitC32ShaftTranslated(");
+        int rodSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submitC33ShaftTranslated(");
         int physicalTip = layer.indexOf("inspection.physicalOuterTip()", rodSubmit);
         int lineSubmit = layer.indexOf("FishingFloatRenderer.submitLineFromPhysicalRod(", rodSubmit);
         assertTrue(rodSubmit >= 0 && physicalTip > rodSubmit && lineSubmit > physicalTip);
-        assertEquals(1, occurrences(layer, "RibbitsFishermanRodRenderer.submitC32ShaftTranslated("));
+        assertEquals(1, occurrences(layer, "RibbitsFishermanRodRenderer.submitC33ShaftTranslated("));
         assertEquals(lineSubmit, layer.lastIndexOf("FishingFloatRenderer.submitLineFromPhysicalRod("));
         assertTrue(layer.contains("inspection.exactLiveCapture()"));
         assertFalse(layer.contains("ribbitsRodTip"));
@@ -139,7 +139,7 @@ class RibbitsFishermanC27IntegrationContractTest {
     }
 
     @Test
-    void c32RendersExactC31GhostAndOneTranslatedSolidPhysicalTipLineWithoutMarkerDiagnostics()
+    void c33RendersExactC32GhostAndOneTranslatedSolidPhysicalTipLineWithoutMarkerDiagnostics()
             throws IOException {
         String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
         String renderer = read(
@@ -156,19 +156,21 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(renderer.contains("addPerBoneRender"));
         assertTrue(renderer.contains("capturePhysicalRod"));
         assertTrue(renderer.contains("live_render_snapshot"));
-        assertTrue(renderer.contains("submitC31Ghost"));
-        assertTrue(renderer.contains("C31_GHOST_RENDERER"));
+        assertTrue(renderer.contains("submitC32Ghost"));
+        assertTrue(renderer.contains("C32_GHOST_RENDERER"));
         assertTrue(renderer.contains("GhostRodRenderer"));
         assertTrue(renderer.contains("RenderTypes.entityTranslucent(texture)"));
         assertTrue(renderer.contains("ARGB.colorFromFloat(0.42F, 0.64F, 0.22F, 0.94F)"));
         assertTrue(layer.contains("FrogVillagerRodPose.applyC31ReferenceGrip(poseStack,"));
-        assertTrue(layer.contains("RibbitsFishermanRodRenderer.submitC31Ghost"));
+        assertTrue(layer.contains("RibbitsFishermanRodRenderer.submitC32Ghost"));
         assertTrue(layer.contains("FrogVillagerRodPose.applyC31ReferenceGrip(poseStack,"));
-        assertTrue(renderer.contains("C31_GHOST_RENDERER.renderAtReferenceGrip"));
-        assertTrue(renderer.contains("C31_GHOST_VISUAL, false"));
+        assertTrue(renderer.contains("C32_GHOST_RENDERER.renderAtReferenceGrip"));
+        assertTrue(renderer.contains("C32_GHOST_VISUAL, 1"));
+        assertTrue(renderer.contains("FrogVillagerRodPose.C33_SHAFT_TRANSLATION_APPLICATIONS"));
+        assertTrue(renderer.contains("for (int application = 0; application < c32ShaftTranslationApplications; application++)"));
         assertTrue(renderer.contains("FrogVillagerRodPose.applyC32ShaftAxisTranslation(poseStack)"));
-        assertEquals(1, occurrences(layer, "RibbitsFishermanRodRenderer.submitC31Ghost("));
-        assertEquals(1, occurrences(layer, "RibbitsFishermanRodRenderer.submitC32ShaftTranslated("));
+        assertEquals(1, occurrences(layer, "RibbitsFishermanRodRenderer.submitC32Ghost("));
+        assertEquals(1, occurrences(layer, "RibbitsFishermanRodRenderer.submitC33ShaftTranslated("));
         assertFalse(layer.contains("VwrRodDiagnostics"));
         assertFalse(layer.contains("RodDiagnosticMarkers"));
         assertFalse(Files.exists(ROOT.resolve(
@@ -179,16 +181,16 @@ class RibbitsFishermanC27IntegrationContractTest {
         assertTrue(layer.contains("inspection.exactLiveCapture()"));
         assertTrue(layer.contains("inspection.physicalOuterTip()"));
         assertEquals(1, occurrences(layer, "FishingFloatRenderer.submitLineFromPhysicalRod("));
-        int ghostSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submitC31Ghost(");
-        int solidSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submitC32ShaftTranslated(");
+        int ghostSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submitC32Ghost(");
+        int solidSubmit = layer.indexOf("RibbitsFishermanRodRenderer.submitC33ShaftTranslated(");
         int lineSubmit = layer.indexOf("FishingFloatRenderer.submitLineFromPhysicalRod(");
         assertTrue(ghostSubmit >= 0 && solidSubmit > ghostSubmit && lineSubmit > solidSubmit);
         int c32Translation = renderer.indexOf("FrogVillagerRodPose.applyC32ShaftAxisTranslation(poseStack)");
         int renderPass = renderer.indexOf("performRenderPass(visual, null, poseStack", c32Translation);
         assertTrue(c32Translation >= 0 && renderPass > c32Translation);
-        String c32Submit = blockBody(renderer, "static Inspection submitC32ShaftTranslated(");
-        assertFalse(c32Submit.contains("mulPose"));
-        assertFalse(c32Submit.contains("scale("));
+        String c33Submit = blockBody(renderer, "static Inspection submitC33ShaftTranslated(");
+        assertFalse(c33Submit.contains("mulPose"));
+        assertFalse(c33Submit.contains("scale("));
         assertTrue(presentation.contains("villagerWork$partialTick()"));
         assertTrue(stateMixin.contains("villagerWork$partialTick"));
         assertTrue(rendererMixin.contains("villagerWork$setPartialTick(partialTick)"));

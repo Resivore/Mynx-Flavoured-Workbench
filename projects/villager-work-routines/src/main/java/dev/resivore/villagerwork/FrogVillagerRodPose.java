@@ -26,6 +26,10 @@ public final class FrogVillagerRodPose {
     public static final float ROD_LOCAL_OUTER_SHAFT_TIP_Y_PIXELS = 0.0F;
     public static final float OUTER_SHAFT_TIP_FROM_GRIP_Z_PIXELS = -9.5F;
     public static final float C32_SHAFT_TRANSLATION_PIXELS = 2.0F;
+    /** C33 applies C32's exact shaft-axis step twice from the same C31 baseline. */
+    public static final int C33_SHAFT_TRANSLATION_APPLICATIONS = 2;
+    public static final float C33_TOTAL_SHAFT_TRANSLATION_PIXELS =
+            C32_SHAFT_TRANSLATION_PIXELS * C33_SHAFT_TRANSLATION_APPLICATIONS;
 
     public static final String AUTHORED_INVERT_AXIS = "xy";
     public static final float RUNTIME_GRIP_X_PIXELS = -AUTHORED_GRIP_X_PIXELS;
@@ -135,6 +139,14 @@ public final class FrogVillagerRodPose {
     public static void applyC32ShaftAxisTranslation(PoseStack poseStack) {
         RodLocalTranslation translation = deriveC32ShaftAxisTranslation();
         poseStack.translate(translation.x(), translation.y(), translation.z());
+    }
+
+    /** Derives C33's total translation by applying C32's unchanged shaft-axis step twice. */
+    public static RodLocalTranslation deriveC33TotalShaftAxisTranslation() {
+        RodLocalTranslation c32Step = deriveC32ShaftAxisTranslation();
+        return new RodLocalTranslation(c32Step.x() * C33_SHAFT_TRANSLATION_APPLICATIONS,
+                c32Step.y() * C33_SHAFT_TRANSLATION_APPLICATIONS,
+                c32Step.z() * C33_SHAFT_TRANSLATION_APPLICATIONS);
     }
 
     /** The derived folded-arm-local C31 delta in Minecraft model/block units. */

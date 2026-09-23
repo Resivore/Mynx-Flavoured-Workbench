@@ -131,4 +131,19 @@ class FrogVillagerRodPoseTest {
         assertEquals(translation.y(), translatedOrigin.y(), 0.000001F);
         assertEquals(translation.z(), translatedOrigin.z(), 0.000001F);
     }
+
+    @Test
+    void c33AppliesTheUnchangedC32ShaftStepTwiceFromTheC31Baseline() {
+        assertEquals(2, FrogVillagerRodPose.C33_SHAFT_TRANSLATION_APPLICATIONS);
+        assertEquals(4.0F, FrogVillagerRodPose.C33_TOTAL_SHAFT_TRANSLATION_PIXELS, 0.000001F);
+        FrogVillagerRodPose.RodLocalTranslation total =
+                FrogVillagerRodPose.deriveC33TotalShaftAxisTranslation();
+        assertEquals(0.0F, total.x(), 0.000001F);
+        assertEquals(0.0F, total.y(), 0.000001F);
+        assertEquals(-4.0F / 16.0F, total.z(), 0.000001F);
+        assertEquals(4.0F / 16.0F,
+                (float) Math.sqrt(total.x() * total.x() + total.y() * total.y()
+                        + total.z() * total.z()), 0.000001F);
+        assertTrue(total.z() * FrogVillagerRodPose.OUTER_SHAFT_TIP_FROM_GRIP_Z > 0.0F);
+    }
 }

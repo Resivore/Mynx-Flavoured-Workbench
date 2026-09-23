@@ -58,14 +58,14 @@ final class RibbitsFishermanRodRenderer {
             "ba7c0a98b163bb69c266d988c4a0f1b9a9cbd8c6c9368f1b110b3a985adb4332";
     private static final RodVisual VISUAL = new RodVisual();
     private static final RodRenderer RENDERER = new RodRenderer();
-    private static final RodVisual C31_GHOST_VISUAL = new RodVisual();
-    private static final GhostRodRenderer C31_GHOST_RENDERER = new GhostRodRenderer();
+    private static final RodVisual C32_GHOST_VISUAL = new RodVisual();
+    private static final GhostRodRenderer C32_GHOST_RENDERER = new GhostRodRenderer();
 
     private RibbitsFishermanRodRenderer() {
     }
 
-    /** Submits C32's solid rod: C31's retained pose plus the rigid shaft-axis translation. */
-    static Inspection submitC32ShaftTranslated(PoseStack poseStack, SubmitNodeCollector collector,
+    /** Submits C33's solid rod: C31's retained pose plus C32's exact shaft-axis step twice. */
+    static Inspection submitC33ShaftTranslated(PoseStack poseStack, SubmitNodeCollector collector,
                                                 int light) {
         Inspection inspection;
         try {
@@ -77,7 +77,7 @@ final class RibbitsFishermanRodRenderer {
                 "required model or texture resource is absent");
         try {
             return RENDERER.renderAtReferenceGrip(poseStack, collector, light, inspection, VISUAL,
-                    true);
+                    FrogVillagerRodPose.C33_SHAFT_TRANSLATION_APPLICATIONS);
         } catch (RuntimeException | LinkageError error) {
             return inspection.withSubmission(false,
                     error.getClass().getName() + ": " + String.valueOf(error.getMessage()));
@@ -85,15 +85,15 @@ final class RibbitsFishermanRodRenderer {
     }
 
     /**
-     * Submits the exact C27 rod geometry as C31's translucent comparison pose. It deliberately
-     * receives zero C32 shaft translation and exposes neither a physical tip nor a line authority;
-     * the C32 solid pass alone owns the line.
+     * Submits the exact C27 rod geometry as C32's translucent comparison pose. It deliberately
+     * receives C32's one shaft-axis step (and no second C33 step), exposes neither a physical tip
+     * nor a line authority, and leaves the C33 solid pass as the sole line owner.
      */
-    static boolean submitC31Ghost(PoseStack poseStack, SubmitNodeCollector collector, int light) {
+    static boolean submitC32Ghost(PoseStack poseStack, SubmitNodeCollector collector, int light) {
         if (!hasInstalledC27Resources()) return false;
         try {
-            C31_GHOST_RENDERER.renderAtReferenceGrip(poseStack, collector, light,
-                    C31_GHOST_RENDERER.inspect(), C31_GHOST_VISUAL, false);
+            C32_GHOST_RENDERER.renderAtReferenceGrip(poseStack, collector, light,
+                    C32_GHOST_RENDERER.inspect(), C32_GHOST_VISUAL, 1);
             return true;
         } catch (RuntimeException | LinkageError ignored) {
             return false;
@@ -214,18 +214,18 @@ final class RibbitsFishermanRodRenderer {
 
         protected Inspection renderAtReferenceGrip(PoseStack poseStack, SubmitNodeCollector collector,
                                                     int light, Inspection inspection) {
-            return renderAtReferenceGrip(poseStack, collector, light, inspection, VISUAL, false);
+            return renderAtReferenceGrip(poseStack, collector, light, inspection, VISUAL, 0);
         }
 
         protected Inspection renderAtReferenceGrip(PoseStack poseStack, SubmitNodeCollector collector,
                                                     int light, Inspection inspection, RodVisual visual,
-                                                    boolean applyC32ShaftTranslation) {
+                                                    int c32ShaftTranslationApplications) {
             StandaloneRodBasis basis = standaloneBasis();
             liveCapture = new LiveCapture(inspection, basis.rawGripPosition());
             poseStack.pushPose();
             try {
                 basis.attachGripAtOrigin(poseStack);
-                if (applyC32ShaftTranslation) {
+                for (int application = 0; application < c32ShaftTranslationApplications; application++) {
                     // This is after the immutable C31 attachment pose and grip rebase, but before
                     // every C27 cube and the authoritative physical-tip capture share the pass.
                     FrogVillagerRodPose.applyC32ShaftAxisTranslation(poseStack);
@@ -506,7 +506,7 @@ final class RibbitsFishermanRodRenderer {
         }
     }
 
-    /** C32-only subdued violet translucent render pass for the exact C31 geometry comparison. */
+    /** C33-only subdued violet translucent render pass for the exact C32 geometry comparison. */
     private static final class GhostRodRenderer extends RodRenderer {
         @Override
         public int getRenderColor(RodVisual visual, Void relatedObject, float partialTick) {

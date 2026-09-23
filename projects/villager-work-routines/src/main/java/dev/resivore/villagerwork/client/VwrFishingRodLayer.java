@@ -52,11 +52,11 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                 if (attachment.applied()) {
                     poseStack.pushPose();
                     try {
-                        // C32's only comparison aid: the exact retained C31 solid pose, with zero
-                        // C32 shaft translation and no ghost fishing line.
+                        // C33's only comparison aid: the exact C32 pose, with its one C32 shaft
+                        // translation and no ghost fishing line.
                         FrogVillagerRodPose.applyC31ReferenceGrip(poseStack,
                                 attachment.afterTranslateToArms(), attachment.afterEffectiveFoldedArms());
-                        RibbitsFishermanRodRenderer.submitC31Ghost(poseStack, collector, light);
+                        RibbitsFishermanRodRenderer.submitC32Ghost(poseStack, collector, light);
                     } finally {
                         poseStack.popPose();
                     }
@@ -65,7 +65,7 @@ public final class VwrFishingRodLayer extends RenderLayer<VillagerRenderState, V
                             attachment.afterTranslateToArms(), attachment.afterEffectiveFoldedArms());
 
                     RibbitsFishermanRodRenderer.Inspection inspection =
-                            RibbitsFishermanRodRenderer.submitC32ShaftTranslated(poseStack, collector, light);
+                            RibbitsFishermanRodRenderer.submitC33ShaftTranslated(poseStack, collector, light);
                     if (inspection.submitted() && inspection.exactLiveCapture()
                             && inspection.physicalOuterTip() != null) {
                         try {
