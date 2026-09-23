@@ -623,6 +623,18 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertIn('col.server { width: 19%; }', html)
         self.assertIn('col.jar { width: 18%; }', html)
         self.assertIn('col.server { width: 20%; }', html)
+        self.assertIn('--table-header-surface: #0c2118;', html)
+        self.assertIn('--active-tab-surface: #153426;', html)
+        results_bar = re.search(r"\.results-bar \{(?P<rules>.*?)\n    \}", html, re.DOTALL)
+        active_tab = re.search(r"\.record-tab\[aria-selected=\"true\"\] \{(?P<rules>.*?)\n    \}", html, re.DOTALL)
+        table_header = re.search(r"thead th \{(?P<rules>.*?)\n    \}", html, re.DOTALL)
+        self.assertIsNotNone(results_bar)
+        self.assertIsNotNone(active_tab)
+        self.assertIsNotNone(table_header)
+        self.assertIn('background: var(--table-header-surface);', results_bar.group("rules"))  # type: ignore[union-attr]
+        self.assertNotIn("border-bottom", results_bar.group("rules"))  # type: ignore[union-attr]
+        self.assertIn('background: var(--active-tab-surface);', active_tab.group("rules"))  # type: ignore[union-attr]
+        self.assertIn('background: var(--table-header-surface);', table_header.group("rules"))  # type: ignore[union-attr]
         self.assertIn('thead th:not(:first-child) .sort-button { justify-content: center;', html)
         self.assertIn('.date-value time { display: inline-grid; justify-items: center;', html)
         self.assertIn('const formatted = formatLocalDateParts(project.lastEditMtimeMs);', html)

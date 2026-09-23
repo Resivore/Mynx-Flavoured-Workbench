@@ -712,6 +712,8 @@ HTML_TEMPLATE = r'''<!doctype html>
       --current: #70bb89;
       --outdated: #e4b75c;
       --not-deployed: var(--parked);
+      --table-header-surface: #0c2118;
+      --active-tab-surface: #153426;
       --radius: 13px;
       --shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
     }
@@ -875,7 +877,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       gap: 16px;
       min-height: 38px;
       padding: 0 18px;
-      border-bottom: 1px solid var(--line);
+      background: var(--table-header-surface);
       color: var(--muted);
       font-size: 0.8rem;
     }
@@ -898,7 +900,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       position: relative;
       z-index: 1;
       border-color: var(--line);
-      background: #0c2118;
+      background: var(--active-tab-surface);
       color: var(--text);
     }
     .record-tab + .record-tab { margin-left: 3px; }
@@ -923,7 +925,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       height: 43px;
       padding: 0 14px;
       border-bottom: 1px solid var(--line-strong);
-      background: #0c2118;
+      background: var(--table-header-surface);
       color: #91a69b;
       font-size: 0.75rem;
       font-weight: 750;
