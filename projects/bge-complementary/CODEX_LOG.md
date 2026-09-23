@@ -79,3 +79,14 @@
 - Artifact: Final retained candidate is `bge-complementary-0.1.0+26.2-canary4.jar`, embedded version `0.1.0+26.2-canary4`, 14,141 bytes, SHA-256 `9d48cd2a11f038f74685a9c1265206df452e764c763960482d3343b97b9c9e04`, finalized `2026-09-19T19:49:13.6132487Z`, from source checkpoint `7c19534201705b002690d348e4202b5e578fa835`.
 - Result: `ACTIVE / STATIC_PASS / RUNTIME_UNTESTED / NO_ACCEPTED / NO_ROLLBACK`.
 - Next state: Retain and publish this exact candidate from authoritative main, then await owner-directed startup-coexistence and shader-material testing using BGE C80 or a later release that preserves the required canonical-binding API.
+
+## 2026-09-23T02:08:11.1095373Z — Build BGE × Complementary Canary 5 spruce map trace
+
+- Revision: 9
+- Source checkpoint: `f247dda15222e83afe57354ac1b5b1bb4fba4646`
+- Changes: Preserved Canary 4's exact Iris 1.11.2 completed-map hooks and universal fallback. Added bounded observations after that fallback for native spruce and every BGE binding whose authoritative canonical material is native spruce. Each material row summarizes canonical/physical state-map values and explicit, inherited, missing-projection, or missing-canonical origin; each layer row reports the corresponding block-wide `layer.*` outcome. Selection uses only `BgeMaterialBindings`, never registry-name parsing; the bridge does not mutate maps beyond its retained universal fallback.
+- Build/static: Clean Java 25 / Gradle 9.5.1 / Loom 1.17.19 `clean check stageCanaryArtifact --no-daemon --offline` passed against exact observed BGE C97 SHA-256 `3e13d6f4dfe46edea753926da4e1168515e8432dce85d63a29b360a6aefc9408`; focused tests include the trace's authoritative-binding and observational-only guards.
+- Runtime: No client/profile/shader configuration was accessed and no shader-material conclusion is claimed.
+- Artifact: `bge-complementary-0.1.0+26.2-canary5.jar`, 23,969 bytes, SHA-256 `250c272c3a2d3066c358f8bf0e08c1df51bd27f800c0e95f9f95c35cccfcca44`, finalized `2026-09-23T02:08:11.1095373Z`.
+- Result: `ACTIVE / STATIC_PASS / RUNTIME_UNTESTED / NO_ACCEPTED / NO_ROLLBACK`.
+- Next state: Under explicit runtime ownership, retain paired Sodium and Iris trace rows for native and exact derived spruce before deciding whether a shader-side distinction remains.

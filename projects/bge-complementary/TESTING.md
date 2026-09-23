@@ -1,11 +1,11 @@
-# Testing — BGE × Complementary Canary 4
+# Testing — BGE × Complementary Canary 5
 
 ## Current gate
 
 **ACTIVE — STATIC_PASS — RUNTIME_UNTESTED**
 
-Canary 4 is `bge-complementary-0.1.0+26.2-canary4.jar`, SHA-256
-`9d48cd2a11f038f74685a9c1265206df452e764c763960482d3343b97b9c9e04`.
+Canary 5 is `bge-complementary-0.1.0+26.2-canary5.jar`, SHA-256
+`250c272c3a2d3066c358f8bf0e08c1df51bd27f800c0e95f9f95c35cccfcca44`.
 Build and synthetic tests do not establish Minecraft shader behavior. Do not
 alter `originals/`, a protected Minecraft profile, Complementary, Iris, or the
 saved shader configuration while using this matrix.
@@ -16,18 +16,18 @@ Canary 3 reached Mixin preparation but crashed before client startup with
 target too early; Sodium's preLaunch entrypoint only exposed the failure. No
 Canary 3 shader/material result was observed. Canary 4 moves that probe to
 Iris's completed-map RETURN hooks and must be tested as a new, runtime-untested
-release.
+release. Canary 5 adds observations only: it logs exact native/derived spruce Iris material and `layer.*` map outcomes after the existing completed-map bridge.
 
 ## Exact stack and evidence to record
 
 Use only the normal Minecraft 26.2 Fabric stack with:
 
-- BGE that is present and exposes the authoritative canonical-binding API
+- exact BGE C97 for this observed stack (SHA-256 `3e13d6f4dfe46edea753926da4e1168515e8432dce85d63a29b360a6aefc9408`) and exposes the authoritative canonical-binding API
   (`BgeMaterialBindings.all()` plus `Binding#physicalBlock()`,
   `#canonicalMaterial()`, and `#canonicalState(BlockState)`); current static
   validation baseline: C80 `4.2.24-bge.canary80.cnm-two-phase+26.2`;
 - Iris `1.11.2+mc26.2` and its required Sodium baseline;
-- Canary 4 bridge JAR above;
+- Canary 5 bridge JAR above;
 - Complementary Unbound r5.8.1, SHA-256
   `bb89b1fc54687d4147a837fb2e3c3f7261a13bee51819761e9b6a91cb7915965`;
 - the existing shader configuration, including the recorded `FANCY_GLASS=true`
@@ -39,7 +39,7 @@ state count whenever the active pack maps a canonical parent represented by a
 placed BGE form. Iris other than the exact supported hook version produces no
 bridge hook. A BGE release without the required API produces one controlled
 warning and leaves Iris maps untouched; a different BGE version string alone
-must not suppress the bridge when that API is present.
+must not suppress the bridge when that API is present. For the spruce diagnostic, retain every `BGE_SPRUCE_IRIS_MATERIAL_TRACE` and `BGE_SPRUCE_IRIS_LAYER_TRACE` row; each gives the canonical parent and whether the effective physical mapping was explicit or inherited.
 
 Run every visual row first with shaders disabled. This is the control for
 ordinary BGE geometry, texture, native render-layer, face-culling, and BGE ×
