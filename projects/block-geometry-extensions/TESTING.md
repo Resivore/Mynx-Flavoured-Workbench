@@ -1,30 +1,26 @@
-# BGE C98 Sodium/Iris spruce terrain diagnostic manual verification
+# BGE C99 spruce rollback and Bookshelf manual verification
 
-Current candidate: `BGE C98.jar` — **PRIVATE_LOCAL_ONLY; no redistribution permission.**
+Current candidate: `BGE C99.jar` — **PRIVATE_LOCAL_ONLY; no redistribution permission.**
 
-- Embedded version: `4.2.42-bge.canary98.sodium-iris-spruce-trace+26.2`
-- Size: `6,433,502` bytes
-- SHA-256: `19654c57715fcf4a96311252813059ae001d1eb2677a75792103ba0312ce885c`
-- Finalized: `2026-09-23T02:04:20.5961959Z`
-- Source checkpoint: `f247dda15222e83afe57354ac1b5b1bb4fba4646`
+- Embedded version: `4.2.43-bge.canary99.spruce-rollback-bookshelf+26.2`
+- Size: `6,420,402` bytes
+- SHA-256: `b1fa590b2924450d71d258a5e7c7b7bc81be202db73adb32d01688eb66fc152a`
+- Finalized: `2026-09-23T15:08:31.396566Z`
+- Source checkpoint: `53a55bd3619d7e25f20f93ce7fcca020a559c97d`
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`
-- Private provenance: this exact artifact contains six local-only palette derivatives generated from locally supplied BBB dev.6 Beam artwork (SHA-256 `0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a`) and Enderscape 3.0.2+mc26.2 palettes (SHA-256 `9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b`). Do not copy, attach, upload, publish, release, redistribute, or move this JAR or its Beam textures into a tracked/public path.
-- Retained contract: C98 observes only. It preserves C96's fixed-tint interception, tinted-Stair frames, and every geometry, UV, placement, family, CTM, and foliage contract.
-- Rollback: exact C72 `cnm-nibaru-integration-4.2.16-bge.canary72.farmland-slab-low-water+26.2.jar`, SHA-256 `f9f892fccbbee85f75f03c9b24752bbeab76f4fa60efd867414969b735ae85a3`.
-- Accepted release: exact C70 `cnm-nibaru-integration-4.2.14-bge.canary70.stone-native-slab+26.2.jar`, SHA-256 `d304552e29e76c4165675415215439ac2d73b5a6ebc4abc9787f0fa1124cf266`.
+- Private provenance: this exact artifact includes six local-only BBB/Enderscape Beam palette derivatives. Do not copy, attach, upload, release, or redistribute the JAR or those texture bytes.
 
-This checklist is lifecycle-neutral. It does not authorize inspecting, creating, selecting, populating, or modifying any protected or retired Minecraft profile. Record only behavior observed for these exact C98 bytes; C97's zero vanilla rows are C97 diagnostic evidence only.
+The owner's `originals/assets/bookshelves.png` (SHA-256 `9e9e5f7f66a9c68301baec69471a9bcf754c5cc6a678242fb5b360f8eb53f208`) and report are **C98 predecessor evidence only**. They describe Corner, Quarter Column, and Layer Bookshelf wooden ends falling back to ordinary Oak Planks, plus Bookshelf Stair wooden ends rotating with facing. They do not show C99 behavior.
 
-## Capture the production terrain seam under the actual stack
+Controlled C99 evidence: Java 25 clean build; 163/163 Minecraft 26.2 server GameTests; isolated client lookup `SPRUCE_C94_LOOKUP|derived=8|contexts=2|nativeShadows=0|result=PASS`; exact 40-state Bookshelf Stair UV/model audit; read-only Matcha reference audit; architecture checks; and archive verification. The retained C96 Veiled Leaves and Silver Birch Leaves Stair-frame GameTest covers all 80 physical states. None of these is a gameplay-profile result.
 
-1. Record the exact C98 SHA-256, Minecraft/mod/provider versions, datapacks, resource-pack order, shader pack/settings, and active Sodium/Iris versions.
-2. In two biomes with visibly different foliage color, render native `minecraft:spruce_leaves` adjacent to the derived spruce family. Include at least one standard/provider role if present and BGE Vertical Slab, Step, Corner, Quarter Column, and Layer; include a second role with a different geometry/orientation when practical.
-3. Collect the `BGE_SODIUM_SPRUCE_TINT_TRACE` pair for each target. The provider row records canonical binding/state, provider identity, and resolved ARGB; the vertex row records written ABGR after Sodium's `bufferQuad`.
-4. Collect BGE × Complementary Canary 5's `BGE_SPRUCE_IRIS_MATERIAL_TRACE` and `BGE_SPRUCE_IRIS_LAYER_TRACE` rows. They record effective values and explicit-versus-inherited origin for native plus each derived binding.
-5. Interpret only observed rows: ARGB divergence is the first Java difference; equal ARGB but distinct ABGR is vertex emission; equal colors with a map difference is material/layer classification. If all are equal while pixels differ, Iris's per-vertex block ID/mid-block data and Complementary's native-leaves shader branch are the first remaining inputs.
+## Owner-directed runtime checks
 
-## Retained behavior
+1. Record the exact `BGE C99.jar` SHA-256, Minecraft/mod versions, resource-pack order, shader/renderer settings, and world context. Use the normal Matcha Flavoured and Matcha Overlays packs; note whether external Foundation v3 is active. Do not copy Foundation or Matcha assets into BGE.
+2. Check native `minecraft:spruce_leaves` under the selected pack stack. Its blockstate, model route, artwork, and visible tint must remain resource-pack controlled. Compare the derived spruce roles across two foliage-color biomes and confirm the C94 client behavior is restored. Birch's fixed profile, ordinary biome foliage, and provider-defined leaves should retain their established behavior. No C95-C98 trace output should appear.
+3. With Matcha active, compare the top and bottom wood on canonical Bookshelf, Slab, Stair, Wall, Vertical Slab, Step, Corner, Quarter Column, and Layer. Exercise every Layer thickness and orientation, all Corner directions, and Quarter Column occupancies. The wood must match the established Matcha treatment; visible side faces must retain Bookshelf artwork. Then remove the Matcha packs in an owner-controlled test and confirm valid oak-planks fallback without a missing texture.
+4. Rotate Bookshelf Stair through all four facings, top and bottom halves, and straight, inner-left, inner-right, outer-left, and outer-right shapes. Its top/bottom wood frame must stay non-directional while physical orientation, side art, collision, selection, placement, and item presentation remain correct.
+5. Check Veiled Leaves and Silver Birch Leaves generated Stairs through their straight, inner, and outer forms in both halves and four facings. Their physical model frames must retain the C96 correction.
+6. Smoke-check retained C93/C94 behavior: provider-role ownership, Mossy Stone, Enderscape families, Plank/Beam Wall topology, lowered Path culling/UVs, Beam item UVs, placement, economy, selector order, and CTM.
 
-1. Confirm native spruce leaves remain unchanged. Confirm birch stays fixed-color, an ordinary oak family stays biome-tinted, and special/source-defined foliage retains its prior behavior.
-2. Check C96's Veiled Leaves and Silver Birch Leaves Stair frames through straight, inner, and outer shapes in both halves/facings. No C98 change is expected there.
-3. Retain `BGE C98.jar` only in ignored local artifact storage by this exact SHA-256. Do not copy, attach, upload, publish, release, or redistribute it or its private Beam textures.
+Record only observations made against this exact C99 SHA-256. This checklist is lifecycle-neutral and does not authorize Codex to inspect or modify any protected Minecraft testing profile. Accepted C70 and rollback C72 remain unchanged.
