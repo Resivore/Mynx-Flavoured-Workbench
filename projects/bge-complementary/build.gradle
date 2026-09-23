@@ -17,10 +17,11 @@ repositories {
     mavenCentral()
 }
 
-// C80 is the current authoritative API baseline for compilation and static verification. This
+// C97 is the exact BGE artifact used with the observed runtime stack and exposes the same
+// canonical-binding API. This
 // is deliberately not a runtime release-number predicate: Iris's Mixin bootstrap gates only its
 // exact hook version, while BGE capability inspection runs from the completed-map RETURN hooks.
-def bgeReference = file('../block-geometry-extensions/artifacts/BGE C80.jar')
+def bgeReference = file('../block-geometry-extensions/artifacts/BGE C97.jar')
 
 dependencies {
     minecraft 'com.mojang:minecraft:26.2'
@@ -75,11 +76,11 @@ tasks.register('verifyBridge') {
 
     doLast {
         if (!bgeReference.isFile()) {
-            throw new GradleException("Missing current BGE C80 API baseline: ${bgeReference}")
+            throw new GradleException("Missing exact BGE C97 API baseline: ${bgeReference}")
         }
         def bgeHash = java.security.MessageDigest.getInstance('SHA-256').digest(bgeReference.bytes).encodeHex().toString()
-        if (bgeHash != '5bc7c23a3724a1e20bc2142459f33d2a45a19295c27d40197c5fc48d6e43b0fc') {
-            throw new GradleException("BGE baseline hash differs from the verified C80 API baseline: ${bgeHash}")
+        if (bgeHash != '3e13d6f4dfe46edea753926da4e1168515e8432dce85d63a29b360a6aefc9408') {
+            throw new GradleException("BGE baseline hash differs from the exact C97 diagnostic stack: ${bgeHash}")
         }
         ZipFile bge = new ZipFile(bgeReference)
         try {
@@ -95,6 +96,7 @@ tasks.register('verifyBridge') {
         try {
             ['fabric.mod.json', 'bge_complementary.client.mixins.json',
              'dev/resivore/bgecomplementary/BgeShaderMaterialBridge.class',
+             'dev/resivore/bgecomplementary/SpruceIrisMaterialTrace.class',
              'dev/resivore/bgecomplementary/BgeCanonicalBindingApi.class',
              'dev/resivore/bgecomplementary/BgeLateRuntimeBridge.class',
              'dev/resivore/bgecomplementary/IrisBgeMixinPlugin.class',

@@ -17,6 +17,8 @@ public final class BgeShaderMaterialBridge {
 
     public static ShaderMaterialInheritance.Result inheritMaterialIds(
             Object2IntMap<BlockState> materialIds) {
+        SpruceIrisMaterialTrace.MaterialSnapshot spruceBefore =
+                SpruceIrisMaterialTrace.beforeMaterialInheritance(materialIds);
         ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.Result.empty();
         for (Binding binding : BgeMaterialBindings.all()) {
             List<BlockState> physicalStates = binding.physicalBlock().getStateDefinition()
@@ -24,6 +26,7 @@ public final class BgeShaderMaterialBridge {
             result = result.plus(ShaderMaterialInheritance.inheritMissing(
                     materialIds, physicalStates, binding::canonicalState));
         }
+        SpruceIrisMaterialTrace.afterMaterialInheritance(materialIds, spruceBefore);
         return result;
     }
 
@@ -34,6 +37,8 @@ public final class BgeShaderMaterialBridge {
      */
     public static <T> ShaderMaterialInheritance.Result inheritLayerTypes(
             Map<Block, T> layerTypes) {
+        SpruceIrisMaterialTrace.LayerSnapshot spruceBefore =
+                SpruceIrisMaterialTrace.beforeLayerInheritance(layerTypes);
         ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.Result.empty();
         for (Binding binding : BgeMaterialBindings.all()) {
             Block physical = binding.physicalBlock();
@@ -41,6 +46,7 @@ public final class BgeShaderMaterialBridge {
                     layerTypes, List.of(physical),
                     ignored -> java.util.Optional.of(binding.canonicalMaterial())));
         }
+        SpruceIrisMaterialTrace.afterLayerInheritance(layerTypes, spruceBefore);
         return result;
     }
 }

@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C97.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C98.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
     [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C78.jar'),
     [string]$C92Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C92.jar'),
@@ -135,6 +135,8 @@ function Test-AllowedChangedEntry([string]$Name) {
             $Name -eq 'games/twinhead/moreslabsstairsandwalls/registry/fabric/ModRegistry.class' -or
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/FoliageTintContract(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/SodiumSpruceTerrainTrace(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/mixin/SodiumSpruceTerrainTraceMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/NibaruProviderAdapter(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/ShapeMapOrderMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/BgeGeneratedResources(?:\$.*)?\.class$' -or
@@ -217,8 +219,8 @@ Require ((Get-FileSha256 $c93Path) -eq '16087d67acb3554f8a6aeee3652f4d75ff00b8a0
         'Exact BGE C93 placed-resource baseline hash mismatch'
 Require ((Get-FileSha256 $bbbPath) -eq '0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a') `
         'Exact locally supplied BBB Beam source artifact hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C97.jar') `
-        'Private local-only artifact filename is not exactly BGE C97.jar'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C98.jar') `
+        'Private local-only artifact filename is not exactly BGE C98.jar'
 
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
@@ -352,10 +354,10 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.41-bge.canary97.spruce-render-trace+26.2') `
-            'Unified Fabric version is not exact C97'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 97 ' + [char]0x2014 + ' Spruce Render Trace')) `
-            'Unified Fabric display name is not exact C97'
+    Require ($metadata.version -eq '4.2.42-bge.canary98.sodium-iris-spruce-trace+26.2') `
+            'Unified Fabric version is not exact C98'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 98 ' + [char]0x2014 + ' Sodium/Iris Spruce Trace')) `
+            'Unified Fabric display name is not exact C98'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'

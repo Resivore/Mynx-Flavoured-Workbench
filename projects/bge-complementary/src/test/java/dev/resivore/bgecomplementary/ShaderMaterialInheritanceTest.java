@@ -217,4 +217,26 @@ class ShaderMaterialInheritanceTest {
             throw new AssertionError(exception);
         }
     }
+
+    @Test
+    void spruceTraceUsesAuthoritativeBindingsAndOnlyObservesCompletedIrisMaps() throws Exception {
+        String bridge = Files.readString(Path.of("src/client/java/dev/resivore/bgecomplementary/"
+                + "BgeShaderMaterialBridge.java"), StandardCharsets.UTF_8);
+        String trace = Files.readString(Path.of("src/client/java/dev/resivore/bgecomplementary/"
+                + "SpruceIrisMaterialTrace.java"), StandardCharsets.UTF_8);
+
+        assertTrue(bridge.contains("beforeMaterialInheritance(materialIds)"));
+        assertTrue(bridge.contains("afterMaterialInheritance(materialIds, spruceBefore)"));
+        assertTrue(bridge.contains("beforeLayerInheritance(layerTypes)"));
+        assertTrue(bridge.contains("afterLayerInheritance(layerTypes, spruceBefore)"));
+        assertTrue(trace.contains("BgeMaterialBindings.all()"));
+        assertTrue(trace.contains("binding.canonicalMaterial() == Blocks.SPRUCE_LEAVES"));
+        assertTrue(trace.contains("BGE_SPRUCE_IRIS_MATERIAL_TRACE"));
+        assertTrue(trace.contains("BGE_SPRUCE_IRIS_LAYER_TRACE"));
+        assertTrue(trace.contains("explicit_physical"));
+        assertTrue(trace.contains("inherited_canonical"));
+        assertFalse(trace.contains("getPath("));
+        assertFalse(trace.contains("put("));
+        assertFalse(trace.contains("remove("));
+    }
 }
