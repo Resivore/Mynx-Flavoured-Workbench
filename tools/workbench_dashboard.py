@@ -80,6 +80,7 @@ class DashboardProject:
     current_summary: str | None = None
     current_canary: int | None = None
     deployed_canary: int | None = None
+    record_kind: str = "project"
 
 
 def server_pill_label(server_status: str, deployed_canary: int | None) -> str:
@@ -265,44 +266,67 @@ def _built_at_timestamp(value: Any, path: str) -> tuple[int, str]:
     return calendar.timegm(parsed.utctimetuple()) * 1_000_000_000 + int(fraction or "0"), value
 
 
-def _jar_details(
+def _record_kind(manifest_path: Path) -> str:
+    """Classify a canonical dashboard record from its manifest location alone."""
+
+    container = manifest_path.parent.parent.name
+    if container == "projects":
+        return "project"
+    if container == "resourcepacks":
+        return "resource_pack"
+    raise DashboardError(f"{manifest_path}: dashboard records must be under projects/ or resourcepacks/")
+
+
+def _artifact_details(
     project_directory: Path,
     current_release: Mapping[str, Any] | None,
+    record_kind: str,
 ) -> tuple[str | None, int | None, str | None, str]:
+    artifact_label = "JAR" if record_kind == "project" else "ZIP"
     if current_release is None:
         return None, None, None, "No current release."
 
     version = current_release["version"]
     artifact = current_release["artifact"]
     if artifact is None:
-        return version, None, None, "The current release has no JAR artifact."
+        return version, None, None, f"The current release has no {artifact_label} artifact."
     filename = artifact["filename"]
-    if not filename.casefold().endswith(".jar"):
-        return version, None, None, "The current artifact is not a JAR."
+    expected_extension = ".jar" if record_kind == "project" else ".zip"
+    if not filename.casefold().endswith(expected_extension):
+        return version, None, None, f"The current artifact is not a {artifact_label}."
 
     built_at = current_release.get("built_at")
     canonical_timestamp = None if built_at is None else _built_at_timestamp(built_at, "current release.built_at")
     artifact_path = _exact_artifact_path(project_directory, filename)
     if artifact_path is None:
         if canonical_timestamp is not None:
-            return version, *canonical_timestamp, "Canonical build timestamp; the exact current JAR is not retained locally."
-        return version, None, None, "The exact current JAR is not retained locally."
+            return version, *canonical_timestamp, f"Canonical build timestamp; the exact current {artifact_label} is not retained locally."
+        return version, None, None, f"The exact current {artifact_label} is not retained locally."
     fingerprint = _sha256_and_mtime(artifact_path)
     if fingerprint is None:
         if canonical_timestamp is not None:
-            return version, *canonical_timestamp, "Canonical build timestamp; the exact current JAR is unavailable or changed while being read."
-        return version, None, None, "The exact current JAR is unavailable or changed while being read."
+            return version, *canonical_timestamp, f"Canonical build timestamp; the exact current {artifact_label} is unavailable or changed while being read."
+        return version, None, None, f"The exact current {artifact_label} is unavailable or changed while being read."
     actual_hash, mtime_ns = fingerprint
     if actual_hash != artifact["sha256"]:
         if canonical_timestamp is not None:
-            return version, *canonical_timestamp, "Canonical build timestamp; the retained JAR does not match the canonical SHA-256."
-        return version, None, None, "The retained JAR does not match the canonical SHA-256."
+            return version, *canonical_timestamp, f"Canonical build timestamp; the retained {artifact_label} does not match the canonical SHA-256."
+        return version, None, None, f"The retained {artifact_label} does not match the canonical SHA-256."
 
     if canonical_timestamp is not None:
-        return version, *canonical_timestamp, f"Canonical build timestamp; verified current JAR: {filename}"
+        return version, *canonical_timestamp, f"Canonical build timestamp; verified current {artifact_label}: {filename}"
     timestamp = datetime.fromtimestamp(mtime_ns / 1_000_000_000, tz=timezone.utc)
     timestamp_iso = timestamp.isoformat(timespec="microseconds").replace("+00:00", "Z")
-    return version, mtime_ns, timestamp_iso, f"Verified current JAR: {filename}"
+    return version, mtime_ns, timestamp_iso, f"Verified current {artifact_label}: {filename}"
+
+
+def _jar_details(
+    project_directory: Path,
+    current_release: Mapping[str, Any] | None,
+) -> tuple[str | None, int | None, str | None, str]:
+    """Compatibility wrapper for project JAR timestamp handling."""
+
+    return _artifact_details(project_directory, current_release, "project")
 
 
 def default_project_sort_key(project: DashboardProject) -> tuple[Any, ...]:
@@ -326,15 +350,16 @@ def build_project_records(
 ) -> list[DashboardProject]:
     projects: list[DashboardProject] = []
     for project_uuid, (manifest_path, manifest) in statuses.items():
+        record_kind = _record_kind(manifest_path)
         identity = manifest["identity"]
         lifecycle = manifest["definition"]["lifecycle"]
         if lifecycle not in LIFECYCLE_PRIORITY:
             raise DashboardError(f"{manifest_path}: unsupported dashboard lifecycle {lifecycle!r}")
         releases = manifest["state"]["releases"]
         current = releases["current"]
-        version, mtime_ns, mtime_iso, jar_note = _jar_details(manifest_path.parent, current)
+        version, mtime_ns, mtime_iso, jar_note = _artifact_details(manifest_path.parent, current, record_kind)
         current_identity = canonical_release_identity(current)
-        deployed_release = server_state.get(project_uuid)
+        deployed_release = server_state.get(project_uuid) if record_kind == "project" else None
         if deployed_release is not None:
             deployed_release = _release_identity(deployed_release, f"server state for {project_uuid}")
         if deployed_release is None:
@@ -358,6 +383,7 @@ def build_project_records(
                 current_summary=None if current is None else current.get("summary"),
                 current_canary=None if current is None else current["canary"],
                 deployed_canary=deployed_canary_for_release(releases, deployed_release),
+                record_kind=record_kind,
             )
         )
     return sort_projects_default(projects)
@@ -423,7 +449,8 @@ def _project_payload(project: DashboardProject) -> dict[str, Any]:
     deployed_canary = project.deployed_canary
     current_label = None if current_canary is None else f"C{current_canary}"
     deployed_label = None if deployed_canary is None else f"C{deployed_canary}"
-    return {
+    payload = {
+        "kind": project.record_kind,
         "uuid": project.uuid,
         "projectId": project.project_id,
         "name": project.name,
@@ -431,16 +458,25 @@ def _project_payload(project: DashboardProject) -> dict[str, Any]:
         "version": current_label,
         "versionDisplay": current_label,
         "versionCanary": current_canary,
-        "jarMtimeMs": None if project.jar_mtime_ns is None else project.jar_mtime_ns // 1_000_000,
-        "jarMtimeIso": project.jar_mtime_iso,
-        "jarNote": project.jar_note,
-        "server": project.server_status,
-        "serverDisplay": server_pill_label(project.server_status, deployed_canary),
-        "deployedVersion": deployed_label,
-        "deployedVersionDisplay": deployed_label,
-        "deployedCanary": deployed_canary,
+        "lastEditMtimeMs": None if project.jar_mtime_ns is None else project.jar_mtime_ns // 1_000_000,
+        "lastEditMtimeIso": project.jar_mtime_iso,
+        "lastEditNote": project.jar_note,
         "summary": project.current_summary,
     }
+    if project.record_kind == "project":
+        payload.update(
+            {
+                "jarMtimeMs": payload["lastEditMtimeMs"],
+                "jarMtimeIso": payload["lastEditMtimeIso"],
+                "jarNote": payload["lastEditNote"],
+                "server": project.server_status,
+                "serverDisplay": server_pill_label(project.server_status, deployed_canary),
+                "deployedVersion": deployed_label,
+                "deployedVersionDisplay": deployed_label,
+                "deployedCanary": deployed_canary,
+            }
+        )
+    return payload
 
 
 def _source_commit(value: str | None) -> str | None:
@@ -513,6 +549,11 @@ def render_dashboard(
     source_label: str | None = None,
 ) -> str:
     ordered = sort_projects_default(projects)
+    project_records = [project for project in ordered if project.record_kind == "project"]
+    resource_pack_records = [project for project in ordered if project.record_kind == "resource_pack"]
+    unknown_kinds = sorted({project.record_kind for project in ordered} - {"project", "resource_pack"})
+    if unknown_kinds:
+        raise DashboardError("unsupported dashboard record kind(s): " + ", ".join(unknown_kinds))
     generated = generated_at or datetime.now(timezone.utc)
     if generated.tzinfo is None:
         raise DashboardError("generated_at must be timezone-aware")
@@ -524,7 +565,9 @@ def render_dashboard(
     payload = {
         "generatedAt": generated_iso,
         "source": None if source is None else {"commit": source, "label": label},
-        "projects": [_project_payload(project) for project in ordered],
+        "projects": [_project_payload(project) for project in project_records],
+        "resourcePacks": [_project_payload(project) for project in resource_pack_records],
+        "counts": {"projects": len(project_records), "resourcePacks": len(resource_pack_records)},
     }
     try:
         sprite = BOOTSTRAP_SPRITE.read_text(encoding="utf-8")
@@ -562,6 +605,16 @@ def generate_dashboard(
     return projects
 
 
+def dashboard_record_counts(records: Iterable[DashboardProject]) -> tuple[int, int]:
+    """Return the canonical project and resource-pack counts for CLI reporting."""
+
+    materialized = list(records)
+    return (
+        sum(record.record_kind == "project" for record in materialized),
+        sum(record.record_kind == "resource_pack" for record in materialized),
+    )
+
+
 def _output_path(root: Path, requested: Path) -> Path:
     return requested if requested.is_absolute() else root / requested
 
@@ -589,6 +642,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "server":
             statuses = load_repository_statuses(root)
             project_uuid, manifest = resolve_project(args.project, statuses)
+            if _record_kind(statuses[project_uuid][0]) != "project":
+                raise DashboardError(f"{manifest['identity']['name']} is a resource pack and has no server state")
             server_state = load_server_state(root, statuses)
             if args.status in {"current", "yes"}:
                 current = canonical_release_identity(manifest["state"]["releases"]["current"])
@@ -615,7 +670,8 @@ def main(argv: list[str] | None = None) -> int:
                 source_commit=args.source_commit,
                 source_label=args.source_label,
             )
-            print(f"Generated {output} with {len(projects)} projects")
+            project_count, resource_pack_count = dashboard_record_counts(projects)
+            print(f"Generated {output} with {project_count} projects and {resource_pack_count} resource packs")
         if args.open:
             opened = webbrowser.open(output.as_uri(), new=2)
             if not opened:
@@ -823,7 +879,29 @@ HTML_TEMPLATE = r'''<!doctype html>
       color: var(--muted);
       font-size: 0.8rem;
     }
-    #visible-count { font-variant-numeric: tabular-nums; }
+    .record-tabs { display: flex; align-self: stretch; margin-bottom: -1px; }
+    .record-tab {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 12px;
+      border: 1px solid transparent;
+      border-bottom: 0;
+      border-radius: 8px 8px 0 0;
+      background: transparent;
+      color: var(--quiet);
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+    .record-tab:hover { color: var(--text); }
+    .record-tab[aria-selected="true"] {
+      position: relative;
+      z-index: 1;
+      border-color: var(--line);
+      background: #0c2118;
+      color: var(--text);
+    }
+    .record-tab + .record-tab { margin-left: 3px; }
     #sort-summary { color: var(--quiet); }
 
     .table-scroll { overflow-x: auto; scrollbar-gutter: stable; }
@@ -833,6 +911,11 @@ HTML_TEMPLATE = r'''<!doctype html>
     col.version { width: 10%; }
     col.jar { width: 16%; }
     col.server { width: 19%; }
+    table[data-record-kind="resource_pack"] { min-width: 650px; }
+    table[data-record-kind="resource_pack"] col.project { width: 48%; }
+    table[data-record-kind="resource_pack"] col.lifecycle { width: 17%; }
+    table[data-record-kind="resource_pack"] col.version { width: 13%; }
+    table[data-record-kind="resource_pack"] col.jar { width: 22%; }
     thead th {
       position: sticky;
       top: 0;
@@ -987,6 +1070,10 @@ HTML_TEMPLATE = r'''<!doctype html>
       col.version { width: 10%; }
       col.jar { width: 18%; }
       col.server { width: 20%; }
+      table[data-record-kind="resource_pack"] col.project { width: 43%; }
+      table[data-record-kind="resource_pack"] col.lifecycle { width: 17%; }
+      table[data-record-kind="resource_pack"] col.version { width: 14%; }
+      table[data-record-kind="resource_pack"] col.jar { width: 26%; }
       thead th { padding-inline: 8px; }
       tbody td { padding-inline: 10px; }
       thead th:not(:first-child) .sort-button { gap: 3px; }
@@ -1015,7 +1102,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       </div>
     </header>
 
-    <section class="workspace" aria-label="Mynx dashboard projects">
+    <section class="workspace" aria-label="Mynx dashboard records">
       <div class="controls">
         <div class="control-row">
           <div class="search-wrap">
@@ -1024,7 +1111,7 @@ HTML_TEMPLATE = r'''<!doctype html>
             <input id="search" type="search" autocomplete="off" placeholder="Search projects" spellcheck="false">
             <button id="clear-search" type="button" aria-label="Clear project search" title="Clear project search" hidden>__ICON_X_LG__</button>
           </div>
-          <label class="select-wrap" for="server-filter">
+          <label id="server-filter-wrap" class="select-wrap" for="server-filter">
             <span>On server</span>
             <span class="select-control">
               <select id="server-filter">
@@ -1052,12 +1139,15 @@ HTML_TEMPLATE = r'''<!doctype html>
       </div>
 
       <div class="results-bar">
-        <span id="visible-count">0 projects</span>
+        <div class="record-tabs" role="tablist" aria-label="Dashboard record type">
+          <button id="projects-tab" class="record-tab" type="button" role="tab" data-record-kind="project" aria-selected="true" aria-controls="table-region">0 Projects</button>
+          <button id="resource-packs-tab" class="record-tab" type="button" role="tab" data-record-kind="resource_pack" aria-selected="false" aria-controls="table-region">0 Resource Packs</button>
+        </div>
         <span id="sort-summary">Default Workbench order</span>
       </div>
 
       <div id="table-region" class="table-scroll">
-        <table>
+        <table data-record-kind="project">
           <caption class="sr-only">Canonical Mynx dashboard project status</caption>
           <colgroup>
             <col class="project"><col class="lifecycle"><col class="version"><col class="jar"><col class="server">
@@ -1093,26 +1183,43 @@ HTML_TEMPLATE = r'''<!doctype html>
     (() => {
       "use strict";
       const data = JSON.parse(document.getElementById("dashboard-data").textContent);
-      const projects = data.projects.map((project, defaultIndex) => ({ ...project, defaultIndex }));
+      const recordsByKind = {
+        project: data.projects.map((project, defaultIndex) => ({ ...project, defaultIndex })),
+        resource_pack: data.resourcePacks.map((project, defaultIndex) => ({ ...project, defaultIndex })),
+      };
       const lifecycleOrder = ["ACTIVE", "PLANNED", "ACCEPTED", "BLOCKED", "PARKED"];
       const lifecycleLabels = { ACTIVE: "Active", PLANNED: "Planned", ACCEPTED: "Accepted", BLOCKED: "Blocked", PARKED: "Parked" };
       const serverRank = { CURRENT: 0, OUTDATED: 1, NOT_DEPLOYED: 2 };
-      const sortLabels = { name: "Project", lifecycle: "Lifecycle", version: "Version", jar: "Last JAR Edit", server: "On Server" };
+      const views = {
+        project: { noun: "project", plural: "projects", title: "Project", timestamp: "Last JAR Edit", columns: ["name", "lifecycle", "version", "jar", "server"] },
+        resource_pack: { noun: "resource pack", plural: "resource packs", title: "Resource Pack", timestamp: "Last Edit", columns: ["name", "lifecycle", "version", "jar"] },
+      };
       const bootstrapIcons = JSON.parse(document.getElementById("bootstrap-icon-data").textContent);
       const SVG_NS = "http://www.w3.org/2000/svg";
-      const state = { lifecycle: "ALL", server: "ALL", search: "", sortKey: "default", sortDirection: "asc", collapsed: new Set(), expanded: null };
+      const freshViewState = () => ({ lifecycle: "ALL", search: "", sortKey: "default", sortDirection: "asc", collapsed: new Set(), expanded: null });
+      const state = { kind: "project", server: "ALL", view: { project: freshViewState(), resource_pack: freshViewState() } };
 
       const rowsElement = document.getElementById("project-rows");
       const tableRegion = document.getElementById("table-region");
+      const table = tableRegion.querySelector("table");
+      const columnGroup = table.querySelector("colgroup");
+      const tableHead = table.querySelector("thead tr");
+      const caption = table.querySelector("caption");
       const emptyState = document.getElementById("empty-state");
-      const visibleCount = document.getElementById("visible-count");
       const sortSummary = document.getElementById("sort-summary");
       const search = document.getElementById("search");
+      const searchLabel = document.querySelector('label[for="search"]');
       const clearSearch = document.getElementById("clear-search");
       const serverFilter = document.getElementById("server-filter");
+      const serverFilterWrap = document.getElementById("server-filter-wrap");
       const resetOrder = document.getElementById("reset-order");
       const lifecycleFilters = document.getElementById("lifecycle-filters");
       const liveRegion = document.getElementById("live-region");
+      const recordTabs = document.querySelectorAll(".record-tab[data-record-kind]");
+
+      function currentView() { return views[state.kind]; }
+      function currentState() { return state.view[state.kind]; }
+      function currentRecords() { return recordsByKind[state.kind]; }
 
       function formatLocalDate(milliseconds) {
         const { datePart, timePart } = formatLocalDateParts(milliseconds);
@@ -1157,11 +1264,12 @@ HTML_TEMPLATE = r'''<!doctype html>
         return svg;
       }
 
-      function baseFilteredProjects() {
-        const needle = state.search.toLocaleLowerCase();
-        return projects.filter(project => {
+      function baseFilteredRecords() {
+        const viewState = currentState();
+        const needle = viewState.search.toLocaleLowerCase();
+        return currentRecords().filter(project => {
           const matchesName = !needle || project.name.toLocaleLowerCase().includes(needle);
-          const matchesServer = state.server === "ALL" || project.server === state.server;
+          const matchesServer = state.kind !== "project" || state.server === "ALL" || project.server === state.server;
           return matchesName && matchesServer;
         });
       }
@@ -1174,28 +1282,30 @@ HTML_TEMPLATE = r'''<!doctype html>
       }
 
       function projectComparator(left, right) {
-        if (state.sortKey === "default" || state.sortKey === "lifecycle") {
+        const viewState = currentState();
+        if (viewState.sortKey === "default" || viewState.sortKey === "lifecycle") {
           return left.defaultIndex - right.defaultIndex;
         }
-        const direction = state.sortDirection === "asc" ? 1 : -1;
+        const direction = viewState.sortDirection === "asc" ? 1 : -1;
         let result = 0;
-        if (state.sortKey === "name") {
+        if (viewState.sortKey === "name") {
           result = direction * left.name.localeCompare(right.name, undefined, { sensitivity: "base", numeric: true });
-        } else if (state.sortKey === "version") {
+        } else if (viewState.sortKey === "version") {
           result = compareNullable(left.version, right.version, direction, (a, b) => {
             if (left.versionCanary !== null && right.versionCanary !== null) return left.versionCanary - right.versionCanary;
             return a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
           });
-        } else if (state.sortKey === "jar") {
-          result = compareNullable(left.jarMtimeMs, right.jarMtimeMs, direction, (a, b) => a - b);
-        } else if (state.sortKey === "server") {
+        } else if (viewState.sortKey === "jar") {
+          result = compareNullable(left.lastEditMtimeMs, right.lastEditMtimeMs, direction, (a, b) => a - b);
+        } else if (viewState.sortKey === "server") {
           result = direction * (serverRank[left.server] - serverRank[right.server]);
         }
         return result || left.defaultIndex - right.defaultIndex;
       }
 
       function orderedLifecycles() {
-        if (state.sortKey === "lifecycle" && state.sortDirection === "desc") return [...lifecycleOrder].reverse();
+        const viewState = currentState();
+        if (viewState.sortKey === "lifecycle" && viewState.sortDirection === "desc") return [...lifecycleOrder].reverse();
         return lifecycleOrder;
       }
 
@@ -1212,15 +1322,16 @@ HTML_TEMPLATE = r'''<!doctype html>
       }
 
       function projectRow(project, lifecycle) {
+        const viewState = currentState();
         const row = element("tr", "project-row");
         row.dataset.lifecycle = lifecycle;
-        if (state.collapsed.has(lifecycle)) row.hidden = true;
+        if (viewState.collapsed.has(lifecycle)) row.hidden = true;
 
         const nameCell = element("td", "project-name");
         const toggle = element("button", "project-toggle");
         toggle.type = "button";
         toggle.dataset.expand = project.uuid;
-        toggle.setAttribute("aria-expanded", String(state.expanded === project.uuid));
+        toggle.setAttribute("aria-expanded", String(viewState.expanded === project.uuid));
         toggle.setAttribute("aria-controls", `release-detail-${project.uuid}`);
         toggle.title = project.name;
         toggle.appendChild(icon("chevron-right"));
@@ -1238,15 +1349,15 @@ HTML_TEMPLATE = r'''<!doctype html>
         row.appendChild(versionCell);
 
         const jarCell = element("td", "date-value");
-        if (project.jarMtimeMs === null) {
+        if (project.lastEditMtimeMs === null) {
           const unavailable = element("span", "muted", "—");
-          unavailable.title = project.jarNote;
+          unavailable.title = project.lastEditNote;
           jarCell.appendChild(unavailable);
         } else {
-          const formatted = formatLocalDateParts(project.jarMtimeMs);
+          const formatted = formatLocalDateParts(project.lastEditMtimeMs);
           const time = element("time");
-          time.dateTime = project.jarMtimeIso;
-          time.title = `${project.jarMtimeIso} · ${project.jarNote}`;
+          time.dateTime = project.lastEditMtimeIso;
+          time.title = `${project.lastEditMtimeIso} · ${project.lastEditNote}`;
           time.setAttribute("aria-label", `${formatted.datePart} ${formatted.timePart}`);
           const datePart = element("span", "date-part", formatted.datePart);
           const timePart = element("span", "time-part", formatted.timePart);
@@ -1257,19 +1368,22 @@ HTML_TEMPLATE = r'''<!doctype html>
         }
         row.appendChild(jarCell);
 
-        const serverCell = element("td", "server-value");
-        serverCell.appendChild(serverPill(project));
-        row.appendChild(serverCell);
+        if (state.kind === "project") {
+          const serverCell = element("td", "server-value");
+          serverCell.appendChild(serverPill(project));
+          row.appendChild(serverCell);
+        }
         return row;
       }
 
       function releaseDetailRow(project, lifecycle) {
+        const viewState = currentState();
         const row = element("tr", "release-detail");
         row.id = `release-detail-${project.uuid}`;
         row.dataset.lifecycle = lifecycle;
-        if (state.collapsed.has(lifecycle)) row.hidden = true;
+        if (viewState.collapsed.has(lifecycle)) row.hidden = true;
         const cell = document.createElement("td");
-        cell.colSpan = 5;
+        cell.colSpan = currentView().columns.length;
         const line = element("span", "release-summary");
         const version = project.versionDisplay || project.version || "Current release";
         line.appendChild(element("span", "release-summary-version", `${version} — `));
@@ -1280,56 +1394,104 @@ HTML_TEMPLATE = r'''<!doctype html>
       }
 
       function groupRow(lifecycle, count) {
+        const viewState = currentState();
         const row = element("tr", `group-row life-${lifecycle}`);
         const heading = document.createElement("th");
-        heading.colSpan = 5;
+        heading.colSpan = currentView().columns.length;
         heading.scope = "rowgroup";
         const button = element("button", "group-button");
         button.type = "button";
         button.dataset.collapse = lifecycle;
-        button.setAttribute("aria-expanded", String(!state.collapsed.has(lifecycle)));
+        button.setAttribute("aria-expanded", String(!viewState.collapsed.has(lifecycle)));
         const chevron = icon("chevron-down");
         chevron.classList.add("group-chevron");
         button.appendChild(chevron);
         button.appendChild(document.createTextNode(lifecycle));
-        button.appendChild(element("span", "group-count", `${count} ${count === 1 ? "project" : "projects"}`));
+        button.appendChild(element("span", "group-count", `${count} ${count === 1 ? currentView().noun : currentView().plural}`));
         heading.appendChild(button);
         row.appendChild(heading);
         return row;
       }
 
-      function updateCounts(baseProjects) {
+      function updateCounts(baseRecords) {
+        const viewState = currentState();
         const counts = Object.fromEntries(lifecycleOrder.map(lifecycle => [lifecycle, 0]));
-        for (const project of baseProjects) counts[project.lifecycle] += 1;
+        for (const project of baseRecords) counts[project.lifecycle] += 1;
         for (const chip of lifecycleFilters.querySelectorAll(".chip")) {
           const lifecycle = chip.dataset.lifecycle;
-          chip.setAttribute("aria-selected", String(lifecycle === state.lifecycle));
-          chip.querySelector(".chip-count").textContent = lifecycle === "ALL" ? baseProjects.length : counts[lifecycle];
+          chip.setAttribute("aria-selected", String(lifecycle === viewState.lifecycle));
+          chip.querySelector(".chip-count").textContent = lifecycle === "ALL" ? baseRecords.length : counts[lifecycle];
         }
       }
 
+      function configureTable() {
+        const view = currentView();
+        const labels = { name: view.title, lifecycle: "Lifecycle", version: "Version", jar: view.timestamp, server: "On Server" };
+        table.dataset.recordKind = state.kind;
+        caption.textContent = `Canonical Mynx dashboard ${view.noun} status`;
+        columnGroup.replaceChildren(...view.columns.map(column => element("col", column === "name" ? "project" : column)));
+        tableHead.replaceChildren(...view.columns.map(column => {
+          const heading = document.createElement("th");
+          heading.scope = "col";
+          heading.dataset.sortHeader = column;
+          const button = element("button", "sort-button");
+          button.type = "button";
+          button.dataset.sort = column;
+          button.append(document.createTextNode(`${labels[column]} `));
+          button.appendChild(element("span", "sort-indicator"));
+          heading.appendChild(button);
+          return heading;
+        }));
+      }
+
+      function updateViewControls() {
+        const view = currentView();
+        const viewState = currentState();
+        for (const tab of recordTabs) {
+          const kind = tab.dataset.recordKind;
+          const tabView = views[kind];
+          const count = recordsByKind[kind].length;
+          tab.setAttribute("aria-selected", String(kind === state.kind));
+          tab.textContent = `${count} ${count === 1 ? tabView.noun[0].toUpperCase() + tabView.noun.slice(1) : tabView.plural.replace(/\b\w/g, character => character.toUpperCase())}`;
+        }
+        search.placeholder = `Search ${view.plural}`;
+        searchLabel.textContent = `Search ${view.plural}`;
+        clearSearch.setAttribute("aria-label", `Clear ${view.noun} search`);
+        clearSearch.title = `Clear ${view.noun} search`;
+        search.value = viewState.search;
+        serverFilterWrap.hidden = state.kind !== "project";
+        emptyState.querySelector("h2").textContent = `No matching ${view.plural}`;
+        emptyState.querySelector("p").textContent = state.kind === "project"
+          ? "Try a different name, lifecycle, or server status."
+          : "Try a different name or lifecycle.";
+      }
+
       function updateSortState() {
+        const viewState = currentState();
+        const labels = { name: currentView().title, lifecycle: "Lifecycle", version: "Version", jar: currentView().timestamp, server: "On Server" };
         for (const heading of document.querySelectorAll("[data-sort-header]")) {
           const key = heading.dataset.sortHeader;
           const indicator = heading.querySelector(".sort-indicator");
-          if (key === state.sortKey) {
-            heading.setAttribute("aria-sort", state.sortDirection === "asc" ? "ascending" : "descending");
-            indicator.replaceChildren(icon(state.sortDirection === "asc" ? "sort-up" : "sort-down"));
+          if (key === viewState.sortKey) {
+            heading.setAttribute("aria-sort", viewState.sortDirection === "asc" ? "ascending" : "descending");
+            indicator.replaceChildren(icon(viewState.sortDirection === "asc" ? "sort-up" : "sort-down"));
           } else {
             heading.removeAttribute("aria-sort");
             indicator.replaceChildren(icon("arrow-down-up"));
           }
         }
-        resetOrder.disabled = state.sortKey === "default";
-        sortSummary.textContent = state.sortKey === "default"
+        resetOrder.disabled = viewState.sortKey === "default";
+        sortSummary.textContent = viewState.sortKey === "default"
           ? "Default Workbench order"
-          : `${sortLabels[state.sortKey]} · ${state.sortDirection === "asc" ? "ascending" : "descending"}`;
+          : `${labels[viewState.sortKey]} · ${viewState.sortDirection === "asc" ? "ascending" : "descending"}`;
       }
 
       function render(focusLifecycle) {
-        const baseProjects = baseFilteredProjects();
-        updateCounts(baseProjects);
-        const visible = baseProjects.filter(project => state.lifecycle === "ALL" || project.lifecycle === state.lifecycle);
+        const viewState = currentState();
+        const view = currentView();
+        const baseRecords = baseFilteredRecords();
+        updateCounts(baseRecords);
+        const visible = baseRecords.filter(project => viewState.lifecycle === "ALL" || project.lifecycle === viewState.lifecycle);
         rowsElement.replaceChildren();
 
         for (const lifecycle of orderedLifecycles()) {
@@ -1338,17 +1500,16 @@ HTML_TEMPLATE = r'''<!doctype html>
           rowsElement.appendChild(groupRow(lifecycle, group.length));
           for (const project of group) {
             rowsElement.appendChild(projectRow(project, lifecycle));
-            if (state.expanded === project.uuid) rowsElement.appendChild(releaseDetailRow(project, lifecycle));
+            if (viewState.expanded === project.uuid) rowsElement.appendChild(releaseDetailRow(project, lifecycle));
           }
         }
 
         const isEmpty = visible.length === 0;
         tableRegion.hidden = isEmpty;
         emptyState.hidden = !isEmpty;
-        visibleCount.textContent = `${visible.length} ${visible.length === 1 ? "project" : "projects"}`;
-        clearSearch.hidden = !state.search;
+        clearSearch.hidden = !viewState.search;
         updateSortState();
-        liveRegion.textContent = isEmpty ? "No matching projects" : `Showing ${visible.length} projects`;
+        liveRegion.textContent = isEmpty ? `No matching ${view.plural}` : `Showing ${visible.length} ${visible.length === 1 ? view.noun : view.plural}`;
 
         if (focusLifecycle) {
           const button = rowsElement.querySelector(`[data-collapse="${focusLifecycle}"]`);
@@ -1357,12 +1518,12 @@ HTML_TEMPLATE = r'''<!doctype html>
       }
 
       search.addEventListener("input", () => {
-        state.search = search.value.trim();
+        currentState().search = search.value.trim();
         render();
       });
       clearSearch.addEventListener("click", () => {
         search.value = "";
-        state.search = "";
+        currentState().search = "";
         render();
         search.focus();
       });
@@ -1373,34 +1534,36 @@ HTML_TEMPLATE = r'''<!doctype html>
       lifecycleFilters.addEventListener("click", event => {
         const chip = event.target.closest("[data-lifecycle]");
         if (!chip) return;
-        state.lifecycle = chip.dataset.lifecycle;
+        currentState().lifecycle = chip.dataset.lifecycle;
         render();
       });
-      document.querySelector("thead").addEventListener("click", event => {
+      tableHead.addEventListener("click", event => {
         const button = event.target.closest("[data-sort]");
         if (!button) return;
         const key = button.dataset.sort;
-        if (state.sortKey === key) {
-          state.sortDirection = state.sortDirection === "asc" ? "desc" : "asc";
+        const viewState = currentState();
+        if (viewState.sortKey === key) {
+          viewState.sortDirection = viewState.sortDirection === "asc" ? "desc" : "asc";
         } else {
-          state.sortKey = key;
-          state.sortDirection = key === "jar" ? "desc" : "asc";
+          viewState.sortKey = key;
+          viewState.sortDirection = key === "jar" ? "desc" : "asc";
         }
         render();
       });
       resetOrder.addEventListener("click", () => {
-        state.sortKey = "default";
-        state.sortDirection = "asc";
+        currentState().sortKey = "default";
+        currentState().sortDirection = "asc";
         render();
       });
       rowsElement.addEventListener("click", event => {
         const button = event.target.closest("[data-collapse]");
         if (button) {
+          const viewState = currentState();
           const lifecycle = button.dataset.collapse;
-          if (state.collapsed.has(lifecycle)) state.collapsed.delete(lifecycle);
+          if (viewState.collapsed.has(lifecycle)) viewState.collapsed.delete(lifecycle);
           else {
-            state.collapsed.add(lifecycle);
-            if (state.expanded && projects.find(project => project.uuid === state.expanded)?.lifecycle === lifecycle) state.expanded = null;
+            viewState.collapsed.add(lifecycle);
+            if (viewState.expanded && currentRecords().find(project => project.uuid === viewState.expanded)?.lifecycle === lifecycle) viewState.expanded = null;
           }
           render(lifecycle);
           return;
@@ -1408,19 +1571,30 @@ HTML_TEMPLATE = r'''<!doctype html>
         const projectButton = event.target.closest("[data-expand]");
         if (!projectButton) return;
         const uuid = projectButton.dataset.expand;
-        state.expanded = state.expanded === uuid ? null : uuid;
+        currentState().expanded = currentState().expanded === uuid ? null : uuid;
         render();
       });
       document.getElementById("clear-filters").addEventListener("click", () => {
-        state.lifecycle = "ALL";
-        state.server = "ALL";
-        state.search = "";
+        currentState().lifecycle = "ALL";
+        if (state.kind === "project") {
+          state.server = "ALL";
+          serverFilter.value = "ALL";
+        }
+        currentState().search = "";
         search.value = "";
-        serverFilter.value = "ALL";
         render();
         search.focus();
       });
 
+      recordTabs.forEach(tab => tab.addEventListener("click", () => {
+        state.kind = tab.dataset.recordKind;
+        configureTable();
+        updateViewControls();
+        render();
+      }));
+
+      configureTable();
+      updateViewControls();
       render();
     })();
   </script>

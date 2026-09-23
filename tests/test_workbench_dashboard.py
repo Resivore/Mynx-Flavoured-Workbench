@@ -157,6 +157,32 @@ class WorkbenchDashboardTests(unittest.TestCase):
 
             self.assertEqual(set(statuses), {project[0], resource_pack[0]})
             self.assertEqual({record.name for record in records}, {"Alpha", "Fern Pack"})
+            self.assertEqual({record.name: record.record_kind for record in records}, {"Alpha": "project", "Fern Pack": "resource_pack"})
+
+    def test_dashboard_payload_separates_canonical_record_kinds_and_defaults_to_projects(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            project = write_project(root, "alpha", "Alpha")
+            resource_pack = write_project(root, "fern-pack", "Fern Pack", container="resourcepacks", lifecycle="PARKED")
+            _, records = dashboard.discover_projects(root)
+
+            html = dashboard.render_dashboard(records, generated_at=datetime(2026, 9, 16, 5, 10, tzinfo=timezone.utc))
+
+        payload = json.loads(re.search(r'<script type="application/json" id="dashboard-data">(.*?)</script>', html, re.DOTALL).group(1))  # type: ignore[union-attr]
+        self.assertEqual(payload["counts"], {"projects": 1, "resourcePacks": 1})
+        self.assertEqual(payload["projects"][0]["uuid"], project[0])
+        self.assertEqual(payload["projects"][0]["kind"], "project")
+        self.assertEqual(payload["resourcePacks"][0]["uuid"], resource_pack[0])
+        self.assertEqual(payload["resourcePacks"][0]["kind"], "resource_pack")
+        self.assertNotIn("server", payload["resourcePacks"][0])
+        self.assertNotIn("jarMtimeMs", payload["resourcePacks"][0])
+        self.assertIn('id="projects-tab"', html)
+        self.assertIn('role="tab" data-record-kind="project" aria-selected="true"', html)
+        self.assertIn('role="tab" data-record-kind="resource_pack" aria-selected="false"', html)
+        self.assertIn('resource_pack: { noun: "resource pack", plural: "resource packs"', html)
+        self.assertIn('columns: ["name", "lifecycle", "version", "jar"]', html)
+        self.assertIn('serverFilterWrap.hidden = state.kind !== "project"', html)
+        self.assertIn('cell.colSpan = currentView().columns.length;', html)
 
     def test_default_order_uses_required_lifecycle_priority(self) -> None:
         projects = [model(lifecycle.title(), lifecycle) for lifecycle in reversed(dashboard.LIFECYCLE_ORDER)]
@@ -268,7 +294,7 @@ class WorkbenchDashboardTests(unittest.TestCase):
             self.assertIsNone(record.jar_mtime_iso)
             self.assertIn("SHA-256", record.jar_note)
 
-    def test_non_jar_current_artifact_is_unavailable_but_keeps_version(self) -> None:
+    def test_resource_pack_zip_uses_verified_canonical_timestamp(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             content = b"resource pack"
@@ -282,8 +308,20 @@ class WorkbenchDashboardTests(unittest.TestCase):
             make_artifact(item[1], "pack.zip", content, 1_800_000_000_000_000_000)
             record = dashboard.build_project_records(statuses_for(item), {})[0]
             self.assertEqual(record.current_version, "Pack 1")
-            self.assertIsNone(record.jar_mtime_ns)
-            self.assertIn("not a JAR", record.jar_note)
+            self.assertEqual(record.record_kind, "resource_pack")
+            self.assertEqual(record.jar_mtime_ns, 1_800_000_000_000_000_000)
+            self.assertIn("Verified current ZIP", record.jar_note)
+
+    def test_resource_pack_zip_prefers_canonical_built_at_when_not_retained(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            current = release("Pack 1", "pack.zip", "a" * 64)
+            current["built_at"] = "2026-09-16T05:11:00.123456789Z"
+            item = write_project(Path(temporary), "pack", "Pack", container="resourcepacks", current=current)
+
+            record = dashboard.build_project_records(statuses_for(item), {})[0]
+
+            self.assertEqual(record.jar_mtime_iso, "2026-09-16T05:11:00.123456789Z")
+            self.assertIn("current ZIP is not retained locally", record.jar_note)
 
     def test_server_release_states_require_exact_deployed_identity(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -587,7 +625,7 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertIn('col.server { width: 20%; }', html)
         self.assertIn('thead th:not(:first-child) .sort-button { justify-content: center;', html)
         self.assertIn('.date-value time { display: inline-grid; justify-items: center;', html)
-        self.assertIn('const formatted = formatLocalDateParts(project.jarMtimeMs);', html)
+        self.assertIn('const formatted = formatLocalDateParts(project.lastEditMtimeMs);', html)
         self.assertIn('time.append(datePart, timePart);', html)
         self.assertIn('>Version <span class="sort-indicator"', html)
         self.assertIn('.group-chevron { width: 10px; margin-right: 10px;', html)
