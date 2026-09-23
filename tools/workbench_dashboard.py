@@ -712,6 +712,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       --current: #70bb89;
       --outdated: #e4b75c;
       --not-deployed: var(--parked);
+      --controls-surface: #112a1e;
       --table-header-surface: #0c2118;
       --active-tab-surface: #153426;
       --radius: 13px;
@@ -771,7 +772,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       background: linear-gradient(180deg, rgba(15, 34, 26, 0.97), rgba(8, 21, 15, 0.98));
       box-shadow: var(--shadow);
     }
-    .controls { padding: 17px 18px 15px; border-bottom: 1px solid var(--line); background: rgba(19, 43, 32, 0.5); }
+    .controls { padding: 17px 18px 15px; background: var(--controls-surface); }
     .control-row { display: flex; align-items: center; gap: 12px; }
     .control-row + .control-row { margin-top: 13px; }
     .search-wrap { position: relative; flex: 1 1 360px; min-width: 220px; }
@@ -877,19 +878,19 @@ HTML_TEMPLATE = r'''<!doctype html>
       gap: 16px;
       min-height: 38px;
       padding: 0 18px;
-      background: var(--table-header-surface);
+      border-bottom: 1px solid var(--line);
+      background: var(--controls-surface);
       color: var(--muted);
       font-size: 0.8rem;
     }
-    .record-tabs { display: flex; align-self: stretch; margin-bottom: -1px; }
+    .record-tabs { display: flex; align-self: stretch; }
     .record-tab {
       display: inline-flex;
       align-items: center;
       min-height: 38px;
       padding: 0 12px;
       border: 1px solid transparent;
-      border-bottom: 0;
-      border-radius: 8px 8px 0 0;
+      border-radius: 8px;
       background: transparent;
       color: var(--quiet);
       font: inherit;
