@@ -625,20 +625,26 @@ class WorkbenchDashboardTests(unittest.TestCase):
         self.assertIn('col.server { width: 20%; }', html)
         self.assertIn('--controls-surface: #112a1e;', html)
         self.assertIn('--table-header-surface: #0c2118;', html)
-        self.assertIn('--active-tab-surface: #153426;', html)
         controls = re.search(r"\.controls \{(?P<rules>.*?)\n    \}", html, re.DOTALL)
         results_bar = re.search(r"\.results-bar \{(?P<rules>.*?)\n    \}", html, re.DOTALL)
+        record_tabs = re.search(r"\.record-tabs \{(?P<rules>.*?)\n    \}", html, re.DOTALL)
+        record_tab = re.search(r"\.record-tab \{(?P<rules>.*?)\n    \}", html, re.DOTALL)
         active_tab = re.search(r"\.record-tab\[aria-selected=\"true\"\] \{(?P<rules>.*?)\n    \}", html, re.DOTALL)
         table_header = re.search(r"thead th \{(?P<rules>.*?)\n    \}", html, re.DOTALL)
         self.assertIsNotNone(controls)
         self.assertIsNotNone(results_bar)
+        self.assertIsNotNone(record_tabs)
+        self.assertIsNotNone(record_tab)
         self.assertIsNotNone(active_tab)
         self.assertIsNotNone(table_header)
         self.assertIn('background: var(--controls-surface);', controls.group("rules"))  # type: ignore[union-attr]
         self.assertNotIn("border-bottom", controls.group("rules"))  # type: ignore[union-attr]
         self.assertIn('background: var(--controls-surface);', results_bar.group("rules"))  # type: ignore[union-attr]
         self.assertIn('border-bottom: 1px solid var(--line);', results_bar.group("rules"))  # type: ignore[union-attr]
-        self.assertIn('background: var(--active-tab-surface);', active_tab.group("rules"))  # type: ignore[union-attr]
+        self.assertIn('margin-bottom: -1px;', record_tabs.group("rules"))  # type: ignore[union-attr]
+        self.assertIn('border-bottom: 0;', record_tab.group("rules"))  # type: ignore[union-attr]
+        self.assertIn('border-radius: 8px 8px 0 0;', record_tab.group("rules"))  # type: ignore[union-attr]
+        self.assertIn('background: var(--table-header-surface);', active_tab.group("rules"))  # type: ignore[union-attr]
         self.assertIn('background: var(--table-header-surface);', table_header.group("rules"))  # type: ignore[union-attr]
         self.assertIn('thead th:not(:first-child) .sort-button { justify-content: center;', html)
         self.assertIn('.date-value time { display: inline-grid; justify-items: center;', html)

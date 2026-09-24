@@ -714,7 +714,6 @@ HTML_TEMPLATE = r'''<!doctype html>
       --not-deployed: var(--parked);
       --controls-surface: #112a1e;
       --table-header-surface: #0c2118;
-      --active-tab-surface: #153426;
       --radius: 13px;
       --shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
     }
@@ -883,14 +882,15 @@ HTML_TEMPLATE = r'''<!doctype html>
       color: var(--muted);
       font-size: 0.8rem;
     }
-    .record-tabs { display: flex; align-self: stretch; }
+    .record-tabs { display: flex; align-self: stretch; margin-bottom: -1px; }
     .record-tab {
       display: inline-flex;
       align-items: center;
       min-height: 38px;
       padding: 0 12px;
       border: 1px solid transparent;
-      border-radius: 8px;
+      border-bottom: 0;
+      border-radius: 8px 8px 0 0;
       background: transparent;
       color: var(--quiet);
       font: inherit;
@@ -901,7 +901,7 @@ HTML_TEMPLATE = r'''<!doctype html>
       position: relative;
       z-index: 1;
       border-color: var(--line);
-      background: var(--active-tab-surface);
+      background: var(--table-header-surface);
       color: var(--text);
     }
     .record-tab + .record-tab { margin-left: 3px; }
