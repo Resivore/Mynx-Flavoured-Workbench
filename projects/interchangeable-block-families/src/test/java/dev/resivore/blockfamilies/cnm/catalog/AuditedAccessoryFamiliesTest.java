@@ -139,8 +139,8 @@ final class AuditedAccessoryFamiliesTest {
                 "Unapproved singleton parapet entered the catalog");
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(35, accessories.size());
-        assertEquals(250, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(52, accessories.size());
+        assertEquals(454, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
@@ -223,6 +223,7 @@ final class AuditedAccessoryFamiliesTest {
                 .filter(family -> legacy.contains(family.category()))
                 .filter(family -> !family.key().getPath().equals("cnm/fence_gate/ribbits_mossy_oak_planks"))
                 .filter(family -> !family.key().getPath().startsWith("cnm/fence_gate/enderscape_"))
+                .filter(family -> !family.key().getPath().startsWith("cnm/window/masonry/"))
                 .toList();
 
         assertEquals(96, legacyFamilies.size());

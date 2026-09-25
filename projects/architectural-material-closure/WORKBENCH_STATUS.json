@@ -16,9 +16,9 @@
       "Keep Interchangeable Block Families as the sole Clutter No More ShapeMap authority while AMC owns only its original blocks, data, recipes, and presentation."
     ],
     "scope": [
-      "Canary 2 owns the literal five-detail masonry families for Andesite, Diorite, Granite, Brick, Mossy Stone Brick, Cobbled Deepslate, Mud Brick, and Dark Prismarine; its block classes and generated local resources preserve the exact BBB form-state topology rather than C1's vanilla approximations.",
-      "C2's protected provider-derived blockstates, models, textures, data, and JAR are generated only from exact local reference artifacts into ignored build/artifact paths for the owner's personal modpack; tracked source contains generation logic and literal mappings only.",
-      "C2 remains an additive content candidate: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
+      "Canary 3 completes the audited clumped masonry matrix across 17 profiles: BBB details; five thin paths and six pavings; four standard windows; parapets; Gothic windows; arrow slits; and louvered shutters. Cobbled Deepslate and Deepslate remain distinct only where the audited Paths provider exposes competing authored forms.",
+      "C3's protected provider-derived blockstates, recursive model closures, texture treatment, data, and JAR are generated only from exact local BBB/Macaw reference artifacts into ignored build/artifact paths for the owner's personal modpack; tracked source contains generation logic and literal mappings only.",
+      "C3 remains an additive content candidate: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
     ],
     "boundaries": {
       "owned_paths": ["projects/architectural-material-closure"],
@@ -65,26 +65,38 @@
         "identifier": "fabric-loom",
         "requirement": "=1.17.19",
         "reason": "Pinned Fabric build plugin used to produce C1."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwwindows",
+        "requirement": ">=2.4.2; controlled local reference mcw-windows-2.4.2-mc26.2fabric.jar",
+        "reason": "C3 uses Macaw Windows' stateful classes at runtime and locally materializes its audited window, parapet, Gothic, arrow-slit, and shutter form resources."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwpaths",
+        "requirement": ">=1.1.1; controlled local reference mcw-paths-1.1.1-mc26.2fabric.jar",
+        "reason": "C3 uses Macaw Paths' path block behavior at runtime and locally materializes its audited thin-path and paving resources."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 2 corrects C1's masonry-detail form implementation through locally generated BBB-reference materialization. Its private local JAR is statically validated and retained; no deployment or manual Minecraft runtime observation has been supplied.",
+    "milestone": "Canary 3 completes the locally derived BBB/Macaw masonry vocabulary closure across 17 clumped profiles. Its private local JAR is statically validated and retained; no deployment or manual Minecraft runtime observation has been supplied.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
-        "canary": 2,
+        "version": "0.1.0-canary3",
+        "canary": 3,
         "artifact": {
-          "filename": "architectural-material-closure-0.1.0-canary2.jar",
-          "sha256": "5dceb2f48b8328dcf7e1e9435d3c2716eb1719aea408b8bbb1b273e02b77e0d0"
+          "filename": "architectural-material-closure-0.1.0-canary3.jar",
+          "sha256": "5c74f1c3442d93d0877067195596344a826d118aa894e339db7e07b1244e7417"
         },
-        "built_at": "2026-09-25T04:47:09.0532696Z",
-        "source_commit": "028c7490480883e3b9cf6a26c37f980adfe601d8",
+        "built_at": "2026-09-25T05:20:36.1241545Z",
+        "source_commit": "acc3a821da106dc58fd08e72741da026be291192",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Locally materializes BBB-faithful masonry-detail forms across eight audited profiles without publishing derived resource payloads."
+        "summary": "Locally completes the BBB/Macaw masonry vocabulary across 17 audited clumped profiles without publishing derived resource payloads."
       },
       "accepted": null,
       "rollback": null,
@@ -98,10 +110,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 2,
-    "activity_at": "2026-09-25T04:47:09Z",
-    "updated_at": "2026-09-25T04:47:09Z",
-    "last_codex_at": "2026-09-25T04:47:09Z",
-    "source_commit": "028c7490480883e3b9cf6a26c37f980adfe601d8"
+    "revision": 3,
+    "activity_at": "2026-09-25T05:20:36Z",
+    "updated_at": "2026-09-25T05:20:36Z",
+    "last_codex_at": "2026-09-25T05:20:36Z",
+    "source_commit": "acc3a821da106dc58fd08e72741da026be291192"
   }
 }

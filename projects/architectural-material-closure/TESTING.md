@@ -1,13 +1,6 @@
-# C2 local masonry-detail verification
+# C3 local masonry-closure verification
 
-Exact current candidate: `architectural-material-closure-0.1.0-canary2.jar`,
-5,775,402 bytes, SHA-256
-`5DCEB2F48B8328DCF7E1E9435D3C2716EB1719AEA408B8BBB1B273E02B77E0D0`,
-built at `2026-09-25T04:47:09.0532696Z` from source checkpoint
-`028c7490480883e3b9cf6a26c37f980adfe601d8`. It is `STATIC_PASS /
-RUNTIME_UNTESTED`; no deployment or runtime result is recorded.
-
-## Controlled static checks
+Exact current candidate: `architectural-material-closure-0.1.0-canary3.jar`, 1,031,310 bytes, SHA-256 `5C74F1C3442D93D0877067195596344A826D118AA894E339DB7E07B1244E7417`, built at `2026-09-25T05:20:36.1241545Z` from source checkpoint `acc3a821`. It is `STATIC_PASS / RUNTIME_UNTESTED`. This private derivative JAR is local only and must not be distributed.
 
 From the repository root with Java 25:
 
@@ -15,34 +8,11 @@ From the repository root with Java 25:
 & projects/building-but-better/gradlew.bat -p projects/architectural-material-closure test check --no-daemon
 ```
 
-The focused contracts pin the 40 owned IDs in their literal material/form
-order and reject unapproved material expansion. C2's local generation task
-requires the exact private BBB reference JAR, derives the authoritative model
-and blockstate topology plus materialized texture treatment only into ignored
-build output, and the production-JAR check verifies the generated item models
-and rejects foreign classes. Do not distribute this local derivative JAR.
+Use only an owner-approved isolated Minecraft 26.2 Fabric environment with BBB, Macaw Windows, Macaw Paths, and AMC. Test every clumped masonry profile: Stone, Andesite, Diorite, Granite, Brick, Mossy Stone Brick, Cobbled Deepslate, Deepslate, Mud Brick, Polished Blackstone, Prismarine Bricks, Dark Prismarine, Sandstone, Red Sandstone, Quartz, Nether Brick, and End Stone Brick.
 
-## Manual C2 matrix
+1. Confirm the BBB Column/Urn/Moulding/Fence/Frame states and connected forms, five thin paths, six pavings, four standard windows, parapet, Gothic window, arrow slit, and louvered shutter exist once per profile.
+2. Verify placed forms retain provider state behavior: connected BBB fence/frame, window extension/open states, parapet facing, Gothic/arrow multi-block states, shutter hinge/open state, and thin path collision.
+3. Compare representative forms with BBB/Macaw originals: silhouette, negative space, proportions, and texture treatment must remain recognizable while only material changes.
+4. With IBF C11 present, confirm material changes preserve architectural form within each literal C3 family and do not cross profile boundaries.
 
-Use an owner-approved isolated Minecraft 26.2 Fabric environment. Do not
-interpret installing the JAR, reaching the title screen, or static validation
-as a pass.
-
-1. Confirm the exact filename and SHA-256 before launch. Verify the eight
-   material groups each expose Column, Urn, Moulding, Fence, and Frame exactly
-   once in Creative Building Blocks and Creative Search.
-2. Place, break, and pick-block every form for one ordinary stone material,
-   Mossy Stone Brick, Cobbled Deepslate, Mud Brick, and Dark Prismarine. Check
-   the BBB-equivalent connected/stateful model, own self-drop, native
-   hardness/sound baseline, and pickaxe behavior.
-3. Verify each Fence connects as a fence and each Frame connects as an
-   iron-bars-style frame without replacing a Minecraft, Macaw, or BBB item.
-4. At a stonecutter, verify every form consumes the matching native vanilla
-   material only. Confirm no recipe creates a provider-namespaced duplicate.
-5. With IBF present after its separately released literal catalog integration,
-   exercise the five-form family for each material and confirm no member crosses
-   material or source-component boundary.
-
-Stop and report a failure or inconclusive result on any missing/duplicate item,
-provider replacement, invalid recipe, incorrect self-drop, bad connection,
-crash, or cross-material interchangeability.
+Stop and report any missing item, provider replacement, invalid recipe/self-drop, incorrect state transition, bad model/texture, crash, or cross-material family.

@@ -4,299 +4,136 @@ plugins {
 
 version = project.mod_version
 group = project.maven_group
-
-base {
-    archivesName = project.archives_base_name
-}
+base { archivesName = project.archives_base_name }
 
 repositories {
     maven { url = 'https://maven.fabricmc.net/' }
     mavenCentral()
 }
 
+def bbbReferenceJar = file('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')
+def windowsReferenceJar = file('../../originals/mods/mcw-windows-2.4.2-mc26.2fabric.jar')
+def pathsReferenceJar = file('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar')
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    // The C2 runtime uses BBB's public, MIT-licensed stateful block classes.
-    // Its protected resources are read only by the local generation task below
-    // and are never sourced from or copied into tracked files.
-    implementation files('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')
-
+    // Runtime providers; protected resources are read only by the local task.
+    implementation files(bbbReferenceJar, windowsReferenceJar, pathsReferenceJar)
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+/* Cobbled deepslate and deepslate remain distinct only because Paths exposes
+ * competing authored forms. Other apparent aliases remain clumped profiles. */
 def masonryMaterials = [
-        [ id: 'andesite',          display: 'Andesite',           texture: 'minecraft:block/andesite' ],
-        [ id: 'diorite',           display: 'Diorite',            texture: 'minecraft:block/diorite' ],
-        [ id: 'granite',           display: 'Granite',            texture: 'minecraft:block/granite' ],
-        [ id: 'brick',             display: 'Brick',              texture: 'minecraft:block/bricks' ],
-        [ id: 'mossy_stone_brick', display: 'Mossy Stone Brick',  texture: 'minecraft:block/mossy_stone_bricks' ],
-        [ id: 'cobbled_deepslate', display: 'Cobbled Deepslate',  texture: 'minecraft:block/cobbled_deepslate' ],
-        [ id: 'mud_brick',         display: 'Mud Brick',          texture: 'minecraft:block/mud_bricks' ],
-        [ id: 'dark_prismarine',   display: 'Dark Prismarine',    texture: 'minecraft:block/dark_prismarine' ]
+ [id:'stone',display:'Stone',block:'stone',tint:[125,125,125],path:'stone',paving:'cobblestone',window:'stone',parapet:'andesite',gothic:'stone_brick',arrow:'stone_brick',shutter:'andesite'],
+ [id:'andesite',display:'Andesite',block:'andesite',tint:[128,128,128],path:'andesite',paving:'andesite',window:'andesite',parapet:'andesite',gothic:'stone_brick',arrow:'stone_brick',shutter:'andesite'],
+ [id:'diorite',display:'Diorite',block:'diorite',tint:[188,188,184],path:'diorite',paving:'diorite',window:'diorite',parapet:'diorite',gothic:'stone_brick',arrow:'stone_brick',shutter:'diorite'],
+ [id:'granite',display:'Granite',block:'granite',tint:[150,108,92],path:'granite',paving:'granite',window:'granite',parapet:'granite',gothic:'stone_brick',arrow:'stone_brick',shutter:'granite'],
+ [id:'brick',display:'Brick',block:'bricks',tint:[156,83,67],path:'brick',paving:'brick',window:'bricks',parapet:'andesite',gothic:'stone_brick',arrow:'stone_brick',shutter:'andesite'],
+ [id:'mossy_stone_brick',display:'Mossy Stone Brick',block:'mossy_stone_bricks',tint:[111,127,96],path:'mossy_stone',paving:'mossy_cobblestone',window:'stone',parapet:'andesite',gothic:'stone_brick',arrow:'stone_brick',shutter:'andesite'],
+ [id:'cobbled_deepslate',display:'Cobbled Deepslate',block:'cobbled_deepslate',tint:[72,72,78],path:'cobbled_deepslate',paving:'cobbled_deepslate',window:'stone',parapet:'andesite',gothic:'stone_brick',arrow:'stone_brick',shutter:'andesite'],
+ [id:'deepslate',display:'Deepslate',block:'deepslate',tint:[62,62,68],path:'deepslate',paving:'deepslate',window:'deepslate',parapet:'andesite',gothic:'stone_brick',arrow:'stone_brick',shutter:'andesite'],
+ [id:'mud_brick',display:'Mud Brick',block:'mud_bricks',tint:[143,100,77],path:'mud_brick',paving:'mud_brick',window:'stone',parapet:'andesite',gothic:'mud_brick',arrow:'mud_brick',shutter:'andesite'],
+ [id:'blackstone',display:'Polished Blackstone',block:'polished_blackstone',tint:[50,45,55],path:'blackstone',paving:'blackstone',window:'blackstone',parapet:'blackstone',gothic:'blackstone_brick',arrow:'blackstone_brick',shutter:'andesite'],
+ [id:'prismarine',display:'Prismarine Bricks',block:'prismarine_bricks',tint:[99,159,144],path:'andesite',paving:'andesite',window:'prismarine',parapet:'prismarine',gothic:'prismarine_brick',arrow:'prismarine_brick',shutter:'andesite'],
+ [id:'dark_prismarine',display:'Dark Prismarine',block:'dark_prismarine',tint:[49,88,78],path:'dark_prismarine',paving:'dark_prismarine',window:'dark_prismarine',parapet:'dark_prismarine',gothic:'dark_prismarine_brick',arrow:'dark_prismarine_brick',shutter:'andesite'],
+ [id:'sandstone',display:'Sandstone',block:'sandstone',tint:[215,202,158],path:'sandstone',paving:'sandstone',window:'sandstone',parapet:'andesite',gothic:'stone_brick',arrow:'stone_brick',shutter:'andesite'],
+ [id:'red_sandstone',display:'Red Sandstone',block:'red_sandstone',tint:[182,104,64],path:'red_sandstone',paving:'red_sandstone',window:'red_sandstone',parapet:'andesite',gothic:'stone_brick',arrow:'stone_brick',shutter:'andesite'],
+ [id:'quartz',display:'Quartz',block:'quartz_block',tint:[230,225,215],path:'andesite',paving:'andesite',window:'quartz',parapet:'andesite',gothic:'stone_brick',arrow:'stone_brick',shutter:'andesite'],
+ [id:'nether_brick',display:'Nether Brick',block:'nether_bricks',tint:[60,31,37],path:'andesite',paving:'andesite',window:'stone',parapet:'andesite',gothic:'nether_brick',arrow:'nether_brick',shutter:'andesite'],
+ [id:'end_brick',display:'End Stone Brick',block:'end_stone_bricks',tint:[218,224,177],path:'andesite',paving:'andesite',window:'stone',parapet:'andesite',gothic:'end_brick',arrow:'ender_brick',shutter:'andesite']
 ]
-def masonryForms = [
-        [ id: 'column',   display: 'Column' ],
-        [ id: 'urn',      display: 'Urn' ],
-        [ id: 'moulding', display: 'Moulding' ],
-        [ id: 'fence',    display: 'Fence' ],
-        [ id: 'frame',    display: 'Frame' ]
-]
-def generatedResourcesDir = layout.buildDirectory.dir('generated/amc-resources')
-def bbbReferenceJar = file('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')
+def bbbForms = [[id:'column',display:'Column'],[id:'urn',display:'Urn'],[id:'moulding',display:'Moulding'],[id:'fence',display:'Fence'],[id:'frame',display:'Frame']]
+def pathForms = [[id:'running_bond_path',display:'Running Bond Path'],[id:'strewn_rocky_path',display:'Strewn Rocky Path'],[id:'windmill_weave_path',display:'Windmill Weave Path'],[id:'flagstone_path',display:'Flagstone Path'],[id:'crystal_floor_path',display:'Crystal Floor Path']]
+def pavingForms = [[id:'diamond_paving',display:'Diamond Paving'],[id:'basket_weave_paving',display:'Basket Weave Paving'],[id:'square_paving',display:'Square Paving'],[id:'honeycomb_paving',display:'Honeycomb Paving'],[id:'clover_paving',display:'Clover Paving'],[id:'dumble_paving',display:'Dumble Paving']]
+def windowForms = [[id:'window',display:'Window'],[id:'window2',display:'Barred Window'],[id:'four_window',display:'Four Window'],[id:'pane_window',display:'Pane Window']]
+def windowsForms = [[id:'parapet',display:'Parapet',source:'parapet'],[id:'gothic',display:'Gothic Window',source:'gothic'],[id:'arrow_slit',display:'Arrow Slit',source:'arrow'],[id:'louvered_shutter',display:'Louvered Shutter',source:'shutter']]
+def generatedResourcesDir = layout.buildDirectory.dir('generated/amc-c3-minimal-resources')
 
 tasks.register('generateMasonryResources') {
     group = 'build setup'
-    description = "Generates AMC C1's original masonry assets, recipes, loot, and tags."
+    description = 'Locally materializes provider-faithful C3 masonry resources into ignored build inputs.'
     outputs.dir(generatedResourcesDir)
-    inputs.file(bbbReferenceJar)
-
+    inputs.files(bbbReferenceJar, windowsReferenceJar, pathsReferenceJar)
     doLast {
-        def root = generatedResourcesDir.get().asFile
-        delete(root)
-        def write = { String relative, String value ->
-            def target = new File(root, relative)
-            target.parentFile.mkdirs()
-            target.setText(value.stripIndent().trim() + '\n', 'UTF-8')
+        [bbbReferenceJar,windowsReferenceJar,pathsReferenceJar].each { if (!it.isFile()) throw new GradleException("Missing exact private provider reference: ${it}") }
+        def root = generatedResourcesDir.get().asFile; delete(root)
+        def ns = 'architectural_material_closure'
+        def write = { relative, value -> def target=new File(root,relative); target.parentFile.mkdirs(); target.setText(value.stripIndent().trim()+'\n','UTF-8') }
+        def text = { zip, entry -> zip.getInputStream(entry).getText('UTF-8') }
+        def rewrite = { value, material, provider -> value.replace("${provider}:block/","${ns}:block/derived/${material}/${provider}/").replace("${provider}:item/","${ns}:item/derived/${material}/${provider}/") }
+        def tint = { byte[] source, color ->
+            def input=javax.imageio.ImageIO.read(new ByteArrayInputStream(source)); if(input==null)return source
+            def output=new java.awt.image.BufferedImage(input.width,input.height,java.awt.image.BufferedImage.TYPE_INT_ARGB)
+            for(int y=0;y<input.height;y++)for(int x=0;x<input.width;x++){int pixel=input.getRGB(x,y);int a=(pixel>>>24)&255;int r=(pixel>>>16)&255;int g=(pixel>>>8)&255;int b=pixel&255;int l=Math.max(1,(r+g+b).intdiv(3));int nr=Math.min(255,(r*45+color[0]*l).intdiv(300));int ng=Math.min(255,(g*45+color[1]*l).intdiv(300));int nb=Math.min(255,(b*45+color[2]*l).intdiv(300));output.setRGB(x,y,(a<<24)|(nr<<16)|(ng<<8)|nb)}
+            def bytes=new ByteArrayOutputStream();javax.imageio.ImageIO.write(output,'png',bytes);bytes.toByteArray()
         }
-        def id = 'architectural_material_closure'
-        def simpleModel = { texture -> """
-            {
-              \"parent\": \"minecraft:block/cube_all\",
-              \"textures\": { \"all\": \"${texture}\" }
+        /* Copy only the recursive model/texture closure actually referenced by
+         * each selected provider blockstate. This keeps all derived bytes local
+         * while avoiding an unrelated full-provider resource mirror. */
+        def providerRefs = { value, provider ->
+            def result=[]; def matcher=(value =~ /${provider}:(block|item)\/([^\"#]+)/)
+            while(matcher.find()) result << [kind:matcher.group(1),path:matcher.group(2)]
+            result
+        }
+        def copyTexture = { zip, provider, material, path, copied ->
+            def entry=zip.getEntry("assets/${provider}/textures/${path}.png")
+            if(entry==null || !copied.add("texture:${path}")) return
+            def target=new File(root,"assets/${ns}/textures/derived/${material.id}/${provider}/${path}.png")
+            target.parentFile.mkdirs();target.bytes=tint(zip.getInputStream(entry).bytes,material.tint)
+        }
+        def copyModel
+        copyModel = { zip, provider, material, path, copied ->
+            def entry=zip.getEntry("assets/${provider}/models/${path}.json")
+            if(entry==null || !copied.add("model:${path}")) return false
+            def raw=text(zip,entry)
+            write("assets/${ns}/models/derived/${material.id}/${provider}/${path}.json",rewrite(raw,material.id,provider))
+            providerRefs(raw,provider).each { ref ->
+                if(!copyModel(zip,provider,material,ref.kind+'/'+ref.path,copied)) copyTexture(zip,provider,material,ref.kind+'/'+ref.path,copied)
             }
-            """ }
-        def itemModel = { model -> """
-            {
-              \"model\": { \"type\": \"minecraft:model\", \"model\": \"${id}:block/${model}\" }
-            }
-            """ }
-        def selfLoot = { name -> """
-            {
-              \"type\": \"minecraft:block\",
-              \"pools\": [{
-                \"conditions\": [{ \"condition\": \"minecraft:survives_explosion\" }],
-                \"entries\": [{ \"type\": \"minecraft:item\", \"name\": \"${id}:${name}\" }],
-                \"rolls\": 1.0
-              }],
-              \"random_sequence\": \"${id}:blocks/${name}\"
-            }
-            """ }
-        def stonecutting = { ingredient, name -> """
-            {
-              \"type\": \"minecraft:stonecutting\",
-              \"ingredient\": \"${ingredient}\",
-              \"result\": { \"id\": \"${id}:${name}\" }
-            }
-            """ }
-        def advancement = { ingredient, name -> """
-            {
-              \"parent\": \"minecraft:recipes/root\",
-              \"criteria\": {
-                \"has_material\": { \"conditions\": { \"items\": [{ \"items\": \"${ingredient}\" }] }, \"trigger\": \"minecraft:inventory_changed\" },
-                \"has_the_recipe\": { \"conditions\": { \"recipe\": \"${id}:${name}\" }, \"trigger\": \"minecraft:recipe_unlocked\" }
-              },
-              \"requirements\": [[\"has_the_recipe\", \"has_material\"]],
-              \"rewards\": { \"recipes\": [\"${id}:${name}\"] }
-            }
-            """ }
-
-        def lang = [:]
-        def pickaxe = []
-        masonryMaterials.each { material ->
-            masonryForms.each { form ->
-                def name = "${material.id}_${form.id}"
-                def itemId = "${id}:${name}"
-                lang["block.${id}.${name}"] = "${material.display} ${form.display}"
-                pickaxe << itemId
-                write("data/${id}/loot_table/blocks/${name}.json", selfLoot(name))
-                write("data/${id}/recipe/${name}_from_stonecutting.json",
-                        stonecutting("minecraft:${material.id == 'brick' ? 'bricks' : material.id + (material.id.endsWith('brick') ? 's' : '')}", name))
-                write("data/${id}/advancement/recipes/decorations/${name}_from_stonecutting.json",
-                        advancement("minecraft:${material.id == 'brick' ? 'bricks' : material.id + (material.id.endsWith('brick') ? 's' : '')}", name))
-                write("assets/${id}/items/${name}.json", itemModel(name + (form.id == 'fence' || form.id == 'frame' ? '_inventory' : '')))
-
-                if (form.id == 'column') {
-                    write("assets/${id}/blockstates/${name}.json", """{ \"variants\": { \"\": { \"model\": \"${id}:block/${name}\" } } }""")
-                    write("assets/${id}/models/block/${name}.json", """
-                        { \"parent\": \"minecraft:block/cube_column\", \"textures\": { \"end\": \"${material.texture}\", \"side\": \"${material.texture}\" } }
-                        """)
-                } else if (form.id == 'urn') {
-                    write("assets/${id}/blockstates/${name}.json", """{ \"variants\": { \"\": { \"model\": \"${id}:block/${name}\" } } }""")
-                    write("assets/${id}/models/block/${name}.json", """
-                        {
-                          \"textures\": { \"texture\": \"${material.texture}\" },
-                          \"elements\": [
-                            { \"from\": [3, 0, 3], \"to\": [13, 3, 13], \"faces\": { \"down\": { \"texture\": \"#texture\" }, \"up\": { \"texture\": \"#texture\" }, \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } },
-                            { \"from\": [5, 3, 5], \"to\": [11, 12, 11], \"faces\": { \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } },
-                            { \"from\": [3, 12, 3], \"to\": [13, 16, 13], \"faces\": { \"down\": { \"texture\": \"#texture\" }, \"up\": { \"texture\": \"#texture\" }, \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } }
-                          ]
-                        }
-                        """)
-                } else if (form.id == 'moulding') {
-                    write("assets/${id}/blockstates/${name}.json", """{ \"variants\": { \"\": { \"model\": \"${id}:block/${name}\" } } }""")
-                    write("assets/${id}/models/block/${name}.json", """
-                        {
-                          \"textures\": { \"texture\": \"${material.texture}\" },
-                          \"elements\": [
-                            { \"from\": [0, 0, 0], \"to\": [16, 5, 16], \"faces\": { \"down\": { \"texture\": \"#texture\" }, \"up\": { \"texture\": \"#texture\" }, \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } },
-                            { \"from\": [1, 5, 1], \"to\": [15, 9, 15], \"faces\": { \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } }
-                          ]
-                        }
-                        """)
-                } else if (form.id == 'fence') {
-                    write("assets/${id}/blockstates/${name}.json", """
-                        { \"multipart\": [
-                          { \"apply\": { \"model\": \"${id}:block/${name}_post\" } },
-                          { \"when\": { \"north\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"uvlock\": true } },
-                          { \"when\": { \"east\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 90, \"uvlock\": true } },
-                          { \"when\": { \"south\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 180, \"uvlock\": true } },
-                          { \"when\": { \"west\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 270, \"uvlock\": true } }
-                        ] }
-                        """)
-                    write("assets/${id}/models/block/${name}_post.json", """{ \"parent\": \"minecraft:block/fence_post\", \"textures\": { \"texture\": \"${material.texture}\" } }""")
-                    write("assets/${id}/models/block/${name}_side.json", """{ \"parent\": \"minecraft:block/fence_side\", \"textures\": { \"texture\": \"${material.texture}\" } }""")
-                    write("assets/${id}/models/block/${name}_inventory.json", """{ \"parent\": \"minecraft:block/fence_inventory\", \"textures\": { \"texture\": \"${material.texture}\" } }""")
-                } else {
-                    write("assets/${id}/blockstates/${name}.json", """
-                        { \"multipart\": [
-                          { \"apply\": { \"model\": \"${id}:block/${name}_post\" } },
-                          { \"when\": { \"north\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"uvlock\": true } },
-                          { \"when\": { \"east\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 90, \"uvlock\": true } },
-                          { \"when\": { \"south\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 180, \"uvlock\": true } },
-                          { \"when\": { \"west\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 270, \"uvlock\": true } }
-                        ] }
-                        """)
-                    write("assets/${id}/models/block/${name}_post.json", """{ \"parent\": \"minecraft:block/iron_bars_post\", \"textures\": { \"bars\": \"${material.texture}\", \"edge\": \"${material.texture}\" } }""")
-                    write("assets/${id}/models/block/${name}_side.json", """{ \"parent\": \"minecraft:block/iron_bars_side\", \"textures\": { \"bars\": \"${material.texture}\", \"edge\": \"${material.texture}\" } }""")
-                    write("assets/${id}/models/block/${name}_inventory.json", """{ \"parent\": \"minecraft:block/iron_bars_inventory\", \"textures\": { \"bars\": \"${material.texture}\", \"edge\": \"${material.texture}\" } }""")
-                }
+            true
+        }
+        def materializeState = { zip, provider, material, raw, copied ->
+            providerRefs(raw,provider).each { ref ->
+                if(!copyModel(zip,provider,material,ref.kind+'/'+ref.path,copied)) copyTexture(zip,provider,material,ref.kind+'/'+ref.path,copied)
             }
         }
-        /*
-         * Local-only BBB materialization.  This deliberately reads the
-         * owner's exact private provider JAR at build time and writes every
-         * derived byte solely beneath build/.  The copied model topology and
-         * tinted texture treatment preserve BBB's authored form language;
-         * no provider resource is present in tracked source.
-         */
-        if (!bbbReferenceJar.isFile()) throw new GradleException("Missing exact private BBB reference: ${bbbReferenceJar}")
-        def tint = [
-                andesite: [128, 128, 128], diorite: [188, 188, 184], granite: [150, 108, 92],
-                brick: [156, 83, 67], mossy_stone_brick: [111, 127, 96], cobbled_deepslate: [72, 72, 78],
-                mud_brick: [143, 100, 77], dark_prismarine: [49, 88, 78]
-        ]
-        def rewrite = { String value, String material ->
-            value.replace('bbb:block/', "${id}:block/derived/${material}/")
-                    .replace('bbb:item/', "${id}:item/derived/${material}/")
+        def itemModel = { model -> "{ \"model\": { \"type\": \"minecraft:model\", \"model\": \"${ns}:block/${model}\" } }" }
+        def selfLoot = { name -> "{ \"type\": \"minecraft:block\", \"pools\":[{\"conditions\":[{\"condition\":\"minecraft:survives_explosion\"}],\"entries\":[{\"type\":\"minecraft:item\",\"name\":\"${ns}:${name}\"}],\"rolls\":1.0}],\"random_sequence\":\"${ns}:blocks/${name}\"}" }
+        def recipe = { ingredient,name -> "{ \"type\":\"minecraft:stonecutting\",\"ingredient\":\"minecraft:${ingredient}\",\"result\":{\"id\":\"${ns}:${name}\"}}" }
+        def advancement = { ingredient,name -> "{\"parent\":\"minecraft:recipes/root\",\"criteria\":{\"has_material\":{\"conditions\":{\"items\":[{\"items\":\"minecraft:${ingredient}\"}]},\"trigger\":\"minecraft:inventory_changed\"},\"has_the_recipe\":{\"conditions\":{\"recipe\":\"${ns}:${name}\"},\"trigger\":\"minecraft:recipe_unlocked\"}},\"requirements\":[[\"has_the_recipe\",\"has_material\"]],\"rewards\":{\"recipes\":[\"${ns}:${name}\"]}}" }
+        def lang=[:];def pickaxe=[]
+        def generated = { material,form,state,zip,provider,copied ->
+            def name="${material.id}_${form.id}";def matcher=(state =~ /\"model\"\s*:\s*\"([^\"]+)\"/);if(!matcher.find())throw new GradleException("No model in provider blockstate for ${name}");def model=matcher.group(1)
+            materializeState(zip,provider,material,state,copied)
+            write("assets/${ns}/blockstates/${name}.json",state);write("assets/${ns}/models/block/${name}.json","{ \"parent\": \"${model}\" }");write("assets/${ns}/items/${name}.json",itemModel(name));write("data/${ns}/loot_table/blocks/${name}.json",selfLoot(name));write("data/${ns}/recipe/${name}_from_stonecutting.json",recipe(material.block,name));write("data/${ns}/advancement/recipes/decorations/${name}_from_stonecutting.json",advancement(material.block,name));lang["block.${ns}.${name}"]="${material.display} ${form.display}";pickaxe<<"${ns}:${name}"
         }
-        def tintPng = { byte[] source, List<Integer> color ->
-            def input = javax.imageio.ImageIO.read(new ByteArrayInputStream(source))
-            if (input == null) return source
-            def output = new java.awt.image.BufferedImage(input.width, input.height, java.awt.image.BufferedImage.TYPE_INT_ARGB)
-            for (int y = 0; y < input.height; y++) for (int x = 0; x < input.width; x++) {
-                int pixel = input.getRGB(x, y); int alpha = (pixel >>> 24) & 255
-                int red = (pixel >>> 16) & 255; int green = (pixel >>> 8) & 255; int blue = pixel & 255
-                int luminance = Math.max(1, (red + green + blue).intdiv(3))
-                int outRed = Math.min(255, (red * 45 + color[0] * luminance).intdiv(300))
-                int outGreen = Math.min(255, (green * 45 + color[1] * luminance).intdiv(300))
-                int outBlue = Math.min(255, (blue * 45 + color[2] * luminance).intdiv(300))
-                output.setRGB(x, y, (alpha << 24) | (outRed << 16) | (outGreen << 8) | outBlue)
-            }
-            def bytes = new ByteArrayOutputStream(); javax.imageio.ImageIO.write(output, 'png', bytes); bytes.toByteArray()
-        }
-        def zip = new java.util.zip.ZipFile(bbbReferenceJar)
+        def bbb=new java.util.zip.ZipFile(bbbReferenceJar);def windows=new java.util.zip.ZipFile(windowsReferenceJar);def paths=new java.util.zip.ZipFile(pathsReferenceJar)
         try {
             masonryMaterials.each { material ->
-                zip.entries().each { entry ->
-                    if (entry.directory) return
-                    def name = entry.name
-                    if (name.startsWith('assets/bbb/models/block/')) {
-                        def relative = name.substring('assets/bbb/models/block/'.length())
-                        def target = new File(root, "assets/${id}/models/block/derived/${material.id}/${relative}")
-                        target.parentFile.mkdirs()
-                        target.setText(rewrite(zip.getInputStream(entry).getText('UTF-8'), material.id), 'UTF-8')
-                    } else if (name.startsWith('assets/bbb/textures/block/') && name.endsWith('.png')) {
-                        def relative = name.substring('assets/bbb/textures/block/'.length())
-                        def target = new File(root, "assets/${id}/textures/block/derived/${material.id}/${relative}")
-                        target.parentFile.mkdirs()
-                        target.bytes = tintPng(zip.getInputStream(entry).bytes, tint[material.id])
-                    }
-                }
-                masonryForms.each { form ->
-                    def state = zip.getEntry("assets/bbb/blockstates/stone_${form.id}.json")
-                    if (state == null) throw new GradleException("BBB reference lacks stone_${form.id} blockstate")
-                    write("assets/${id}/blockstates/${material.id}_${form.id}.json",
-                            rewrite(zip.getInputStream(state).getText('UTF-8'), material.id))
-                    write("assets/${id}/items/${material.id}_${form.id}.json", itemModel("derived/${material.id}/${form.id}/stone_${form.id}"))
-                }
+                def bbbCopied=[] as Set;def windowsCopied=[] as Set;def pathsCopied=[] as Set
+                bbbForms.each { form -> def e=bbb.getEntry("assets/bbb/blockstates/stone_${form.id}.json");def raw=text(bbb,e);generated(material,form,rewrite(raw,material.id,'bbb'),bbb,'bbb',bbbCopied) }
+                pathForms.each { form -> def e=paths.getEntry("assets/mcwpaths/blockstates/${material.path}_${form.id}.json") ?: paths.getEntry("assets/mcwpaths/blockstates/andesite_${form.id}.json");def raw=text(paths,e);generated(material,form,rewrite(raw,material.id,'mcwpaths'),paths,'mcwpaths',pathsCopied) }
+                pavingForms.each { form -> def e=paths.getEntry("assets/mcwpaths/blockstates/${material.paving}_${form.id}.json") ?: paths.getEntry("assets/mcwpaths/blockstates/andesite_${form.id}.json");def raw=text(paths,e);generated(material,form,rewrite(raw,material.id,'mcwpaths'),paths,'mcwpaths',pathsCopied) }
+                windowForms.each { form -> def e=windows.getEntry("assets/mcwwindows/blockstates/${material.window}_${form.id}.json") ?: windows.getEntry("assets/mcwwindows/blockstates/stone_${form.id}.json");def raw=text(windows,e);generated(material,form,rewrite(raw,material.id,'mcwwindows'),windows,'mcwwindows',windowsCopied) }
+                windowsForms.each { form -> def e=windows.getEntry("assets/mcwwindows/blockstates/${material[form.source]}_${form.id}.json");if(e==null)throw new GradleException("Macaw Windows lacks ${material[form.source]}_${form.id}");def raw=text(windows,e);generated(material,form,rewrite(raw,material.id,'mcwwindows'),windows,'mcwwindows',windowsCopied) }
             }
-        } finally { zip.close() }
-        write("assets/${id}/lang/en_us.json", groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(lang)))
-        write("data/minecraft/tags/block/mineable/pickaxe.json", groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([replace: false, values: pickaxe])))
+        } finally { bbb.close();windows.close();paths.close() }
+        write("assets/${ns}/lang/en_us.json",groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(lang)));write('data/minecraft/tags/block/mineable/pickaxe.json',groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([replace:false,values:pickaxe])))
     }
 }
 
-processResources {
-    dependsOn tasks.named('generateMasonryResources')
-    inputs.property 'version', project.version
-    from(generatedResourcesDir)
-    filesMatching('fabric.mod.json') {
-        expand 'version': project.version
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.release = 25
-}
-
-test {
-    useJUnitPlatform()
-    systemProperty 'projectRoot', projectDir.absolutePath
-}
-
-java {
-    withSourcesJar()
-}
-
+processResources { dependsOn tasks.named('generateMasonryResources');inputs.property 'version',project.version;from(generatedResourcesDir);filesMatching('fabric.mod.json'){expand 'version':project.version} }
+tasks.withType(JavaCompile).configureEach { options.release=25 }
+test { useJUnitPlatform();systemProperty 'projectRoot',projectDir.absolutePath }
+java { withSourcesJar() }
 tasks.register('verifyProductionJarIsolation') {
-    group = 'verification'
-    description = 'Verifies the production JAR contains only AMC production classes and generated original resources.'
-    dependsOn tasks.named('jar')
-    doLast {
-        def archive = new java.util.zip.ZipFile(tasks.named('jar').get().archiveFile.get().asFile)
-        try {
-            def foreignClasses = archive.entries().findAll { entry ->
-                entry.name.endsWith('.class') && !entry.name.startsWith('dev/resivore/amc/')
-            }.collect { it.name }
-            if (!foreignClasses.isEmpty()) {
-                throw new GradleException("Production JAR contains foreign classes: ${foreignClasses}")
-            }
-            def expectedItems = masonryMaterials.collectMany { material ->
-                masonryForms.collect { form ->
-                    "assets/architectural_material_closure/items/${material.id}_${form.id}.json"
-                }
-            }
-            expectedItems.each { item ->
-                if (archive.getEntry(item) == null) throw new GradleException("Missing generated item model: ${item}")
-            }
-        } finally {
-            archive.close()
-        }
-    }
+    group='verification';description='Verifies the production JAR has AMC code and locally generated private resources only.';dependsOn tasks.named('jar')
+    doLast { def archive=new java.util.zip.ZipFile(tasks.named('jar').get().archiveFile.get().asFile);try {def foreign=archive.entries().findAll{it.name.endsWith('.class')&&!it.name.startsWith('dev/resivore/amc/')}.collect{it.name};if(!foreign.isEmpty())throw new GradleException("Production JAR contains foreign classes: ${foreign}");masonryMaterials.each{material->[bbbForms,pathForms,pavingForms,windowForms,windowsForms].flatten().each{form->def name="assets/architectural_material_closure/items/${material.id}_${form.id}.json";if(archive.getEntry(name)==null)throw new GradleException("Missing generated item model: ${name}")}}}finally{archive.close()} }
 }
-
-tasks.named('check') {
-    dependsOn tasks.named('verifyProductionJarIsolation')
-}
-
-tasks.register('stageCanaryArtifact', Copy) {
-    group = 'distribution'
-    description = 'Stages the verified current canary JAR for local retention.'
-    dependsOn tasks.named('check')
-    from { tasks.named('jar').get().archiveFile.get().asFile }
-    into(layout.projectDirectory.dir('artifacts'))
-}
+tasks.named('check') { dependsOn tasks.named('verifyProductionJarIsolation') }
+tasks.register('stageCanaryArtifact',Copy) { group='distribution';description='Stages the verified current canary JAR for local retention.';dependsOn tasks.named('check');from{tasks.named('jar').get().archiveFile.get().asFile};into(layout.projectDirectory.dir('artifacts')) }

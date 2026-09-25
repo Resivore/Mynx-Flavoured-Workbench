@@ -31,8 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
-        assertEquals(190, AuditedShapeFamilies.families().size());
-        assertEquals(1_442, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(233, AuditedShapeFamilies.families().size());
+        assertEquals(1_810, AuditedShapeFamilies.uniqueMemberCount());
         assertEquals(22, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
@@ -47,24 +47,24 @@ class AuditedShapeFamiliesTest {
                 TWO_HIGH_DOOR, 13,
                 THREE_HIGH_DOOR, 12,
                 TRAPDOOR, 13,
-                WINDOW, 46,
+                WINDOW, 63,
                 DISPLAY_FIXTURE, 15,
                 FENCE_GATE, 16,
                 BAR_CHAIN, 10,
                 BBB_DETAIL, 22,
-                MASONRY_DETAIL, 8,
-                BUILDING_ACCESSORY, 35);
+                MASONRY_DETAIL, 17,
+                BUILDING_ACCESSORY, 52);
         Map<AuditedShapeFamily.Category, Integer> expectedMembers = Map.of(
                 TWO_HIGH_DOOR, 273,
                 THREE_HIGH_DOOR, 229,
                 TRAPDOOR, 232,
-                WINDOW, 186,
+                WINDOW, 305,
                 DISPLAY_FIXTURE, 45,
                 FENCE_GATE, 62,
                 BAR_CHAIN, 30,
                 BBB_DETAIL, 95,
-                MASONRY_DETAIL, 40,
-                BUILDING_ACCESSORY, 250);
+                MASONRY_DETAIL, 85,
+                BUILDING_ACCESSORY, 454);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
             List<AuditedShapeFamily> families = AuditedShapeFamilies.families(category);
@@ -89,8 +89,8 @@ class AuditedShapeFamiliesTest {
             }
         }
 
-        assertEquals(190, keys.size());
-        assertEquals(1_442, members.size());
+        assertEquals(233, keys.size());
+        assertEquals(1_810, members.size());
     }
 
     @Test
@@ -132,13 +132,13 @@ class AuditedShapeFamiliesTest {
         assertEquals(Map.of(9, 1L, 22, 12L), sizeDistribution(TWO_HIGH_DOOR));
         assertEquals(Map.of(9, 1L, 20, 11L), sizeDistribution(THREE_HIGH_DOOR));
         assertEquals(Map.of(5, 1L, 18, 1L, 19, 11L), sizeDistribution(TRAPDOOR));
-        assertEquals(Map.of(4, 44L, 5, 2L), sizeDistribution(WINDOW));
+        assertEquals(Map.of(4, 44L, 5, 2L, 7, 17L), sizeDistribution(WINDOW));
         assertEquals(Map.of(3, 15L), sizeDistribution(DISPLAY_FIXTURE));
         assertEquals(Map.of(2, 1L, 4, 15L), sizeDistribution(FENCE_GATE));
         assertEquals(Map.of(2, 1L, 3, 8L, 4, 1L), sizeDistribution(BAR_CHAIN));
         assertEquals(Map.of(4, 15L, 5, 7L), sizeDistribution(BBB_DETAIL));
-        assertEquals(Map.of(5, 8L), sizeDistribution(MASONRY_DETAIL));
-        assertEquals(Map.of(2, 9L, 3, 2L, 7, 11L, 11, 8L, 12, 4L, 13, 1L),
+        assertEquals(Map.of(5, 17L), sizeDistribution(MASONRY_DETAIL));
+        assertEquals(Map.of(2, 9L, 3, 2L, 7, 11L, 11, 8L, 12, 21L, 13, 1L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }
 
@@ -233,7 +233,7 @@ class AuditedShapeFamiliesTest {
 
     @Test
     void canonicalExpandedCatalogHasStableDigest() throws NoSuchAlgorithmException {
-        assertEquals("AD6BF973549E71EA392C944F9933E8962F9767176D81867267F6BFB7815C4266",
+        assertEquals("49400A1E35313FB103843CF0629211C17E1D098533B4160835435234A02B8465",
                 digest(AuditedShapeFamilies.families()));
     }
 
@@ -272,6 +272,7 @@ class AuditedShapeFamiliesTest {
                 "cnm/building_accessory/enderscape_polished_kurodite");
         List<AuditedShapeFamily> acceptedC7 = AuditedShapeFamilies.families().stream()
                 .filter(family -> family.category() != MASONRY_DETAIL)
+                .filter(family -> !isC11MasonryKey(family))
                 .filter(family -> !approvedC8Keys.contains(family.key().getPath()))
                 .toList();
 
@@ -294,6 +295,7 @@ class AuditedShapeFamiliesTest {
                 "cnm/fence_gate/enderscape_murublight");
         List<AuditedShapeFamily> unchangedC8 = AuditedShapeFamilies.families().stream()
                 .filter(family -> family.category() != MASONRY_DETAIL)
+                .filter(family -> !isC11MasonryKey(family))
                 .filter(family -> !c9NewDetailKeys.contains(family.key().getPath()))
                 .filter(family -> !c9ExtendedFenceKeys.contains(family.key().getPath()))
                 .toList();
@@ -319,6 +321,11 @@ class AuditedShapeFamiliesTest {
         return HexFormat.of().withUpperCase().formatHex(
                 MessageDigest.getInstance("SHA-256")
                         .digest(serialization.toString().getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private static boolean isC11MasonryKey(AuditedShapeFamily family) {
+        String path = family.key().getPath();
+        return path.startsWith("cnm/window/masonry/") || path.startsWith("cnm/building_accessory/masonry/");
     }
 
     private static Map<Integer, Long> sizeDistribution(AuditedShapeFamily.Category category) {

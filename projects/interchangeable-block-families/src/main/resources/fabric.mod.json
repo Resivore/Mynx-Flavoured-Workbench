@@ -28,6 +28,6 @@
     "mcwtrpdoors": ">=1.1.5",
     "mcwwindows": ">=2.4.2",
     "dramaticdoors": ">=1.20.1-3.3.3",
-    "architectural_material_closure": "=0.1.0-canary1"
+    "architectural_material_closure": "*"
   }
 }

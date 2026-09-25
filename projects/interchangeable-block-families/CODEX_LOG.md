@@ -103,3 +103,14 @@
 - Artifact: Current/unaccepted C10 is `interchangeable-block-families-0.1.0-canary10.jar`, 57,827 bytes, SHA-256 `D4A82BE49CBA715A73A0C949B8165B0CB4660EB33DE8AA794C75B85780190EC3`, built at `2026-09-25T02:58:12.5820093Z` from source checkpoint `f69ff26b35b5898384f991ae06722de1c1099b2f`. Its exact AMC C1 provider is `architectural-material-closure-0.1.0-canary1.jar`, SHA-256 `49AE754AFDA6A1FAD959F11E1C51027A5B2DBC00CB5108CF69A70D3264C63999`.
 - Result: ACTIVE — C10 is `STATIC_PASS / RUNTIME_UNTESTED`; exact C7 remains the accepted baseline.
 - Next state: Repair the unrelated controlled GameTest support wiring only under its owning scope, then execute the C10 manual matrix against these exact C1/C10 bytes before acceptance or a successor.
+
+## 2026-09-25T05:26:35Z — Integrate AMC masonry closure as Canary 11
+
+- Revision: 11
+- Source checkpoint: `acc3a821da106dc58fd08e72741da026be291192`
+- Changes: Added literal C3 masonry Detail, Window, and Building Accessory families across all 17 audited clumped profiles (233 families / 1,810 unique members). C11 integrates BBB details, paths/pavings/parapets, standard/Gothic/arrow-slit windows, and louvered shutters. It changes Fabric's AMC requirement from the incorrect C1 equality pin to `architectural_material_closure: "*"`; the exact C3 filename/SHA/version remain controlled-validation evidence only.
+- Build/static: Java 25, Gradle 9.5.1, and Fabric Loom 1.17.19 passed focused C11 catalog, artifact, dependency, and recipe-cleanup contracts. The controlled C3 artifact has 408 item/blockstate/loot entries; recipe cleanup retains canonical first forms and removes 357 C3 non-parent alternatives.
+- Runtime: No Minecraft deployment, testing-profile access, or manual runtime observation occurred.
+- Artifact: Current/unaccepted C11 is `interchangeable-block-families-0.1.0-canary11.jar`, 58,912 bytes, SHA-256 `C0DFB4366C59325B7D91A998F6D1A70F4D1FA6DCEB2C6B7F86F9ED165AD1CC79`, built at `2026-09-25T05:26:35.4392877Z` from source checkpoint `acc3a821`.
+- Result: ACTIVE — `STATIC_PASS / RUNTIME_UNTESTED`; exact C7 remains accepted pending owner decision.
+- Next state: Obtain owner-supplied runtime observations against exact C3/C11 bytes before acceptance or a successor.

@@ -142,7 +142,7 @@ def qsnCompatReferenceJar = referenceJar(
         '../quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary6.jar')
 def amcReferenceJar = referenceJar(
         'amc_reference_jar',
-        '../architectural-material-closure/artifacts/architectural-material-closure-0.1.0-canary1.jar')
+        '../architectural-material-closure/artifacts/architectural-material-closure-0.1.0-canary3.jar')
 def aurorasLanternsReferenceJar = referenceJar(
         'auroras_lanterns_reference_jar',
         '../../originals/mods/auroraslanterns-2.1.1+26.2.jar')

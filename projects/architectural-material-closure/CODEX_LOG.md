@@ -19,3 +19,14 @@
 - Artifact: Current/unaccepted C2 is `architectural-material-closure-0.1.0-canary2.jar`, 5,775,402 bytes, SHA-256 `5dceb2f48b8328dcf7e1e9435d3c2716eb1719aea408b8bbb1b273e02b77e0d0`, built at `2026-09-25T04:47:09.0532696Z` from source checkpoint `028c7490480883e3b9cf6a26c37f980adfe601d8`.
 - Result: ACTIVE — `STATIC_PASS / RUNTIME_UNTESTED`; private local derivation is owner-authorized, while derived provider payloads remain untracked and unpublishable.
 - Next state: Extend the same local-only materialization pipeline to the remaining audited Macaw masonry vocabulary, add the resulting literal families to IBF, and obtain owner-supplied runtime observations before acceptance.
+
+## 2026-09-25T05:20:36Z — Complete Architectural Material Closure Canary 3
+
+- Revision: 3
+- Source checkpoint: `acc3a821da106dc58fd08e72741da026be291192`
+- Changes: Completed the owner-authorized local-only BBB/Macaw materialization matrix across 17 clumped masonry profiles. C3 supplies faithful BBB Column/Urn/Moulding/Fence/Frame forms plus five Macaw thin paths, six pavings, four standard windows, parapet, Gothic window, arrow slit, and louvered shutter forms. The tracked generator follows exact provider blockstate/model references recursively and writes retextured protected closures only beneath ignored build/artifact paths; no protected provider bytes are tracked or published.
+- Build/static: Java 25, Gradle 9.5.1, and Fabric Loom 1.17.19 passed `test check --no-daemon`; production isolation verifies 408 generated item models and no foreign classes.
+- Runtime: No Minecraft deployment, testing-profile access, or manual runtime observation occurred.
+- Artifact: Current/unaccepted C3 is `architectural-material-closure-0.1.0-canary3.jar`, 1,031,310 bytes, SHA-256 `5C74F1C3442D93D0877067195596344A826D118AA894E339DB7E07B1244E7417`, built at `2026-09-25T05:20:36.1241545Z` from source checkpoint `acc3a821`.
+- Result: ACTIVE — `STATIC_PASS / RUNTIME_UNTESTED`; private derived resources and JAR remain local/ignored.
+- Next state: Obtain owner-supplied runtime observations against exact C3 bytes before acceptance or a successor.
