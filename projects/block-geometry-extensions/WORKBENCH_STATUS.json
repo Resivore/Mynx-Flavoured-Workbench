@@ -35,7 +35,7 @@
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
       "C92 restores C78's explicit material/profile architecture and removes C79-C91 arbitrary-CNM discovery. C93 and C94 preserve the explicit provider catalog, role ownership, placed resources, and item presentation. C99 removes the C95-C98 spruce tint interception and tracing experiment, restores the exact C94 spruce/client contract, and retains C96's generated Veiled Leaves and Silver Birch Leaves Stair frames. C99 also makes Bookshelf Corner, Quarter Column, and Layer top/bottom faces select the existing Matcha bookshelf-top resource only while the active pack supplies it, keeps valid oak-planks fallback and Bookshelf side faces, and locks Bookshelf Stair wood UVs to the Minecraft 26.2 non-directional Stair frame without changing physical shape or placement.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.43-bge.canary99.spruce-rollback-bookshelf+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.44-bge.canary100.bbb-beam-compat-visibility+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks plus five distinct Macaw soil Path blocks, six Mynx Trees log/wood/leaf sources, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, all 12 BBB beam parents including Pale Oak, 68 exact Enderscape sources, and the provider-owned Mossy Stone root. C93 adopts exact vanilla or Enderscape Slab/Stairs/Wall blocks wherever supplied, suppresses overlapping fallback registrations while Enderscape is loaded, supplies only genuinely absent standard roles plus the five BGE-specific roles, and validates exactly one visible nine-role ShapeMap variation for each explicit family. The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` remains a declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's thin Beam Wall topology remains canonical for all 12 Beam families, and the three Enderscape private Beam variants preserve that topology with their own palettes."
     ],
     "boundaries": {
@@ -49,6 +49,7 @@
         "C93 changes only explicitly cataloged provider-family ownership and the shared rendering contracts requested for Walls, item/selector previews, lowered Path culling and Step UVs, and Corrupt Overgrowth state projection. Item-only preview transforms do not alter placed blockstates or world model rotations; no arbitrary discovery, generic root inference, deferred/profile-free family, provisional block, `*_slab_wall`, or post-resolution material guessing returns.",
         "C94 changes only item/selector presentation: it removes the C93-only catalog display override, restores each affected item's C92 model chain, and routes all 15 Beam Vertical Slab and Step items through inventory-only wrappers over their unchanged direct-Y placed models. It changes no placed blockstate or block-model resource, texture artwork, registration, placement rule, geometry state, provider ownership, selector order, economy, or architecture boundary.",
         "C99 selectively removes only the abandoned C95-C98 spruce tint/trace path and the exact Sodium diagnostic dependency. It retains C94 spruce/client behavior and C96's two-family tinted-Stair model-frame correction. Its Bookshelf changes use the existing resource-pack-controlled `minecraft:block/bookshelf_top` seam when supplied, with oak-planks fallback and unchanged Bookshelf sides; only the native Bookshelf Stair blockstate UV-lock selectors change among packaged placed resources. Native `minecraft:spruce_leaves` assets, visible tint ownership, all placement/collision/item behavior, other catalog families, and external Foundation resources remain outside BGE.",
+        "C100 changes only the CNM shared creative/search presentation predicate for the exact 24 retained BBB Beam Slab/Stair compatibility identities. Those registered BBB items remain outside ShapeMap and all canonical BGE roles; BGE axis-aware Beam Slab/Stairs, BBB Beam Walls, selector membership/order, private Murublight/Celestial/Veiled Beam families, registrations, recipes, placement, rendering, geometry, textures, and persistence identities are unchanged.",
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
         "C68 changes only normal axis-material Layer face UV rectangles: it preserves Layer bounds, placement, collision, state, texture roles, grain rotation, special visual paths, non-axis materials, all other geometries, registration, data, display transforms, and external-material support.",
@@ -68,7 +69,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C99 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C100 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -91,18 +92,18 @@
     ]
   },
   "state": {
-    "milestone": "C99 is the controlled-validated selective rollback of the C95-C98 spruce tint/trace experiment to C94, while preserving C96's two-family 80-state tinted-Stair frame correction. Bookshelf Corner, Quarter Column, and every Layer selector now use the established Matcha bookshelf-top seam when supplied and valid oak-planks fallback otherwise; Bookshelf Stair wood UV locking follows Minecraft 26.2 across all 40 physical states. The owner-supplied screenshot at `originals/assets/bookshelves.png` (SHA-256 9e9e5f7f66a9c68301baec69471a9bcf754c5cc6a678242fb5b360f8eb53f208) and report bind only to exact predecessor C98: newer Bookshelf forms lacked Matcha wooden ends, and the owner observed Bookshelf Stair wood orientation rotating with facing. Java 25 clean build and all 163/163 controlled GameTests passed; the isolated client lookup emitted `SPRUCE_C94_LOOKUP|derived=8|contexts=2|nativeShadows=0|result=PASS`. C99 remains ACTIVE and runtime-untested; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C100 keeps all 24 BBB Beam Slab/Stair compatibility registry identities while excluding them from both the final canonical ShapeMap selector and CNM's shared Fabric/vanilla creative-search admission predicate. Each of the 12 [Planks][Beam] selectors retains its exact sequence with one BGE axis-aware Beam Slab and one BGE axis-aware Beam Stairs; BBB Beam Walls and private Murublight behavior are unchanged. Java 25 build and all 163/163 controlled Minecraft 26.2 GameTests passed, followed by the architecture and archive verification suites. C100 remains ACTIVE and runtime-untested; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C99 (Spruce Rollback and Bookshelf; embedded 4.2.43-bge.canary99.spruce-rollback-bookshelf+26.2)",
-        "canary": 99,
-        "embedded_version": "4.2.43-bge.canary99.spruce-rollback-bookshelf+26.2",
+        "version": "C100 (BBB Beam Compatibility Visibility; embedded 4.2.44-bge.canary100.bbb-beam-compat-visibility+26.2)",
+        "canary": 100,
+        "embedded_version": "4.2.44-bge.canary100.bbb-beam-compat-visibility+26.2",
         "artifact": {
-          "filename": "BGE C99.jar",
-          "sha256": "b1fa590b2924450d71d258a5e7c7b7bc81be202db73adb32d01688eb66fc152a"
+          "filename": "BGE C100.jar",
+          "sha256": "ee2386c326bafd8fbe65c2a1b8ddb34b726c2a4635d944bc1add07cfb6764a75"
         },
-        "built_at": "2026-09-23T15:08:31.396566Z",
-        "source_commit": "53a55bd3619d7e25f20f93ce7fcca020a559c97d",
+        "built_at": "2026-09-25T16:32:41.0007939Z",
+        "source_commit": "b243c37ede3e0163f32c45e7213952cfd06fb330",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -111,20 +112,17 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C99 artifact targets Minecraft 26.2 and packages Fabric’s same-release predicate; six privately derived BBB/Enderscape Beam resources make the JAR PRIVATE_LOCAL_ONLY.",
+              "reason": "The exact C100 artifact targets Minecraft 26.2 and packages Fabric’s same-release predicate; six privately derived BBB/Enderscape Beam resources make the JAR PRIVATE_LOCAL_ONLY.",
               "regression_evidence": [
-                "Java 25 clean build from implementation checkpoint 53a55bd3619d7e25f20f93ce7fcca020a559c97d produced exact PRIVATE_LOCAL_ONLY `BGE C99.jar`, 6,420,402 bytes, SHA-256 b1fa590b2924450d71d258a5e7c7b7bc81be202db73adb32d01688eb66fc152a, finalized at 2026-09-23T15:08:31.396566Z.",
-                "All 163/163 controlled Minecraft 26.2 GameTests passed, including pack-present/absent Bookshelf Corner, Quarter Column, Layer, and item model coverage; the retained C96 Veiled Leaves and Silver Birch Leaves Stair-frame test checks all 80 physical states.",
-                "The isolated client GameTest emitted `SPRUCE_C94_LOOKUP|derived=8|contexts=2|nativeShadows=0|result=PASS` for CNM final lookup and confirmed BGE does not package or generate a native spruce blockstate, model, or texture shadow.",
-                "Read-only reference audit found `minecraft:block/bookshelf_top` in Matcha Flavoured and per-model Matcha Overlays overrides for canonical Bookshelf plus 14 older Slab, Stair, Wall, Vertical Slab, and Step models; vanilla 26.2 lacks this optional PNG. The new generated forms select that exact seam only when supplied and retain oak-planks fallback and Bookshelf sides.",
-                "The 40-state Bookshelf Stair audit matches actual Minecraft 26.2 x/y/model/uvlock selectors and inverse-face UV baking; the three Stair models retain vanilla geometry parents and Bookshelf side roles.",
-                "Archive verification found no removed spruce tint/trace class or native spruce asset, one intentionally changed Bookshelf Stair blockstate and 7,991 byte-identical C93 placed resources, exact retained C92 item examples, six approved private Beam PNGs, zero provider-resource leaks, and unchanged 875 blockstates/314 families/7,067 block models.",
-                "Owner-supplied `originals/assets/bookshelves.png`, SHA-256 9e9e5f7f66a9c68301baec69471a9bcf754c5cc6a678242fb5b360f8eb53f208, and report bind only to exact predecessor `BGE C98.jar`, SHA-256 19654c57715fcf4a96311252813059ae001d1eb2677a75792103ba0312ce885c: newer Bookshelf Corner, Quarter Column, and Layer lacked Matcha top/bottom treatment, and Bookshelf Stair wooden ends rotated with facing. No C99 gameplay observation or acceptance is inferred."
+                "Java 25 build from implementation checkpoint b243c37ede3e0163f32c45e7213952cfd06fb330 produced exact PRIVATE_LOCAL_ONLY `BGE C100.jar`, 6,422,989 bytes, SHA-256 ee2386c326bafd8fbe65c2a1b8ddb34b726c2a4635d944bc1add07cfb6764a75, finalized at 2026-09-25T16:32:41.0007939Z.",
+                "All 163/163 controlled Minecraft 26.2 GameTests passed, including every BBB Beam material’s retained registry aliases, ShapeMap exclusion, CNM shared creative/search denial, exact [Planks][Beam] selector sequence, and canonical axis-aware slab/stair uniqueness; Murublight remains outside the BBB compatibility visibility path.",
+                "The material-profile architecture suite and exact archive verifier passed; the archive retains the private Beam provenance boundary and records the declared C100 compatibility visibility classes without changing placed resources.",
+                "No Minecraft gameplay-profile observation or acceptance is inferred for C100."
               ]
             }
           ]
         },
-        "summary": "Restores C94 spruce behavior, retains C96 tinted-Stair frames, and completes resource-pack-controlled Bookshelf ends and non-directional Stair UVs; PRIVATE_LOCAL_ONLY."
+        "summary": "Keeps BBB Beam compatibility Slab/Stair identities while hiding their standalone CNM/Fabric creative-search entries; canonical axis-aware Beam forms remain sole selector roles; PRIVATE_LOCAL_ONLY."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -194,10 +192,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 61,
-    "activity_at": "2026-09-23T15:08:31.396566Z",
-    "updated_at": "2026-09-23T15:08:31.396566Z",
-    "last_codex_at": "2026-09-23T15:08:31.396566Z",
-    "source_commit": "53a55bd3619d7e25f20f93ce7fcca020a559c97d"
+    "revision": 62,
+    "activity_at": "2026-09-25T16:32:41.0007939Z",
+    "updated_at": "2026-09-25T16:32:41.0007939Z",
+    "last_codex_at": "2026-09-25T16:32:41.0007939Z",
+    "source_commit": "b243c37ede3e0163f32c45e7213952cfd06fb330"
   }
 }
