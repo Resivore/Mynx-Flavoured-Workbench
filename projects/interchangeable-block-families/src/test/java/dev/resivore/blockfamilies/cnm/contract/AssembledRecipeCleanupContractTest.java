@@ -142,6 +142,7 @@ class AssembledRecipeCleanupContractTest {
                 "enderscapeReferenceJar", "enderscape", "enderscape_approved_families",
                 ENDERSCAPE_APPROVED_RESULTS));
         recipes.addAll(recipesFromBbbEnderscapePackResults());
+        recipes.addAll(recipesFromJar("amcReferenceJar", "architectural_material_closure", "amc_masonry_details"));
         recipes.addAll(dynamicAndModeledRecipes());
 
         assertEquals(Map.ofEntries(
@@ -153,11 +154,12 @@ class AssembledRecipeCleanupContractTest {
                         Map.entry("minecraft_display_fixtures", 36L),
                         Map.entry("enderscape_approved_families", 40L),
                         Map.entry("bbb_enderscape_families", 18L),
+                        Map.entry("amc_masonry_details", 40L),
                         Map.entry("three_high_doors", 217L),
                         Map.entry("fence_gates", 24L),
                         Map.entry("vanilla_building_accessories", 42L)),
                 countByCorpus(recipes));
-        assertEquals(1_572, recipes.size());
+        assertEquals(1_612, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -186,13 +188,14 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("minecraft_display_fixtures", 24L);
         expectedRemoved.put("enderscape_approved_families", 17L);
         expectedRemoved.put("bbb_enderscape_families", 15L);
+        expectedRemoved.put("amc_masonry_details", 32L);
         expectedRemoved.put("three_high_doors", 217L);
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20 + 24 + 17 + 15,
+        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20 + 24 + 17 + 15 + 32,
                 removedNonParents.values().stream().mapToLong(Long::longValue).sum());
-        assertEquals(1_118L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(1_150L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -210,6 +213,7 @@ class AssembledRecipeCleanupContractTest {
                 "enderscapeReferenceJar", "enderscape", "enderscape_approved_families",
                 ENDERSCAPE_APPROVED_RESULTS));
         recipes.addAll(recipesFromBbbEnderscapePackResults());
+        recipes.addAll(recipesFromJar("amcReferenceJar", "architectural_material_closure", "amc_masonry_details"));
         recipes.addAll(dynamicAndModeledRecipes());
 
         ShapeFamilies shapes = ShapeFamilies.fromCatalog();
@@ -227,6 +231,7 @@ class AssembledRecipeCleanupContractTest {
         AuditedShapeFamilies.families(AuditedShapeFamily.Category.BBB_DETAIL).stream()
                 .filter(family -> family.key().getPath().startsWith("cnm/bbb_detail/wood/enderscape_"))
                 .forEach(newFamilies::add);
+        newFamilies.addAll(AuditedShapeFamilies.families(AuditedShapeFamily.Category.MASONRY_DETAIL));
         for (AuditedShapeFamily family : newFamilies) {
             family.members().forEach(member -> newMembers.add(member.toString()));
         }
@@ -245,7 +250,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(270, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(302, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",
@@ -263,7 +268,9 @@ class AssembledRecipeCleanupContractTest {
                 "enderscape:murublight_fence_gate",
                 "enderscape:polished_kurodite_pressure_plate",
                 "enderscape:shadoline_chain",
-                "bbb:veiled_frame", "bbb:celestial_pallet", "bbb:murublight_lattice")),
+                "bbb:veiled_frame", "bbb:celestial_pallet", "bbb:murublight_lattice",
+                "architectural_material_closure:andesite_urn_from_stonecutting",
+                "architectural_material_closure:dark_prismarine_frame_from_stonecutting")),
                 "Expected new-family non-parent recipes were not all removed");
 
         Set<String> environmentalCopperParents = Set.of(

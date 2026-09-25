@@ -51,6 +51,7 @@ public record AuditedShapeFamily(
         FENCE_GATE("fence_gate"),
         BAR_CHAIN("bar_chain"),
         BBB_DETAIL("bbb_detail"),
+        MASONRY_DETAIL("masonry_detail"),
         BUILDING_ACCESSORY("building_accessory");
 
         private final String keySegment;

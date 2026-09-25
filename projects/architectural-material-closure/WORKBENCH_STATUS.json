@@ -1,0 +1,107 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 3,
+  "identity": {
+    "uuid": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
+    "name": "Architectural Material Closure",
+    "project_id": "architectural-material-closure",
+    "aliases": ["AMC"],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Close verified material-form holes with original additive blocks, starting with masonry details whose comparable Macaw Paths profiles have no BBB counterpart.",
+      "Keep Interchangeable Block Families as the sole Clutter No More ShapeMap authority while AMC owns only its original blocks, data, recipes, and presentation."
+    ],
+    "scope": [
+      "Canary 1 owns exactly five original detail forms—column, urn, moulding, fence, and frame—for exactly Andesite, Diorite, Granite, Brick, Mossy Stone Brick, Cobbled Deepslate, Mud Brick, and Dark Prismarine.",
+      "Every C1 form has a self-drop, a native-material stonecutting recipe and advancement, a pickaxe tag, an English display name, and original JSON models that reference only Minecraft base textures.",
+      "C1 is an additive content candidate only: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
+    ],
+    "boundaries": {
+      "owned_paths": ["projects/architectural-material-closure"],
+      "exclusions": [
+        "Copying, bundling, redistributing, or deriving textures, models, code, data, or recipes from Macaw's, Building But Better, or another third-party provider.",
+        "A second ShapeMap, equivalence, switching, recipe-cleanup, networking, or storage system; Interchangeable Block Families remains the sole authority for those concerns.",
+        "Dynamic material discovery, registry-name or tag inference, provider mutation, replacing a provider block, or creating an alternate item in another provider namespace.",
+        "Minecraft deployment, testing-profile access, runtime-state mutation, acceptance, or inferring manual runtime success from static checks."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Exact game version for the C1 block registrations, data codecs, and generated resources."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Fabric runtime loader declared by C1."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": ">=0.157.0+26.2",
+        "reason": "Provides the supported Building Blocks creative-tab insertion used by C1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "java",
+        "requirement": "=25",
+        "reason": "Compilation release and controlled static-validation runtime for Minecraft 26.2."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "gradle",
+        "requirement": "=9.5.1",
+        "reason": "Exact build-tool version used to produce and verify C1."
+      },
+      {
+        "type": "TOOL",
+        "identifier": "fabric-loom",
+        "requirement": "=1.17.19",
+        "reason": "Pinned Fabric build plugin used to produce C1."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 is the first original AMC masonry-detail candidate. Its exact JAR is statically validated and retained; no deployment or manual Minecraft runtime observation has been supplied.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "canary": 1,
+        "artifact": {
+          "filename": "architectural-material-closure-0.1.0-canary1.jar",
+          "sha256": "49ae754afda6a1fad959f11e1c51027a5b2dbc00cb5108cf69a70d3264c63999"
+        },
+        "built_at": "2026-09-25T02:51:55.4416033Z",
+        "source_commit": "f69ff26b35b5898384f991ae06722de1c1099b2f",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        },
+        "summary": "Adds five original masonry-detail forms across eight audited material profiles missing their BBB-style counterpart."
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-25T02:52:27Z",
+    "updated_at": "2026-09-25T02:52:27Z",
+    "last_codex_at": "2026-09-25T02:52:27Z",
+    "source_commit": "f69ff26b35b5898384f991ae06722de1c1099b2f"
+  }
+}

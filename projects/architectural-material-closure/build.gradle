@@ -1,0 +1,237 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+def masonryMaterials = [
+        [ id: 'andesite',          display: 'Andesite',           texture: 'minecraft:block/andesite' ],
+        [ id: 'diorite',           display: 'Diorite',            texture: 'minecraft:block/diorite' ],
+        [ id: 'granite',           display: 'Granite',            texture: 'minecraft:block/granite' ],
+        [ id: 'brick',             display: 'Brick',              texture: 'minecraft:block/bricks' ],
+        [ id: 'mossy_stone_brick', display: 'Mossy Stone Brick',  texture: 'minecraft:block/mossy_stone_bricks' ],
+        [ id: 'cobbled_deepslate', display: 'Cobbled Deepslate',  texture: 'minecraft:block/cobbled_deepslate' ],
+        [ id: 'mud_brick',         display: 'Mud Brick',          texture: 'minecraft:block/mud_bricks' ],
+        [ id: 'dark_prismarine',   display: 'Dark Prismarine',    texture: 'minecraft:block/dark_prismarine' ]
+]
+def masonryForms = [
+        [ id: 'column',   display: 'Column' ],
+        [ id: 'urn',      display: 'Urn' ],
+        [ id: 'moulding', display: 'Moulding' ],
+        [ id: 'fence',    display: 'Fence' ],
+        [ id: 'frame',    display: 'Frame' ]
+]
+def generatedResourcesDir = layout.buildDirectory.dir('generated/amc-resources')
+
+tasks.register('generateMasonryResources') {
+    group = 'build setup'
+    description = "Generates AMC C1's original masonry assets, recipes, loot, and tags."
+    outputs.dir(generatedResourcesDir)
+
+    doLast {
+        def root = generatedResourcesDir.get().asFile
+        delete(root)
+        def write = { String relative, String value ->
+            def target = new File(root, relative)
+            target.parentFile.mkdirs()
+            target.setText(value.stripIndent().trim() + '\n', 'UTF-8')
+        }
+        def id = 'architectural_material_closure'
+        def simpleModel = { texture -> """
+            {
+              \"parent\": \"minecraft:block/cube_all\",
+              \"textures\": { \"all\": \"${texture}\" }
+            }
+            """ }
+        def itemModel = { model -> """
+            {
+              \"model\": { \"type\": \"minecraft:model\", \"model\": \"${id}:block/${model}\" }
+            }
+            """ }
+        def selfLoot = { name -> """
+            {
+              \"type\": \"minecraft:block\",
+              \"pools\": [{
+                \"conditions\": [{ \"condition\": \"minecraft:survives_explosion\" }],
+                \"entries\": [{ \"type\": \"minecraft:item\", \"name\": \"${id}:${name}\" }],
+                \"rolls\": 1.0
+              }],
+              \"random_sequence\": \"${id}:blocks/${name}\"
+            }
+            """ }
+        def stonecutting = { ingredient, name -> """
+            {
+              \"type\": \"minecraft:stonecutting\",
+              \"ingredient\": \"${ingredient}\",
+              \"result\": { \"id\": \"${id}:${name}\" }
+            }
+            """ }
+        def advancement = { ingredient, name -> """
+            {
+              \"parent\": \"minecraft:recipes/root\",
+              \"criteria\": {
+                \"has_material\": { \"conditions\": { \"items\": [{ \"items\": \"${ingredient}\" }] }, \"trigger\": \"minecraft:inventory_changed\" },
+                \"has_the_recipe\": { \"conditions\": { \"recipe\": \"${id}:${name}\" }, \"trigger\": \"minecraft:recipe_unlocked\" }
+              },
+              \"requirements\": [[\"has_the_recipe\", \"has_material\"]],
+              \"rewards\": { \"recipes\": [\"${id}:${name}\"] }
+            }
+            """ }
+
+        def lang = [:]
+        def pickaxe = []
+        masonryMaterials.each { material ->
+            masonryForms.each { form ->
+                def name = "${material.id}_${form.id}"
+                def itemId = "${id}:${name}"
+                lang["block.${id}.${name}"] = "${material.display} ${form.display}"
+                pickaxe << itemId
+                write("data/${id}/loot_table/blocks/${name}.json", selfLoot(name))
+                write("data/${id}/recipe/${name}_from_stonecutting.json",
+                        stonecutting("minecraft:${material.id == 'brick' ? 'bricks' : material.id + (material.id.endsWith('brick') ? 's' : '')}", name))
+                write("data/${id}/advancement/recipes/decorations/${name}_from_stonecutting.json",
+                        advancement("minecraft:${material.id == 'brick' ? 'bricks' : material.id + (material.id.endsWith('brick') ? 's' : '')}", name))
+                write("assets/${id}/items/${name}.json", itemModel(name + (form.id == 'fence' || form.id == 'frame' ? '_inventory' : '')))
+
+                if (form.id == 'column') {
+                    write("assets/${id}/blockstates/${name}.json", """{ \"variants\": { \"\": { \"model\": \"${id}:block/${name}\" } } }""")
+                    write("assets/${id}/models/block/${name}.json", """
+                        { \"parent\": \"minecraft:block/cube_column\", \"textures\": { \"end\": \"${material.texture}\", \"side\": \"${material.texture}\" } }
+                        """)
+                } else if (form.id == 'urn') {
+                    write("assets/${id}/blockstates/${name}.json", """{ \"variants\": { \"\": { \"model\": \"${id}:block/${name}\" } } }""")
+                    write("assets/${id}/models/block/${name}.json", """
+                        {
+                          \"textures\": { \"texture\": \"${material.texture}\" },
+                          \"elements\": [
+                            { \"from\": [3, 0, 3], \"to\": [13, 3, 13], \"faces\": { \"down\": { \"texture\": \"#texture\" }, \"up\": { \"texture\": \"#texture\" }, \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } },
+                            { \"from\": [5, 3, 5], \"to\": [11, 12, 11], \"faces\": { \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } },
+                            { \"from\": [3, 12, 3], \"to\": [13, 16, 13], \"faces\": { \"down\": { \"texture\": \"#texture\" }, \"up\": { \"texture\": \"#texture\" }, \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } }
+                          ]
+                        }
+                        """)
+                } else if (form.id == 'moulding') {
+                    write("assets/${id}/blockstates/${name}.json", """{ \"variants\": { \"\": { \"model\": \"${id}:block/${name}\" } } }""")
+                    write("assets/${id}/models/block/${name}.json", """
+                        {
+                          \"textures\": { \"texture\": \"${material.texture}\" },
+                          \"elements\": [
+                            { \"from\": [0, 0, 0], \"to\": [16, 5, 16], \"faces\": { \"down\": { \"texture\": \"#texture\" }, \"up\": { \"texture\": \"#texture\" }, \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } },
+                            { \"from\": [1, 5, 1], \"to\": [15, 9, 15], \"faces\": { \"north\": { \"texture\": \"#texture\" }, \"south\": { \"texture\": \"#texture\" }, \"west\": { \"texture\": \"#texture\" }, \"east\": { \"texture\": \"#texture\" } } }
+                          ]
+                        }
+                        """)
+                } else if (form.id == 'fence') {
+                    write("assets/${id}/blockstates/${name}.json", """
+                        { \"multipart\": [
+                          { \"apply\": { \"model\": \"${id}:block/${name}_post\" } },
+                          { \"when\": { \"north\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"uvlock\": true } },
+                          { \"when\": { \"east\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 90, \"uvlock\": true } },
+                          { \"when\": { \"south\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 180, \"uvlock\": true } },
+                          { \"when\": { \"west\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 270, \"uvlock\": true } }
+                        ] }
+                        """)
+                    write("assets/${id}/models/block/${name}_post.json", """{ \"parent\": \"minecraft:block/fence_post\", \"textures\": { \"texture\": \"${material.texture}\" } }""")
+                    write("assets/${id}/models/block/${name}_side.json", """{ \"parent\": \"minecraft:block/fence_side\", \"textures\": { \"texture\": \"${material.texture}\" } }""")
+                    write("assets/${id}/models/block/${name}_inventory.json", """{ \"parent\": \"minecraft:block/fence_inventory\", \"textures\": { \"texture\": \"${material.texture}\" } }""")
+                } else {
+                    write("assets/${id}/blockstates/${name}.json", """
+                        { \"multipart\": [
+                          { \"apply\": { \"model\": \"${id}:block/${name}_post\" } },
+                          { \"when\": { \"north\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"uvlock\": true } },
+                          { \"when\": { \"east\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 90, \"uvlock\": true } },
+                          { \"when\": { \"south\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 180, \"uvlock\": true } },
+                          { \"when\": { \"west\": \"true\" }, \"apply\": { \"model\": \"${id}:block/${name}_side\", \"y\": 270, \"uvlock\": true } }
+                        ] }
+                        """)
+                    write("assets/${id}/models/block/${name}_post.json", """{ \"parent\": \"minecraft:block/iron_bars_post\", \"textures\": { \"bars\": \"${material.texture}\", \"edge\": \"${material.texture}\" } }""")
+                    write("assets/${id}/models/block/${name}_side.json", """{ \"parent\": \"minecraft:block/iron_bars_side\", \"textures\": { \"bars\": \"${material.texture}\", \"edge\": \"${material.texture}\" } }""")
+                    write("assets/${id}/models/block/${name}_inventory.json", """{ \"parent\": \"minecraft:block/iron_bars_inventory\", \"textures\": { \"bars\": \"${material.texture}\", \"edge\": \"${material.texture}\" } }""")
+                }
+            }
+        }
+        write("assets/${id}/lang/en_us.json", groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(lang)))
+        write("data/minecraft/tags/block/mineable/pickaxe.json", groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([replace: false, values: pickaxe])))
+    }
+}
+
+processResources {
+    dependsOn tasks.named('generateMasonryResources')
+    inputs.property 'version', project.version
+    from(generatedResourcesDir)
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'projectRoot', projectDir.absolutePath
+}
+
+java {
+    withSourcesJar()
+}
+
+tasks.register('verifyProductionJarIsolation') {
+    group = 'verification'
+    description = 'Verifies the production JAR contains only AMC production classes and generated original resources.'
+    dependsOn tasks.named('jar')
+    doLast {
+        def archive = new java.util.zip.ZipFile(tasks.named('jar').get().archiveFile.get().asFile)
+        try {
+            def foreignClasses = archive.entries().findAll { entry ->
+                entry.name.endsWith('.class') && !entry.name.startsWith('dev/resivore/amc/')
+            }.collect { it.name }
+            if (!foreignClasses.isEmpty()) {
+                throw new GradleException("Production JAR contains foreign classes: ${foreignClasses}")
+            }
+            def expectedItems = masonryMaterials.collectMany { material ->
+                masonryForms.collect { form ->
+                    "assets/architectural_material_closure/items/${material.id}_${form.id}.json"
+                }
+            }
+            expectedItems.each { item ->
+                if (archive.getEntry(item) == null) throw new GradleException("Missing generated item model: ${item}")
+            }
+        } finally {
+            archive.close()
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyProductionJarIsolation')
+}
+
+tasks.register('stageCanaryArtifact', Copy) {
+    group = 'distribution'
+    description = 'Stages the verified current canary JAR for local retention.'
+    dependsOn tasks.named('check')
+    from { tasks.named('jar').get().archiveFile.get().asFile }
+    into(layout.projectDirectory.dir('artifacts'))
+}

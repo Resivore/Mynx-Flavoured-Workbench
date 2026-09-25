@@ -110,6 +110,11 @@ configurations {
         canBeResolved = true
         transitive = false
     }
+    amcReference {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
 }
 
 def referenceJar = { String propertyName, String defaultPath ->
@@ -135,6 +140,9 @@ def qsnReferenceJar = referenceJar(
 def qsnCompatReferenceJar = referenceJar(
         'qsn_compat_reference_jar',
         '../quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary6.jar')
+def amcReferenceJar = referenceJar(
+        'amc_reference_jar',
+        '../architectural-material-closure/artifacts/architectural-material-closure-0.1.0-canary1.jar')
 def aurorasLanternsReferenceJar = referenceJar(
         'auroras_lanterns_reference_jar',
         '../../originals/mods/auroraslanterns-2.1.1+26.2.jar')
@@ -238,6 +246,11 @@ dependencies {
     qsnReference files(qsnReferenceJar)
     qsnCompatReference files(qsnCompatReferenceJar)
 
+    // AMC C1 is a literal audited item provider. It remains external and is
+    // never bundled in IBF's production artifact.
+    runtimeOnly files(amcReferenceJar)
+    amcReference files(amcReferenceJar)
+
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.12.2'
     testImplementation 'org.ow2.asm:asm:9.10.1'
@@ -307,6 +320,7 @@ test {
             configurations.cnmIntegrationReference,
             configurations.qsnReference,
             configurations.qsnCompatReference,
+            configurations.amcReference,
             minecraftReferenceJar
     )
     systemProperty 'projectRoot', projectDir.absolutePath
@@ -329,6 +343,7 @@ test {
         systemProperty 'cnmIntegrationReferenceJar', configurations.cnmIntegrationReference.singleFile.absolutePath
         systemProperty 'qsnReferenceJar', configurations.qsnReference.singleFile.absolutePath
         systemProperty 'qsnCompatReferenceJar', configurations.qsnCompatReference.singleFile.absolutePath
+        systemProperty 'amcReferenceJar', configurations.amcReference.singleFile.absolutePath
     }
 }
 

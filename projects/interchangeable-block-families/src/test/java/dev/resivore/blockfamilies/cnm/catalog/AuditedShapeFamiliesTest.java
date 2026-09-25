@@ -18,6 +18,7 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BUILDING_ACCESSORY;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.DISPLAY_FIXTURE;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.FENCE_GATE;
+import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.MASONRY_DETAIL;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.THREE_HIGH_DOOR;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.TRAPDOOR;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.TWO_HIGH_DOOR;
@@ -30,8 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
-        assertEquals(182, AuditedShapeFamilies.families().size());
-        assertEquals(1_402, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(190, AuditedShapeFamilies.families().size());
+        assertEquals(1_442, AuditedShapeFamilies.uniqueMemberCount());
         assertEquals(22, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
@@ -51,6 +52,7 @@ class AuditedShapeFamiliesTest {
                 FENCE_GATE, 16,
                 BAR_CHAIN, 10,
                 BBB_DETAIL, 22,
+                MASONRY_DETAIL, 8,
                 BUILDING_ACCESSORY, 35);
         Map<AuditedShapeFamily.Category, Integer> expectedMembers = Map.of(
                 TWO_HIGH_DOOR, 273,
@@ -61,6 +63,7 @@ class AuditedShapeFamiliesTest {
                 FENCE_GATE, 62,
                 BAR_CHAIN, 30,
                 BBB_DETAIL, 95,
+                MASONRY_DETAIL, 40,
                 BUILDING_ACCESSORY, 250);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
@@ -86,8 +89,8 @@ class AuditedShapeFamiliesTest {
             }
         }
 
-        assertEquals(182, keys.size());
-        assertEquals(1_402, members.size());
+        assertEquals(190, keys.size());
+        assertEquals(1_442, members.size());
     }
 
     @Test
@@ -134,6 +137,7 @@ class AuditedShapeFamiliesTest {
         assertEquals(Map.of(2, 1L, 4, 15L), sizeDistribution(FENCE_GATE));
         assertEquals(Map.of(2, 1L, 3, 8L, 4, 1L), sizeDistribution(BAR_CHAIN));
         assertEquals(Map.of(4, 15L, 5, 7L), sizeDistribution(BBB_DETAIL));
+        assertEquals(Map.of(5, 8L), sizeDistribution(MASONRY_DETAIL));
         assertEquals(Map.of(2, 9L, 3, 2L, 7, 11L, 11, 8L, 12, 4L, 13, 1L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }
@@ -229,7 +233,7 @@ class AuditedShapeFamiliesTest {
 
     @Test
     void canonicalExpandedCatalogHasStableDigest() throws NoSuchAlgorithmException {
-        assertEquals("0FF094610F07F1D93E6B95F95AC61F6011BB10423D77CE34548CF973B23CEEA7",
+        assertEquals("AD6BF973549E71EA392C944F9933E8962F9767176D81867267F6BFB7815C4266",
                 digest(AuditedShapeFamilies.families()));
     }
 
@@ -267,6 +271,7 @@ class AuditedShapeFamiliesTest {
                 "cnm/building_accessory/enderscape_polished_veradite",
                 "cnm/building_accessory/enderscape_polished_kurodite");
         List<AuditedShapeFamily> acceptedC7 = AuditedShapeFamilies.families().stream()
+                .filter(family -> family.category() != MASONRY_DETAIL)
                 .filter(family -> !approvedC8Keys.contains(family.key().getPath()))
                 .toList();
 
@@ -288,6 +293,7 @@ class AuditedShapeFamiliesTest {
                 "cnm/fence_gate/enderscape_celestial",
                 "cnm/fence_gate/enderscape_murublight");
         List<AuditedShapeFamily> unchangedC8 = AuditedShapeFamilies.families().stream()
+                .filter(family -> family.category() != MASONRY_DETAIL)
                 .filter(family -> !c9NewDetailKeys.contains(family.key().getPath()))
                 .filter(family -> !c9ExtendedFenceKeys.contains(family.key().getPath()))
                 .toList();

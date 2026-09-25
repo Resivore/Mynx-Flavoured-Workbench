@@ -12,6 +12,7 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BUILDING_ACCESSORY;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.DISPLAY_FIXTURE;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.FENCE_GATE;
+import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.MASONRY_DETAIL;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.THREE_HIGH_DOOR;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.TRAPDOOR;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.TWO_HIGH_DOOR;
@@ -25,8 +26,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 182;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_402;
+    public static final int EXPECTED_FAMILY_COUNT = 190;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_442;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -1086,6 +1087,17 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/stone/quartz", BBB_DETAIL, bbb("quartz_column"), bbb("quartz_urn"), bbb("quartz_moulding"), bbb("quartz_fence"), bbb("quartz_frame"))
     );
 
+    private static final List<AuditedShapeFamily> MASONRY_DETAILS = List.of(
+            family("cnm/masonry_detail/andesite", MASONRY_DETAIL, amc("andesite_column"), amc("andesite_urn"), amc("andesite_moulding"), amc("andesite_fence"), amc("andesite_frame")),
+            family("cnm/masonry_detail/diorite", MASONRY_DETAIL, amc("diorite_column"), amc("diorite_urn"), amc("diorite_moulding"), amc("diorite_fence"), amc("diorite_frame")),
+            family("cnm/masonry_detail/granite", MASONRY_DETAIL, amc("granite_column"), amc("granite_urn"), amc("granite_moulding"), amc("granite_fence"), amc("granite_frame")),
+            family("cnm/masonry_detail/brick", MASONRY_DETAIL, amc("brick_column"), amc("brick_urn"), amc("brick_moulding"), amc("brick_fence"), amc("brick_frame")),
+            family("cnm/masonry_detail/mossy_stone_brick", MASONRY_DETAIL, amc("mossy_stone_brick_column"), amc("mossy_stone_brick_urn"), amc("mossy_stone_brick_moulding"), amc("mossy_stone_brick_fence"), amc("mossy_stone_brick_frame")),
+            family("cnm/masonry_detail/cobbled_deepslate", MASONRY_DETAIL, amc("cobbled_deepslate_column"), amc("cobbled_deepslate_urn"), amc("cobbled_deepslate_moulding"), amc("cobbled_deepslate_fence"), amc("cobbled_deepslate_frame")),
+            family("cnm/masonry_detail/mud_brick", MASONRY_DETAIL, amc("mud_brick_column"), amc("mud_brick_urn"), amc("mud_brick_moulding"), amc("mud_brick_fence"), amc("mud_brick_frame")),
+            family("cnm/masonry_detail/dark_prismarine", MASONRY_DETAIL, amc("dark_prismarine_column"), amc("dark_prismarine_urn"), amc("dark_prismarine_moulding"), amc("dark_prismarine_fence"), amc("dark_prismarine_frame"))
+    );
+
     private static final List<AuditedShapeFamily> BUILDING_ACCESSORIES = List.of(
             family("cnm/building_accessory/oak", BUILDING_ACCESSORY, minecraft("oak_button"),
                     minecraft("oak_pressure_plate"),
@@ -1382,6 +1394,7 @@ public final class AuditedShapeFamilies {
             case FENCE_GATE -> FENCE_GATES;
             case BAR_CHAIN -> BAR_CHAINS;
             case BBB_DETAIL -> BBB_DETAILS;
+            case MASONRY_DETAIL -> MASONRY_DETAILS;
             case BUILDING_ACCESSORY -> BUILDING_ACCESSORIES;
         };
     }
@@ -1438,6 +1451,10 @@ public final class AuditedShapeFamilies {
         return Identifier.fromNamespaceAndPath("bbb", path);
     }
 
+    private static Identifier amc(String path) {
+        return Identifier.fromNamespaceAndPath("architectural_material_closure", path);
+    }
+
     private static Identifier ribbits(String path) {
         return Identifier.fromNamespaceAndPath("ribbits", path);
     }
@@ -1460,6 +1477,7 @@ public final class AuditedShapeFamilies {
         families.addAll(FENCE_GATES);
         families.addAll(BAR_CHAINS);
         families.addAll(BBB_DETAILS);
+        families.addAll(MASONRY_DETAILS);
         families.addAll(BUILDING_ACCESSORIES);
         return List.copyOf(families);
     }
