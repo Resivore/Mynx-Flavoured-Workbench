@@ -20,13 +20,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Preserve exact accepted C7 byte-for-byte as the accepted baseline while C11 retains C8/C9/C10 and integrates the complete literal AMC C3 masonry closure; C11 remains runtime-untested."
+      "Preserve exact accepted C7 byte-for-byte as the accepted baseline while C12 replaces C11's rectangular AMC catalog with the complete literal provider-first AMC C4 masonry matrix; C12 remains runtime-untested."
     ],
     "scope": [
-      "Preserve every accepted C7 family, every C8/C9/C10 addition, and every canonical parent while adding the complete literal AMC C3 masonry matrix: BBB details, paths/pavings/parapets, and windows/Gothic/arrow-slit/louvered-shutter forms across 17 audited clumped profiles, yielding 233 families, 1,810 unique item IDs, and a 22-member maximum without suffix, tag, or namespace inference.",
+      "Preserve every accepted C7 family, every C8/C9/C10 addition, and every canonical parent while replacing C11's rectangular catalog with the complete literal provider-first AMC C4 masonry matrix: 646 cells across 17 audited material profiles, using 409 exact Minecraft/BBB/Macaw provider IDs and 237 exact AMC gap IDs, yielding 166 families, 1,811 unique item IDs, and a 38-member maximum without suffix, tag, or namespace inference.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain exact accepted C7 and historical rollback C3 artifacts while C10 is the current candidate; no owner acceptance or manual Minecraft runtime result is inferred from static evidence."
+      "Retain exact accepted C7 and historical rollback C3 artifacts while C12 is the current candidate; no owner acceptance or manual Minecraft runtime result is inferred from static evidence."
     ],
     "boundaries": {
       "owned_paths": [
@@ -36,8 +36,8 @@
         "Clutter No More owns ShapeMap, selection controls, 1:1 transmuteCopy switching, recipe equivalence and cleanup, and the graph consumed by Quick Stack Nearby; IBF does not add a second registry, switcher, keybind, networking protocol, recipe engine, or storage-equivalence system.",
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
-        "Partial provider materialization, dynamic discovery, registry-name or tag inference, cross-material or cross-finish collapsing, and Macaw paving/full/slab/stair forms remain outside the audited contract.",
-        "C11 is an unaccepted candidate and does not alter the exact accepted C7 release identity, any Minecraft testing profile, or the separate human-owned server-release record.",
+        "Partial provider materialization, dynamic discovery, registry-name or tag inference, and cross-material or cross-finish collapsing remain outside the audited contract. C12's approved provider-first masonry cells include only their explicitly enumerated Macaw paving, full, slab, and stair forms.",
+        "C12 is an unaccepted candidate and does not alter the exact accepted C7 release identity, any Minecraft testing profile, or the separate human-owned server-release record.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -105,8 +105,8 @@
       {
         "type": "PROJECT",
         "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
-        "requirement": "runtime architectural_material_closure:*; controlled validation input AMC C3 (0.1.0-canary3), architectural-material-closure-0.1.0-canary3.jar, 1,031,310 bytes, SHA-256 5c74f1c3442d93d0877067195596344a826d118aa894e339db7e07b1244e7417",
-        "reason": "AMC is an actively developed external provider, so IBF's Fabric runtime dependency is presence-only. The exact C3 artifact is retained solely as controlled validation evidence for the literal C11 catalog."
+        "requirement": "runtime architectural_material_closure:*; controlled validation input AMC C4 (0.1.0-canary4), architectural-material-closure-0.1.0-canary4.jar, 1,771,750 bytes, SHA-256 b7344ec4b53305cdfeb5cfd514e2570b919ecca5432d6c9ed11b7e1846a90fd5",
+        "reason": "AMC is an actively developed external provider, so IBF's Fabric runtime dependency is presence-only. The exact C4 artifact is retained solely as controlled validation evidence for the literal provider-first C12 catalog."
       },
       {
         "type": "MOD",
@@ -153,18 +153,18 @@
     ]
   },
   "state": {
-    "milestone": "Canary 11 is the current ACTIVE candidate after exact AMC C3 artifact audit, complete masonry-family integration, unrestricted AMC runtime-dependency validation, and retained-artifact verification. Exact C7 remains the byte-for-byte accepted baseline until explicit owner acceptance; no manual Minecraft runtime result is recorded.",
+    "milestone": "Canary 12 is the current ACTIVE candidate after exact AMC C4 provider-first masonry audit, complete 646-cell matrix integration, unrestricted AMC runtime-dependency validation, and retained-artifact verification. Exact C7 remains the byte-for-byte accepted baseline until explicit owner acceptance; no manual Minecraft runtime result is recorded.",
     "releases": {
       "current": {
-        "version": "C11 (0.1.0-canary11)",
-        "canary": 11,
-        "embedded_version": "0.1.0-canary11",
+        "version": "C12 (0.1.0-canary12)",
+        "canary": 12,
+        "embedded_version": "0.1.0-canary12",
         "artifact": {
-          "filename": "interchangeable-block-families-0.1.0-canary11.jar",
-          "sha256": "c0dfb4366c59325b7d91a998f6d1a70f4d1fa6dceb2c6b7f86f9ed165ad1cc79"
+          "filename": "interchangeable-block-families-0.1.0-canary12.jar",
+          "sha256": "68ed59c4d1a7542572ed82df9b2617cec9bf1c6437304ca7a5ae49ac51e01c1e"
         },
-        "built_at": "2026-09-25T05:26:35.4392877Z",
-        "source_commit": "acc3a821da106dc58fd08e72741da026be291192",
+        "built_at": "2026-09-25T22:06:44.1468886Z",
+        "source_commit": "27eece1bcd30b6e164a50c23103e87a076b0af8e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -182,7 +182,7 @@
             }
           ]
         },
-        "summary": "Completes literal AMC C3 masonry families and changes AMC runtime dependency to unrestricted provider presence."
+        "summary": "Replaces C11's duplicate AMC masonry catalog with C4's 646-cell literal provider-first matrix."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -219,10 +219,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-09-25T05:26:35Z",
-    "updated_at": "2026-09-25T05:26:35Z",
-    "last_codex_at": "2026-09-25T05:26:35Z",
-    "source_commit": "acc3a821da106dc58fd08e72741da026be291192"
+    "revision": 12,
+    "activity_at": "2026-09-25T22:06:44.1468886Z",
+    "updated_at": "2026-09-25T22:06:44.1468886Z",
+    "last_codex_at": "2026-09-25T22:06:44.1468886Z",
+    "source_commit": "27eece1bcd30b6e164a50c23103e87a076b0af8e"
   }
 }

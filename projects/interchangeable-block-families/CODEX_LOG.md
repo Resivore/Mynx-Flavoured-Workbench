@@ -114,3 +114,14 @@
 - Artifact: Current/unaccepted C11 is `interchangeable-block-families-0.1.0-canary11.jar`, 58,912 bytes, SHA-256 `C0DFB4366C59325B7D91A998F6D1A70F4D1FA6DCEB2C6B7F86F9ED165AD1CC79`, built at `2026-09-25T05:26:35.4392877Z` from source checkpoint `acc3a821`.
 - Result: ACTIVE — `STATIC_PASS / RUNTIME_UNTESTED`; exact C7 remains accepted pending owner decision.
 - Next state: Obtain owner-supplied runtime observations against exact C3/C11 bytes before acceptance or a successor.
+
+## 2026-09-25T22:06:44.1468886Z — Finalize provider-first AMC masonry matrix as Canary 12
+
+- Revision: 12
+- Source checkpoint: `27eece1bcd30b6e164a50c23103e87a076b0af8e`
+- Changes: Replaced C11's rectangular AMC-only masonry catalog with 17 literal C12 masonry families. The completed matrix has 646 exact cells: 409 Minecraft, BBB, Macaw Paths, or Macaw Windows provider IDs and 237 AMC C4 gap IDs. C12 removes every duplicate AMC stand-in, rehomes the affected legacy BBB/window/accessory shells so every cell has exactly one owner, preserves the unrestricted Fabric dependency `architectural_material_closure: "*"`, and retains accepted C7 unchanged.
+- Build/static: Java 25 / Gradle 9.5.1 / Fabric Loom 1.17.19 passed all 57 JUnit checks, including exact C4 SHA/resource validation, provider-first 646/409/237 coverage, BBB regressions, catalog/recipe contracts, and production-JAR isolation. The assembled cleanup corpus removes 1,541 non-parent results with no parent removal or literal rewrite.
+- Runtime: No Minecraft profile, deployment, server-release record, or manual runtime observation was touched. The controlled GameTest launch is blocked before tests by the pre-existing Ribbits support requirements yungsapi, trinkets_updated, geckolib, cloth-config2, customportals, and matcha-heart-death compatibility; no dependency was changed to work around it.
+- Artifact: Current retained C12 is `interchangeable-block-families-0.1.0-canary12.jar`, 69,075 bytes, SHA-256 `68ed59c4d1a7542572ed82df9b2617cec9bf1c6437304ca7a5ae49ac51e01c1e`, built at `2026-09-25T22:06:44.1468886Z` from the preceding source checkpoint above. Controlled provider evidence is AMC C4 `architectural-material-closure-0.1.0-canary4.jar`, SHA-256 `b7344ec4b53305cdfeb5cfd514e2570b919ecca5432d6c9ed11b7e1846a90fd5`.
+- Result: ACTIVE / STATIC_PASS / RUNTIME_UNTESTED. Exact C7 remains the accepted baseline pending owner decision.
+- Next state: Under explicit owner runtime direction, test the exact C12/C4 bytes in an isolated environment and record only supplied observations; retain C7 unchanged until an owner acceptance decision.

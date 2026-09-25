@@ -1,12 +1,12 @@
-# C11 masonry-closure verification checklist
+# C12 provider-first masonry verification checklist
 
-Exact current candidate: `interchangeable-block-families-0.1.0-canary11.jar`, embedded version `0.1.0-canary11`, 58,912 bytes, SHA-256 `C0DFB4366C59325B7D91A998F6D1A70F4D1FA6DCEB2C6B7F86F9ED165AD1CC79`, built at `2026-09-25T05:26:35.4392877Z` from source `acc3a821`. Controlled validation used AMC C3 `architectural-material-closure-0.1.0-canary3.jar` (`5C74F1C3442D93D0877067195596344A826D118AA894E339DB7E07B1244E7417`). Exact C7 remains the accepted baseline.
+Exact current candidate: `interchangeable-block-families-0.1.0-canary12.jar`, embedded version `0.1.0-canary12`, 69,075 bytes, SHA-256 `68ED59C4D1A7542572ED82DF9B2617CEC9BF1C6437304CA7A5AE49AC51E01C1E`, built at `2026-09-25T22:06:44.1468886Z` from source `27eece1bcd30b6e164a50c23103e87a076b0af8e`. Controlled validation used AMC C4 `architectural-material-closure-0.1.0-canary4.jar` (`B7344EC4B53305CDFEB5CFD514E2570B919ECCA5432D6C9ED11B7E1846A90FD5`). Exact C7 remains the accepted baseline.
 
-Use an owner-approved isolated Minecraft 26.2 Fabric environment with Clutter No More and declared providers. AMC is a presence-only runtime dependency: Fabric must accept any installed `architectural_material_closure` version; C11 must not request C1, C2, C3, or a Canary range.
+Use an owner-approved isolated Minecraft 26.2 Fabric environment with Clutter No More and declared providers. AMC is a presence-only runtime dependency: Fabric must accept any installed `architectural_material_closure` version; C12 must not request an AMC version or Canary range.
 
-1. Confirm the catalog reports 233 families, 1,810 unique items, and largest family size 22. Confirm Fabric dependency resolution accepts AMC C3 without an AMC version pin.
-2. For each C3 masonry profile, verify the literal Detail family has BBB Column/Urn/Moulding/Fence/Frame; the Building Accessory family has paths, pavings, and parapet; and the Window family has standard, Gothic, arrow-slit, and louvered-shutter forms.
-3. Confirm changing material retains the form rather than replacing it with different architecture. No member may cross material profile boundaries.
-4. Verify recipes retain the canonical first form in each literal C3 family and cleanup removes only non-parent alternatives. Retest component preservation, fail-closed mismatches, Quick Stack Nearby affinity, and reload behavior.
+1. Confirm the catalog reports 166 families, 1,811 unique items, and largest family size 38. Confirm the 17 masonry families contain exactly 646 cells: 409 exact Minecraft/BBB/Macaw provider IDs and 237 AMC C4 gap IDs.
+2. For each material/form cell, confirm a real provider form is selected wherever present and AMC supplies only the genuine gap. Check representative buttons/pressure plates, BBB details, Macaw paths/pavings/full blocks/slabs/stairs, and standard/Gothic/arrow-slit/louvered windows.
+3. Confirm no provider-owned cell has an AMC duplicate, no approved cell is omitted or repeated, and changing material retains the selected form without crossing material boundaries.
+4. Verify recipes retain the canonical first form in each literal C12 family and cleanup removes only non-parent alternatives. Retest component preservation, fail-closed mismatches, Quick Stack Nearby affinity, selector/display behavior, and reload behavior.
 
-Static checks passed; no Minecraft deployment, profile access, or manual runtime observation is recorded. Stop and report any missing literal item, dependency pin, duplicate membership, canonical-parent drift, cleanup error, or crash.
+Static checks passed. The controlled GameTest harness could not resolve its pre-existing Ribbits support set (yungsapi, trinkets_updated, geckolib, cloth-config2, customportals, and matcha-heart-death compatibility); no support dependency, Minecraft profile, deployment, or manual runtime observation was changed. Stop and report any missing literal item, dependency pin, duplicate membership, canonical-parent drift, cleanup error, or crash.
