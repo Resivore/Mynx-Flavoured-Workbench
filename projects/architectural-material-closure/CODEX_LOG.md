@@ -30,3 +30,14 @@
 - Artifact: Current/unaccepted C3 is `architectural-material-closure-0.1.0-canary3.jar`, 1,031,310 bytes, SHA-256 `5C74F1C3442D93D0877067195596344A826D118AA894E339DB7E07B1244E7417`, built at `2026-09-25T05:20:36.1241545Z` from source checkpoint `acc3a821`.
 - Result: ACTIVE — `STATIC_PASS / RUNTIME_UNTESTED`; private derived resources and JAR remain local/ignored.
 - Next state: Obtain owner-supplied runtime observations against exact C3 bytes before acceptance or a successor.
+
+## 2026-09-25T20:37:28Z — Complete Architectural Material Closure Canary 4
+
+- Revision: 4
+- Source checkpoint: `8995d572ef5317779e49a896e6ca663b128a6508`
+- Changes: Replaced C3's rectangular local registry with the fixed provider-first 646-cell audit: all 409 Minecraft/BBB/Macaw-owned cells remain unregistered by AMC and exactly 237 genuine gaps are supplied. Corrected behavior fidelity to use native Minecraft controls, Macaw `ConnectedWindow`, `EngravedBlock`, and `FacingPathBlock` where the provider uses them. The local-only resource generator now closes concrete provider models and textures recursively, derives native control model hierarchies, and rejects unresolved AMC or declared external references.
+- Build/static: Java 25, Gradle 9.5.1, and Fabric Loom 1.17.19 completed `test check stageCanaryArtifact --no-daemon --rerun-tasks`. The C4 check proves 646 approved cells, 409 provider-owned cells, 237 AMC cells, exact generated item/blockstate coverage, resource closure, and no foreign production classes. This is static evidence only.
+- Runtime: No Minecraft deployment, testing-profile access, or manual runtime observation occurred.
+- Artifact: Current/unaccepted C4 is `architectural-material-closure-0.1.0-canary4.jar`, 1,771,750 bytes, SHA-256 `B7344EC4B53305CDFEB5CFD514E2570B919ECCA5432D6C9ED11B7E1846A90FD5`, built at `2026-09-25T20:37:28.9453931Z` from source checkpoint `8995d572ef5317779e49a896e6ca663b128a6508`.
+- Result: ACTIVE — `STATIC_PASS / RUNTIME_UNTESTED`; private derived resources and JAR remain local and retained without publishing protected payloads.
+- Next state: Obtain owner-supplied runtime observations against the exact C4 bytes before acceptance or a successor.

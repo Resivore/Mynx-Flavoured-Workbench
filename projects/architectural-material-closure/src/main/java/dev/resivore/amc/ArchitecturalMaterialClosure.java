@@ -1,165 +1,40 @@
 package dev.resivore.amc;
 
+import com.mcwpaths.kikoz.objects.EngravedBlock;
+import com.mcwpaths.kikoz.objects.FacingPathBlock;
 import com.mcwpaths.kikoz.objects.PathBlock;
-import com.starfish_studios.bbb.block.ColumnBlock;
-import com.starfish_studios.bbb.block.FrameBlock;
-import com.starfish_studios.bbb.block.MouldingBlock;
-import com.starfish_studios.bbb.block.StoneFenceBlock;
-import com.starfish_studios.bbb.block.UrnBlock;
+import com.starfish_studios.bbb.block.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
-import net.kikoz.mcwwindows.objects.ArrowSill;
-import net.kikoz.mcwwindows.objects.GothicWindow;
-import net.kikoz.mcwwindows.objects.Parapet;
-import net.kikoz.mcwwindows.objects.Shutter;
-import net.kikoz.mcwwindows.objects.Window;
-import net.kikoz.mcwwindows.objects.WindowBarred;
+import net.kikoz.mcwwindows.objects.*;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.registries.*;
+import net.minecraft.resources.*;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-/**
- * C3's local-only material registry. The matching BBB and Macaw blockstates,
- * models and texture treatment are generated from the owner's installed JARs
- * into ignored build inputs; this tracked code contains only the safe mapping
- * and uses the providers' stateful block classes directly.
- */
+/** C4's fixed, provider-first 646-cell audit. No provider registry is scanned at runtime. */
 public final class ArchitecturalMaterialClosure implements ModInitializer {
-    public static final String MOD_ID = "architectural_material_closure";
-
-    private static final List<MaterialSpec> MATERIALS = List.of(
-            material("stone"), material("andesite"), material("diorite"), material("granite"),
-            material("brick"), material("mossy_stone_brick"), material("cobbled_deepslate"),
-            material("deepslate"), material("mud_brick"), material("blackstone"), material("prismarine"),
-            material("dark_prismarine"), material("sandstone"), material("red_sandstone"), material("quartz"),
-            material("nether_brick"), material("end_brick")
-    );
-
-    private static final List<String> BBB_FORMS = List.of("column", "urn", "moulding", "fence", "frame");
-    private static final List<String> PATH_FORMS = List.of(
-            "running_bond_path", "strewn_rocky_path", "windmill_weave_path", "flagstone_path", "crystal_floor_path",
-            "diamond_paving", "basket_weave_paving", "square_paving", "honeycomb_paving", "clover_paving", "dumble_paving");
-    private static final List<String> WINDOW_FORMS = List.of(
-            "window", "window2", "four_window", "pane_window", "parapet", "gothic", "arrow_slit", "louvered_shutter");
-
-    private static final List<Identifier> OWNED_IDS = MATERIALS.stream()
-            .flatMap(material -> allForms().stream().map(form -> id(material.id() + "_" + form)))
-            .toList();
-    private static Map<Identifier, Block> blocks;
-
-    @Override
-    public void onInitialize() {
-        blocks().forEach(ArchitecturalMaterialClosure::register);
-        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS).register(output ->
-                blocks().values().stream().map(Block::asItem).map(Item::getDefaultInstance).forEach(output::accept));
-    }
-
-    public static List<Identifier> ownedIds() {
-        return OWNED_IDS;
-    }
-
-    private static List<String> allForms() {
-        List<String> forms = new ArrayList<>(BBB_FORMS.size() + PATH_FORMS.size() + WINDOW_FORMS.size());
-        forms.addAll(BBB_FORMS);
-        forms.addAll(PATH_FORMS);
-        forms.addAll(WINDOW_FORMS);
-        return List.copyOf(forms);
-    }
-
-    private static synchronized Map<Identifier, Block> blocks() {
-        if (blocks == null) blocks = createBlocks();
-        return blocks;
-    }
-
-    private static Map<Identifier, Block> createBlocks() {
-        Map<Identifier, Block> blocks = new LinkedHashMap<>();
-        for (MaterialSpec material : MATERIALS) {
-            add(blocks, material, "column", new ColumnBlock(properties(material, "column").noOcclusion()));
-            add(blocks, material, "urn", new UrnBlock(properties(material, "urn").noOcclusion()));
-            add(blocks, material, "moulding", new MouldingBlock(source(material).defaultBlockState(), properties(material, "moulding").noOcclusion()));
-            add(blocks, material, "fence", new StoneFenceBlock(properties(material, "fence").noOcclusion()));
-            add(blocks, material, "frame", new FrameBlock(properties(material, "frame").noOcclusion().noCollision()));
-
-            for (String form : PATH_FORMS) {
-                add(blocks, material, form, new PathBlock(properties(material, form).noOcclusion()));
-            }
-            add(blocks, material, "window", new Window(properties(material, "window").noOcclusion()));
-            add(blocks, material, "window2", new WindowBarred(properties(material, "window2").noOcclusion()));
-            add(blocks, material, "four_window", new WindowBarred(properties(material, "four_window").noOcclusion()));
-            add(blocks, material, "pane_window", new Window(properties(material, "pane_window").noOcclusion()));
-            add(blocks, material, "parapet", new Parapet(properties(material, "parapet").noOcclusion()));
-            add(blocks, material, "gothic", new GothicWindow(properties(material, "gothic").noOcclusion()));
-            add(blocks, material, "arrow_slit", new ArrowSill(properties(material, "arrow_slit").noOcclusion()));
-            add(blocks, material, "louvered_shutter", new Shutter(properties(material, "louvered_shutter").noOcclusion()));
-        }
-        return Map.copyOf(blocks);
-    }
-
-    private static void add(Map<Identifier, Block> blocks, MaterialSpec material, String form, Block block) {
-        Identifier id = id(material.id() + "_" + form);
-        if (blocks.put(id, block) != null) {
-            throw new IllegalStateException("Duplicate AMC C3 block id " + id);
-        }
-    }
-
-    private static BlockBehaviour.Properties properties(MaterialSpec material, String form) {
-        Identifier id = id(material.id() + "_" + form);
-        return BlockBehaviour.Properties.ofFullCopy(source(material))
-                .setId(ResourceKey.create(Registries.BLOCK, id));
-    }
-
-    private static void register(Identifier id, Block block) {
-        ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, id);
-        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
-        Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
-        Registry.register(BuiltInRegistries.ITEM, itemKey,
-                new BlockItem(block, new Item.Properties().setId(itemKey).useBlockDescriptionPrefix()));
-    }
-
-    private static MaterialSpec material(String id) {
-        return new MaterialSpec(id);
-    }
-
-    private static Block source(MaterialSpec material) {
-        return switch (material.id()) {
-            case "stone" -> Blocks.STONE;
-            case "andesite" -> Blocks.ANDESITE;
-            case "diorite" -> Blocks.DIORITE;
-            case "granite" -> Blocks.GRANITE;
-            case "brick" -> Blocks.BRICKS;
-            case "mossy_stone_brick" -> Blocks.MOSSY_STONE_BRICKS;
-            case "cobbled_deepslate" -> Blocks.COBBLED_DEEPSLATE;
-            case "deepslate" -> Blocks.DEEPSLATE;
-            case "mud_brick" -> Blocks.MUD_BRICKS;
-            case "blackstone" -> Blocks.POLISHED_BLACKSTONE;
-            case "prismarine" -> Blocks.PRISMARINE_BRICKS;
-            case "dark_prismarine" -> Blocks.DARK_PRISMARINE;
-            case "sandstone" -> Blocks.SANDSTONE;
-            case "red_sandstone" -> Blocks.RED_SANDSTONE;
-            case "quartz" -> Blocks.QUARTZ_BLOCK;
-            case "nether_brick" -> Blocks.NETHER_BRICKS;
-            case "end_brick" -> Blocks.END_STONE_BRICKS;
-            default -> throw new IllegalArgumentException("Unknown AMC C3 material " + material.id());
-        };
-    }
-
-    private static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(MOD_ID, path);
-    }
-
-    private record MaterialSpec(String id) {
-    }
+ public static final String MOD_ID="architectural_material_closure";
+ public static final List<String> MATERIALS=List.of("stone","andesite","diorite","granite","brick","mossy_stone","cobbled_deepslate","deepslate","mud_brick","blackstone","prismarine","dark_prismarine","sandstone","red_sandstone","quartz","nether_brick","end_brick");
+ public static final List<String> FORMS=List.of("button","pressure_plate","column","urn","moulding","fence","frame","running_bond_path","strewn_rocky_path","windmill_weave_path","flagstone_path","crystal_floor_path","diamond_paving","basket_weave_paving","square_paving","honeycomb_paving","clover_paving","dumble_paving","running_bond","running_bond_slab","running_bond_stairs","flagstone","flagstone_slab","flagstone_stairs","windmill_weave","windmill_weave_slab","windmill_weave_stairs","crystal_floor","crystal_floor_slab","crystal_floor_stairs","window","window2","four_window","pane_window","parapet","gothic","arrow_slit","louvered_shutter");
+ private static final Set<String> BBB=Set.of("stone","deepslate","blackstone","quartz","nether_brick","red_sandstone","sandstone"), PATH=Set.of("stone","andesite","diorite","granite","brick","mossy_stone","cobbled_deepslate","deepslate","mud_brick","blackstone","dark_prismarine","sandstone","red_sandstone"), BASIC=Set.of("stone","andesite","diorite","granite","brick","deepslate","blackstone","prismarine","dark_prismarine","sandstone","red_sandstone","quartz"), PARA=Set.of("andesite","diorite","granite","blackstone","prismarine","dark_prismarine"), GOTHIC=Set.of("stone","blackstone","prismarine","dark_prismarine","mud_brick","nether_brick","end_brick"), SHUTTER=Set.of("andesite","diorite","granite");
+ private static final Set<String> BBB_FORMS=Set.of("column","urn","moulding","fence","frame"), PATH_FORMS=Set.of("running_bond_path","strewn_rocky_path","windmill_weave_path","flagstone_path","crystal_floor_path","diamond_paving","basket_weave_paving","square_paving","honeycomb_paving","clover_paving","dumble_paving","running_bond","running_bond_slab","running_bond_stairs","flagstone","flagstone_slab","flagstone_stairs","windmill_weave","windmill_weave_slab","windmill_weave_stairs","crystal_floor","crystal_floor_slab","crystal_floor_stairs"), BASIC_FORMS=Set.of("window","window2","four_window","pane_window");
+ private static final List<Identifier> OWNED=owned(); private static Map<Identifier,Block> blocks;
+ @Override public void onInitialize(){blocks().forEach(ArchitecturalMaterialClosure::register);CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS).register(o->blocks().values().forEach(b->o.accept(b.asItem().getDefaultInstance())));}
+ public static List<Identifier> ownedIds(){return OWNED;}
+ public static boolean isProviderOwned(String m,String f){if(f.equals("button")||f.equals("pressure_plate"))return m.equals("stone")||m.equals("blackstone");if(BBB_FORMS.contains(f))return BBB.contains(m);if(PATH_FORMS.contains(f))return PATH.contains(m);if(BASIC_FORMS.contains(f))return BASIC.contains(m);return switch(f){case "parapet"->PARA.contains(m);case "gothic","arrow_slit"->GOTHIC.contains(m);case "louvered_shutter"->SHUTTER.contains(m);default->throw new IllegalArgumentException(f);};}
+ private static List<Identifier> owned(){List<Identifier> r=new ArrayList<>();for(String m:MATERIALS)for(String f:FORMS)if(!isProviderOwned(m,f))r.add(id(m+"_"+f));if(r.size()!=237||new HashSet<>(r).size()!=237)throw new IllegalStateException("C4 owns exactly 237 cells");return List.copyOf(r);}
+ private static synchronized Map<Identifier,Block> blocks(){if(blocks==null){Map<Identifier,Block> r=new LinkedHashMap<>();for(String m:MATERIALS)for(String f:FORMS)if(!isProviderOwned(m,f))r.put(id(m+"_"+f),create(m,f));blocks=Map.copyOf(r);}return blocks;}
+ private static Block create(String m,String f){BlockBehaviour.Properties p=properties(m,f);return switch(f){case "button"->new MasonryButton(blockSet(m),p.noOcclusion());case "pressure_plate"->new MasonryPressurePlate(blockSet(m),p.noOcclusion());case "column"->new ColumnBlock(p.noOcclusion());case "urn"->new UrnBlock(p.noOcclusion());case "moulding"->new MouldingBlock(source(m).defaultBlockState(),p.noOcclusion());case "fence"->new StoneFenceBlock(p.noOcclusion());case "frame"->new FrameBlock(p.noOcclusion().noCollision());case "running_bond","flagstone","windmill_weave","crystal_floor"->new EngravedBlock(p);case "dumble_paving"->new FacingPathBlock(p.noOcclusion());case "running_bond_path","strewn_rocky_path","windmill_weave_path","flagstone_path","crystal_floor_path","diamond_paving","basket_weave_paving","square_paving","honeycomb_paving","clover_paving"->new PathBlock(p.noOcclusion());case "running_bond_slab","flagstone_slab","windmill_weave_slab","crystal_floor_slab"->new SlabBlock(p);case "running_bond_stairs","flagstone_stairs","windmill_weave_stairs","crystal_floor_stairs"->new StairBlock(source(m).defaultBlockState(),p);case "window"->new ConnectedWindow(p.noOcclusion());case "pane_window"->new Window(p.noOcclusion());case "window2","four_window"->new WindowBarred(p.noOcclusion());case "parapet"->new Parapet(p.noOcclusion());case "gothic"->new GothicWindow(p.noOcclusion());case "arrow_slit"->new ArrowSill(p.noOcclusion());case "louvered_shutter"->new Shutter(p.noOcclusion());default->throw new IllegalArgumentException(f);};}
+ private static BlockSetType blockSet(String material){return material.equals("blackstone")?BlockSetType.POLISHED_BLACKSTONE:BlockSetType.STONE;}
+ private static BlockBehaviour.Properties properties(String m,String f){Identifier i=id(m+"_"+f);return BlockBehaviour.Properties.ofFullCopy(source(m)).setId(ResourceKey.create(Registries.BLOCK,i));}
+ private static void register(Identifier i,Block b){ResourceKey<Block> bk=ResourceKey.create(Registries.BLOCK,i);ResourceKey<Item> ik=ResourceKey.create(Registries.ITEM,i);Registry.register(BuiltInRegistries.BLOCK,bk,b);Registry.register(BuiltInRegistries.ITEM,ik,new BlockItem(b,new Item.Properties().setId(ik).useBlockDescriptionPrefix()));}
+ private static Block source(String m){return switch(m){case"stone"->Blocks.STONE;case"andesite"->Blocks.ANDESITE;case"diorite"->Blocks.DIORITE;case"granite"->Blocks.GRANITE;case"brick"->Blocks.BRICKS;case"mossy_stone"->Blocks.MOSSY_STONE_BRICKS;case"cobbled_deepslate"->Blocks.COBBLED_DEEPSLATE;case"deepslate"->Blocks.DEEPSLATE;case"mud_brick"->Blocks.MUD_BRICKS;case"blackstone"->Blocks.POLISHED_BLACKSTONE;case"prismarine"->Blocks.PRISMARINE_BRICKS;case"dark_prismarine"->Blocks.DARK_PRISMARINE;case"sandstone"->Blocks.SANDSTONE;case"red_sandstone"->Blocks.RED_SANDSTONE;case"quartz"->Blocks.QUARTZ_BLOCK;case"nether_brick"->Blocks.NETHER_BRICKS;case"end_brick"->Blocks.END_STONE_BRICKS;default->throw new IllegalArgumentException(m);};}
+ private static Identifier id(String s){return Identifier.fromNamespaceAndPath(MOD_ID,s);}
+ private static final class MasonryButton extends ButtonBlock { private MasonryButton(BlockSetType set, BlockBehaviour.Properties p){super(set,20,p);} }
+ private static final class MasonryPressurePlate extends PressurePlateBlock { private MasonryPressurePlate(BlockSetType set, BlockBehaviour.Properties p){super(set,p);} }
 }

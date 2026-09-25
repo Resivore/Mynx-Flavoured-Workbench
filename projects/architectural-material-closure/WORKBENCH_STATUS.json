@@ -16,9 +16,9 @@
       "Keep Interchangeable Block Families as the sole Clutter No More ShapeMap authority while AMC owns only its original blocks, data, recipes, and presentation."
     ],
     "scope": [
-      "Canary 3 completes the audited clumped masonry matrix across 17 profiles: BBB details; five thin paths and six pavings; four standard windows; parapets; Gothic windows; arrow slits; and louvered shutters. Cobbled Deepslate and Deepslate remain distinct only where the audited Paths provider exposes competing authored forms.",
-      "C3's protected provider-derived blockstates, recursive model closures, texture treatment, data, and JAR are generated only from exact local BBB/Macaw reference artifacts into ignored build/artifact paths for the owner's personal modpack; tracked source contains generation logic and literal mappings only.",
-      "C3 remains an additive content candidate: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
+      "Canary 4 closes the approved 646-cell masonry audit across 17 profiles: 409 existing Minecraft/BBB/Macaw cells remain provider-owned and AMC registers only the 237 genuine gaps, including native controls, BBB details, Macaw paths/pavings/patterns, and Macaw Windows forms.",
+      "C4's protected provider-derived blockstates, recursive model and texture closures, texture treatment, data, and JAR are generated only from exact local BBB/Macaw/Minecraft reference artifacts into ignored build/artifact paths for the owner's personal modpack; tracked source contains generation logic and literal mappings only.",
+      "C4 remains an additive content candidate: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
     ],
     "boundaries": {
       "owned_paths": ["projects/architectural-material-closure"],
@@ -70,33 +70,33 @@
         "type": "MOD",
         "identifier": "mcwwindows",
         "requirement": ">=2.4.2; controlled local reference mcw-windows-2.4.2-mc26.2fabric.jar",
-        "reason": "C3 uses Macaw Windows' stateful classes at runtime and locally materializes its audited window, parapet, Gothic, arrow-slit, and shutter form resources."
+        "reason": "C4 uses Macaw Windows' stateful classes at runtime and locally materializes its audited window, parapet, Gothic, arrow-slit, and shutter form resources."
       },
       {
         "type": "MOD",
         "identifier": "mcwpaths",
         "requirement": ">=1.1.1; controlled local reference mcw-paths-1.1.1-mc26.2fabric.jar",
-        "reason": "C3 uses Macaw Paths' path block behavior at runtime and locally materializes its audited thin-path and paving resources."
+        "reason": "C4 uses Macaw Paths' path, facing-path, and engraved-block behavior at runtime and locally materializes its audited thin-path, paving, and pattern resources."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 3 completes the locally derived BBB/Macaw masonry vocabulary closure across 17 clumped profiles. Its private local JAR is statically validated and retained; no deployment or manual Minecraft runtime observation has been supplied.",
+    "milestone": "Canary 4 completes the provider-first 646-cell masonry audit: 409 provider-owned cells are left untouched and its 237 genuine gaps are locally derived, statically validated, and retained. No deployment or manual Minecraft runtime observation has been supplied.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary3",
-        "canary": 3,
+        "version": "0.1.0-canary4",
+        "canary": 4,
         "artifact": {
-          "filename": "architectural-material-closure-0.1.0-canary3.jar",
-          "sha256": "5c74f1c3442d93d0877067195596344a826d118aa894e339db7e07b1244e7417"
+          "filename": "architectural-material-closure-0.1.0-canary4.jar",
+          "sha256": "b7344ec4b53305cdfeb5cfd514e2570b919ecca5432d6c9ed11b7e1846a90fd5"
         },
-        "built_at": "2026-09-25T05:20:36.1241545Z",
-        "source_commit": "acc3a821da106dc58fd08e72741da026be291192",
+        "built_at": "2026-09-25T20:37:28.9453931Z",
+        "source_commit": "8995d572ef5317779e49a896e6ca663b128a6508",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Locally completes the BBB/Macaw masonry vocabulary across 17 audited clumped profiles without publishing derived resource payloads."
+        "summary": "Closes 237 verified masonry gaps while leaving all 409 existing Minecraft/BBB/Macaw cells provider-owned and unmodified."
       },
       "accepted": null,
       "rollback": null,
@@ -110,10 +110,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-25T05:20:36Z",
-    "updated_at": "2026-09-25T05:20:36Z",
-    "last_codex_at": "2026-09-25T05:20:36Z",
-    "source_commit": "acc3a821da106dc58fd08e72741da026be291192"
+    "revision": 4,
+    "activity_at": "2026-09-25T20:37:28Z",
+    "updated_at": "2026-09-25T20:37:28Z",
+    "last_codex_at": "2026-09-25T20:37:28Z",
+    "source_commit": "8995d572ef5317779e49a896e6ca663b128a6508"
   }
 }
