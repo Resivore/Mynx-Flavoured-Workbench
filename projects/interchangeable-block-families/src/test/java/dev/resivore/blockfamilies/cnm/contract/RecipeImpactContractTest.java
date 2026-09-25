@@ -17,16 +17,16 @@ class RecipeImpactContractTest {
     void fixedAuditIdentityAndFamilyTotalsAreVersionBound() throws Exception {
         Properties contract = AuditFixtures.contract();
 
-        assertEquals("ibf-cnm-shapemap-2026-09-25-canary11", contract.getProperty("audit.id"));
+        assertEquals("ibf-cnm-shapemap-2026-09-25-canary12", contract.getProperty("audit.id"));
         assertEquals("acc3a821",
                 contract.getProperty("audit.starting_commit"));
         assertEquals("9ad4600e62808e5e976392a69b495a2fe4b5d47c",
                 contract.getProperty("audit.accepted_ibf_commit"));
         assertEquals("26.2", contract.getProperty("minecraft.version"));
-        assertEquals(233, integer(contract, "families.total"));
-        assertEquals(1_810, integer(contract, "members.total"));
-        assertEquals(1_810, integer(contract, "members.unique"));
-        assertEquals(22, integer(contract, "family.largest"));
+        assertEquals(166, integer(contract, "families.total"));
+        assertEquals(1_811, integer(contract, "members.total"));
+        assertEquals(1_811, integer(contract, "members.unique"));
+        assertEquals(38, integer(contract, "family.largest"));
 
         for (String key : new String[]{
                 "minecraft.mapped.sha256",
@@ -86,14 +86,14 @@ class RecipeImpactContractTest {
                 Map.entry("two_high_doors", 260),
                 Map.entry("three_high_doors", 217),
                 Map.entry("trapdoors", 195),
-                Map.entry("windows_and_shutters_plus_accessories", 215),
-                Map.entry("building_accessories_paths", 143),
+                Map.entry("windows_and_shutters_plus_accessories", 241),
+                Map.entry("building_accessories_paths", 303),
                 Map.entry("fence_gates", 12),
                 Map.entry("vanilla_bar_chain_and_accessories", 20),
                 Map.entry("display_fixtures", 24),
                 Map.entry("enderscape_approved_families", 17),
                 Map.entry("bbb_enderscape_families", 15),
-                Map.entry("amc_masonry_closure", 357)
+                Map.entry("amc_masonry_closure", 237)
         );
         Map<String, Integer> actualRemovals = new LinkedHashMap<>();
         int totalRemoved = 0;
@@ -114,8 +114,8 @@ class RecipeImpactContractTest {
 
         Properties contract = AuditFixtures.contract();
         assertEquals(expectedRemovals, actualRemovals);
-        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20 + 24 + 17 + 15 + 357, totalRemoved);
-        assertEquals(1_475, totalRemoved);
+        assertEquals(260 + 217 + 195 + 241 + 303 + 12 + 20 + 24 + 17 + 15 + 237, totalRemoved);
+        assertEquals(1_541, totalRemoved);
         assertEquals(integer(contract, "recipe.non_parent_results_removed"), totalRemoved);
         assertEquals(0, dangerousParentRemovals);
         assertEquals(integer(contract, "recipe.dangerous_parent_results_removed"), dangerousParentRemovals);

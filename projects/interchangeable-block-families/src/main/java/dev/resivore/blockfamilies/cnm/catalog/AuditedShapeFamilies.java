@@ -26,22 +26,33 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 233;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_810;
-    public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
+    public static final int EXPECTED_FAMILY_COUNT = 166;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_811;
+    public static final int EXPECTED_LARGEST_FAMILY_SIZE = 38;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
-    private static final List<String> AMC_MASONRY_PROFILES = List.of(
-            "stone", "andesite", "diorite", "granite", "brick", "mossy_stone_brick",
-            "cobbled_deepslate", "deepslate", "mud_brick", "blackstone", "prismarine",
-            "dark_prismarine", "sandstone", "red_sandstone", "quartz", "nether_brick", "end_brick");
-    private static final List<String> AMC_BBB_DETAIL_FORMS = List.of("column", "urn", "moulding", "fence", "frame");
-    private static final List<String> AMC_ACCESSORY_FORMS = List.of(
-            "running_bond_path", "strewn_rocky_path", "windmill_weave_path", "flagstone_path", "crystal_floor_path",
-            "diamond_paving", "basket_weave_paving", "square_paving", "honeycomb_paving", "clover_paving",
-            "dumble_paving", "parapet");
-    private static final List<String> AMC_WINDOW_FORMS = List.of(
-            "window", "window2", "four_window", "pane_window", "gothic", "arrow_slit", "louvered_shutter");
+    /*
+     * These C7/C9 family shells are deliberately superseded, member-for-member,
+     * by the complete C12 masonry families. Keeping both would give a provider
+     * cell two ShapeMap owners.
+     */
+    private static final Set<String> C12_REHOMED_MASONRY_KEYS = Set.of(
+            "cnm/window/andesite", "cnm/window/bricks", "cnm/window/dark_prismarine",
+            "cnm/window/deepslate", "cnm/window/diorite", "cnm/window/granite",
+            "cnm/window/polished_blackstone", "cnm/window/prismarine_bricks",
+            "cnm/window/quartz_block", "cnm/window/red_sandstone", "cnm/window/sandstone",
+            "cnm/window/stone",
+            "cnm/bbb_detail/stone/stone", "cnm/bbb_detail/stone/blackstone",
+            "cnm/bbb_detail/stone/deepslate", "cnm/bbb_detail/stone/nether_brick",
+            "cnm/bbb_detail/stone/sandstone", "cnm/bbb_detail/stone/red_sandstone",
+            "cnm/bbb_detail/stone/quartz",
+            "cnm/building_accessory/stone", "cnm/building_accessory/polished_blackstone",
+            "cnm/building_accessory/andesite", "cnm/building_accessory/diorite",
+            "cnm/building_accessory/granite", "cnm/building_accessory/sandstone",
+            "cnm/building_accessory/red_sandstone", "cnm/building_accessory/brick",
+            "cnm/building_accessory/mossy_stone", "cnm/building_accessory/cobbled_deepslate",
+            "cnm/building_accessory/deepslate", "cnm/building_accessory/mud_brick",
+            "cnm/building_accessory/blackstone", "cnm/building_accessory/dark_prismarine");
 
     private static final List<AuditedShapeFamily> TWO_HIGH_DOORS = List.of(
             family("cnm/two_high_door/oak", TWO_HIGH_DOOR, minecraft("oak_door"),
@@ -1098,12 +1109,8 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/stone/quartz", BBB_DETAIL, bbb("quartz_column"), bbb("quartz_urn"), bbb("quartz_moulding"), bbb("quartz_fence"), bbb("quartz_frame"))
     );
 
-    private static final List<AuditedShapeFamily> MASONRY_DETAILS = amcFamilies(
-            "cnm/masonry_detail/", MASONRY_DETAIL, AMC_BBB_DETAIL_FORMS);
-    private static final List<AuditedShapeFamily> MASONRY_WINDOWS = amcFamilies(
-            "cnm/window/masonry/", WINDOW, AMC_WINDOW_FORMS);
-    private static final List<AuditedShapeFamily> MASONRY_ACCESSORIES = amcFamilies(
-            "cnm/building_accessory/masonry/", BUILDING_ACCESSORY, AMC_ACCESSORY_FORMS);
+
+    private static final List<AuditedShapeFamily> MASONRY = MasonryC12Families.families();
 
     private static final List<AuditedShapeFamily> BUILDING_ACCESSORIES = List.of(
             family("cnm/building_accessory/oak", BUILDING_ACCESSORY, minecraft("oak_button"),
@@ -1396,13 +1403,13 @@ public final class AuditedShapeFamilies {
             case TWO_HIGH_DOOR -> TWO_HIGH_DOORS;
             case THREE_HIGH_DOOR -> THREE_HIGH_DOORS;
             case TRAPDOOR -> TRAPDOORS;
-            case WINDOW -> combined(WINDOWS, MASONRY_WINDOWS);
+            case WINDOW -> withoutC12RehomedMasonry(WINDOWS);
             case DISPLAY_FIXTURE -> DISPLAY_FIXTURES;
             case FENCE_GATE -> FENCE_GATES;
             case BAR_CHAIN -> BAR_CHAINS;
-            case BBB_DETAIL -> BBB_DETAILS;
-            case MASONRY_DETAIL -> MASONRY_DETAILS;
-            case BUILDING_ACCESSORY -> combined(MASONRY_ACCESSORIES, BUILDING_ACCESSORIES);
+            case BBB_DETAIL -> withoutC12RehomedMasonry(BBB_DETAILS);
+            case MASONRY_DETAIL -> MASONRY;
+            case BUILDING_ACCESSORY -> withoutC12RehomedMasonry(BUILDING_ACCESSORIES);
         };
     }
 
@@ -1428,18 +1435,6 @@ public final class AuditedShapeFamilies {
                 category,
                 canonicalParent,
                 members);
-    }
-
-    private static List<AuditedShapeFamily> amcFamilies(
-            String keyPrefix, AuditedShapeFamily.Category category, List<String> forms
-    ) {
-        List<AuditedShapeFamily> families = new ArrayList<>(AMC_MASONRY_PROFILES.size());
-        for (String material : AMC_MASONRY_PROFILES) {
-            List<Identifier> members = forms.stream().map(form -> amc(material + "_" + form)).toList();
-            families.add(family(keyPrefix + material, category, members.getFirst(),
-                    members.subList(1, members.size()).toArray(Identifier[]::new)));
-        }
-        return List.copyOf(families);
     }
 
     private static Identifier minecraft(String path) {
@@ -1486,20 +1481,22 @@ public final class AuditedShapeFamilies {
         return Identifier.fromNamespaceAndPath("mcwwindows", path);
     }
 
+    private static List<AuditedShapeFamily> withoutC12RehomedMasonry(List<AuditedShapeFamily> families) {
+        return families.stream().filter(family -> !C12_REHOMED_MASONRY_KEYS.contains(family.key().getPath())).toList();
+    }
+
     private static List<AuditedShapeFamily> allFamilies() {
         List<AuditedShapeFamily> families = new ArrayList<>(EXPECTED_FAMILY_COUNT);
         families.addAll(TWO_HIGH_DOORS);
         families.addAll(THREE_HIGH_DOORS);
         families.addAll(TRAPDOORS);
-        families.addAll(WINDOWS);
+        families.addAll(withoutC12RehomedMasonry(WINDOWS));
         families.addAll(DISPLAY_FIXTURES);
         families.addAll(FENCE_GATES);
         families.addAll(BAR_CHAINS);
-        families.addAll(BBB_DETAILS);
-        families.addAll(MASONRY_DETAILS);
-        families.addAll(MASONRY_WINDOWS);
-        families.addAll(MASONRY_ACCESSORIES);
-        families.addAll(BUILDING_ACCESSORIES);
+        families.addAll(withoutC12RehomedMasonry(BBB_DETAILS));
+        families.addAll(MASONRY);
+        families.addAll(withoutC12RehomedMasonry(BUILDING_ACCESSORIES));
         return List.copyOf(families);
     }
 

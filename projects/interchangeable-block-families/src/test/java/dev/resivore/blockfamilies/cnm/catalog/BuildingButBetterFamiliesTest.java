@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BAR_CHAIN;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BBB_DETAIL;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.FENCE_GATE;
+import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.MASONRY_DETAIL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,7 +28,7 @@ final class BuildingButBetterFamiliesTest {
     @Test
     void everyRegisteredWoodHasOneExactTrimDetailFamilyIncludingPaleOak() {
         Map<String, AuditedShapeFamily> details = detailsByPath();
-        assertEquals(22, details.size());
+        assertEquals(15, details.size());
         for (String wood : WOODS) {
             assertEquals(List.of(bbb(wood + "_trim"), bbb(wood + "_balustrade"),
                     bbb(wood + "_support"), bbb(wood + "_pallet")),
@@ -93,13 +94,14 @@ final class BuildingButBetterFamiliesTest {
 
     @Test
     void sevenStoneDetailFamiliesContainOnlyTheFiveRequestedBBBForms() {
-        Map<String, AuditedShapeFamily> details = detailsByPath();
         for (String stone : STONES) {
-            assertEquals(List.of(bbb(stone + "_column"), bbb(stone + "_urn"),
-                    bbb(stone + "_moulding"), bbb(stone + "_fence"), bbb(stone + "_frame")),
-                    details.get("cnm/bbb_detail/stone/" + stone).members(), stone);
+            AuditedShapeFamily masonry = AuditedShapeFamilies.families(MASONRY_DETAIL).stream()
+                    .filter(family -> family.key().getPath().equals("cnm/masonry_detail/" + stone))
+                    .findFirst().orElseThrow();
+            assertTrue(masonry.members().containsAll(List.of(bbb(stone + "_column"), bbb(stone + "_urn"),
+                    bbb(stone + "_moulding"), bbb(stone + "_fence"), bbb(stone + "_frame"))), stone);
         }
-        assertEquals(STONES.size(), details.keySet().stream().filter(path -> path.startsWith("cnm/bbb_detail/stone/")).count());
+        assertEquals(0, detailsByPath().keySet().stream().filter(path -> path.startsWith("cnm/bbb_detail/stone/")).count());
     }
 
     @Test

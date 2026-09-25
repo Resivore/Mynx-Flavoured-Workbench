@@ -126,6 +126,13 @@ class AssembledRecipeCleanupContractTest {
             "enderscape:murublight_pressure_plate_from_celestial_pressure_plate",
             "enderscape:polished_kurodite_pressure_plate_from_polished_veradite_pressure_plate");
 
+    // The assembled cleanup corpus intentionally contains only the BBB C9
+    // Enderscape pack, not every BBB stone recipe. These literal C12 parents
+    // are validated against the exact BBB provider resource separately.
+    private static final Set<String> C12_EXTERNAL_BBB_PARENTS = Set.of(
+            "bbb:deepslate_column", "bbb:sandstone_column", "bbb:red_sandstone_column",
+            "bbb:quartz_column", "bbb:nether_brick_column");
+
     @Test
     void exactAssembledCorpusReplaysCnmCleanupOrder() throws Exception {
         List<RecipeFixture> recipes = new ArrayList<>();
@@ -154,12 +161,12 @@ class AssembledRecipeCleanupContractTest {
                         Map.entry("minecraft_display_fixtures", 36L),
                         Map.entry("enderscape_approved_families", 40L),
                         Map.entry("bbb_enderscape_families", 18L),
-                        Map.entry("amc_masonry_details", 408L),
+                        Map.entry("amc_masonry_details", 237L),
                         Map.entry("three_high_doors", 217L),
                         Map.entry("fence_gates", 24L),
                         Map.entry("vanilla_building_accessories", 42L)),
                 countByCorpus(recipes));
-        assertEquals(1_980, recipes.size());
+        assertEquals(1_809, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -182,20 +189,20 @@ class AssembledRecipeCleanupContractTest {
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
         expectedRemoved.put("two_high_doors", 260L);
-        expectedRemoved.put("macaws_paths", 143L);
+        expectedRemoved.put("macaws_paths", 303L);
         expectedRemoved.put("trapdoors", 195L);
-        expectedRemoved.put("windows_and_shutters", 215L);
+        expectedRemoved.put("windows_and_shutters", 241L);
         expectedRemoved.put("minecraft_display_fixtures", 24L);
         expectedRemoved.put("enderscape_approved_families", 17L);
         expectedRemoved.put("bbb_enderscape_families", 15L);
-        expectedRemoved.put("amc_masonry_details", 357L);
+        expectedRemoved.put("amc_masonry_details", 237L);
         expectedRemoved.put("three_high_doors", 217L);
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20 + 24 + 17 + 15 + 357,
+        assertEquals(260 + 217 + 195 + 241 + 303 + 12 + 20 + 24 + 17 + 15 + 237,
                 removedNonParents.values().stream().mapToLong(Long::longValue).sum());
-        assertEquals(1_475L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(1_541L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -250,7 +257,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(525, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(731, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",
@@ -260,7 +267,10 @@ class AssembledRecipeCleanupContractTest {
                 "minecraft:waxed_oxidized_copper_chain_from_honeycomb",
                 "mcwpaths:oak_planks_path",
                 "mcwpaths:stone_running_bond_path",
+                "mcwpaths:andesite_running_bond",
+                "mcwpaths:andesite_running_bond_slab",
                 "mcwwindows:oak_log_parapet",
+                "mcwwindows:stone_brick_gothic",
                 "mcwwindows:metal_curtain_rod",
                 "minecraft:oak_hanging_sign",
                 "minecraft:warped_shelf",
@@ -279,7 +289,9 @@ class AssembledRecipeCleanupContractTest {
                 "minecraft:oxidized_copper_bars");
         for (AuditedShapeFamily family : newFamilies) {
             String parent = family.canonicalParent().toString();
-            assertTrue(retainedResults.contains(parent) || environmentalCopperParents.contains(parent),
+            assertTrue(retainedResults.contains(parent)
+                            || environmentalCopperParents.contains(parent)
+                            || C12_EXTERNAL_BBB_PARENTS.contains(parent),
                     "New family has no retained recipe or audited weathering acquisition: " + family.key());
         }
     }
