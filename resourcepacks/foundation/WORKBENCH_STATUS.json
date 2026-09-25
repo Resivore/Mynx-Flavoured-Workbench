@@ -1,0 +1,82 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 3,
+  "identity": {
+    "uuid": "96aa1e17-dcdb-4e36-9f2c-b5c82d0faa52",
+    "name": "Foundation",
+    "project_id": "foundation",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Maintain the private Foundation resource pack for Minecraft Java 26.2 without modifying its immutable source archive."
+    ],
+    "scope": [
+      "Foundation v5 corrects only the modern item-model selectors for Veiled Leaves, Silver Birch Leaves, and Wisteria Leaves so their inventory previews reuse existing Foundation bushy geometry."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "resourcepacks/foundation"
+      ],
+      "exclusions": [
+        "originals/resourcepacks/Foundation v4.zip is immutable and is neither changed nor redistributed.",
+        "Block Geometry Extensions, BGE x Bushy Leaves, Mynx Trees Java code, Enderscape Integration Java code, and unrelated Foundation assets are outside this resource-pack correction.",
+        "No Minecraft test profile is inspected or changed."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "Foundation v4.zip",
+        "requirement": "exact immutable local input",
+        "reason": "Supplies every Foundation v4 resource retained by v5."
+      },
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Defines the assets/<namespace>/items/<id>.json item-model selector convention used by the correction."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Foundation v5 adds three narrowly scoped Minecraft 26.2 item-model redirects to existing bushy leaf geometry; static archive validation passed and runtime testing remains outstanding.",
+    "releases": {
+      "current": {
+        "version": "v5",
+        "canary": 1,
+        "embedded_version": "v5",
+        "artifact": {
+          "filename": "Foundation v5.zip",
+          "sha256": "70178c497995083e6331d6412395d5b89039e60535877d14cc52cf5cf988ba80"
+        },
+        "built_at": "2026-09-25T16:30:23.3327292Z",
+        "source_commit": "8995d572ef5317779e49a896e6ca663b128a6508",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        },
+        "summary": "Makes Veiled, Silver Birch, and Wisteria Leaves use their existing Foundation bushy models in inventories."
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-09-25T16:30:23.3327292Z",
+    "updated_at": "2026-09-25T16:30:23.3327292Z",
+    "last_codex_at": "2026-09-25T16:30:23.3327292Z",
+    "source_commit": "8995d572ef5317779e49a896e6ca663b128a6508"
+  }
+}
