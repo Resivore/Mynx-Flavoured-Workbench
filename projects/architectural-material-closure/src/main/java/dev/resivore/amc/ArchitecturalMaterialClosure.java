@@ -1,5 +1,10 @@
 package dev.resivore.amc;
 
+import com.starfish_studios.bbb.block.ColumnBlock;
+import com.starfish_studios.bbb.block.FrameBlock;
+import com.starfish_studios.bbb.block.MouldingBlock;
+import com.starfish_studios.bbb.block.StoneFenceBlock;
+import com.starfish_studios.bbb.block.UrnBlock;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
@@ -13,17 +18,15 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.FenceBlock;
-import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * C1's original masonry-detail closure.  The IDs below are literal, ordered
- * material/form contracts; this class neither reads provider registries nor
- * derives families from tags or registry-name suffixes.
+ * C2's local-only masonry-detail materialization. The literal IDs are stable,
+ * while the matching BBB resource topology is derived at build time from the
+ * exact private reference artifact and is never tracked or published.
  */
 public final class ArchitecturalMaterialClosure implements ModInitializer {
     public static final String MOD_ID = "architectural_material_closure";
@@ -87,11 +90,12 @@ public final class ArchitecturalMaterialClosure implements ModInitializer {
             Identifier frameId = id(material.id() + "_frame");
             families.add(new Family(
                     material.id(),
-                    columnId, new Block(properties(material, columnId)),
-                    urnId, new Block(properties(material, urnId).noOcclusion()),
-                    mouldingId, new Block(properties(material, mouldingId).noOcclusion()),
-                    fenceId, new FenceBlock(properties(material, fenceId).noOcclusion()),
-                    frameId, new IronBarsBlock(properties(material, frameId).noOcclusion())
+                    columnId, new ColumnBlock(properties(material, columnId).noOcclusion()),
+                    urnId, new UrnBlock(properties(material, urnId).noOcclusion()),
+                    mouldingId, new MouldingBlock(copySource(material.id()).defaultBlockState(),
+                            properties(material, mouldingId).noOcclusion()),
+                    fenceId, new StoneFenceBlock(properties(material, fenceId).noOcclusion()),
+                    frameId, new FrameBlock(properties(material, frameId).noOcclusion().noCollision())
             ));
         }
         return List.copyOf(families);
@@ -136,8 +140,8 @@ public final class ArchitecturalMaterialClosure implements ModInitializer {
             Identifier columnId, Block column,
             Identifier urnId, Block urn,
             Identifier mouldingId, Block moulding,
-            Identifier fenceId, FenceBlock fence,
-            Identifier frameId, IronBarsBlock frame
+            Identifier fenceId, StoneFenceBlock fence,
+            Identifier frameId, FrameBlock frame
     ) {
         public List<Identifier> ids() {
             return List.of(columnId, urnId, mouldingId, fenceId, frameId);

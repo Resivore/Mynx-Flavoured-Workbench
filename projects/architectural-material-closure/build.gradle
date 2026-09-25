@@ -18,6 +18,10 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    // The C2 runtime uses BBB's public, MIT-licensed stateful block classes.
+    // Its protected resources are read only by the local generation task below
+    // and are never sourced from or copied into tracked files.
+    implementation files('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -42,11 +46,13 @@ def masonryForms = [
         [ id: 'frame',    display: 'Frame' ]
 ]
 def generatedResourcesDir = layout.buildDirectory.dir('generated/amc-resources')
+def bbbReferenceJar = file('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')
 
 tasks.register('generateMasonryResources') {
     group = 'build setup'
     description = "Generates AMC C1's original masonry assets, recipes, loot, and tags."
     outputs.dir(generatedResourcesDir)
+    inputs.file(bbbReferenceJar)
 
     doLast {
         def root = generatedResourcesDir.get().asFile
@@ -170,6 +176,65 @@ tasks.register('generateMasonryResources') {
                 }
             }
         }
+        /*
+         * Local-only BBB materialization.  This deliberately reads the
+         * owner's exact private provider JAR at build time and writes every
+         * derived byte solely beneath build/.  The copied model topology and
+         * tinted texture treatment preserve BBB's authored form language;
+         * no provider resource is present in tracked source.
+         */
+        if (!bbbReferenceJar.isFile()) throw new GradleException("Missing exact private BBB reference: ${bbbReferenceJar}")
+        def tint = [
+                andesite: [128, 128, 128], diorite: [188, 188, 184], granite: [150, 108, 92],
+                brick: [156, 83, 67], mossy_stone_brick: [111, 127, 96], cobbled_deepslate: [72, 72, 78],
+                mud_brick: [143, 100, 77], dark_prismarine: [49, 88, 78]
+        ]
+        def rewrite = { String value, String material ->
+            value.replace('bbb:block/', "${id}:block/derived/${material}/")
+                    .replace('bbb:item/', "${id}:item/derived/${material}/")
+        }
+        def tintPng = { byte[] source, List<Integer> color ->
+            def input = javax.imageio.ImageIO.read(new ByteArrayInputStream(source))
+            if (input == null) return source
+            def output = new java.awt.image.BufferedImage(input.width, input.height, java.awt.image.BufferedImage.TYPE_INT_ARGB)
+            for (int y = 0; y < input.height; y++) for (int x = 0; x < input.width; x++) {
+                int pixel = input.getRGB(x, y); int alpha = (pixel >>> 24) & 255
+                int red = (pixel >>> 16) & 255; int green = (pixel >>> 8) & 255; int blue = pixel & 255
+                int luminance = Math.max(1, (red + green + blue).intdiv(3))
+                int outRed = Math.min(255, (red * 45 + color[0] * luminance).intdiv(300))
+                int outGreen = Math.min(255, (green * 45 + color[1] * luminance).intdiv(300))
+                int outBlue = Math.min(255, (blue * 45 + color[2] * luminance).intdiv(300))
+                output.setRGB(x, y, (alpha << 24) | (outRed << 16) | (outGreen << 8) | outBlue)
+            }
+            def bytes = new ByteArrayOutputStream(); javax.imageio.ImageIO.write(output, 'png', bytes); bytes.toByteArray()
+        }
+        def zip = new java.util.zip.ZipFile(bbbReferenceJar)
+        try {
+            masonryMaterials.each { material ->
+                zip.entries().each { entry ->
+                    if (entry.directory) return
+                    def name = entry.name
+                    if (name.startsWith('assets/bbb/models/block/')) {
+                        def relative = name.substring('assets/bbb/models/block/'.length())
+                        def target = new File(root, "assets/${id}/models/block/derived/${material.id}/${relative}")
+                        target.parentFile.mkdirs()
+                        target.setText(rewrite(zip.getInputStream(entry).getText('UTF-8'), material.id), 'UTF-8')
+                    } else if (name.startsWith('assets/bbb/textures/block/') && name.endsWith('.png')) {
+                        def relative = name.substring('assets/bbb/textures/block/'.length())
+                        def target = new File(root, "assets/${id}/textures/block/derived/${material.id}/${relative}")
+                        target.parentFile.mkdirs()
+                        target.bytes = tintPng(zip.getInputStream(entry).bytes, tint[material.id])
+                    }
+                }
+                masonryForms.each { form ->
+                    def state = zip.getEntry("assets/bbb/blockstates/stone_${form.id}.json")
+                    if (state == null) throw new GradleException("BBB reference lacks stone_${form.id} blockstate")
+                    write("assets/${id}/blockstates/${material.id}_${form.id}.json",
+                            rewrite(zip.getInputStream(state).getText('UTF-8'), material.id))
+                    write("assets/${id}/items/${material.id}_${form.id}.json", itemModel("derived/${material.id}/${form.id}/stone_${form.id}"))
+                }
+            }
+        } finally { zip.close() }
         write("assets/${id}/lang/en_us.json", groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(lang)))
         write("data/minecraft/tags/block/mineable/pickaxe.json", groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([replace: false, values: pickaxe])))
     }

@@ -3,7 +3,7 @@
   "id": "architectural_material_closure",
   "version": "${version}",
   "name": "Architectural Material Closure",
-  "description": "Adds original masonry detail families that close audited building-material gaps.",
+  "description": "Locally materializes audited masonry forms from the owner's exact installed providers.",
   "authors": ["Resivore"],
   "environment": "*",
   "entrypoints": {
@@ -13,6 +13,7 @@
     "fabricloader": ">=0.19.3",
     "minecraft": "=26.2",
     "java": ">=25",
-    "fabric-api": ">=0.157.0"
+    "fabric-api": ">=0.157.0",
+    "bbb": "=2.0pre4+26.2-enderscape-dev.7"
   }
 }

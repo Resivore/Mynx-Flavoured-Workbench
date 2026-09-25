@@ -12,18 +12,18 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Close verified material-form holes with original additive blocks, starting with masonry details whose comparable Macaw Paths profiles have no BBB counterpart.",
+      "Close verified masonry material-form holes with locally derived, reference-faithful additive blocks for the owner's private modpack.",
       "Keep Interchangeable Block Families as the sole Clutter No More ShapeMap authority while AMC owns only its original blocks, data, recipes, and presentation."
     ],
     "scope": [
-      "Canary 1 owns exactly five original detail forms—column, urn, moulding, fence, and frame—for exactly Andesite, Diorite, Granite, Brick, Mossy Stone Brick, Cobbled Deepslate, Mud Brick, and Dark Prismarine.",
-      "Every C1 form has a self-drop, a native-material stonecutting recipe and advancement, a pickaxe tag, an English display name, and original JSON models that reference only Minecraft base textures.",
-      "C1 is an additive content candidate only: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
+      "Canary 2 owns the literal five-detail masonry families for Andesite, Diorite, Granite, Brick, Mossy Stone Brick, Cobbled Deepslate, Mud Brick, and Dark Prismarine; its block classes and generated local resources preserve the exact BBB form-state topology rather than C1's vanilla approximations.",
+      "C2's protected provider-derived blockstates, models, textures, data, and JAR are generated only from exact local reference artifacts into ignored build/artifact paths for the owner's personal modpack; tracked source contains generation logic and literal mappings only.",
+      "C2 remains an additive content candidate: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
     ],
     "boundaries": {
       "owned_paths": ["projects/architectural-material-closure"],
       "exclusions": [
-        "Copying, bundling, redistributing, or deriving textures, models, code, data, or recipes from Macaw's, Building But Better, or another third-party provider.",
+        "Committing, pushing, publishing, or redistributing provider-derived models, textures, blockstates, recipes, data, or derivative JAR bytes. Exact local private derivation from BBB and Macaw reference artifacts is owner-authorized only through ignored build and artifact paths.",
         "A second ShapeMap, equivalence, switching, recipe-cleanup, networking, or storage system; Interchangeable Block Families remains the sole authority for those concerns.",
         "Dynamic material discovery, registry-name or tag inference, provider mutation, replacing a provider block, or creating an alternate item in another provider namespace.",
         "Minecraft deployment, testing-profile access, runtime-state mutation, acceptance, or inferring manual runtime success from static checks."
@@ -69,22 +69,22 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 is the first original AMC masonry-detail candidate. Its exact JAR is statically validated and retained; no deployment or manual Minecraft runtime observation has been supplied.",
+    "milestone": "Canary 2 corrects C1's masonry-detail form implementation through locally generated BBB-reference materialization. Its private local JAR is statically validated and retained; no deployment or manual Minecraft runtime observation has been supplied.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
-        "canary": 1,
+        "version": "0.1.0-canary2",
+        "canary": 2,
         "artifact": {
-          "filename": "architectural-material-closure-0.1.0-canary1.jar",
-          "sha256": "49ae754afda6a1fad959f11e1c51027a5b2dbc00cb5108cf69a70d3264c63999"
+          "filename": "architectural-material-closure-0.1.0-canary2.jar",
+          "sha256": "5dceb2f48b8328dcf7e1e9435d3c2716eb1719aea408b8bbb1b273e02b77e0d0"
         },
-        "built_at": "2026-09-25T02:51:55.4416033Z",
-        "source_commit": "f69ff26b35b5898384f991ae06722de1c1099b2f",
+        "built_at": "2026-09-25T04:47:09.0532696Z",
+        "source_commit": "028c7490480883e3b9cf6a26c37f980adfe601d8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds five original masonry-detail forms across eight audited material profiles missing their BBB-style counterpart."
+        "summary": "Locally materializes BBB-faithful masonry-detail forms across eight audited profiles without publishing derived resource payloads."
       },
       "accepted": null,
       "rollback": null,
@@ -98,10 +98,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-25T02:52:27Z",
-    "updated_at": "2026-09-25T02:52:27Z",
-    "last_codex_at": "2026-09-25T02:52:27Z",
-    "source_commit": "f69ff26b35b5898384f991ae06722de1c1099b2f"
+    "revision": 2,
+    "activity_at": "2026-09-25T04:47:09Z",
+    "updated_at": "2026-09-25T04:47:09Z",
+    "last_codex_at": "2026-09-25T04:47:09Z",
+    "source_commit": "028c7490480883e3b9cf6a26c37f980adfe601d8"
   }
 }

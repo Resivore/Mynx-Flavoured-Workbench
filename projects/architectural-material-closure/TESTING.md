@@ -1,10 +1,10 @@
-# C1 masonry-detail verification
+# C2 local masonry-detail verification
 
-Exact current candidate: `architectural-material-closure-0.1.0-canary1.jar`,
-116,558 bytes, SHA-256
-`49AE754AFDA6A1FAD959F11E1C51027A5B2DBC00CB5108CF69A70D3264C63999`,
-built at `2026-09-25T02:51:55.4416033Z` from source checkpoint
-`f69ff26b35b5898384f991ae06722de1c1099b2f`. It is `STATIC_PASS /
+Exact current candidate: `architectural-material-closure-0.1.0-canary2.jar`,
+5,775,402 bytes, SHA-256
+`5DCEB2F48B8328DCF7E1E9435D3C2716EB1719AEA408B8BBB1B273E02B77E0D0`,
+built at `2026-09-25T04:47:09.0532696Z` from source checkpoint
+`028c7490480883e3b9cf6a26c37f980adfe601d8`. It is `STATIC_PASS /
 RUNTIME_UNTESTED`; no deployment or runtime result is recorded.
 
 ## Controlled static checks
@@ -16,11 +16,13 @@ From the repository root with Java 25:
 ```
 
 The focused contracts pin the 40 owned IDs in their literal material/form
-order, reject provider namespaces and unapproved Blackstone/Quartz expansion,
-and the production-JAR check verifies all 40 generated item models exist and
-no foreign classes are packaged.
+order and reject unapproved material expansion. C2's local generation task
+requires the exact private BBB reference JAR, derives the authoritative model
+and blockstate topology plus materialized texture treatment only into ignored
+build output, and the production-JAR check verifies the generated item models
+and rejects foreign classes. Do not distribute this local derivative JAR.
 
-## Manual C1 matrix
+## Manual C2 matrix
 
 Use an owner-approved isolated Minecraft 26.2 Fabric environment. Do not
 interpret installing the JAR, reaching the title screen, or static validation
@@ -31,8 +33,8 @@ as a pass.
    once in Creative Building Blocks and Creative Search.
 2. Place, break, and pick-block every form for one ordinary stone material,
    Mossy Stone Brick, Cobbled Deepslate, Mud Brick, and Dark Prismarine. Check
-   the original model, own self-drop, native hardness/sound baseline, and
-   pickaxe behavior.
+   the BBB-equivalent connected/stateful model, own self-drop, native
+   hardness/sound baseline, and pickaxe behavior.
 3. Verify each Fence connects as a fence and each Frame connects as an
    iron-bars-style frame without replacing a Minecraft, Macaw, or BBB item.
 4. At a stonecutter, verify every form consumes the matching native vanilla
