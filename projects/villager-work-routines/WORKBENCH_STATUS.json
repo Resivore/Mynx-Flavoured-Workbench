@@ -72,17 +72,17 @@
     ]
   },
   "state": {
-    "milestone": "The supplied C31 screenshot remains narrowly scoped C31 Fisherman rod-placement runtime evidence only. C33 preserves C31's complete attachment/reference/parent-space pose, then applies C32's exact normalized grip-to-physical-tip shaft step `(0,0,-2)px` rod-local twice. The translucent ghost receives one step and is therefore the exact C32 pose `(0,0,-2)px` relative to C31; the solid C33 rod receives both steps and is `(0,0,-4)px`, or `(0,0,-0.25)` model/block units, relative to C31. Both steps occur after C31 and the C27 grip rebase, immediately before C27 geometry submission and same-pass physical-tip capture; only solid C33's captured tip owns the sole 16-segment line. C24 semantic EMF arms -> arms_rotation, authored [0,-7,-6], invertAxis=xy conversion, C27 rotation neutralization and decoration suppression, rod cubes/scale/rotation, physical-tip authority, Fisherman/Shepherd behavior, and C27 provider boundary remain unchanged. No marker suite is restored and no broader runtime result is inferred. C33 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
+    "milestone": "The supplied C31 screenshot remains narrowly scoped C31 Fisherman rod-placement runtime evidence only. C34 is a presentation-only follow-up: it retains the C33 solid rod's exact C31-baseline total `(0,0,-4)px` rod-local shaft translation and its same-pose physical-tip line, but removes the C32 comparison ghost path entirely. The translucent renderer, ghost geometry submission, and remaining visual diagnostic tools are absent; the sole visible rod and sole 16-segment line are C34 solid output. C24 semantic EMF arms -> arms_rotation, authored [0,-7,-6], invertAxis=xy conversion, C31 correction, C27 rotation neutralization and decoration suppression, rod cubes/scale/rotation, physical-tip authority, Fisherman/Shepherd behavior, and C27 provider boundary remain unchanged. No broader runtime result is inferred. C34 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
     "releases": {
       "current": {
-        "canary": 33,
-        "version": "0.1.0-canary33",
+        "canary": 34,
+        "version": "0.1.0-canary34",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary33.jar",
-          "sha256": "055707f303243484f59828d5e3cbe006536d60a65bddeb7026a37df7d2d370ea"
+          "filename": "villager-work-routines-0.1.0-canary34.jar",
+          "sha256": "5b86898aa514783b0c6ce5eafa93fc924986cf6ce57537056b83a23da2ea0bea"
         },
-        "built_at": "2026-09-23T06:49:59.6282922Z",
-        "source_commit": "418831c6c9371a525c5a1c7c51231d88d1bcf333",
+        "built_at": "2026-09-23T06:57:11.8552073Z",
+        "source_commit": "88d8ac442eea69d02d3141c829d0f9f28b78638d",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -99,7 +99,7 @@
             }
           ]
         },
-        "summary": "Keeps the exact C32 pose as a translucent ghost while applying C32's 2-pixel shaft step once more to the solid rod."
+        "summary": "Keeps C33's solid two-step shaft pose and physical-tip line while removing the comparison ghost and visual diagnostics."
       },
       "accepted": null,
       "rollback": null,
@@ -113,10 +113,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 33,
-    "activity_at": "2026-09-23T06:49:59.6282922Z",
-    "updated_at": "2026-09-23T06:49:59.6282922Z",
-    "last_codex_at": "2026-09-23T06:49:59.6282922Z",
-    "source_commit": "418831c6c9371a525c5a1c7c51231d88d1bcf333"
+    "revision": 34,
+    "activity_at": "2026-09-23T06:57:11.8552073Z",
+    "updated_at": "2026-09-23T06:57:11.8552073Z",
+    "last_codex_at": "2026-09-23T06:57:11.8552073Z",
+    "source_commit": "88d8ac442eea69d02d3141c829d0f9f28b78638d"
   }
 }
