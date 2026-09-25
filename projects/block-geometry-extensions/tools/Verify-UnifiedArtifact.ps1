@@ -1,5 +1,5 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C99.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C100.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
     [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C78.jar'),
     [string]$C92Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C92.jar'),
@@ -170,12 +170,14 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/CnmTerrainCompatClient(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/CanonicalShapeMapAudit(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ExplicitShapeMapFamilies(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/RetainedCompatibilityAliases(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/(?:EnderscapeMaterialGeometry|ExternalMaterialStateBridge)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/ExternalMaterial(?:Blocks|Catalog|Families|GeneratedData)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/BookshelfResourceTextures(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ProviderModelTextureResolver(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/(?:MacawsPaths|MynxTrees|Ribbits|Bbb|Enderscape|MossyStone)InitializationMixin(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/mixin/CnmCompatibilityItemVisibilityMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/BgeGeneratedResourceWriter(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/(?:CatalogItemGeneratedResources|BeamItemModelContract)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/LoweredPath(?:Stairs|VerticalSlab|Step)Block(?:\$.*)?\.class$' -or
@@ -216,8 +218,8 @@ Require ((Get-FileSha256 $c93Path) -eq '16087d67acb3554f8a6aeee3652f4d75ff00b8a0
         'Exact BGE C93 placed-resource baseline hash mismatch'
 Require ((Get-FileSha256 $bbbPath) -eq '0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a') `
         'Exact locally supplied BBB Beam source artifact hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C99.jar') `
-        'Private local-only artifact filename is not exactly BGE C99.jar'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C100.jar') `
+        'Private local-only artifact filename is not exactly BGE C100.jar'
 
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
@@ -357,10 +359,10 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.43-bge.canary99.spruce-rollback-bookshelf+26.2') `
-            'Unified Fabric version is not exact C99'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 99 ' + [char]0x2014 + ' Spruce Rollback and Bookshelf')) `
-            'Unified Fabric display name is not exact C99'
+    Require ($metadata.version -eq '4.2.44-bge.canary100.bbb-beam-compat-visibility+26.2') `
+            'Unified Fabric version is not exact C100'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 100 ' + [char]0x2014 + ' BBB Beam Compatibility Visibility')) `
+            'Unified Fabric display name is not exact C100'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -480,6 +482,7 @@ try {
         'dev/aero/cnmterraincompat/ExternalMaterialCatalog.class',
         'dev/aero/cnmterraincompat/CanonicalShapeMapAudit.class',
         'dev/aero/cnmterraincompat/ExplicitShapeMapFamilies.class',
+        'dev/aero/cnmterraincompat/RetainedCompatibilityAliases.class',
         'dev/aero/cnmterraincompat/ExternalMaterialBlocks.class',
         'dev/aero/cnmterraincompat/ExternalMaterialFamilies.class',
         'dev/aero/cnmterraincompat/ExternalMaterialGeneratedData.class',
@@ -488,7 +491,8 @@ try {
         'dev/aero/cnmterraincompat/mixin/MacawsPathsInitializationMixin.class',
         'dev/aero/cnmterraincompat/mixin/MynxTreesInitializationMixin.class',
         'dev/aero/cnmterraincompat/mixin/RibbitsInitializationMixin.class',
-        'dev/aero/cnmterraincompat/mixin/BbbInitializationMixin.class'
+        'dev/aero/cnmterraincompat/mixin/BbbInitializationMixin.class',
+        'dev/aero/cnmterraincompat/mixin/CnmCompatibilityItemVisibilityMixin.class'
     )) {
         Require $newEntries.Contains($required) "Required retained post-C58 class is absent: $required"
     }

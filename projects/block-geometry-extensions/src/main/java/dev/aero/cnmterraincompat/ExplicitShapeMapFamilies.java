@@ -30,7 +30,8 @@ public final class ExplicitShapeMapFamilies {
             CnmTerrainCompat.MOD_ID, "explicit_selector_groups");
 
     /** Provider-native BBB slab/stair aliases remain registered but are not canonical selector roles. */
-    private static final List<Identifier> SUPPRESSED_SELECTOR_ALIASES = bbbSelectorAliases();
+    private static final List<Identifier> SUPPRESSED_SELECTOR_ALIASES =
+            RetainedCompatibilityAliases.suppressedSelectorAliases();
 
     /** A vanilla Plank remains a standalone family when its optional BBB Beam provider is absent. */
     private static final List<List<Identifier>> OPTIONAL_BBB_GROUPS = optionalBbbGroups();
@@ -235,16 +236,6 @@ public final class ExplicitShapeMapFamilies {
             result.add(ids("minecraft:" + material + "_planks", "bbb:" + material + "_beam"));
         }
         return result.stream().map(List::copyOf).toList();
-    }
-
-    private static List<Identifier> bbbSelectorAliases() {
-        List<Identifier> result = new ArrayList<>();
-        for (String material : List.of("oak", "spruce", "birch", "jungle", "acacia",
-                "dark_oak", "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak")) {
-            result.add(Identifier.fromNamespaceAndPath("bbb", material + "_beam_slab"));
-            result.add(Identifier.fromNamespaceAndPath("bbb", material + "_beam_stairs"));
-        }
-        return List.copyOf(result);
     }
 
     private static List<Identifier> ids(String... ids) {

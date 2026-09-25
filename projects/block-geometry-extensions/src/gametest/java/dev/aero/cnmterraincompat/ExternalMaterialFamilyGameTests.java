@@ -11,6 +11,7 @@ import dev.aero.cnmterraincompat.client.LayerGeneratedResources;
 import dev.aero.cnmterraincompat.client.ProviderModelTextureResolver;
 import dev.aero.cnmterraincompat.client.QuarterGeometryGeneratedResources;
 import dev.tazer.clutternomore.ClutterNoMore;
+import dev.tazer.clutternomore.common.CHooks;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import games.twinhead.moreslabsstairsandwalls.api.material.BehaviorCapability;
 import games.twinhead.moreslabsstairsandwalls.api.material.NativeAxisModelContract;
@@ -721,19 +722,40 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak")) {
             assertExactSelector(helper, "minecraft:" + material + "_planks",
                     "bbb:" + material + "_beam");
+            ExternalMaterialFamilies.Binding beam = external("bbb:" + material + "_beam");
+            Block planks = BuiltInRegistries.BLOCK.getValue(
+                    Identifier.fromNamespaceAndPath("minecraft", material + "_planks"));
+            List<Item> selector = ShapeMap.getShapes(planks.asItem());
+            helper.assertTrue(java.util.Collections.frequency(selector, beam.slab().asItem()) == 1
+                            && java.util.Collections.frequency(selector, beam.stairs().asItem()) == 1
+                            && !RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(
+                                    beam.slab().asItem())
+                            && !RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(
+                                    beam.stairs().asItem()),
+                    "Canonical BGE Beam Slab/Stairs are not the sole visible roles for " + material);
             for (String suffix : List.of("_slab", "_stairs")) {
                 Identifier aliasId = Identifier.fromNamespaceAndPath("bbb", material + "_beam" + suffix);
                 Item alias = BuiltInRegistries.ITEM.getValue(aliasId);
                 helper.assertTrue(aliasId.equals(BuiltInRegistries.ITEM.getKey(alias))
+                                && RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(alias)
+                                && CHooks.denyItem(alias)
+                                && !ShapeMap.contains(alias)
                                 && ShapeMap.shapesView().values().stream()
                                         .noneMatch(component -> component.contains(alias)),
-                        "BBB provider alias remained in a final selector: " + aliasId);
+                        "BBB compatibility alias is no longer retained-hidden outside ShapeMap: " + aliasId);
             }
         }
         for (String family : List.of("veiled", "celestial", "murublight")) {
             assertExactSelector(helper, "enderscape:" + family + "_planks",
                     CnmTerrainCompat.MOD_ID + ":enderscape/" + family + "_beam");
         }
+        ExternalMaterialFamilies.Binding murublight = external(
+                CnmTerrainCompat.MOD_ID + ":enderscape/murublight_beam");
+        helper.assertTrue(!RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(
+                        murublight.slab().asItem())
+                        && !RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(
+                                murublight.stairs().asItem()),
+                "Murublight Beam must not use the BBB retained-compatibility visibility path");
         for (String family : List.of("celestial", "murublight")) {
             assertExactSelector(helper, "enderscape:" + family + "_stem",
                     "enderscape:" + family + "_hyphae");
