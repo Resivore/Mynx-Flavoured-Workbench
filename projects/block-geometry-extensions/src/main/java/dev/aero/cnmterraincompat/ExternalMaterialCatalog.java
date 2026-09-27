@@ -21,7 +21,7 @@ import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c93-provider-role-completion-v1";
+    public static final String PROFILE_VERSION = "bge-c101-amc-pattern-roots-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -146,6 +146,16 @@ public final class ExternalMaterialCatalog {
                     VisualProfile.UNIFORM,
                     NibaruMaterialProfile.OrientationPolicy.UNIFORM, texture, texture, texture, "",
                     TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
+                    Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Set.of(), List.of()));
+        }
+        // C101: the only AMC roots admitted here are the 16 audited Macaw-pattern full blocks.
+        // AMC owns both native standard roles, so BGE must reuse them and generate only the tail.
+        for (String material : List.of("prismarine", "quartz", "nether_brick", "end_brick")) for (String pattern : patterns) {
+            Identifier id = Identifier.fromNamespaceAndPath("architectural_material_closure", material + "_" + pattern);
+            String texture = "architectural_material_closure:block/" + material + "_" + pattern;
+            result.add(new Spec(id, "architectural_material_closure", id, id, standardRoles(id.toString()),
+                    VisualProfile.UNIFORM, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
+                    texture, texture, texture, "", TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                     Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Set.of(), List.of()));
         }
         for (String path : "podzol_path_block dirt_path_block gravel_path_block sand_path_block red_sand_path_block".split(" ")) {

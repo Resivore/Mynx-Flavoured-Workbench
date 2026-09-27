@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
   "id": "zz_bge_external_fixtures",
-  "provides": ["mcwpaths", "mynx_trees", "ribbits", "bbb", "enderscape", "mossy_stone"],
+  "provides": ["mcwpaths", "mynx_trees", "ribbits", "bbb", "enderscape", "mossy_stone", "architectural_material_closure"],
   "version": "1.0.0",
   "name": "CNM Nibaru Runtime Tests",
   "environment": "*",
   "entrypoints": {
     "main": [
       "com.mcwpaths.kikoz.MacawsPaths",
+      "dev.resivore.amc.ArchitecturalMaterialClosure",
       "dev.resivore.mossystone.MossyStoneMod",
       "dev.resivore.mynxtrees.MynxTrees",
       "com.yungnickyoung.minecraft.ribbits.fabric.RibbitsFabric",

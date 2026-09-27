@@ -183,21 +183,22 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 148,
-                "External source allowlist is not exactly 148");
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 164,
+                "External source allowlist is not exactly 164");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
+                        && ExternalMaterialCatalog.sourceCount("architectural_material_closure") == 16
                         && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
                         && ExternalMaterialCatalog.sourceCount("ribbits") == 4
                         && ExternalMaterialCatalog.sourceCount("bbb") == 12
                         && ExternalMaterialCatalog.sourceCount("enderscape") == 68
                         && ExternalMaterialCatalog.sourceCount("mossy_stone") == 1,
-                "Provider source partition is not 57/6/4/12/68/1");
-        helper.assertTrue(ExternalMaterialFamilies.all().size() == 148,
-                "Provider completion did not register all 148 allowlisted families: "
+                "Provider source partition is not 57/16/6/4/12/68/1");
+        helper.assertTrue(ExternalMaterialFamilies.all().size() == 164,
+                "Provider completion did not register all 164 allowlisted families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 314
                         && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null
-                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 146,
+                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 162,
                 "External append changed the frozen native inventory or lost an external source");
 
         Set<Identifier> actual = new LinkedHashSet<>();
@@ -209,8 +210,60 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C93_INVENTORY|sources=148|mcwpaths=57"
-                + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=68|mossy_stone=1|relations=1332");
+        System.out.println("EXTERNAL_C101_INVENTORY|sources=164|mcwpaths=57|architectural_material_closure=16"
+                + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=68|mossy_stone=1|relations=1476");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 80)
+    public void amcPatternRootsReuseProviderFormsAndPreserveSourceSurface(GameTestHelper helper) {
+        ResourceManager manager = clientFixtureManager();
+        LayerGeneratedResources.generateExternalForValidation(manager);
+        QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
+        ExternalMaterialGeneratedResources.generate(manager);
+        int roots = 0;
+        for (String material : List.of("prismarine", "quartz", "nether_brick", "end_brick")) {
+            for (String pattern : List.of("running_bond", "flagstone", "windmill_weave", "crystal_floor")) {
+                String root = material + "_" + pattern;
+                Identifier source = Identifier.fromNamespaceAndPath("architectural_material_closure", root);
+                ExternalMaterialFamilies.Binding binding = ExternalMaterialFamilies.fromSource(source).orElseThrow();
+                String texture = "architectural_material_closure:block/" + root;
+                helper.assertTrue(binding.spec().providerRoles().equals(Map.of(
+                                "slab", Identifier.fromNamespaceAndPath("architectural_material_closure", root + "_slab"),
+                                "stairs", Identifier.fromNamespaceAndPath("architectural_material_closure", root + "_stairs")))
+                                && binding.source() == BuiltInRegistries.BLOCK.getValue(source)
+                                && BuiltInRegistries.BLOCK.getKey(binding.slab()).equals(
+                                        Identifier.fromNamespaceAndPath("architectural_material_closure", root + "_slab"))
+                                && BuiltInRegistries.BLOCK.getKey(binding.stairs()).equals(
+                                        Identifier.fromNamespaceAndPath("architectural_material_closure", root + "_stairs"))
+                                && !binding.isGeneratedRole("slab") && !binding.isGeneratedRole("stairs")
+                                && binding.isGeneratedRole("wall") && binding.generatedRoles().size() == 6,
+                        "AMC C4 provider ownership drifted for " + source);
+                helper.assertTrue(binding.roles().size() == 9 && binding.roles().values().stream().distinct().count() == 9,
+                        "AMC root did not resolve to exactly one nine-role family: " + source);
+                for (String role : List.of("wall", "vertical_slab", "step", "corner", "quarter_column", "layer")) {
+                    Block block = binding.roles().get(role);
+                    Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+                    helper.assertTrue(binding.isGeneratedRole(role)
+                                    && !id.getNamespace().equals("architectural_material_closure"),
+                            "AMC generated role is missing or provider-owned: " + source + "/" + role);
+                    Set<String> models = new LinkedHashSet<>();
+                    collectModelReferences(generatedClientJson(blockStateResource(block)), models);
+                    collectModelReferences(generatedClientJson(itemResource(block)), models);
+                    helper.assertTrue(!models.isEmpty(), "AMC generated role has no resource model: "
+                            + source + "/" + role);
+                    for (String modelId : models) {
+                        JsonObject model = generatedClientJson(modelResource(modelId));
+                        helper.assertTrue(model.toString().contains(texture)
+                                        && !model.toString().contains("minecraft:block/" + material),
+                                "AMC patterned surface was replaced with a generic material: "
+                                        + source + "/" + role + "/" + modelId);
+                    }
+                }
+                roots++;
+            }
+        }
+        helper.assertTrue(roots == 16, "Expected all 16 explicit AMC C4 patterned roots, found " + roots);
         helper.succeed();
     }
 
@@ -697,10 +750,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
         CanonicalShapeMapAudit.ExactReport exact = CanonicalShapeMapAudit.inspectExplicitFamilies();
-        helper.assertTrue(relations == 1332 && canonicalDerived.size() == 1184 && bgeGenerated.size() == 982,
-                "C93 relation/canonical/generated identity count mismatch: " + relations + "/"
+        helper.assertTrue(relations == 1476 && canonicalDerived.size() == 1312 && bgeGenerated.size() == 1078,
+                "C101 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
-        helper.assertTrue(audit.variantCount() == 148 && audit.missing().isEmpty()
+        helper.assertTrue(audit.variantCount() == 164 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
                 "Live ShapeMap canonical variant/role audit failed: " + audit);
         helper.assertTrue(exact.variationCount() == NibaruMaterialProfiles.all().size()
@@ -783,7 +836,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 reused++;
             }
         }
-        helper.assertTrue(reused == 192, "Expected 192 reused provider roles, found " + reused);
+        helper.assertTrue(reused == 224, "Expected 224 reused provider roles, found " + reused);
 
         Identifier family = Identifier.parse("mynx_trees:wisteria_log");
         CanonicalShapeMapAudit.CanonicalKey logSlab = new CanonicalShapeMapAudit.CanonicalKey(
@@ -1014,15 +1067,15 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             }
         }
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
-        helper.assertTrue(walls.getAsJsonArray("values").size() == 148,
+        helper.assertTrue(walls.getAsJsonArray("values").size() == 164,
                 "External wall classification does not contain every scoped full-parent family");
-        helper.assertTrue(loot == 544, "Expected 544 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C93_SERVER_RESOURCES|standardLoot=544|wallTags=148|materialFamilies=148");
+        helper.assertTrue(loot == 592, "Expected 592 BGE-owned external loot tables, found " + loot);
+        System.out.println("EXTERNAL_C101_SERVER_RESOURCES|standardLoot=592|wallTags=164|materialFamilies=164");
         helper.succeed();
     }
 
     @GameTest(maxTicks = 80)
-    public void actualClientWritersCloseAll982BgeOwnedGeometryResources(GameTestHelper helper) {
+    public void actualClientWritersCloseAll1078BgeOwnedGeometryResources(GameTestHelper helper) {
         ResourceManager manager = clientFixtureManager();
         LayerGeneratedResources.GenerationSummary layers =
                 LayerGeneratedResources.generateExternalForValidation(manager);
@@ -1030,11 +1083,11 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.GenerationSummary standard =
                 ExternalMaterialGeneratedResources.generate(manager);
-        helper.assertTrue(layers.familyCount() == 146
-                        && quarters.cornerFamilyCount() == 146
-                        && quarters.columnFamilyCount() == 146
-                        && standard.familyCount() == 148
-                        && standard.blockStateCount() == 544,
+        helper.assertTrue(layers.familyCount() == 162
+                        && quarters.cornerFamilyCount() == 162
+                        && quarters.columnFamilyCount() == 162
+                        && standard.familyCount() == 164
+                        && standard.blockStateCount() == 592,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
@@ -1061,10 +1114,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 982 && resolvedModelReferences >= 982,
+        helper.assertTrue(generatedRelations == 1078 && resolvedModelReferences >= 1078,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C93_CLIENT_RESOURCES|generatedRelations=982|blockstates=982|items=982"
+        System.out.println("EXTERNAL_C101_CLIENT_RESOURCES|generatedRelations=1078|blockstates=1078|items=1078"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }

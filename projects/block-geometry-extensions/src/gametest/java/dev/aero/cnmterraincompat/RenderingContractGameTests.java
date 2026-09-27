@@ -250,7 +250,7 @@ public final class RenderingContractGameTests implements CustomTestMethodInvoker
                 CatalogItemGeneratedResources.generate(manager);
         helper.assertTrue(summary.roles().equals(expectedRoles),
                 "Final item pass did not cover the exact four visible roles of every ShapeMap variation");
-        helper.assertTrue(expectedRoles.size() == 1968
+        helper.assertTrue(expectedRoles.size() == 2032
                         && summary.itemDefinitionCount() == expectedRoles.size()
                         && summary.beamItemModelCount() == 30,
                 "Final item pass count drifted: roles=" + expectedRoles.size()
