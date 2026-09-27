@@ -67,7 +67,7 @@ final class ProviderBoundaryContractTest {
             "mangrove", "cherry", "pale_oak", "crimson", "warped");
 
     @Test
-    void c12CatalogContainsEveryExactEligibleMacawsPathsForm() throws Exception {
+    void c13CatalogContainsOnlyNonGeometryMacawsPathsForms() throws Exception {
         Set<String> expectedPaths = expectedPathIds();
         Set<String> expectedPavings = product(PAVING_MATERIALS, PAVING_DESIGNS, "_");
         assertEquals(77, expectedPaths.size());
@@ -76,14 +76,7 @@ final class ProviderBoundaryContractTest {
         Set<String> catalogPaths = catalogMembers("mcwpaths");
         Set<String> expectedCatalogPaths = new LinkedHashSet<>(expectedPaths);
         expectedCatalogPaths.addAll(expectedPavings);
-        for (String material : PATH_MATERIALS) {
-            for (String design : PATTERNED_BLOCK_DESIGNS) {
-                expectedCatalogPaths.add(material + "_" + design);
-                expectedCatalogPaths.add(material + "_" + design + "_slab");
-                expectedCatalogPaths.add(material + "_" + design + "_stairs");
-            }
-        }
-        assertEquals(311, expectedCatalogPaths.size());
+        assertEquals(155, expectedCatalogPaths.size());
         assertEquals(namespaced("mcwpaths", expectedCatalogPaths), catalogPaths);
 
         try (JarFile jar = providerJar(PATHS_JAR_PROPERTY)) {
@@ -100,7 +93,7 @@ final class ProviderBoundaryContractTest {
     }
 
     @Test
-    void onlyMacawsPathBlocksRemainOutsideTheC12Catalog() throws Exception {
+    void c13LeavesMacawsPatternGeometryAndPathBlocksOutsideTheCatalog() throws Exception {
         Set<String> expectedPavings = product(PAVING_MATERIALS, PAVING_DESIGNS, "_");
         Set<String> expectedPathBlocks = Set.of(
                 "dirt_path_block", "gravel_path_block", "podzol_path_block",
@@ -136,12 +129,19 @@ final class ProviderBoundaryContractTest {
             assertEquals(expectedFullBlocks, fullBlocks);
             assertEquals(52, fullBlocks.size());
 
-            Set<String> c12Eligible = new LinkedHashSet<>(all);
-            c12Eligible.removeAll(pathBlocks);
-            assertEquals(311, c12Eligible.size());
-            assertEquals(namespaced("mcwpaths", c12Eligible), catalogMembers("mcwpaths"));
-            assertTrue(disjoint(namespaced("mcwpaths", pathBlocks), allCatalogMembers()),
-                    "A non-inventory Macaw Paths path-block entered an IBF family");
+            Set<String> c13Eligible = new LinkedHashSet<>(all);
+            c13Eligible.removeAll(pathBlocks);
+            c13Eligible.removeAll(fullBlocks);
+            c13Eligible.removeAll(slabs);
+            c13Eligible.removeAll(stairs);
+            assertEquals(155, c13Eligible.size());
+            assertEquals(namespaced("mcwpaths", c13Eligible), catalogMembers("mcwpaths"));
+            Set<String> excluded = new LinkedHashSet<>(pathBlocks);
+            excluded.addAll(fullBlocks);
+            excluded.addAll(slabs);
+            excluded.addAll(stairs);
+            assertTrue(disjoint(namespaced("mcwpaths", excluded), allCatalogMembers()),
+                    "A BGE-owned Macaw Paths geometry member entered an IBF family");
         }
     }
 

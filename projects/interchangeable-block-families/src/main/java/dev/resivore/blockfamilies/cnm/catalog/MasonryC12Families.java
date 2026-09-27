@@ -3,6 +3,7 @@ package dev.resivore.blockfamilies.cnm.catalog;
 import net.minecraft.resources.Identifier;
 
 import java.util.List;
+import java.util.Set;
 
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.MASONRY_DETAIL;
 
@@ -12,11 +13,32 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * consulted when the catalog is assembled.
  */
 final class MasonryC12Families {
+    /* C13's BGE-owned geometry boundary is an exact registry inventory.  Keep this
+     * literal rather than inferring ownership from a namespace, tag, suffix, or a
+     * material-specific exception. */
+    private static final Set<Identifier> BGE_PATTERN_GEOMETRY = Set.of(
+            mcwPaths("stone_running_bond"), mcwPaths("stone_running_bond_slab"), mcwPaths("stone_running_bond_stairs"), mcwPaths("stone_flagstone"), mcwPaths("stone_flagstone_slab"), mcwPaths("stone_flagstone_stairs"), mcwPaths("stone_windmill_weave"), mcwPaths("stone_windmill_weave_slab"), mcwPaths("stone_windmill_weave_stairs"), mcwPaths("stone_crystal_floor"), mcwPaths("stone_crystal_floor_slab"), mcwPaths("stone_crystal_floor_stairs"),
+            mcwPaths("andesite_running_bond"), mcwPaths("andesite_running_bond_slab"), mcwPaths("andesite_running_bond_stairs"), mcwPaths("andesite_flagstone"), mcwPaths("andesite_flagstone_slab"), mcwPaths("andesite_flagstone_stairs"), mcwPaths("andesite_windmill_weave"), mcwPaths("andesite_windmill_weave_slab"), mcwPaths("andesite_windmill_weave_stairs"), mcwPaths("andesite_crystal_floor"), mcwPaths("andesite_crystal_floor_slab"), mcwPaths("andesite_crystal_floor_stairs"),
+            mcwPaths("diorite_running_bond"), mcwPaths("diorite_running_bond_slab"), mcwPaths("diorite_running_bond_stairs"), mcwPaths("diorite_flagstone"), mcwPaths("diorite_flagstone_slab"), mcwPaths("diorite_flagstone_stairs"), mcwPaths("diorite_windmill_weave"), mcwPaths("diorite_windmill_weave_slab"), mcwPaths("diorite_windmill_weave_stairs"), mcwPaths("diorite_crystal_floor"), mcwPaths("diorite_crystal_floor_slab"), mcwPaths("diorite_crystal_floor_stairs"),
+            mcwPaths("granite_running_bond"), mcwPaths("granite_running_bond_slab"), mcwPaths("granite_running_bond_stairs"), mcwPaths("granite_flagstone"), mcwPaths("granite_flagstone_slab"), mcwPaths("granite_flagstone_stairs"), mcwPaths("granite_windmill_weave"), mcwPaths("granite_windmill_weave_slab"), mcwPaths("granite_windmill_weave_stairs"), mcwPaths("granite_crystal_floor"), mcwPaths("granite_crystal_floor_slab"), mcwPaths("granite_crystal_floor_stairs"),
+            mcwPaths("brick_running_bond"), mcwPaths("brick_running_bond_slab"), mcwPaths("brick_running_bond_stairs"), mcwPaths("brick_flagstone"), mcwPaths("brick_flagstone_slab"), mcwPaths("brick_flagstone_stairs"), mcwPaths("brick_windmill_weave"), mcwPaths("brick_windmill_weave_slab"), mcwPaths("brick_windmill_weave_stairs"), mcwPaths("brick_crystal_floor"), mcwPaths("brick_crystal_floor_slab"), mcwPaths("brick_crystal_floor_stairs"),
+            mcwPaths("mossy_stone_running_bond"), mcwPaths("mossy_stone_running_bond_slab"), mcwPaths("mossy_stone_running_bond_stairs"), mcwPaths("mossy_stone_flagstone"), mcwPaths("mossy_stone_flagstone_slab"), mcwPaths("mossy_stone_flagstone_stairs"), mcwPaths("mossy_stone_windmill_weave"), mcwPaths("mossy_stone_windmill_weave_slab"), mcwPaths("mossy_stone_windmill_weave_stairs"), mcwPaths("mossy_stone_crystal_floor"), mcwPaths("mossy_stone_crystal_floor_slab"), mcwPaths("mossy_stone_crystal_floor_stairs"),
+            mcwPaths("cobbled_deepslate_running_bond"), mcwPaths("cobbled_deepslate_running_bond_slab"), mcwPaths("cobbled_deepslate_running_bond_stairs"), mcwPaths("cobbled_deepslate_flagstone"), mcwPaths("cobbled_deepslate_flagstone_slab"), mcwPaths("cobbled_deepslate_flagstone_stairs"), mcwPaths("cobbled_deepslate_windmill_weave"), mcwPaths("cobbled_deepslate_windmill_weave_slab"), mcwPaths("cobbled_deepslate_windmill_weave_stairs"), mcwPaths("cobbled_deepslate_crystal_floor"), mcwPaths("cobbled_deepslate_crystal_floor_slab"), mcwPaths("cobbled_deepslate_crystal_floor_stairs"),
+            mcwPaths("deepslate_running_bond"), mcwPaths("deepslate_running_bond_slab"), mcwPaths("deepslate_running_bond_stairs"), mcwPaths("deepslate_flagstone"), mcwPaths("deepslate_flagstone_slab"), mcwPaths("deepslate_flagstone_stairs"), mcwPaths("deepslate_windmill_weave"), mcwPaths("deepslate_windmill_weave_slab"), mcwPaths("deepslate_windmill_weave_stairs"), mcwPaths("deepslate_crystal_floor"), mcwPaths("deepslate_crystal_floor_slab"), mcwPaths("deepslate_crystal_floor_stairs"),
+            mcwPaths("mud_brick_running_bond"), mcwPaths("mud_brick_running_bond_slab"), mcwPaths("mud_brick_running_bond_stairs"), mcwPaths("mud_brick_flagstone"), mcwPaths("mud_brick_flagstone_slab"), mcwPaths("mud_brick_flagstone_stairs"), mcwPaths("mud_brick_windmill_weave"), mcwPaths("mud_brick_windmill_weave_slab"), mcwPaths("mud_brick_windmill_weave_stairs"), mcwPaths("mud_brick_crystal_floor"), mcwPaths("mud_brick_crystal_floor_slab"), mcwPaths("mud_brick_crystal_floor_stairs"),
+            mcwPaths("blackstone_running_bond"), mcwPaths("blackstone_running_bond_slab"), mcwPaths("blackstone_running_bond_stairs"), mcwPaths("blackstone_flagstone"), mcwPaths("blackstone_flagstone_slab"), mcwPaths("blackstone_flagstone_stairs"), mcwPaths("blackstone_windmill_weave"), mcwPaths("blackstone_windmill_weave_slab"), mcwPaths("blackstone_windmill_weave_stairs"), mcwPaths("blackstone_crystal_floor"), mcwPaths("blackstone_crystal_floor_slab"), mcwPaths("blackstone_crystal_floor_stairs"),
+            amc("prismarine_running_bond"), amc("prismarine_running_bond_slab"), amc("prismarine_running_bond_stairs"), amc("prismarine_flagstone"), amc("prismarine_flagstone_slab"), amc("prismarine_flagstone_stairs"), amc("prismarine_windmill_weave"), amc("prismarine_windmill_weave_slab"), amc("prismarine_windmill_weave_stairs"), amc("prismarine_crystal_floor"), amc("prismarine_crystal_floor_slab"), amc("prismarine_crystal_floor_stairs"),
+            mcwPaths("dark_prismarine_running_bond"), mcwPaths("dark_prismarine_running_bond_slab"), mcwPaths("dark_prismarine_running_bond_stairs"), mcwPaths("dark_prismarine_flagstone"), mcwPaths("dark_prismarine_flagstone_slab"), mcwPaths("dark_prismarine_flagstone_stairs"), mcwPaths("dark_prismarine_windmill_weave"), mcwPaths("dark_prismarine_windmill_weave_slab"), mcwPaths("dark_prismarine_windmill_weave_stairs"), mcwPaths("dark_prismarine_crystal_floor"), mcwPaths("dark_prismarine_crystal_floor_slab"), mcwPaths("dark_prismarine_crystal_floor_stairs"),
+            mcwPaths("sandstone_running_bond"), mcwPaths("sandstone_running_bond_slab"), mcwPaths("sandstone_running_bond_stairs"), mcwPaths("sandstone_flagstone"), mcwPaths("sandstone_flagstone_slab"), mcwPaths("sandstone_flagstone_stairs"), mcwPaths("sandstone_windmill_weave"), mcwPaths("sandstone_windmill_weave_slab"), mcwPaths("sandstone_windmill_weave_stairs"), mcwPaths("sandstone_crystal_floor"), mcwPaths("sandstone_crystal_floor_slab"), mcwPaths("sandstone_crystal_floor_stairs"),
+            mcwPaths("red_sandstone_running_bond"), mcwPaths("red_sandstone_running_bond_slab"), mcwPaths("red_sandstone_running_bond_stairs"), mcwPaths("red_sandstone_flagstone"), mcwPaths("red_sandstone_flagstone_slab"), mcwPaths("red_sandstone_flagstone_stairs"), mcwPaths("red_sandstone_windmill_weave"), mcwPaths("red_sandstone_windmill_weave_slab"), mcwPaths("red_sandstone_windmill_weave_stairs"), mcwPaths("red_sandstone_crystal_floor"), mcwPaths("red_sandstone_crystal_floor_slab"), mcwPaths("red_sandstone_crystal_floor_stairs"),
+            amc("quartz_running_bond"), amc("quartz_running_bond_slab"), amc("quartz_running_bond_stairs"), amc("quartz_flagstone"), amc("quartz_flagstone_slab"), amc("quartz_flagstone_stairs"), amc("quartz_windmill_weave"), amc("quartz_windmill_weave_slab"), amc("quartz_windmill_weave_stairs"), amc("quartz_crystal_floor"), amc("quartz_crystal_floor_slab"), amc("quartz_crystal_floor_stairs"),
+            amc("nether_brick_running_bond"), amc("nether_brick_running_bond_slab"), amc("nether_brick_running_bond_stairs"), amc("nether_brick_flagstone"), amc("nether_brick_flagstone_slab"), amc("nether_brick_flagstone_stairs"), amc("nether_brick_windmill_weave"), amc("nether_brick_windmill_weave_slab"), amc("nether_brick_windmill_weave_stairs"), amc("nether_brick_crystal_floor"), amc("nether_brick_crystal_floor_slab"), amc("nether_brick_crystal_floor_stairs"),
+            amc("end_brick_running_bond"), amc("end_brick_running_bond_slab"), amc("end_brick_running_bond_stairs"), amc("end_brick_flagstone"), amc("end_brick_flagstone_slab"), amc("end_brick_flagstone_stairs"), amc("end_brick_windmill_weave"), amc("end_brick_windmill_weave_slab"), amc("end_brick_windmill_weave_stairs"), amc("end_brick_crystal_floor"), amc("end_brick_crystal_floor_slab"), amc("end_brick_crystal_floor_stairs"));
     private MasonryC12Families() {
     }
 
     static List<AuditedShapeFamily> families() {
-        return List.of(
+        return withoutBgeOwnedPatternGeometry(List.of(
             family("stone", minecraft("stone_button"),
                     minecraft("stone_pressure_plate"),
                     bbb("stone_column"),
@@ -664,7 +686,18 @@ final class MasonryC12Families {
                     mcwWindows("ender_brick_arrow_slit"),
                     amc("end_brick_louvered_shutter"))
             // C12_MASONRY_APPEND
-        );
+        ));
+    }
+
+    static Set<Identifier> bgePatternGeometry() {
+        return BGE_PATTERN_GEOMETRY;
+    }
+
+    /** C13 leaves this exact BGE/CNM geometry inventory outside IBF. */
+    private static List<AuditedShapeFamily> withoutBgeOwnedPatternGeometry(List<AuditedShapeFamily> c12) {
+        return c12.stream().map(family -> new AuditedShapeFamily(family.key(), family.category(),
+                family.canonicalParent(), family.members().stream().filter(member -> !BGE_PATTERN_GEOMETRY.contains(member))
+                        .toList())).toList();
     }
 
     private static AuditedShapeFamily family(String material, Identifier parent, Identifier... alternatives) {

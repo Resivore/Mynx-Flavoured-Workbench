@@ -133,7 +133,7 @@ def nibaruReferenceJar = referenceJar(
         '../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar')
 def cnmIntegrationReferenceJar = referenceJar(
         'cnm_integration_reference_jar',
-        '../block-geometry-extensions/artifacts/cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar')
+        '../block-geometry-extensions/artifacts/BGE C102.jar')
 def qsnReferenceJar = referenceJar(
         'qsn_reference_jar',
         '../../originals/mods/quick-stack-nearby-0.4.0.jar')
@@ -142,7 +142,7 @@ def qsnCompatReferenceJar = referenceJar(
         '../quick-stack-nearby-compat/artifacts/quick-stack-nearby-compat-0.1.0-canary6.jar')
 def amcReferenceJar = referenceJar(
         'amc_reference_jar',
-        '../architectural-material-closure/artifacts/architectural-material-closure-0.1.0-canary4.jar')
+        '../architectural-material-closure/artifacts/architectural-material-closure-0.1.0-canary5.jar')
 def aurorasLanternsReferenceJar = referenceJar(
         'auroras_lanterns_reference_jar',
         '../../originals/mods/auroraslanterns-2.1.1+26.2.jar')
@@ -236,7 +236,9 @@ dependencies {
     runtimeOnly files(dramaticDoorsReferenceJar)
     dramaticDoorsReference files(dramaticDoorsReferenceJar)
 
-    runtimeOnly files(nibaruReferenceJar)
+    // C102 is the unified BGE/Nibaru validation provider and declares the
+    // Nibaru capability itself. Keep the standalone JAR for archive auditing,
+    // but never load both providers into the same controlled run.
     runtimeOnly files(cnmIntegrationReferenceJar)
     nibaruReference files(nibaruReferenceJar)
     cnmIntegrationReference files(cnmIntegrationReferenceJar)

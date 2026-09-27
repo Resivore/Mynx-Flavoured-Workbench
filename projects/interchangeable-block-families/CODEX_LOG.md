@@ -125,3 +125,14 @@
 - Artifact: Current retained C12 is `interchangeable-block-families-0.1.0-canary12.jar`, 69,075 bytes, SHA-256 `68ed59c4d1a7542572ed82df9b2617cec9bf1c6437304ca7a5ae49ac51e01c1e`, built at `2026-09-25T22:06:44.1468886Z` from the preceding source checkpoint above. Controlled provider evidence is AMC C4 `architectural-material-closure-0.1.0-canary4.jar`, SHA-256 `b7344ec4b53305cdfeb5cfd514e2570b919ecca5432d6c9ed11b7e1846a90fd5`.
 - Result: ACTIVE / STATIC_PASS / RUNTIME_UNTESTED. Exact C7 remains the accepted baseline pending owner decision.
 - Next state: Under explicit owner runtime direction, test the exact C12/C4 bytes in an isolated environment and record only supplied observations; retain C7 unchanged until an owner acceptance decision.
+
+## 2026-09-27T01:36:09.9004633Z — Finalize Interchangeable Block Families Canary 13
+
+- Revision: 13
+- Source checkpoint: `1811c86b2b2221836deb299ebd11e32427e86269`
+- Changes: Excluded the exact literal 204 BGE-owned patterned full/slab/stair cells (156 Macaw, 48 AMC) from all 17 masonry profiles without inference or material-specific exceptions. C13 retains 442 eligible masonry members (253 provider, 189 AMC), 1,607 total unique members, and largest family size 26; C7 remains accepted unchanged.
+- Build/static: Java 25 unit/catalog/recipe/archive checks passed. Controlled C5/C102/C13 GameTests passed all 26 tests, proving the exact existing AMC/BGE nine-role component is wholly outside IBF while a genuine cross-family component still fails closed.
+- Runtime: No Minecraft profile, world, deployment, or manual runtime observation was touched. Owner-supplied C12 collision evidence remains tied to its reported prior release context.
+- Artifact: Current retained C13 is `interchangeable-block-families-0.1.0-canary13.jar`, 70,830 bytes, SHA-256 `9FBE4627414CCC0A4EBA33C8912244FB55D47F6BE4B6ECAC1752F699F37974AB`, finalized at `2026-09-27T01:36:09.9004633Z` from the preceding checkpoint above.
+- Result: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`.
+- Next state: Obtain owner-supplied runtime observations against the exact coordinated C5/C102/C13 release set before acceptance or a successor.

@@ -28,8 +28,8 @@ class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
         assertEquals(166, AuditedShapeFamilies.families().size());
-        assertEquals(1_811, AuditedShapeFamilies.uniqueMemberCount());
-        assertEquals(38, AuditedShapeFamilies.largestFamilySize());
+        assertEquals(1_607, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(26, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
                 AuditedShapeFamilies.uniqueMemberCount());
@@ -59,7 +59,7 @@ class AuditedShapeFamiliesTest {
                 FENCE_GATE, 62,
                 BAR_CHAIN, 30,
                 BBB_DETAIL, 60,
-                MASONRY_DETAIL, 646,
+                MASONRY_DETAIL, 442,
                 BUILDING_ACCESSORY, 98);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
@@ -86,7 +86,7 @@ class AuditedShapeFamiliesTest {
         }
 
         assertEquals(166, keys.size());
-        assertEquals(1_811, members.size());
+        assertEquals(1_607, members.size());
     }
 
     @Test
@@ -132,7 +132,7 @@ class AuditedShapeFamiliesTest {
         assertEquals(Map.of(2, 1L, 4, 15L), sizeDistribution(FENCE_GATE));
         assertEquals(Map.of(2, 1L, 3, 8L, 4, 1L), sizeDistribution(BAR_CHAIN));
         assertEquals(Map.of(4, 15L), sizeDistribution(BBB_DETAIL));
-        assertEquals(Map.of(38, 17L), sizeDistribution(MASONRY_DETAIL));
+        assertEquals(Map.of(26, 17L), sizeDistribution(MASONRY_DETAIL));
         assertEquals(Map.of(2, 9L, 3, 1L, 7, 11L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }

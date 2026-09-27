@@ -99,18 +99,18 @@
     ]
   },
   "state": {
-    "milestone": "C101 adds the explicit 16 AMC C4 patterned roots as complete nine-role families, retaining each AMC full block, Slab, and Stairs and generating only Wall, Vertical Slab, Step, Corner, Quarter Column, and Layer from the exact AMC pattern surface. Java 25 build and all 164/164 controlled Minecraft 26.2 GameTests passed, followed by architecture and archive verification. C101 remains ACTIVE and runtime-untested; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C102 keeps the explicit 16 AMC patterned roots as complete nine-role families and binds every generated surface to AMC C5's resolved authored sprite contract rather than a block-ID texture guess. Java 25 build and all 164/164 controlled Minecraft 26.2 GameTests passed, followed by architecture and archive verification. C102 remains ACTIVE and runtime-untested; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C101 (AMC Pattern Roots; embedded 4.2.45-bge.canary101.amc-pattern-roots+26.2)",
-        "canary": 101,
-        "embedded_version": "4.2.45-bge.canary101.amc-pattern-roots+26.2",
+        "version": "C102 (AMC C5 Pattern Surfaces; embedded 4.2.46-bge.canary102.amc-c5-pattern-surfaces+26.2)",
+        "canary": 102,
+        "embedded_version": "4.2.46-bge.canary102.amc-c5-pattern-surfaces+26.2",
         "artifact": {
-          "filename": "BGE C101.jar",
-          "sha256": "cff48ee847f62048dc1b222ffb8ca51aa7c86253a86c4b8b994460d5a0d8abfc"
+          "filename": "BGE C102.jar",
+          "sha256": "99a4ec8f82bbed4cd7458310b8a903e49b17f253c53cf15575df247ce1aebd0e"
         },
-        "built_at": "2026-09-27T00:00:12.7212309Z",
-        "source_commit": "cae7f00341ea403e82023fedb8b4e3e4be91324f",
+        "built_at": "2026-09-27T01:26:04.8930979Z",
+        "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -119,17 +119,17 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C101 artifact targets Minecraft 26.2 and packages Fabric’s same-release predicate; AMC is an optional presence/capability provider and six privately derived BBB/Enderscape Beam resources keep the JAR PRIVATE_LOCAL_ONLY.",
+              "reason": "The exact C102 artifact targets Minecraft 26.2 and packages Fabric’s same-release predicate; AMC remains an optional presence/capability provider and six privately derived BBB/Enderscape Beam resources keep the JAR PRIVATE_LOCAL_ONLY.",
               "regression_evidence": [
-                "Java 25 build from preceding coherent checkpoint cae7f00341ea403e82023fedb8b4e3e4be91324f produced exact PRIVATE_LOCAL_ONLY `BGE C101.jar`, 6,424,106 bytes, SHA-256 cff48ee847f62048dc1b222ffb8ca51aa7c86253a86c4b8b994460d5a0d8abfc, finalized at 2026-09-27T00:00:12.7212309Z.",
-                "All 164/164 controlled Minecraft 26.2 GameTests passed, including the exact 16-root AMC C4 matrix, provider Slab/Stairs reuse, six generated roles, canonical nine-role closure, AMC source-surface resource binding, preserved 52 Macaw patterned roots, and disabled arbitrary CNM discovery.",
+                "Java 25 build from preceding coherent checkpoint 1811c86b2b2221836deb299ebd11e32427e86269 produced exact PRIVATE_LOCAL_ONLY `BGE C102.jar`, 6,424,215 bytes, SHA-256 99a4ec8f82bbed4cd7458310b8a903e49b17f253c53cf15575df247ce1aebd0e, finalized at 2026-09-27T01:26:04.8930979Z.",
+                "All 164/164 controlled Minecraft 26.2 GameTests passed, including the exact 16-root AMC C5 matrix, provider Slab/Stairs reuse, six generated roles, canonical nine-role closure, resolved AMC C5 sprite bindings, preserved 52 Macaw patterned roots, and disabled arbitrary CNM discovery.",
                 "The material-profile architecture suite and exact archive verifier passed; the archive retains the private Beam provenance boundary and has zero provider resource/source-artwork leaks.",
-                "No Minecraft gameplay-profile observation or acceptance is inferred for C101."
+                "No Minecraft gameplay-profile observation or acceptance is inferred for C102."
               ]
             }
           ]
         },
-        "summary": "Adds 16 explicit AMC C4 patterned nine-role families while reusing AMC Slab/Stairs and preserving each authored patterned surface; PRIVATE_LOCAL_ONLY."
+        "summary": "Binds the 16 explicit AMC patterned nine-role families to AMC C5's resolved authored surfaces; PRIVATE_LOCAL_ONLY."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -199,10 +199,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 63,
-    "activity_at": "2026-09-27T00:00:12.7212309Z",
-    "updated_at": "2026-09-27T00:00:12.7212309Z",
-    "last_codex_at": "2026-09-27T00:00:12.7212309Z",
-    "source_commit": "cae7f00341ea403e82023fedb8b4e3e4be91324f"
+    "revision": 64,
+    "activity_at": "2026-09-27T01:26:04.8930979Z",
+    "updated_at": "2026-09-27T01:26:04.8930979Z",
+    "last_codex_at": "2026-09-27T01:26:04.8930979Z",
+    "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269"
   }
 }

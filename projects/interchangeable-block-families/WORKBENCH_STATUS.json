@@ -20,10 +20,10 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Preserve exact accepted C7 byte-for-byte as the accepted baseline while C12 replaces C11's rectangular AMC catalog with the complete literal provider-first AMC C4 masonry matrix; C12 remains runtime-untested."
+      "Preserve exact accepted C7 byte-for-byte as the accepted baseline while C13 excludes the literal BGE-owned patterned geometry cells from C12's provider-first masonry matrix; C13 remains runtime-untested."
     ],
     "scope": [
-      "Preserve every accepted C7 family, every C8/C9/C10 addition, and every canonical parent while replacing C11's rectangular catalog with the complete literal provider-first AMC C4 masonry matrix: 646 cells across 17 audited material profiles, using 409 exact Minecraft/BBB/Macaw provider IDs and 237 exact AMC gap IDs, yielding 166 families, 1,811 unique item IDs, and a 38-member maximum without suffix, tag, or namespace inference.",
+      "Preserve every accepted C7 family, every C8/C9/C10 addition, and every canonical parent while excluding C13's exact literal BGE-owned patterned full/slab/stair geometry: the 17 audited masonry profiles retain 442 eligible cells (253 provider, 189 AMC), yielding 166 families, 1,607 unique item IDs, and a 26-member maximum without suffix, tag, or namespace inference.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
       "Retain exact accepted C7 and historical rollback C3 artifacts while C12 is the current candidate; no owner acceptance or manual Minecraft runtime result is inferred from static evidence."
@@ -105,8 +105,8 @@
       {
         "type": "PROJECT",
         "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
-        "requirement": "runtime architectural_material_closure:*; controlled validation input AMC C4 (0.1.0-canary4), architectural-material-closure-0.1.0-canary4.jar, 1,771,750 bytes, SHA-256 b7344ec4b53305cdfeb5cfd514e2570b919ecca5432d6c9ed11b7e1846a90fd5",
-        "reason": "AMC is an actively developed external provider, so IBF's Fabric runtime dependency is presence-only. The exact C4 artifact is retained solely as controlled validation evidence for the literal provider-first C12 catalog."
+        "requirement": "runtime architectural_material_closure:*; controlled validation input AMC C5 (0.1.0-canary5), architectural-material-closure-0.1.0-canary5.jar, 1,799,641 bytes, SHA-256 85202102993d2fba6fa9cd17576e9d8209cfea8c71050d73da55cd3a8e79c1d1",
+        "reason": "AMC is an actively developed external provider, so IBF's Fabric runtime dependency is presence-only. The exact C5 artifact is controlled validation evidence for C13's literal provider-first boundary."
       },
       {
         "type": "MOD",
@@ -129,8 +129,8 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": "Accepted C52 (legacy Integration 1.39), cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar SHA-256 0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69",
-        "reason": "Exact accepted geometry integration identity used only for C4 isolation and regression validation."
+        "requirement": "controlled validation BGE C102, BGE C102.jar, 6,424,215 bytes, SHA-256 99a4ec8f82bbed4cd7458310b8a903e49b17f253c53cf15575df247ce1aebd0e",
+        "reason": "C13's controlled GameTests load the exact current BGE provider to prove its pre-existing AMC patterned nine-role components remain entirely outside IBF ownership."
       },
       {
         "type": "OTHER",
@@ -153,18 +153,18 @@
     ]
   },
   "state": {
-    "milestone": "Canary 12 is the current ACTIVE candidate after exact AMC C4 provider-first masonry audit, complete 646-cell matrix integration, unrestricted AMC runtime-dependency validation, and retained-artifact verification. Exact C7 remains the byte-for-byte accepted baseline until explicit owner acceptance; no manual Minecraft runtime result is recorded.",
+    "milestone": "Canary 13 excludes all 204 literal BGE-owned patterned full/slab/stair cells from IBF ownership while retaining the 442-cell eligible provider-first masonry subset. Controlled C5/C102/C13 GameTests pass the exact pre-existing nine-role component ordering without weakening the fail-closed cross-family guard. Exact C7 remains the byte-for-byte accepted baseline until explicit owner acceptance; no manual Minecraft runtime result is recorded.",
     "releases": {
       "current": {
-        "version": "C12 (0.1.0-canary12)",
-        "canary": 12,
-        "embedded_version": "0.1.0-canary12",
+        "version": "C13 (0.1.0-canary13)",
+        "canary": 13,
+        "embedded_version": "0.1.0-canary13",
         "artifact": {
-          "filename": "interchangeable-block-families-0.1.0-canary12.jar",
-          "sha256": "68ed59c4d1a7542572ed82df9b2617cec9bf1c6437304ca7a5ae49ac51e01c1e"
+          "filename": "interchangeable-block-families-0.1.0-canary13.jar",
+          "sha256": "9fbe4627414ccc0a4eba33c8912244fb55d47f6be4b6ecac1752f699f37974ab"
         },
-        "built_at": "2026-09-25T22:06:44.1468886Z",
-        "source_commit": "27eece1bcd30b6e164a50c23103e87a076b0af8e",
+        "built_at": "2026-09-27T01:36:09.9004633Z",
+        "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -182,7 +182,7 @@
             }
           ]
         },
-        "summary": "Replaces C11's duplicate AMC masonry catalog with C4's 646-cell literal provider-first matrix."
+        "summary": "Excludes BGE-owned patterned geometry from the literal masonry catalog while preserving fail-closed IBF boundaries."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -213,16 +213,16 @@
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
-      "build": "STATIC_PASS",
+      "build": "CONTROLLED_VALIDATION_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-09-25T22:06:44.1468886Z",
-    "updated_at": "2026-09-25T22:06:44.1468886Z",
-    "last_codex_at": "2026-09-25T22:06:44.1468886Z",
-    "source_commit": "27eece1bcd30b6e164a50c23103e87a076b0af8e"
+    "revision": 13,
+    "activity_at": "2026-09-27T01:36:09.9004633Z",
+    "updated_at": "2026-09-27T01:36:09.9004633Z",
+    "last_codex_at": "2026-09-27T01:36:09.9004633Z",
+    "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269"
   }
 }

@@ -21,7 +21,7 @@ import java.util.Set;
 
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
-    public static final String PROFILE_VERSION = "bge-c101-amc-pattern-roots-v1";
+    public static final String PROFILE_VERSION = "bge-c102-amc-c5-pattern-surfaces-v1";
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -148,11 +148,11 @@ public final class ExternalMaterialCatalog {
                     TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                     Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Set.of(), List.of()));
         }
-        // C101: the only AMC roots admitted here are the 16 audited Macaw-pattern full blocks.
+        // C102: the only AMC roots admitted here are the 16 audited Macaw-pattern full blocks.
         // AMC owns both native standard roles, so BGE must reuse them and generate only the tail.
         for (String material : List.of("prismarine", "quartz", "nether_brick", "end_brick")) for (String pattern : patterns) {
             Identifier id = Identifier.fromNamespaceAndPath("architectural_material_closure", material + "_" + pattern);
-            String texture = "architectural_material_closure:block/" + material + "_" + pattern;
+            String texture = amcC5PatternSurface(material, pattern);
             result.add(new Spec(id, "architectural_material_closure", id, id, standardRoles(id.toString()),
                     VisualProfile.UNIFORM, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
                     texture, texture, texture, "", TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
@@ -167,6 +167,17 @@ public final class ExternalMaterialCatalog {
                     Set.of(BlockTags.MINEABLE_WITH_SHOVEL), Set.of(), List.of()));
         }
         return List.copyOf(result);
+    }
+
+    /**
+     * AMC C5's root-model graph resolves each generated pattern through its
+     * private, materialized Macaw surface. This is the rendered sprite contract
+     * (not a guess from the AMC block registry path), and the C102 artifact
+     * deliberately references it without copying protected image bytes.
+     */
+    private static String amcC5PatternSurface(String material, String pattern) {
+        return "architectural_material_closure:block/derived/" + material
+                + "/mcwpaths/andesite_" + pattern;
     }
 
     private static Map<String, Identifier> standardRoles(String source) {

@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 101 — AMC Pattern Roots",
-  "description": "Completes the explicitly audited AMC Macaw-pattern roots while reusing their native slabs and stairs.",
+  "name": "Block Geometry Extensions Canary 102 — AMC C5 Pattern Surfaces",
+  "description": "Completes the explicitly audited AMC pattern roots using AMC C5's resolved texture surfaces while reusing native slabs and stairs.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

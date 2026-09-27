@@ -88,9 +88,27 @@ tasks.register('generateMasonryResources') {
          * This is deliberately a closure: rewriting a model without emitting its texture
          * makes a C4 variant silently fall back to the source provider material. */
         def rewrite = { value, material, provider ->
-            value.replaceAll(/("(?:parent|model)"\s*:\s*")${provider}:(block|item)\//) { all, prefix, kind ->
+            def localized = value.replaceAll(/("(?:parent|model)"\s*:\s*")${provider}:(block|item)\//) { all, prefix, kind ->
                 "${prefix}${ns}:${kind}/derived/${material}/${provider}/"
             }
+            /* Unqualified model identifiers inherit their provider namespace.
+             * Treat them as models, never as texture names, and retain them in
+             * the generated local model closure. */
+            localized.replaceAll(/("(?:parent|model)"\s*:\s*")(block|item)\//) { all, prefix, kind ->
+                "${prefix}${ns}:${kind}/derived/${material}/${provider}/"
+            }
+        }
+        /* A blockstate/model edge is a model identifier, not JSON containing a
+         * "parent" or "model" property.  C4 accidentally ran raw identifiers
+         * through rewrite(), leaving the public AMC root pointing back at the
+         * provider model and orphaning its generated private closure. */
+        def localModelId = { value, material, provider ->
+            if (!value.startsWith("${provider}:")) return value
+            def resource = value.substring((provider + ':').length())
+            if (!(resource.startsWith('block/') || resource.startsWith('item/'))) return value
+            def kind = resource.substring(0, resource.indexOf('/'))
+            def path = resource.substring(kind.length() + 1)
+            "${ns}:${kind}/derived/${material.id}/${provider}/${path}"
         }
         /* Provider pixels supply form-specific seams, trim and shading; the actual target
          * Minecraft material texture supplies colour, grain and masonry identity.  This is a
@@ -107,6 +125,8 @@ tasks.register('generateMasonryResources') {
         def providerRefs = { value, provider ->
             def result=[]; def matcher=(value =~ /"(?:parent|model)"\s*:\s*"${provider}:(block|item)\/([^\"#]+)/)
             while(matcher.find()) result << [kind:matcher.group(1),path:matcher.group(2)]
+            def unqualified=(value =~ /"(?:parent|model)"\s*:\s*"(block|item)\/([^\"#]+)/)
+            while(unqualified.find()) result << [kind:unqualified.group(1),path:unqualified.group(2)]
             result
         }
         def providerTextureRefs = { value, provider ->
@@ -142,7 +162,11 @@ tasks.register('generateMasonryResources') {
             def entry=textureEntry(zip,provider,texturePath)
             if(entry==null || !copied.add("texture:${path}")) return
             def targetPath = path.startsWith('block/') ? path.substring('block/'.length()) : path
-            def target=new File(root,"assets/${ns}/textures/derived/${material.id}/${provider}/${targetPath}.png")
+            /* Texture identifiers are rewritten to `block/derived/...`; the
+             * archive path must therefore be `textures/block/derived/...`, not
+             * merely `textures/derived/...`.  Keeping the resource-directory
+             * segment is what makes the runtime sprite lookup succeed. */
+            def target=new File(root,"assets/${ns}/textures/block/derived/${material.id}/${provider}/${targetPath}.png")
             def targetEntry=minecraft.getEntry("assets/minecraft/textures/block/${material.texture}.png")
             if(targetEntry==null)throw new GradleException("Missing target material texture minecraft:block/${material.texture} for ${material.id}")
             target.parentFile.mkdirs();target.bytes=materializeTexture(zip.getInputStream(entry).bytes,minecraft.getInputStream(targetEntry).bytes)
@@ -174,7 +198,7 @@ tasks.register('generateMasonryResources') {
             if (c4ProviderOwned(material, form.id)) return
             def name="${material.id}_${form.id}";def matcher=(state =~ /\"model\"\s*:\s*\"([^\"]+)\"/);if(!matcher.find())throw new GradleException("No model in provider blockstate for ${name}");def model=matcher.group(1)
             materializeState(zip,minecraft,provider,material,state,copied)
-            write("assets/${ns}/blockstates/${name}.json",rewrite(state,material.id,provider));write("assets/${ns}/models/block/${name}.json","{ \"parent\": \"${rewrite(model,material.id,provider)}\" }");write("assets/${ns}/items/${name}.json",itemModel(name));write("data/${ns}/loot_table/blocks/${name}.json",selfLoot(name));write("data/${ns}/recipe/${name}_from_stonecutting.json",recipe(material.block,name));write("data/${ns}/advancement/recipes/decorations/${name}_from_stonecutting.json",advancement(material.block,name));lang["block.${ns}.${name}"]="${material.display} ${form.display}";pickaxe<<"${ns}:${name}"
+            write("assets/${ns}/blockstates/${name}.json",rewrite(state,material.id,provider));write("assets/${ns}/models/block/${name}.json","{ \"parent\": \"${localModelId(model,material,provider)}\" }");write("assets/${ns}/items/${name}.json",itemModel(name));write("data/${ns}/loot_table/blocks/${name}.json",selfLoot(name));write("data/${ns}/recipe/${name}_from_stonecutting.json",recipe(material.block,name));write("data/${ns}/advancement/recipes/decorations/${name}_from_stonecutting.json",advancement(material.block,name));lang["block.${ns}.${name}"]="${material.display} ${form.display}";pickaxe<<"${ns}:${name}"
         }
         def bbb=new java.util.zip.ZipFile(bbbReferenceJar);def windows=new java.util.zip.ZipFile(windowsReferenceJar);def paths=new java.util.zip.ZipFile(pathsReferenceJar);def minecraft=new java.util.zip.ZipFile(minecraftClientJar)
         try {
@@ -220,9 +244,88 @@ tasks.register('verifyProductionJarIsolation') {
             if(owned.size()!=237 || masonryMaterials.size()*forms.size()!=646)throw new GradleException("C4 matrix is not 646 total / 237 AMC-owned")
             ['blockstates','items'].each { kind -> if(archive.entries().count{it.name.startsWith("assets/architectural_material_closure/${kind}/")&&it.name.endsWith('.json')}!=owned.size())throw new GradleException("Expected exactly ${owned.size()} AMC ${kind}") }
             owned.each { name -> ['assets/architectural_material_closure/blockstates/'+name+'.json','assets/architectural_material_closure/items/'+name+'.json','assets/architectural_material_closure/models/block/'+name+'.json','data/architectural_material_closure/loot_table/blocks/'+name+'.json'].each { path -> if(archive.getEntry(path)==null)throw new GradleException("Missing C4 resource ${path}") } }
-            archive.entries().findAll { it.name.endsWith('.json') }.each { entry ->
-                def raw=archive.getInputStream(entry).getText('UTF-8'); def refs=(raw =~ /(architectural_material_closure|minecraft|bbb|mcwpaths|mcwwindows):(block|item)\/([^\"#]+)/)
-                while(refs.find()) { def namespace=refs.group(1),kind=refs.group(2),path=refs.group(3); def source=namespace=='architectural_material_closure' ? archive : providers[namespace]; def texturePath=namespace=='architectural_material_closure' ? path : "${kind}/${path}"; if(source==null || (source.getEntry("assets/${namespace}/models/${kind}/${path}.json")==null && source.getEntry("assets/${namespace}/textures/${texturePath}.png")==null))throw new GradleException("Unresolved ${namespace} resource in ${entry.name}: ${kind}/${path}") }
+            /* Resource identifiers are context-sensitive.  Blockstate/item `model` and
+             * model `parent` values select JSON models; values in `textures` select PNG
+             * sprites.  C4's regex deliberately did not make that distinction, so a
+             * model JSON with the same path could mask a missing texture at verification
+             * time and then fail in the client baker. */
+            def json = new groovy.json.JsonSlurper()
+            def splitId = { String raw, String defaultNamespace ->
+                int separator = raw.indexOf(':')
+                separator < 0 ? [namespace: defaultNamespace, path: raw] :
+                        [namespace: raw.substring(0, separator), path: raw.substring(separator + 1)]
+            }
+            def sourceFor = { String namespace -> namespace == 'architectural_material_closure' ? archive : providers[namespace] }
+            def modelCache = [:]
+            def resolveModel
+            def requireSprite
+            requireSprite = { String raw, String defaultNamespace, String context ->
+                def id = splitId(raw, defaultNamespace)
+                def source = sourceFor(id.namespace)
+                if (source == null || source.getEntry("assets/${id.namespace}/textures/${id.path}.png") == null) {
+                    throw new GradleException("Missing texture sprite ${id.namespace}:${id.path} reached from ${context}; a model JSON is never a texture substitute")
+                }
+            }
+            resolveModel = { String raw, String defaultNamespace, List<String> stack ->
+                def id = splitId(raw, defaultNamespace)
+                def key = "${id.namespace}:${id.path}"
+                if (modelCache.containsKey(key)) return modelCache[key]
+                if (stack.contains(key)) throw new GradleException("Cyclic model parent chain: ${(stack + key).join(' -> ')}")
+                def source = sourceFor(id.namespace)
+                def entry = source == null ? null : source.getEntry("assets/${id.namespace}/models/${id.path}.json")
+                if (entry == null) throw new GradleException("Missing model ${key} reached from ${(stack ?: ['root']).join(' -> ')}")
+                def model = json.parse(source.getInputStream(entry), 'UTF-8')
+                def textures = new LinkedHashMap<String, String>()
+                if (model.parent instanceof String) textures.putAll(resolveModel(model.parent, id.namespace, stack + key).textures)
+                if (model.textures instanceof Map) model.textures.each { variable, value ->
+                    if (!(value instanceof String)) throw new GradleException("Non-string texture variable ${variable} in ${key}")
+                    textures.put(variable.toString(), value)
+                }
+                /* Parent templates may deliberately contain an unresolved #variable
+                 * which a child supplies.  Validate only after the complete inherited
+                 * map is composed at the requested root. */
+                def resolved = [textures: textures, namespace: id.namespace, key: key]
+                modelCache[key] = resolved
+                resolved
+            }
+            def validateTextures = { resolved ->
+                def resolveVariable
+                resolveVariable = { String variable, Set<String> seen ->
+                    if (!seen.add(variable)) throw new GradleException("Cyclic texture variable #${variable} in ${resolved.key}")
+                    def value = resolved.textures[variable]
+                    if (value == null) throw new GradleException("Unresolved texture variable #${variable} in ${resolved.key}")
+                    value.startsWith('#') ? resolveVariable(value.substring(1), seen) : value
+                }
+                resolved.textures.keySet().each { variable ->
+                    /* Resource locations without a namespace default to minecraft,
+                     * including provider-template particle fallbacks. */
+                    requireSprite(resolveVariable(variable, new LinkedHashSet<String>()), 'minecraft', resolved.key)
+                }
+            }
+            def modelReferences
+            modelReferences = { value, List<String> result ->
+                if (value instanceof Map) value.each { key, child ->
+                    if (key == 'model' && child instanceof String) result << child
+                    else modelReferences(child, result)
+                }
+                else if (value instanceof List) value.each { child -> modelReferences(child, result) }
+            }
+            owned.each { name ->
+                ['blockstates', 'items'].each { kind ->
+                    def entry = archive.getEntry("assets/architectural_material_closure/${kind}/${name}.json")
+                    def references = []
+                    modelReferences(json.parse(archive.getInputStream(entry), 'UTF-8'), references)
+                    if (references.isEmpty()) throw new GradleException("No model reference in ${entry.name}")
+                    references.each { reference -> validateTextures(resolveModel(reference, 'architectural_material_closure', [])) }
+                }
+            }
+            /* Regression sentinel: this root has a JSON model but intentionally no
+             * same-path PNG.  The semantic traversal above only accepts the latter for
+             * concrete texture values, preventing C4's model-as-texture false pass. */
+            def sentinel = 'prismarine_running_bond'
+            if (archive.getEntry("assets/architectural_material_closure/models/block/${sentinel}.json") == null ||
+                    archive.getEntry("assets/architectural_material_closure/textures/block/${sentinel}.png") != null) {
+                throw new GradleException('Semantic texture regression fixture is no longer discriminating model from sprite')
             }
         } finally { archive.close();providers.values().each { it.close() } }
     }

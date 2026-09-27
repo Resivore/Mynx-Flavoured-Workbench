@@ -24,6 +24,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AssembledRecipeCleanupContractTest {
@@ -189,20 +190,20 @@ class AssembledRecipeCleanupContractTest {
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
         expectedRemoved.put("two_high_doors", 260L);
-        expectedRemoved.put("macaws_paths", 303L);
+        expectedRemoved.put("macaws_paths", 147L);
         expectedRemoved.put("trapdoors", 195L);
         expectedRemoved.put("windows_and_shutters", 241L);
         expectedRemoved.put("minecraft_display_fixtures", 24L);
         expectedRemoved.put("enderscape_approved_families", 17L);
         expectedRemoved.put("bbb_enderscape_families", 15L);
-        expectedRemoved.put("amc_masonry_details", 237L);
+        expectedRemoved.put("amc_masonry_details", 189L);
         expectedRemoved.put("three_high_doors", 217L);
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(260 + 217 + 195 + 241 + 303 + 12 + 20 + 24 + 17 + 15 + 237,
+        assertEquals(260 + 217 + 195 + 241 + 147 + 12 + 20 + 24 + 17 + 15 + 189,
                 removedNonParents.values().stream().mapToLong(Long::longValue).sum());
-        assertEquals(1_541L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(1_337L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -257,7 +258,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(731, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(527, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",
@@ -267,8 +268,6 @@ class AssembledRecipeCleanupContractTest {
                 "minecraft:waxed_oxidized_copper_chain_from_honeycomb",
                 "mcwpaths:oak_planks_path",
                 "mcwpaths:stone_running_bond_path",
-                "mcwpaths:andesite_running_bond",
-                "mcwpaths:andesite_running_bond_slab",
                 "mcwwindows:oak_log_parapet",
                 "mcwwindows:stone_brick_gothic",
                 "mcwwindows:metal_curtain_rod",
@@ -282,6 +281,8 @@ class AssembledRecipeCleanupContractTest {
                 "architectural_material_closure:andesite_urn_from_stonecutting",
                 "architectural_material_closure:dark_prismarine_frame_from_stonecutting")),
                 "Expected new-family non-parent recipes were not all removed");
+        assertFalse(newRemovedRecipeIds.contains("mcwpaths:andesite_running_bond"));
+        assertFalse(newRemovedRecipeIds.contains("mcwpaths:andesite_running_bond_slab"));
 
         Set<String> environmentalCopperParents = Set.of(
                 "minecraft:exposed_copper_bars",

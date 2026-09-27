@@ -182,17 +182,7 @@ final class AuditedAccessoryFamiliesTest {
                 }
             }
         }
-        for (String material : List.of(
-                "stone", "andesite", "diorite", "granite", "sandstone", "red_sandstone",
-                "brick", "mossy_stone", "cobbled_deepslate", "deepslate", "mud_brick",
-                "blackstone", "dark_prismarine")) {
-            for (String design : List.of("running_bond", "windmill_weave", "flagstone", "crystal_floor")) {
-                expected.add("mcwpaths:" + material + "_" + design);
-                expected.add("mcwpaths:" + material + "_" + design + "_slab");
-                expected.add("mcwpaths:" + material + "_" + design + "_stairs");
-            }
-        }
-        assertEquals(311, actual.size());
+        assertEquals(155, actual.size());
         assertEquals(expected, actual);
         assertEquals(78, actual.stream().filter(value -> value.endsWith("_paving")).count());
         assertTrue(actual.stream().noneMatch(value -> value.endsWith("_path_block")));

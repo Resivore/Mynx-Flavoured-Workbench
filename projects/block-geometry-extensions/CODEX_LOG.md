@@ -614,3 +614,14 @@
 - Artifact: PRIVATE_LOCAL_ONLY `BGE C101.jar`, 6,424,106 bytes, SHA-256 `cff48ee847f62048dc1b222ffb8ca51aa7c86253a86c4b8b994460d5a0d8abfc`, finalized at `2026-09-27T00:00:12.7212309Z` from the preceding coherent implementation/artifact checkpoint above. Six private Beam derivatives remain local; no `originals/` input or protected resource pack was modified.
 - Result: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`. Accepted C70 and rollback C72 remain unchanged.
 - Next state: Under owner-directed runtime verification, check each C101 AMC root's nine roles, native AMC Slab/Stairs reuse, pattern fidelity, item previews, and the retained Macaw/BBB regressions against this exact SHA-256.
+
+## 2026-09-27T01:26:04.8930979Z — Finalize BGE C102 AMC C5 pattern surfaces
+
+- Revision: 64
+- Source checkpoint: `1811c86b2b2221836deb299ebd11e32427e86269`
+- Changes: Retained the exact 16 AMC patterned roots and their native AMC full/slab/stairs identities, while correcting every BGE generated role to consume AMC C5's resolved derived sprite surface rather than equating a block/model path with a texture path.
+- Build/static: Java 25 `build` and the complete controlled suite passed all 164/164 Minecraft 26.2 GameTests, material-profile architecture checks, and archive verification. Coverage includes one nine-role family per root, six BGE roles, preserved 52 Macaw pattern roots, no duplicate AMC standard roles, and no arbitrary discovery.
+- Runtime: No Minecraft gameplay/testing profile, world save, deployment, or manual runtime observation was touched. Owner-supplied missing-sprite evidence is not treated as a C102 gameplay result.
+- Artifact: PRIVATE_LOCAL_ONLY `BGE C102.jar`, 6,424,215 bytes, SHA-256 `99A4EC8F82BBED4CD7458310B8A903E49B17F253C53CF15575DF247CE1AEBD0E`, finalized at `2026-09-27T01:26:04.8930979Z` from the preceding checkpoint above.
+- Result: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`.
+- Next state: Under owner-directed runtime verification, check the C102 nine-role AMC families and patterned surface fidelity against this exact SHA-256.

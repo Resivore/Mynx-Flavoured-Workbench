@@ -41,3 +41,14 @@
 - Artifact: Current/unaccepted C4 is `architectural-material-closure-0.1.0-canary4.jar`, 1,771,750 bytes, SHA-256 `B7344EC4B53305CDFEB5CFD514E2570B919ECCA5432D6C9ED11B7E1846A90FD5`, built at `2026-09-25T20:37:28.9453931Z` from source checkpoint `8995d572ef5317779e49a896e6ca663b128a6508`.
 - Result: ACTIVE — `STATIC_PASS / RUNTIME_UNTESTED`; private derived resources and JAR remain local and retained without publishing protected payloads.
 - Next state: Obtain owner-supplied runtime observations against the exact C4 bytes before acceptance or a successor.
+
+## 2026-09-27T00:48:08.2473578Z — Finalize Architectural Material Closure Canary 5
+
+- Revision: 5
+- Source checkpoint: `1811c86b2b2221836deb299ebd11e32427e86269`
+- Changes: Preserved the 17-profile 646-cell provider-first closure (409 provider-owned, 237 AMC-owned) and corrected semantic resource resolution. Blockstate, item-model, and parent references resolve as models; concrete and inherited texture values resolve only to real AMC/private or legitimate provider PNG sprites.
+- Build/static: Java 25 `test check stageCanaryArtifact` passed, including strengthened production-JAR isolation and recursive resource-closure validation. No model identifier may satisfy a sprite reference.
+- Runtime: Owner-supplied C4/C101/C12 failure evidence is recorded as the reason for this successor; no gameplay profile, world, deployment, or manual runtime observation was touched.
+- Artifact: Current retained C5 is `architectural-material-closure-0.1.0-canary5.jar`, 1,799,641 bytes, SHA-256 `85202102993D2FBA6FA9CD17576E9D8209CFEA8C71050D73DA55CD3A8E79C1D1`, finalized at `2026-09-27T00:48:08.2473578Z` from the preceding checkpoint above.
+- Result: `ACTIVE / STATIC_PASS / RUNTIME_UNTESTED`.
+- Next state: Obtain owner-supplied runtime observations against the exact C5 bytes before acceptance or a successor.

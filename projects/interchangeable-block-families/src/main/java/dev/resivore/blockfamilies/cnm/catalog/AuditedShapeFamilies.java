@@ -27,8 +27,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  */
 public final class AuditedShapeFamilies {
     public static final int EXPECTED_FAMILY_COUNT = 166;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_811;
-    public static final int EXPECTED_LARGEST_FAMILY_SIZE = 38;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_607;
+    public static final int EXPECTED_LARGEST_FAMILY_SIZE = 26;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
     /*

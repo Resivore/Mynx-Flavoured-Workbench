@@ -213,22 +213,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "dramaticdoors:tall_waxed_exposed_copper_door",
             "dramaticdoors:tall_waxed_weathered_copper_door",
             "dramaticdoors:tall_waxed_oxidized_copper_door",
-            "mcwwindows:andesite_louvered_shutter",
-            "mcwwindows:diorite_louvered_shutter",
-            "mcwwindows:granite_louvered_shutter",
-            "mcwwindows:stone_brick_gothic",
-            "mcwwindows:end_brick_gothic",
-            "mcwwindows:nether_brick_gothic",
-            "mcwwindows:mud_brick_gothic",
-            "mcwwindows:blackstone_brick_gothic",
-            "mcwwindows:stone_brick_arrow_slit",
             "mcwwindows:cobblestone_arrow_slit",
-            "mcwwindows:nether_brick_arrow_slit",
-            "mcwwindows:ender_brick_arrow_slit",
-            "mcwwindows:mud_brick_arrow_slit",
-            "mcwwindows:blackstone_brick_arrow_slit",
-            "mcwwindows:prismarine_brick_arrow_slit",
-            "mcwwindows:dark_prismarine_brick_arrow_slit",
             "minecraft:nether_brick_fence",
             "minecraft:copper_door",
             "minecraft:exposed_copper_door",
@@ -251,7 +236,6 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "mcwpaths:andesite_running_bond_stairs",
             "mcwpaths:andesite_running_bond",
             "mcwpaths:dirt_path_block",
-            "mcwwindows:prismarine_parapet",
             "mcwwindows:red_curtain"
     );
 
@@ -502,33 +486,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwwindows:oak_plank_parapet",
                 "mcwwindows:oak_blinds",
                 "mcwwindows:oak_curtain_rod"));
-        assertExactShapeSet(helper, "minecraft:stone_button", List.of(
-                "minecraft:stone_button",
-                "minecraft:stone_pressure_plate",
-                "mcwpaths:stone_running_bond_path",
-                "mcwpaths:stone_strewn_rocky_path",
-                "mcwpaths:stone_windmill_weave_path",
-                "mcwpaths:stone_flagstone_path",
-                "mcwpaths:stone_crystal_floor_path",
-                "mcwpaths:cobblestone_diamond_paving",
-                "mcwpaths:cobblestone_basket_weave_paving",
-                "mcwpaths:cobblestone_square_paving",
-                "mcwpaths:cobblestone_honeycomb_paving",
-                "mcwpaths:cobblestone_clover_paving",
-                "mcwpaths:cobblestone_dumble_paving"));
-        assertExactShapeSet(helper, "mcwpaths:andesite_running_bond_path", List.of(
-                "mcwpaths:andesite_running_bond_path",
-                "mcwpaths:andesite_strewn_rocky_path",
-                "mcwpaths:andesite_windmill_weave_path",
-                "mcwpaths:andesite_flagstone_path",
-                "mcwpaths:andesite_crystal_floor_path",
-                "mcwwindows:andesite_parapet",
-                "mcwpaths:andesite_diamond_paving",
-                "mcwpaths:andesite_basket_weave_paving",
-                "mcwpaths:andesite_square_paving",
-                "mcwpaths:andesite_honeycomb_paving",
-                "mcwpaths:andesite_clover_paving",
-                "mcwpaths:andesite_dumble_paving"));
+        assertCatalogShapeSet(helper, "minecraft:stone_button");
+        assertCatalogShapeSet(helper, "mcwpaths:andesite_running_bond_path");
         assertExactShapeSet(helper, "ribbits:mossy_oak_planks_fence", List.of(
                 "ribbits:mossy_oak_planks_fence", "ribbits:mossy_oak_planks_fence_gate"));
         assertExactShapeSet(helper, "minecraft:light_weighted_pressure_plate", List.of(
@@ -575,9 +534,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "ribbits:mossy_oak_planks_fence", "ribbits:mossy_oak_planks_fence_gate"));
         for (String stone : List.of(
                 "stone", "blackstone", "deepslate", "nether_brick", "sandstone", "red_sandstone", "quartz")) {
-            assertExactShapeSet(helper, "bbb:" + stone + "_column", List.of(
-                    "bbb:" + stone + "_column", "bbb:" + stone + "_urn",
-                    "bbb:" + stone + "_moulding", "bbb:" + stone + "_fence", "bbb:" + stone + "_frame"));
+            assertCatalogShapeSet(helper, "bbb:" + stone + "_column");
         }
         helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(id("bbb:mossy_oak_frame"))
                         && !BuiltInRegistries.ITEM.containsKey(id("bbb:mossy_oak_lattice")),
@@ -712,6 +669,29 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         Item outside = requiredItem("minecraft:stone");
         Identifier syntheticSource = id("interchangeable_block_families_runtime_tests:synthetic_overlap");
 
+        // This is the exact existing C102 nine-role BGE/AMC component. C13 owns
+        // none of it, so the fail-closed guard must leave the whole component alone.
+        List<Item> bgePatternComponent = List.of(
+                requiredItem("architectural_material_closure:prismarine_running_bond"),
+                requiredItem("architectural_material_closure:prismarine_running_bond_slab"),
+                requiredItem("architectural_material_closure:prismarine_running_bond_stairs"),
+                requiredItem("cnm_terrain_slabs_compat:architectural_material_closure/prismarine_running_bond_wall"),
+                requiredItem("clutternomore:architectural_material_closure/vertical_prismarine_running_bond_slab"),
+                requiredItem("clutternomore:architectural_material_closure/prismarine_running_bond_step"),
+                requiredItem("cnm_terrain_slabs_compat:architectural_material_closure/prismarine_running_bond_corner"),
+                requiredItem("cnm_terrain_slabs_compat:architectural_material_closure/prismarine_running_bond_quarter_column"),
+                requiredItem("cnm_terrain_slabs_compat:architectural_material_closure/prismarine_running_bond_layer"));
+        helper.assertTrue(bgePatternComponent.stream().map(BuiltInRegistries.ITEM::getKey)
+                        .noneMatch(approvedIds()::contains),
+                "C13 claimed a BGE patterned nine-role component");
+        List<ShapeMap.Mapping> bgePatternMappings = new ArrayList<>();
+        for (int index = 1; index < bgePatternComponent.size(); index++) {
+            bgePatternMappings.add(new ShapeMap.Mapping(bgePatternComponent.getFirst(),
+                    bgePatternComponent.get(index), 2_000, syntheticSource));
+        }
+        helper.assertTrue(!rejectedByPreResolutionGuard(bgePatternMappings),
+                "Pre-resolution guard claimed the BGE patterned component");
+
         List<ShapeMap.Mapping> outsideOverlap = new ArrayList<>();
         outsideOverlap.add(new ShapeMap.Mapping(oakDoor, outside, 2_000, syntheticSource));
         helper.assertTrue(rejectedByPreResolutionGuard(outsideOverlap),
@@ -744,7 +724,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         ItemStack middle = ShapeMap.transferStack(first, middleIndex);
         ItemStack last = ShapeMap.transferStack(middle, lastIndex);
 
-        helper.assertTrue(actual.size() == 22, "Large-family transfer fixture is no longer 22 members");
+        helper.assertTrue(actual.size() == 26, "Large-family transfer fixture is no longer 26 members");
         assertTransferred(helper, first, middle, actual.get(middleIndex),
                 "first-to-middle transfer failed");
         assertTransferred(helper, middle, last, actual.get(lastIndex),
@@ -813,29 +793,32 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void acceptedNibaruComponentRemainsExactAndUnjoined(GameTestHelper helper) {
+    public void currentBgeComponentRemainsExactAndUnjoined(GameTestHelper helper) {
         List<Identifier> expected = List.of(
                 id("minecraft:sea_lantern"),
                 id("more_slabs_stairs_and_walls:sea_lantern_slab"),
                 id("more_slabs_stairs_and_walls:sea_lantern_stairs"),
                 id("more_slabs_stairs_and_walls:sea_lantern_wall"),
                 id("clutternomore:more_slabs_stairs_and_walls/vertical_sea_lantern_slab"),
-                id("clutternomore:more_slabs_stairs_and_walls/sea_lantern_step")
+                id("clutternomore:more_slabs_stairs_and_walls/sea_lantern_step"),
+                id("cnm_terrain_slabs_compat:minecraft/sea_lantern_corner"),
+                id("cnm_terrain_slabs_compat:minecraft/sea_lantern_quarter_column"),
+                id("cnm_terrain_slabs_compat:minecraft/sea_lantern_layer")
         );
         Item parent = requiredItem(expected.getFirst());
         List<Identifier> actual = ids(ShapeMap.getShapes(parent));
         helper.assertTrue(actual.equals(expected),
-                "Accepted sea-lantern CNM/Nibaru component changed: expected="
+                "Current C102 sea-lantern BGE component changed: expected="
                         + expected + ", actual=" + actual);
 
         Set<Identifier> approved = approvedIds();
         Set<Identifier> intersection = new HashSet<>(actual);
         intersection.retainAll(approved);
         helper.assertTrue(intersection.isEmpty(),
-                "Accepted CNM/Nibaru component joined IBF members: " + intersection);
+                "Current C102 BGE component joined IBF members: " + intersection);
         for (Identifier member : expected) {
             helper.assertTrue(ShapeMap.getParent(requiredItem(member)) == parent,
-                    "Accepted CNM/Nibaru parent changed for " + member);
+                    "Current C102 BGE parent changed for " + member);
         }
         helper.succeed();
     }
@@ -1021,6 +1004,17 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                         + ", actual=" + actual);
         helper.assertTrue(!ShapeMap.isShape(parentItem),
                 "Canonical ShapeMap parent was also registered as an alternate: " + parent);
+    }
+
+    /** Compare the live ShapeMap component to the exact literal C13 catalog entry. */
+    private static void assertCatalogShapeSet(GameTestHelper helper, String member) {
+        Identifier id = id(member);
+        AuditedShapeFamily family = AuditedShapeFamilies.families().stream()
+                .filter(candidate -> candidate.members().contains(id))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Missing audited catalog member " + member));
+        assertExactShapeSet(helper, family.canonicalParent().toString(),
+                family.members().stream().map(Identifier::toString).toList());
     }
 
     private static boolean hasRecipe(GameTestHelper helper, String value) {

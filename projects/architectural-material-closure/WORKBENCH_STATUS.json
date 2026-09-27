@@ -16,9 +16,9 @@
       "Keep Interchangeable Block Families as the sole Clutter No More ShapeMap authority while AMC owns only its original blocks, data, recipes, and presentation."
     ],
     "scope": [
-      "Canary 4 closes the approved 646-cell masonry audit across 17 profiles: 409 existing Minecraft/BBB/Macaw cells remain provider-owned and AMC registers only the 237 genuine gaps, including native controls, BBB details, Macaw paths/pavings/patterns, and Macaw Windows forms.",
-      "C4's protected provider-derived blockstates, recursive model and texture closures, texture treatment, data, and JAR are generated only from exact local BBB/Macaw/Minecraft reference artifacts into ignored build/artifact paths for the owner's personal modpack; tracked source contains generation logic and literal mappings only.",
-      "C4 remains an additive content candidate: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
+      "Canary 5 retains the approved 646-cell masonry audit across 17 profiles: 409 existing Minecraft/BBB/Macaw cells remain provider-owned and AMC registers only the 237 genuine gaps, including native controls, BBB details, Macaw paths/pavings/patterns, and Macaw Windows forms.",
+      "C5 semantically resolves model references separately from concrete texture sprites, including inherited texture variables; protected provider-derived closures and the JAR remain generated only into ignored local paths.",
+      "C5 remains an additive content candidate: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
     ],
     "boundaries": {
       "owned_paths": ["projects/architectural-material-closure"],
@@ -81,22 +81,22 @@
     ]
   },
   "state": {
-    "milestone": "Canary 4 completes the provider-first 646-cell masonry audit: 409 provider-owned cells are left untouched and its 237 genuine gaps are locally derived, statically validated, and retained. No deployment or manual Minecraft runtime observation has been supplied.",
+    "milestone": "Canary 5 retains the provider-first 646-cell masonry audit and corrects semantic resource closure: models cannot satisfy sprite references, inherited texture variables resolve recursively, and all concrete AMC textures reach an exact local or legitimate provider PNG. No deployment or manual Minecraft runtime observation has been supplied.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary4",
-        "canary": 4,
+        "version": "0.1.0-canary5",
+        "canary": 5,
         "artifact": {
-          "filename": "architectural-material-closure-0.1.0-canary4.jar",
-          "sha256": "b7344ec4b53305cdfeb5cfd514e2570b919ecca5432d6c9ed11b7e1846a90fd5"
+          "filename": "architectural-material-closure-0.1.0-canary5.jar",
+          "sha256": "85202102993d2fba6fa9cd17576e9d8209cfea8c71050d73da55cd3a8e79c1d1"
         },
-        "built_at": "2026-09-25T20:37:28.9453931Z",
-        "source_commit": "8995d572ef5317779e49a896e6ca663b128a6508",
+        "built_at": "2026-09-27T00:48:08.2473578Z",
+        "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Closes 237 verified masonry gaps while leaving all 409 existing Minecraft/BBB/Macaw cells provider-owned and unmodified."
+        "summary": "Corrects semantic model-versus-sprite resolution while retaining all 646 provider-first masonry cells."
       },
       "accepted": null,
       "rollback": null,
@@ -110,10 +110,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-09-25T20:37:28Z",
-    "updated_at": "2026-09-25T20:37:28Z",
-    "last_codex_at": "2026-09-25T20:37:28Z",
-    "source_commit": "8995d572ef5317779e49a896e6ca663b128a6508"
+    "revision": 5,
+    "activity_at": "2026-09-27T00:48:08.2473578Z",
+    "updated_at": "2026-09-27T00:48:08.2473578Z",
+    "last_codex_at": "2026-09-27T00:48:08.2473578Z",
+    "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269"
   }
 }

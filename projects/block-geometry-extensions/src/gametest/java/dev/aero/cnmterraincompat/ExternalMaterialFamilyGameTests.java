@@ -227,7 +227,8 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 String root = material + "_" + pattern;
                 Identifier source = Identifier.fromNamespaceAndPath("architectural_material_closure", root);
                 ExternalMaterialFamilies.Binding binding = ExternalMaterialFamilies.fromSource(source).orElseThrow();
-                String texture = "architectural_material_closure:block/" + root;
+                String texture = "architectural_material_closure:block/derived/" + material
+                        + "/mcwpaths/andesite_" + pattern;
                 helper.assertTrue(binding.spec().providerRoles().equals(Map.of(
                                 "slab", Identifier.fromNamespaceAndPath("architectural_material_closure", root + "_slab"),
                                 "stairs", Identifier.fromNamespaceAndPath("architectural_material_closure", root + "_stairs")))
@@ -238,7 +239,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                                         Identifier.fromNamespaceAndPath("architectural_material_closure", root + "_stairs"))
                                 && !binding.isGeneratedRole("slab") && !binding.isGeneratedRole("stairs")
                                 && binding.isGeneratedRole("wall") && binding.generatedRoles().size() == 6,
-                        "AMC C4 provider ownership drifted for " + source);
+                        "AMC C5 provider ownership drifted for " + source);
                 helper.assertTrue(binding.roles().size() == 9 && binding.roles().values().stream().distinct().count() == 9,
                         "AMC root did not resolve to exactly one nine-role family: " + source);
                 for (String role : List.of("wall", "vertical_slab", "step", "corner", "quarter_column", "layer")) {
@@ -263,7 +264,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 roots++;
             }
         }
-        helper.assertTrue(roots == 16, "Expected all 16 explicit AMC C4 patterned roots, found " + roots);
+        helper.assertTrue(roots == 16, "Expected all 16 explicit AMC C5 patterned roots, found " + roots);
         helper.succeed();
     }
 
