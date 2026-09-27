@@ -1,22 +1,22 @@
-# BGE C100 BBB Beam compatibility visibility verification
+# BGE C101 AMC patterned-root verification
 
-Current candidate: `BGE C100.jar` — **PRIVATE_LOCAL_ONLY; no redistribution permission.**
+Current candidate: `BGE C101.jar` — **PRIVATE_LOCAL_ONLY; no redistribution permission.**
 
-- Embedded version: `4.2.44-bge.canary100.bbb-beam-compat-visibility+26.2`
-- Size: `6,422,989` bytes
-- SHA-256: `ee2386c326bafd8fbe65c2a1b8ddb34b726c2a4635d944bc1add07cfb6764a75`
-- Finalized: `2026-09-25T16:32:41.0007939Z`
-- Source checkpoint: `b243c37ede3e0163f32c45e7213952cfd06fb330`
+- Embedded version: `4.2.45-bge.canary101.amc-pattern-roots+26.2`
+- Size: `6,424,106` bytes
+- SHA-256: `cff48ee847f62048dc1b222ffb8ca51aa7c86253a86c4b8b994460d5a0d8abfc`
+- Finalized: `2026-09-27T00:00:12.7212309Z`
+- Source checkpoint: `cae7f00341ea403e82023fedb8b4e3e4be91324f`
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`
 - Private provenance: this exact artifact includes six local-only BBB/Enderscape Beam palette derivatives. Do not copy, attach, upload, release, or redistribute the JAR or those texture bytes.
 
-Controlled C100 evidence: Java 25 build; 163/163 Minecraft 26.2 server GameTests; material-profile architecture checks; and exact archive verification. Coverage preserves all 24 BBB Beam compatibility identities, excludes them from final ShapeMap membership, confirms CNM's shared creative/search predicate denies each standalone alias, retains exactly one canonical BGE axis-aware Beam Slab/Stairs per Beam variation, preserves each complete `[Planks][Beam]` selector, and leaves Murublight outside this compatibility path. None of these is a gameplay-profile result.
+Controlled C101 evidence: Java 25 build; 164/164 Minecraft 26.2 server GameTests; material-profile architecture checks; and exact archive verification. Coverage proves the exact 16 AMC C4 roots, reuses each AMC Slab/Stairs pair without duplicate registration, provides the six BGE-owned remaining roles, preserves the AMC patterned source surface in generated resources, preserves the 52 Macaw patterned roots, and leaves arbitrary CNM discovery disabled. None of these is a gameplay-profile result.
 
 ## Owner-directed runtime checks
 
-1. Record the exact `BGE C100.jar` SHA-256, Minecraft/mod versions, resource-pack order, shader/renderer settings, and world context. Do not copy or redistribute the private Beam resources.
-2. For oak, spruce, birch, jungle, acacia, dark oak, crimson, warped, mangrove, bamboo, cherry, and pale oak, search Creative inventory for the original `bbb:<material>_beam_slab` and `bbb:<material>_beam_stairs` identities. They must not appear as ordinary standalone entries, while the corresponding `[Planks][Beam]` selector exposes exactly one canonical axis-aware Beam Slab and Stairs.
-3. Verify representative placement, saved references, and ordinary BBB Beam Walls remain available; do not infer that an inventory-hidden compatibility item was unregistered.
-4. Smoke-check Murublight, Celestial, and Veiled Beam selectors and their canonical forms. They must remain unaffected by the BBB-only compatibility visibility rule.
+1. Record the exact `BGE C101.jar` SHA-256, Minecraft/mod versions (including AMC), resource-pack order, shader/renderer settings, and world context. Do not copy or redistribute the private Beam resources.
+2. For every combination of `prismarine`, `quartz`, `nether_brick`, and `end_brick` with `running_bond`, `flagstone`, `windmill_weave`, and `crystal_floor`, verify one nine-role selector family: the AMC full block, AMC Slab, AMC Stairs, and BGE Wall, Vertical Slab, Step, Corner, Quarter Column, and Layer.
+3. Confirm no extra BGE replacement Slab or Stairs appears for any AMC root, and that generated role faces and item previews retain the root's authored AMC pattern rather than a generic material texture.
+4. Smoke-check the existing 52 Macaw patterned families, five Macaw soil Paths, BBB Beams, and one unrelated CNM family; no new dynamic family should appear.
 
-Record only observations made against this exact C100 SHA-256. This checklist is lifecycle-neutral and does not authorize Codex to inspect or modify any protected Minecraft testing profile. Accepted C70 and rollback C72 remain unchanged.
+Record only observations made against this exact C101 SHA-256. This checklist is lifecycle-neutral and does not authorize Codex to inspect or modify any protected Minecraft testing profile. Accepted C70 and rollback C72 remain unchanged.
