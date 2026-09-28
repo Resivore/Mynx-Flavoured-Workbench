@@ -17,15 +17,15 @@ class RecipeImpactContractTest {
     void fixedAuditIdentityAndFamilyTotalsAreVersionBound() throws Exception {
         Properties contract = AuditFixtures.contract();
 
-        assertEquals("ibf-cnm-shapemap-2026-09-21-canary9", contract.getProperty("audit.id"));
+        assertEquals("ibf-cnm-shapemap-2026-09-28-canary15", contract.getProperty("audit.id"));
         assertEquals("5171db6eb0d575d11d1d57f10dd8148c515fb38d",
                 contract.getProperty("audit.starting_commit"));
         assertEquals("9ad4600e62808e5e976392a69b495a2fe4b5d47c",
                 contract.getProperty("audit.accepted_ibf_commit"));
         assertEquals("26.2", contract.getProperty("minecraft.version"));
-        assertEquals(182, integer(contract, "families.total"));
-        assertEquals(1_402, integer(contract, "members.total"));
-        assertEquals(1_402, integer(contract, "members.unique"));
+        assertEquals(181, integer(contract, "families.total"));
+        assertEquals(1_396, integer(contract, "members.total"));
+        assertEquals(1_396, integer(contract, "members.unique"));
         assertEquals(22, integer(contract, "family.largest"));
 
         for (String key : new String[]{
@@ -85,8 +85,8 @@ class RecipeImpactContractTest {
                 "two_high_doors", 260,
                 "three_high_doors", 217,
                 "trapdoors", 195,
-                "windows_and_shutters_plus_accessories", 215,
-                "building_accessories_paths", 143,
+                "windows_and_shutters_plus_accessories", 211,
+                "building_accessories_paths", 142,
                 "fence_gates", 12,
                 "vanilla_bar_chain_and_accessories", 20,
                 "display_fixtures", 24,
@@ -112,8 +112,8 @@ class RecipeImpactContractTest {
 
         Properties contract = AuditFixtures.contract();
         assertEquals(expectedRemovals, actualRemovals);
-        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20 + 24 + 17 + 15, totalRemoved);
-        assertEquals(1_118, totalRemoved);
+        assertEquals(260 + 217 + 195 + 211 + 142 + 12 + 20 + 24 + 17 + 15, totalRemoved);
+        assertEquals(1_113, totalRemoved);
         assertEquals(integer(contract, "recipe.non_parent_results_removed"), totalRemoved);
         assertEquals(0, dangerousParentRemovals);
         assertEquals(integer(contract, "recipe.dangerous_parent_results_removed"), dangerousParentRemovals);

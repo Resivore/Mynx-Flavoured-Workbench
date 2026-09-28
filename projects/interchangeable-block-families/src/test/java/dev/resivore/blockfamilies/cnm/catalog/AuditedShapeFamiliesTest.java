@@ -30,8 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
-        assertEquals(182, AuditedShapeFamilies.families().size());
-        assertEquals(1_402, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(181, AuditedShapeFamilies.families().size());
+        assertEquals(1_396, AuditedShapeFamilies.uniqueMemberCount());
         assertEquals(22, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
@@ -51,17 +51,17 @@ class AuditedShapeFamiliesTest {
                 FENCE_GATE, 16,
                 BAR_CHAIN, 10,
                 BBB_DETAIL, 22,
-                BUILDING_ACCESSORY, 35);
+                BUILDING_ACCESSORY, 34);
         Map<AuditedShapeFamily.Category, Integer> expectedMembers = Map.of(
                 TWO_HIGH_DOOR, 273,
                 THREE_HIGH_DOOR, 229,
-                TRAPDOOR, 232,
-                WINDOW, 186,
+                TRAPDOOR, 208,
+                WINDOW, 188,
                 DISPLAY_FIXTURE, 45,
                 FENCE_GATE, 62,
                 BAR_CHAIN, 30,
-                BBB_DETAIL, 95,
-                BUILDING_ACCESSORY, 250);
+                BBB_DETAIL, 96,
+                BUILDING_ACCESSORY, 265);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
             List<AuditedShapeFamily> families = AuditedShapeFamilies.families(category);
@@ -86,8 +86,8 @@ class AuditedShapeFamiliesTest {
             }
         }
 
-        assertEquals(182, keys.size());
-        assertEquals(1_402, members.size());
+        assertEquals(181, keys.size());
+        assertEquals(1_396, members.size());
     }
 
     @Test
@@ -128,13 +128,13 @@ class AuditedShapeFamiliesTest {
     void exactFamilySizeDistributionsAreStable() {
         assertEquals(Map.of(9, 1L, 22, 12L), sizeDistribution(TWO_HIGH_DOOR));
         assertEquals(Map.of(9, 1L, 20, 11L), sizeDistribution(THREE_HIGH_DOOR));
-        assertEquals(Map.of(5, 1L, 18, 1L, 19, 11L), sizeDistribution(TRAPDOOR));
-        assertEquals(Map.of(4, 44L, 5, 2L), sizeDistribution(WINDOW));
+        assertEquals(Map.of(4, 1L, 17, 12L), sizeDistribution(TRAPDOOR));
+        assertEquals(Map.of(4, 42L, 5, 4L), sizeDistribution(WINDOW));
         assertEquals(Map.of(3, 15L), sizeDistribution(DISPLAY_FIXTURE));
         assertEquals(Map.of(2, 1L, 4, 15L), sizeDistribution(FENCE_GATE));
         assertEquals(Map.of(2, 1L, 3, 8L, 4, 1L), sizeDistribution(BAR_CHAIN));
-        assertEquals(Map.of(4, 15L, 5, 7L), sizeDistribution(BBB_DETAIL));
-        assertEquals(Map.of(2, 9L, 3, 2L, 7, 11L, 11, 8L, 12, 4L, 13, 1L),
+        assertEquals(Map.of(4, 15L, 5, 6L, 6, 1L), sizeDistribution(BBB_DETAIL));
+        assertEquals(Map.of(2, 8L, 3, 1L, 4, 1L, 9, 11L, 11, 13L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }
 
@@ -173,14 +173,12 @@ class AuditedShapeFamiliesTest {
                 id("mcwwindows", "andesite_louvered_shutter"),
                 id("mcwwindows", "diorite_louvered_shutter"),
                 id("mcwwindows", "granite_louvered_shutter"),
-                id("mcwwindows", "stone_brick_gothic"),
                 id("mcwwindows", "end_brick_gothic"),
                 id("mcwwindows", "nether_brick_gothic"),
                 id("mcwwindows", "mud_brick_gothic"),
-                id("mcwwindows", "blackstone_brick_gothic"),
                 id("mcwwindows", "stone_brick_arrow_slit"),
                 id("mcwwindows", "cobblestone_arrow_slit"),
-                id("mcwwindows", "nether_brick_arrow_slit"),
+                id("mcwwindows", "ender_brick_arrow_slit"),
                 id("mcwwindows", "ender_brick_arrow_slit"),
                 id("mcwwindows", "mud_brick_arrow_slit"),
                 id("mcwwindows", "blackstone_brick_arrow_slit"),
@@ -229,73 +227,8 @@ class AuditedShapeFamiliesTest {
 
     @Test
     void canonicalExpandedCatalogHasStableDigest() throws NoSuchAlgorithmException {
-        assertEquals("0FF094610F07F1D93E6B95F95AC61F6011BB10423D77CE34548CF973B23CEEA7",
+        assertEquals("4B753028B9820913D068901D8B3BA93F13BAD6DAB6C95AA312BA70F2B1C4B8B5",
                 digest(AuditedShapeFamilies.families()));
-    }
-
-    @Test
-    void acceptedC7CatalogRemainsByteStableAfterRemovingOnlyApprovedC8Additions()
-            throws NoSuchAlgorithmException {
-        Set<String> approvedC8Keys = Set.of(
-                "cnm/display_fixture/oak",
-                "cnm/display_fixture/spruce",
-                "cnm/display_fixture/birch",
-                "cnm/display_fixture/jungle",
-                "cnm/display_fixture/acacia",
-                "cnm/display_fixture/dark_oak",
-                "cnm/display_fixture/mangrove",
-                "cnm/display_fixture/cherry",
-                "cnm/display_fixture/pale_oak",
-                "cnm/display_fixture/bamboo",
-                "cnm/display_fixture/crimson",
-                "cnm/display_fixture/warped",
-                "cnm/display_fixture/enderscape_veiled",
-                "cnm/display_fixture/enderscape_celestial",
-                "cnm/display_fixture/enderscape_murublight",
-                "cnm/fence_gate/enderscape_veiled",
-                "cnm/fence_gate/enderscape_celestial",
-                "cnm/fence_gate/enderscape_murublight",
-                "cnm/bbb_detail/wood/enderscape_veiled",
-                "cnm/bbb_detail/wood/enderscape_celestial",
-                "cnm/bbb_detail/wood/enderscape_murublight",
-                "cnm/bar_chain/enderscape_shadoline",
-                "cnm/building_accessory/enderscape_veiled",
-                "cnm/building_accessory/enderscape_celestial",
-                "cnm/building_accessory/enderscape_murublight",
-                "cnm/building_accessory/enderscape_polished_end_stone",
-                "cnm/building_accessory/enderscape_polished_mirestone",
-                "cnm/building_accessory/enderscape_polished_veradite",
-                "cnm/building_accessory/enderscape_polished_kurodite");
-        List<AuditedShapeFamily> acceptedC7 = AuditedShapeFamilies.families().stream()
-                .filter(family -> !approvedC8Keys.contains(family.key().getPath()))
-                .toList();
-
-        assertEquals(153, acceptedC7.size());
-        assertEquals(1_317, acceptedC7.stream().mapToInt(family -> family.members().size()).sum());
-        assertEquals("D656991C5E93F2EE4E24055A0CBB433B1C7F0CFB8FF6E78CEA98185E8C519C26",
-                digest(acceptedC7));
-    }
-
-    @Test
-    void c8PredecessorFamiliesAndCanonicalParentsRemainStableOutsideTheThreeExtendedFamilies()
-            throws NoSuchAlgorithmException {
-        Set<String> c9NewDetailKeys = Set.of(
-                "cnm/bbb_detail/wood/enderscape_veiled",
-                "cnm/bbb_detail/wood/enderscape_celestial",
-                "cnm/bbb_detail/wood/enderscape_murublight");
-        Set<String> c9ExtendedFenceKeys = Set.of(
-                "cnm/fence_gate/enderscape_veiled",
-                "cnm/fence_gate/enderscape_celestial",
-                "cnm/fence_gate/enderscape_murublight");
-        List<AuditedShapeFamily> unchangedC8 = AuditedShapeFamilies.families().stream()
-                .filter(family -> !c9NewDetailKeys.contains(family.key().getPath()))
-                .filter(family -> !c9ExtendedFenceKeys.contains(family.key().getPath()))
-                .toList();
-
-        assertEquals(176, unchangedC8.size());
-        assertEquals(1_378, unchangedC8.stream().mapToInt(family -> family.members().size()).sum());
-        assertEquals("7804116884B0682F3444DAC0C3560DAA8173E0C2A8EC820EE69BDF016CD3540E",
-                digest(unchangedC8));
     }
 
     private static String digest(List<AuditedShapeFamily> families) throws NoSuchAlgorithmException {

@@ -183,7 +183,7 @@ final class ProviderBoundaryContractTest {
     }
 
     @Test
-    void windowsAccessoryBoundaryContainsOnlyParapetsBlindsAndCurtainRods() throws Exception {
+    void windowsAccessoryBoundaryKeepsOnlyButtonParentedAccessories() throws Exception {
         Set<String> expectedParapets = expectedParapets();
         Set<String> expectedBlinds = suffixed(WINDOW_WOODS, "_blinds");
         Set<String> expectedRods = suffixed(WINDOW_WOODS, "_curtain_rod");
@@ -226,8 +226,12 @@ final class ProviderBoundaryContractTest {
                 assertTrue(disjoint(providerAccessories, excludedPartition));
             }
 
-            Set<String> expectedCatalogAccessories = new LinkedHashSet<>(expectedProviderAccessories);
-            expectedCatalogAccessories.remove("prismarine_parapet");
+        Set<String> expectedCatalogAccessories = new LinkedHashSet<>(expectedProviderAccessories);
+        expectedCatalogAccessories.removeAll(Set.of(
+                "andesite_parapet", "diorite_parapet", "granite_parapet",
+                "prismarine_parapet", "dark_prismarine_parapet",
+                "golden_curtain_rod", "metal_curtain_rod"));
+        expectedCatalogAccessories.addAll(expectedShutters());
             assertEquals(namespaced("mcwwindows", expectedCatalogAccessories),
                     catalogMembers(AuditedShapeFamily.Category.BUILDING_ACCESSORY, "mcwwindows"));
         }
@@ -251,10 +255,8 @@ final class ProviderBoundaryContractTest {
                 familyByMember.get("mcwwindows:blackstone_parapet"));
         assertFalse(familyByMember.containsKey("mcwwindows:prismarine_parapet"),
                 "The prismarine-bricks parapet must remain excluded as a singleton material family");
-        assertEquals("interchangeable_block_families:cnm/building_accessory/gold",
-                familyByMember.get("mcwwindows:golden_curtain_rod"));
-        assertEquals("interchangeable_block_families:cnm/building_accessory/iron",
-                familyByMember.get("mcwwindows:metal_curtain_rod"));
+        assertFalse(familyByMember.containsKey("mcwwindows:golden_curtain_rod"));
+        assertFalse(familyByMember.containsKey("mcwwindows:metal_curtain_rod"));
     }
 
     private static Set<String> expectedPathIds() {
@@ -273,6 +275,16 @@ final class ProviderBoundaryContractTest {
         expected.addAll(Set.of(
                 "andesite_parapet", "diorite_parapet", "granite_parapet",
                 "blackstone_parapet", "prismarine_parapet", "dark_prismarine_parapet"));
+        return Set.copyOf(expected);
+    }
+
+    private static Set<String> expectedShutters() {
+        Set<String> expected = new LinkedHashSet<>();
+        for (String wood : WINDOW_WOODS) {
+            expected.add(wood + "_shutter");
+            expected.add(wood + "_louvered_shutter");
+        }
+        expected.add("bamboo_shutter");
         return Set.copyOf(expected);
     }
 

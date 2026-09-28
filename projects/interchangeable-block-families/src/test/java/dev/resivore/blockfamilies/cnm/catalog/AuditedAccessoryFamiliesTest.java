@@ -80,7 +80,9 @@ final class AuditedAccessoryFamiliesTest {
                         id("mcwwindows:oak_log_parapet"),
                         id("mcwwindows:oak_plank_parapet"),
                         id("mcwwindows:oak_blinds"),
-                        id("mcwwindows:oak_curtain_rod")),
+                        id("mcwwindows:oak_curtain_rod"),
+                        id("mcwwindows:oak_shutter"),
+                        id("mcwwindows:oak_louvered_shutter")),
                 family("oak").members());
         assertEquals(List.of(
                         id("minecraft:spruce_button"),
@@ -89,21 +91,16 @@ final class AuditedAccessoryFamiliesTest {
                         id("mcwwindows:spruce_log_parapet"),
                         id("mcwwindows:spruce_plank_parapet"),
                         id("mcwwindows:spruce_blinds"),
-                        id("mcwwindows:spruce_curtain_rod")),
+                        id("mcwwindows:spruce_curtain_rod"),
+                        id("mcwwindows:spruce_shutter"),
+                        id("mcwwindows:spruce_louvered_shutter")),
                 family("spruce").members());
         assertEquals(List.of(
                         id("minecraft:bamboo_button"),
                         id("minecraft:bamboo_pressure_plate"),
-                        id("mcwpaths:bamboo_planks_path")),
+                        id("mcwpaths:bamboo_planks_path"),
+                        id("mcwwindows:bamboo_shutter")),
                 family("bamboo").members());
-        assertEquals(List.of(
-                        id("minecraft:light_weighted_pressure_plate"),
-                        id("mcwwindows:golden_curtain_rod")),
-                family("gold").members());
-        assertEquals(List.of(
-                        id("minecraft:heavy_weighted_pressure_plate"),
-                        id("mcwwindows:metal_curtain_rod")),
-                family("iron").members());
         assertEquals(List.of(
                         id("minecraft:polished_blackstone_button"),
                         id("minecraft:polished_blackstone_pressure_plate"),
@@ -139,8 +136,8 @@ final class AuditedAccessoryFamiliesTest {
                 "Unapproved singleton parapet entered the catalog");
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(35, accessories.size());
-        assertEquals(250, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(34, accessories.size());
+        assertEquals(265, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
@@ -216,19 +213,54 @@ final class AuditedAccessoryFamiliesTest {
     }
 
     @Test
-    void legacyCatalogLiteralSerializationRemainsByteStable() throws Exception {
-        Set<AuditedShapeFamily.Category> legacy = EnumSet.of(
-                TWO_HIGH_DOOR, THREE_HIGH_DOOR, TRAPDOOR, WINDOW, FENCE_GATE);
-        List<AuditedShapeFamily> legacyFamilies = AuditedShapeFamilies.families().stream()
-                .filter(family -> legacy.contains(family.category()))
-                .filter(family -> !family.key().getPath().equals("cnm/fence_gate/ribbits_mossy_oak_planks"))
-                .filter(family -> !family.key().getPath().startsWith("cnm/fence_gate/enderscape_"))
-                .toList();
+    void buttonParentsOwnOnlyTheirExactAccessoryFormsAndStonePathsStaySeparate() {
+        List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
+        Set<Identifier> trapdoorMembers = AuditedShapeFamilies.families(TRAPDOOR).stream()
+                .flatMap(value -> value.members().stream()).collect(java.util.stream.Collectors.toSet());
+        Set<Identifier> all = allMembers();
 
-        assertEquals(96, legacyFamilies.size());
-        assertEquals(968, legacyFamilies.stream().mapToInt(family -> family.members().size()).sum());
-        assertEquals("F8B115E088749AE24204FB71999CDCFF4BE4867D732C70D2777EE91726D17335",
-                digest(legacyFamilies));
+        for (String wood : List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+                "mangrove", "cherry", "pale_oak", "crimson", "warped")) {
+            AuditedShapeFamily family = family(wood);
+            Identifier shutter = id("mcwwindows:" + wood + "_shutter");
+            Identifier louvered = id("mcwwindows:" + wood + "_louvered_shutter");
+            assertEquals(id("minecraft:" + wood + "_button"), family.canonicalParent(), wood);
+            assertTrue(family.members().contains(shutter), wood);
+            assertTrue(family.members().contains(louvered), wood);
+            assertFalse(trapdoorMembers.contains(shutter), wood);
+            assertFalse(trapdoorMembers.contains(louvered), wood);
+            assertEquals(1, accessories.stream().filter(value -> value.members().contains(shutter)).count());
+            assertEquals(1, accessories.stream().filter(value -> value.members().contains(louvered)).count());
+        }
+
+        AuditedShapeFamily bamboo = family("bamboo");
+        assertEquals(id("minecraft:bamboo_button"), bamboo.canonicalParent());
+        assertTrue(bamboo.members().contains(id("mcwwindows:bamboo_shutter")));
+        assertFalse(trapdoorMembers.contains(id("mcwwindows:bamboo_shutter")));
+
+        AuditedShapeFamily stoneButton = accessories.stream()
+                .filter(value -> value.key().getPath().equals("cnm/building_accessory/stone_button"))
+                .findFirst().orElseThrow();
+        AuditedShapeFamily stonePath = accessories.stream()
+                .filter(value -> value.key().getPath().equals("cnm/building_accessory/stone_path"))
+                .findFirst().orElseThrow();
+        assertEquals(List.of(id("minecraft:stone_button"), id("minecraft:stone_pressure_plate")),
+                stoneButton.members());
+        assertEquals(id("mcwpaths:stone_running_bond_path"), stonePath.canonicalParent());
+        assertTrue(stonePath.members().stream().allMatch(value -> value.getNamespace().equals("mcwpaths")));
+        assertTrue(stoneButton.members().stream().noneMatch(value -> value.getNamespace().equals("mcwpaths")));
+
+        for (String missingButtonMaterial : List.of("gold", "iron", "andesite", "diorite", "granite",
+                "sandstone", "red_sandstone", "brick", "mossy_stone", "cobbled_deepslate", "deepslate",
+                "mud_brick", "blackstone", "dark_prismarine")) {
+            assertFalse(accessories.stream().anyMatch(value -> value.key().getPath()
+                    .equals("cnm/building_accessory/" + missingButtonMaterial + "_button")));
+        }
+        assertFalse(all.contains(id("mcwwindows:iron_shutter")));
+        assertFalse(all.contains(id("mcwwindows:andesite_parapet")));
+        assertFalse(all.contains(id("mcwwindows:diorite_parapet")));
+        assertFalse(all.contains(id("mcwwindows:granite_parapet")));
+        assertFalse(all.contains(id("mcwwindows:dark_prismarine_parapet")));
     }
 
     @Test

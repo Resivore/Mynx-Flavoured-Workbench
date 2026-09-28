@@ -180,9 +180,9 @@ class AssembledRecipeCleanupContractTest {
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
         expectedRemoved.put("two_high_doors", 260L);
-        expectedRemoved.put("macaws_paths", 143L);
+        expectedRemoved.put("macaws_paths", 142L);
         expectedRemoved.put("trapdoors", 195L);
-        expectedRemoved.put("windows_and_shutters", 215L);
+        expectedRemoved.put("windows_and_shutters", 211L);
         expectedRemoved.put("minecraft_display_fixtures", 24L);
         expectedRemoved.put("enderscape_approved_families", 17L);
         expectedRemoved.put("bbb_enderscape_families", 15L);
@@ -190,9 +190,9 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(260 + 217 + 195 + 215 + 143 + 12 + 20 + 24 + 17 + 15,
+        assertEquals(260 + 217 + 195 + 211 + 142 + 12 + 20 + 24 + 17 + 15,
                 removedNonParents.values().stream().mapToLong(Long::longValue).sum());
-        assertEquals(1_118L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(1_113L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -245,7 +245,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(270, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",
@@ -254,9 +254,8 @@ class AssembledRecipeCleanupContractTest {
                 "minecraft:waxed_weathered_copper_chain_from_honeycomb",
                 "minecraft:waxed_oxidized_copper_chain_from_honeycomb",
                 "mcwpaths:oak_planks_path",
-                "mcwpaths:stone_running_bond_path",
+                "mcwpaths:stone_strewn_rocky_path",
                 "mcwwindows:oak_log_parapet",
-                "mcwwindows:metal_curtain_rod",
                 "minecraft:oak_hanging_sign",
                 "minecraft:warped_shelf",
                 "enderscape:murublight_hanging_sign",

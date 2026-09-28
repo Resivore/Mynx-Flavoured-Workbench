@@ -216,14 +216,11 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "mcwwindows:andesite_louvered_shutter",
             "mcwwindows:diorite_louvered_shutter",
             "mcwwindows:granite_louvered_shutter",
-            "mcwwindows:stone_brick_gothic",
             "mcwwindows:end_brick_gothic",
             "mcwwindows:nether_brick_gothic",
             "mcwwindows:mud_brick_gothic",
-            "mcwwindows:blackstone_brick_gothic",
             "mcwwindows:stone_brick_arrow_slit",
             "mcwwindows:cobblestone_arrow_slit",
-            "mcwwindows:nether_brick_arrow_slit",
             "mcwwindows:ender_brick_arrow_slit",
             "mcwwindows:mud_brick_arrow_slit",
             "mcwwindows:blackstone_brick_arrow_slit",
@@ -251,6 +248,13 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "mcwpaths:andesite_running_bond_stairs",
             "mcwpaths:andesite_running_bond",
             "mcwpaths:dirt_path_block",
+            "mcwwindows:andesite_parapet",
+            "mcwwindows:diorite_parapet",
+            "mcwwindows:granite_parapet",
+            "mcwwindows:dark_prismarine_parapet",
+            "mcwwindows:iron_shutter",
+            "mcwwindows:golden_curtain_rod",
+            "mcwwindows:metal_curtain_rod",
             "mcwwindows:prismarine_parapet",
             "mcwwindows:red_curtain"
     );
@@ -501,10 +505,13 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwwindows:oak_log_parapet",
                 "mcwwindows:oak_plank_parapet",
                 "mcwwindows:oak_blinds",
-                "mcwwindows:oak_curtain_rod"));
+                "mcwwindows:oak_curtain_rod",
+                "mcwwindows:oak_shutter",
+                "mcwwindows:oak_louvered_shutter"));
         assertExactShapeSet(helper, "minecraft:stone_button", List.of(
                 "minecraft:stone_button",
-                "minecraft:stone_pressure_plate",
+                "minecraft:stone_pressure_plate"));
+        assertExactShapeSet(helper, "mcwpaths:stone_running_bond_path", List.of(
                 "mcwpaths:stone_running_bond_path",
                 "mcwpaths:stone_strewn_rocky_path",
                 "mcwpaths:stone_windmill_weave_path",
@@ -522,7 +529,6 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwpaths:andesite_windmill_weave_path",
                 "mcwpaths:andesite_flagstone_path",
                 "mcwpaths:andesite_crystal_floor_path",
-                "mcwwindows:andesite_parapet",
                 "mcwpaths:andesite_diamond_paving",
                 "mcwpaths:andesite_basket_weave_paving",
                 "mcwpaths:andesite_square_paving",
@@ -531,9 +537,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwpaths:andesite_dumble_paving"));
         assertExactShapeSet(helper, "ribbits:mossy_oak_planks_fence", List.of(
                 "ribbits:mossy_oak_planks_fence", "ribbits:mossy_oak_planks_fence_gate"));
-        assertExactShapeSet(helper, "minecraft:light_weighted_pressure_plate", List.of(
-                "minecraft:light_weighted_pressure_plate",
-                "mcwwindows:golden_curtain_rod"));
+        helper.assertTrue(AuditedShapeFamilies.families().stream().noneMatch(family -> family.members()
+                        .contains(requiredItem("mcwwindows:golden_curtain_rod"))),
+                "Gold curtain rod acquired a family without a Button parent");
 
         assertSeparate(helper, "minecraft:copper_bars", "minecraft:exposed_copper_bars",
                 "copper oxidation stages joined");
@@ -575,9 +581,11 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "ribbits:mossy_oak_planks_fence", "ribbits:mossy_oak_planks_fence_gate"));
         for (String stone : List.of(
                 "stone", "blackstone", "deepslate", "nether_brick", "sandstone", "red_sandstone", "quartz")) {
-            assertExactShapeSet(helper, "bbb:" + stone + "_column", List.of(
+            List<String> expected = new java.util.ArrayList<>(List.of(
                     "bbb:" + stone + "_column", "bbb:" + stone + "_urn",
                     "bbb:" + stone + "_moulding", "bbb:" + stone + "_fence", "bbb:" + stone + "_frame"));
+            if (stone.equals("nether_brick")) expected.add("mcwwindows:nether_brick_arrow_slit");
+            assertExactShapeSet(helper, "bbb:" + stone + "_column", expected);
         }
         helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(id("bbb:mossy_oak_frame"))
                         && !BuiltInRegistries.ITEM.containsKey(id("bbb:mossy_oak_lattice")),
@@ -598,7 +606,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwpaths:oak_planks_path",
                 "mcwpaths:stone_running_bond_path",
                 "mcwwindows:oak_log_parapet",
-                "mcwwindows:metal_curtain_rod",
+                "mcwwindows:oak_louvered_shutter",
+                "mcwwindows:stone_brick_gothic",
                 // A non-IBF CNM alternate remains governed by CNM cleanup;
                 // the canonical-parent guard must not broaden beyond IBF.
                 "minecraft:stone_slab")) {
@@ -610,7 +619,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "minecraft:copper_bars",
                 "minecraft:waxed_copper_bars_from_honeycomb",
                 "minecraft:oak_button",
-                "minecraft:light_weighted_pressure_plate",
+                "minecraft:stone_button",
                 "mcwpaths:andesite_running_bond_path").stream()
                 .filter(retained -> !hasRecipe(helper, retained))
                 .toList();

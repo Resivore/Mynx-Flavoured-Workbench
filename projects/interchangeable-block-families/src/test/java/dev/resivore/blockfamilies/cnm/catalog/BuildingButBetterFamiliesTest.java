@@ -92,12 +92,16 @@ final class BuildingButBetterFamiliesTest {
     }
 
     @Test
-    void sevenStoneDetailFamiliesContainOnlyTheFiveRequestedBBBForms() {
+    void masonryFamiliesKeepColumnParentageAndAppendOnlyTheExactArrowSlit() {
         Map<String, AuditedShapeFamily> details = detailsByPath();
         for (String stone : STONES) {
-            assertEquals(List.of(bbb(stone + "_column"), bbb(stone + "_urn"),
-                    bbb(stone + "_moulding"), bbb(stone + "_fence"), bbb(stone + "_frame")),
-                    details.get("cnm/bbb_detail/stone/" + stone).members(), stone);
+            List<Identifier> expected = new java.util.ArrayList<>(List.of(
+                    bbb(stone + "_column"), bbb(stone + "_urn"), bbb(stone + "_moulding"),
+                    bbb(stone + "_fence"), bbb(stone + "_frame")));
+            if (stone.equals("nether_brick")) expected.add(id("mcwwindows:nether_brick_arrow_slit"));
+            AuditedShapeFamily family = details.get("cnm/bbb_detail/stone/" + stone);
+            assertEquals(expected, family.members(), stone);
+            assertEquals(bbb(stone + "_column"), family.canonicalParent(), stone);
         }
         assertEquals(STONES.size(), details.keySet().stream().filter(path -> path.startsWith("cnm/bbb_detail/stone/")).count());
     }
