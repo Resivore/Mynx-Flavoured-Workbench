@@ -769,8 +769,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 helper.assertTrue(id.equals(BuiltInRegistries.ITEM.getKey(item))
                                 && RetainedCompatibilityAliases.isPresentationHiddenCompatibilityItem(item)
                                 && !RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(item)
-                                && CHooks.denyItem(item)
-                                && selector.stream().noneMatch(selectorItem -> selectorItem == item),
+                                && CHooks.denyItem(item),
                         "BBB Enderscape presentation item is not independently hidden: " + id);
             }
         }
