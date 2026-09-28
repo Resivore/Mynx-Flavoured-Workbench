@@ -766,11 +766,14 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             for (String suffix : List.of("_beam", "_wall")) {
                 Identifier id = Identifier.fromNamespaceAndPath("bbb", family + suffix);
                 Item item = BuiltInRegistries.ITEM.getValue(id);
-                helper.assertTrue(id.equals(BuiltInRegistries.ITEM.getKey(item))
-                                && RetainedCompatibilityAliases.isPresentationHiddenCompatibilityItem(item)
-                                && !RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(item)
-                                && CHooks.denyItem(item),
-                        "BBB Enderscape presentation item is not independently hidden: " + id);
+                helper.assertTrue(id.equals(BuiltInRegistries.ITEM.getKey(item)),
+                        "BBB Enderscape presentation item is no longer registered: " + id);
+                helper.assertTrue(RetainedCompatibilityAliases.isPresentationHiddenCompatibilityItem(item),
+                        "BBB Enderscape presentation item missed the exact hidden classifier: " + id);
+                helper.assertTrue(!RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(item),
+                        "BBB Enderscape presentation item became a C100 selector-suppressed alias: " + id);
+                helper.assertTrue(CHooks.denyItem(item),
+                        "BBB Enderscape presentation item bypassed the effective hiding path: " + id);
             }
         }
         ExternalMaterialFamilies.Binding murublight = external(

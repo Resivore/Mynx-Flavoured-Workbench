@@ -102,6 +102,14 @@ public final class ExternalFixtureRegistry {
                     .setId(ResourceKey.create(Registries.BLOCK,
                             Identifier.fromNamespaceAndPath("bbb", material + "_wall")))));
         }
+        // BBB exposes these optional Enderscape Beam roots/Walls independently as well as BGE's
+        // canonical Enderscape Planks/Beam selectors. They are presentation-only C104 targets.
+        for (String family : new String[] {"veiled", "celestial", "murublight"}) {
+            register("bbb", family + "_beam", Blocks.STRIPPED_OAK_LOG, true);
+            register("bbb", family + "_wall", new WallBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                    .setId(ResourceKey.create(Registries.BLOCK,
+                            Identifier.fromNamespaceAndPath("bbb", family + "_wall")))));
+        }
     }
 
     /** Exact Enderscape 3.0.2 source IDs used by the optional-provider integration fixture. */
