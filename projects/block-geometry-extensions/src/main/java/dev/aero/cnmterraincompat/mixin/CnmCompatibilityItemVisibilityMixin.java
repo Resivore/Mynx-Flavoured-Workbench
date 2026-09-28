@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = CHooks.class, remap = false)
 abstract class CnmCompatibilityItemVisibilityMixin {
     @Inject(method = "denyItem", at = @At("RETURN"), cancellable = true, require = 1)
-    private static void cnmTerrainCompat$hideRetainedCompatibilityAliases(Item item,
+    private static void cnmTerrainCompat$hideCompatibilityPresentationItems(Item item,
             CallbackInfoReturnable<Boolean> cir) {
-        if (RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(item)) {
+        if (RetainedCompatibilityAliases.isPresentationHiddenCompatibilityItem(item)) {
             cir.setReturnValue(true);
         }
     }

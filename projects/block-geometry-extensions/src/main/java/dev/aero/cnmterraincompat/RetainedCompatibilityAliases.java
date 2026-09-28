@@ -16,6 +16,8 @@ import java.util.List;
  */
 public final class RetainedCompatibilityAliases {
     private static final List<Identifier> BBB_BEAM_SELECTOR_ALIASES = bbbBeamSelectorAliases();
+    private static final List<Identifier> BBB_ENDERSCAPE_PRESENTATION_ITEMS =
+            bbbEnderscapePresentationItems();
 
     private RetainedCompatibilityAliases() {}
 
@@ -30,12 +32,36 @@ public final class RetainedCompatibilityAliases {
         return BBB_BEAM_SELECTOR_ALIASES.contains(id) && BuiltInRegistries.ITEM.getValue(id) == item;
     }
 
+    /**
+     * True only for an exact live compatibility item that must not have an independent
+     * Creative/search/JEI presentation entry.
+     *
+     * <p>The Enderscape Beam roots and Walls deliberately live here rather than in
+     * {@link #suppressedSelectorAliases()}: they remain members of their existing BGE Planks
+     * selectors, while BBB's redundant provider items no longer appear independently.</p>
+     */
+    public static boolean isPresentationHiddenCompatibilityItem(Item item) {
+        Identifier id = BuiltInRegistries.ITEM.getKey(item);
+        return (BBB_BEAM_SELECTOR_ALIASES.contains(id)
+                || BBB_ENDERSCAPE_PRESENTATION_ITEMS.contains(id))
+                && BuiltInRegistries.ITEM.getValue(id) == item;
+    }
+
     private static List<Identifier> bbbBeamSelectorAliases() {
         List<Identifier> result = new ArrayList<>();
         for (String material : List.of("oak", "spruce", "birch", "jungle", "acacia",
                 "dark_oak", "crimson", "warped", "mangrove", "bamboo", "cherry", "pale_oak")) {
             result.add(Identifier.fromNamespaceAndPath("bbb", material + "_beam_slab"));
             result.add(Identifier.fromNamespaceAndPath("bbb", material + "_beam_stairs"));
+        }
+        return List.copyOf(result);
+    }
+
+    private static List<Identifier> bbbEnderscapePresentationItems() {
+        List<Identifier> result = new ArrayList<>();
+        for (String family : List.of("veiled", "celestial", "murublight")) {
+            result.add(Identifier.fromNamespaceAndPath("bbb", family + "_beam"));
+            result.add(Identifier.fromNamespaceAndPath("bbb", family + "_wall"));
         }
         return List.copyOf(result);
     }

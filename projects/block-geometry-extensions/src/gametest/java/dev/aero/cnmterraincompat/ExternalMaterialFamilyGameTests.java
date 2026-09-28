@@ -748,6 +748,31 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         for (String family : List.of("veiled", "celestial", "murublight")) {
             assertExactSelector(helper, "enderscape:" + family + "_planks",
                     CnmTerrainCompat.MOD_ID + ":enderscape/" + family + "_beam");
+            ExternalMaterialFamilies.Binding beam = external(
+                    CnmTerrainCompat.MOD_ID + ":enderscape/" + family + "_beam");
+            Block planks = BuiltInRegistries.BLOCK.getValue(
+                    Identifier.fromNamespaceAndPath("enderscape", family + "_planks"));
+            List<Item> selector = ShapeMap.getShapes(planks.asItem());
+            List<Item> expected = new ArrayList<>();
+            expected.addAll(ExplicitShapeMapFamilies.variationItems(
+                    NibaruMaterialProfiles.fromBlock(planks).orElseThrow()));
+            expected.addAll(ExplicitShapeMapFamilies.variationItems(beam.profile()));
+            helper.assertTrue(selector.equals(expected) && selector.size() == 18
+                            && java.util.Collections.frequency(selector, beam.slab().asItem()) == 1
+                            && java.util.Collections.frequency(selector, beam.stairs().asItem()) == 1
+                            && java.util.Collections.frequency(selector, beam.wall().asItem()) == 1,
+                    "C103 Enderscape Planks/Beam selector sequence changed for " + family + ": "
+                            + selector.stream().map(BuiltInRegistries.ITEM::getKey).toList());
+            for (String suffix : List.of("_beam", "_wall")) {
+                Identifier id = Identifier.fromNamespaceAndPath("bbb", family + suffix);
+                Item item = BuiltInRegistries.ITEM.getValue(id);
+                helper.assertTrue(id.equals(BuiltInRegistries.ITEM.getKey(item))
+                                && RetainedCompatibilityAliases.isPresentationHiddenCompatibilityItem(item)
+                                && !RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(item)
+                                && CHooks.denyItem(item)
+                                && selector.stream().noneMatch(selectorItem -> selectorItem == item),
+                        "BBB Enderscape presentation item is not independently hidden: " + id);
+            }
         }
         ExternalMaterialFamilies.Binding murublight = external(
                 CnmTerrainCompat.MOD_ID + ":enderscape/murublight_beam");
@@ -756,6 +781,24 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                         && !RetainedCompatibilityAliases.isRetainedButHiddenCompatibilityAlias(
                                 murublight.stairs().asItem()),
                 "Murublight Beam must not use the BBB retained-compatibility visibility path");
+        Set<Identifier> expectedPresentationHidden = new LinkedHashSet<>();
+        for (String material : bbbBeamMaterials()) {
+            expectedPresentationHidden.add(Identifier.parse("bbb:" + material + "_beam_slab"));
+            expectedPresentationHidden.add(Identifier.parse("bbb:" + material + "_beam_stairs"));
+        }
+        for (String family : List.of("veiled", "celestial", "murublight")) {
+            expectedPresentationHidden.add(Identifier.parse("bbb:" + family + "_beam"));
+            expectedPresentationHidden.add(Identifier.parse("bbb:" + family + "_wall"));
+        }
+        Set<Identifier> actualPresentationHidden = new LinkedHashSet<>();
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (RetainedCompatibilityAliases.isPresentationHiddenCompatibilityItem(item)) {
+                actualPresentationHidden.add(BuiltInRegistries.ITEM.getKey(item));
+            }
+        }
+        helper.assertTrue(actualPresentationHidden.equals(expectedPresentationHidden),
+                "Compatibility presentation hiding widened beyond the exact C100/C104 IDs: "
+                        + actualPresentationHidden);
         for (String family : List.of("celestial", "murublight")) {
             assertExactSelector(helper, "enderscape:" + family + "_stem",
                     "enderscape:" + family + "_hyphae");
