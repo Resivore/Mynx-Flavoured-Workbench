@@ -5,6 +5,7 @@
     "uuid": "3ab36584-8732-554f-840e-28a75c422660",
     "name": "Container Slot Reservations",
     "project_id": "container-slot-reservations",
+    "acronym": "CSR",
     "aliases": [
       "Container Slot Reservations (CSR)"
     ],

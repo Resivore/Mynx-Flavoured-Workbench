@@ -43,6 +43,7 @@ CURRENT_RELEASE_DEPLOYMENT_STATES = {
 }
 
 PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:[.-][a-z0-9]+)*$")
+CANONICAL_ACRONYM_RE = re.compile(r"^[A-Z][A-Z0-9]*$")
 FABRIC_MOD_ID_RE = re.compile(r"^[a-z][a-z0-9_.-]*$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -151,6 +152,13 @@ def _project_id(value: Any, path: str) -> str:
     value = _nonblank(value, path)
     if not PROJECT_ID_RE.fullmatch(value):
         _fail(path, "must use lowercase alphanumeric segments separated by hyphens or dots")
+    return value
+
+
+def _canonical_acronym(value: Any, path: str) -> str:
+    value = _nonblank(value, path)
+    if not CANONICAL_ACRONYM_RE.fullmatch(value):
+        _fail(path, "must be an uppercase canonical acronym containing only letters and digits")
     return value
 
 
@@ -365,6 +373,27 @@ def _release_canaries(releases: dict[str, Any]) -> dict[tuple[Any, ...], int]:
     return {identity: canary for identity, (canary, _) in known.items()}
 
 
+def _validate_new_acronym_artifact_filename(identity: dict[str, Any], release: dict[str, Any]) -> None:
+    """Require the durable human-facing filename for newly finalized bytes.
+
+    This intentionally runs only at the transition boundary. Existing artifacts,
+    including legacy filenames on projects that now record an acronym, remain
+    immutable provenance and are therefore valid unchanged.
+    """
+
+    acronym = identity.get("acronym")
+    artifact = release["artifact"]
+    if acronym is None or artifact is None:
+        return
+    filename = artifact["filename"]
+    expected = f"{acronym} C{release['canary']}"
+    if not filename.startswith(expected + ".") or len(filename) == len(expected) + 1:
+        _fail(
+            "$.state.releases.current.artifact.filename",
+            f"must use {expected}<extension> for newly finalized artifact bytes",
+        )
+
+
 def validate_status(data: dict[str, Any], project_directory: Path | None = None) -> dict[str, Any]:
     """Validate exact manifest shape plus cross-field semantics."""
 
@@ -374,10 +403,16 @@ def validate_status(data: dict[str, Any], project_directory: Path | None = None)
     if root["schema_version"] != 3:
         _fail("$.schema_version", "must equal 3")
 
-    identity = _object(root["identity"], "$.identity", {"uuid", "name", "project_id", "aliases", "legacy_names", "legacy_ids"})
+    identity_value = root["identity"]
+    identity_keys = {"uuid", "name", "project_id", "aliases", "legacy_names", "legacy_ids"}
+    if isinstance(identity_value, dict) and "acronym" in identity_value:
+        identity_keys.add("acronym")
+    identity = _object(identity_value, "$.identity", identity_keys)
     project_uuid = _uuid(identity["uuid"], "$.identity.uuid")
     _nonblank(identity["name"], "$.identity.name")
     project_id = _project_id(identity["project_id"], "$.identity.project_id")
+    if "acronym" in identity:
+        _canonical_acronym(identity["acronym"], "$.identity.acronym")
     _text_list(identity["aliases"], "$.identity.aliases")
     _text_list(identity["legacy_names"], "$.identity.legacy_names")
     _text_list(identity["legacy_ids"], "$.identity.legacy_ids", project_ids=True)
@@ -509,6 +544,8 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
         _fail("$.identity.legacy_ids", "a renamed project must retain its previous project_id")
     if before_identity["name"] != after_identity["name"] and before_identity["name"] not in after_identity["legacy_names"]:
         _fail("$.identity.legacy_names", "a renamed project must retain its previous name")
+    if before_identity.get("acronym") != after_identity.get("acronym"):
+        _fail("$.identity.acronym", "is immutable; apply the shared acronym metadata migration separately")
 
     before_release = previous["state"]["releases"]["current"]
     after_release = current["state"]["releases"]["current"]
@@ -530,6 +567,8 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
                 "$.state.releases.current.canary",
                 f"must be C{expected_canary} for {relationship}",
             )
+        if historical_canary is None:
+            _validate_new_acronym_artifact_filename(after_identity, after_release)
 
     for slot in ("current", "accepted", "rollback"):
         release = current["state"]["releases"][slot]
@@ -602,8 +641,18 @@ def _without_v3_canary_metadata(manifest: dict[str, Any]) -> dict[str, Any]:
     return normalized
 
 
+def _without_acronym_metadata(manifest: dict[str, Any]) -> dict[str, Any]:
+    """Remove the additive identity field used by the shared naming migration."""
+
+    normalized = copy.deepcopy(manifest)
+    identity = normalized.get("identity")
+    if isinstance(identity, dict):
+        identity.pop("acronym", None)
+    return normalized
+
+
 def validate_status_transition_from_base(previous: dict[str, Any], current: dict[str, Any]) -> str:
-    """Validate one status change, including the additive-only V2 migration.
+    """Validate one status change, including shared additive metadata migrations.
 
     Returns ``migration`` or ``transition`` for the caller's integration summary.
     """
@@ -618,6 +667,14 @@ def validate_status_transition_from_base(previous: dict[str, Any], current: dict
             "$.schema_version",
             "the V2-to-V3 exception permits only schema_version and release.canary metadata; "
             "project transitions require a V3 base",
+        )
+    if "acronym" not in previous.get("identity", {}) and "acronym" in current.get("identity", {}):
+        validate_status(current)
+        if _without_acronym_metadata(current) == previous:
+            return "migration"
+        _fail(
+            "$.identity.acronym",
+            "the shared acronym migration permits only adding identity.acronym; project transitions require a migrated base",
         )
     validate_status_transition(previous, current)
     return "transition"
@@ -720,6 +777,11 @@ def validate_repository_transitions(root: Path, base_ref: str) -> dict[str, int 
                 f"{current_path}: a newly added project must begin with C1; "
                 "no higher-Canary import exception is defined"
             )
+        if release is not None:
+            try:
+                _validate_new_acronym_artifact_filename(current["identity"], release)
+            except ValidationError as exc:
+                raise ValidationError(f"{current_path}: {exc}") from exc
 
     counts = {
         "base_commit": commit,

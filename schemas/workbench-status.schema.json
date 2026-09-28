@@ -16,6 +16,11 @@
         "uuid": { "type": "string", "format": "uuid" },
         "name": { "$ref": "#/$defs/nonblank" },
         "project_id": { "$ref": "#/$defs/projectId" },
+        "acronym": {
+          "description": "Optional stable canonical uppercase acronym. When present, new finalized artifact bytes use it in the human-facing Canary filename.",
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]*$"
+        },
         "aliases": { "$ref": "#/$defs/uniqueTextList" },
         "legacy_names": { "$ref": "#/$defs/uniqueTextList" },
         "legacy_ids": { "type": "array", "items": { "$ref": "#/$defs/projectId" }, "uniqueItems": true }

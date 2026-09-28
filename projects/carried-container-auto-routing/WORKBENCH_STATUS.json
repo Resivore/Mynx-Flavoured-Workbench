@@ -5,6 +5,7 @@
     "uuid": "fcb7d036-c756-5114-abe1-01c4331e7ea8",
     "name": "Carried Container Auto-Routing",
     "project_id": "carried-container-auto-routing",
+    "acronym": "CCAR",
     "aliases": [
       "Carried Container Auto-Routing (CCAR)"
     ],

@@ -5,6 +5,7 @@
     "uuid": "ee8a20f8-d0a8-515c-9a74-3b19f238227d",
     "name": "Interchangeable Block Families",
     "project_id": "interchangeable-block-families",
+    "acronym": "IBF",
     "aliases": [
       "IBF",
       "Block Variant Selection",

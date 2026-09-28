@@ -5,6 +5,7 @@
     "uuid": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
     "name": "Architectural Material Closure",
     "project_id": "architectural-material-closure",
+    "acronym": "AMC",
     "aliases": ["AMC"],
     "legacy_names": [],
     "legacy_ids": []

@@ -5,6 +5,7 @@
     "uuid": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
     "name": "Block Geometry Extensions (BGE)",
     "project_id": "block-geometry-extensions",
+    "acronym": "BGE",
     "aliases": [
       "Nibaru × Clutter No More Integration",
       "Clutter No More × Nibaru Integration",

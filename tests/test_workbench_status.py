@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class WorkbenchStatusTests(unittest.TestCase):
     def _transition_fixture(self) -> dict[str, object]:
         manifest = copy.deepcopy(load_json(ROOT / "projects" / "block-geometry-extensions" / "WORKBENCH_STATUS.json"))
+        manifest["identity"].pop("acronym", None)  # type: ignore[index]
         manifest["schema_version"] = 3
         manifest["definition"]["lifecycle"] = "ACTIVE"  # type: ignore[index]
         manifest["state"]["blocker"] = None  # type: ignore[index]
@@ -47,6 +48,14 @@ class WorkbenchStatusTests(unittest.TestCase):
             "last_codex_at": "2026-09-16T05:10:00Z",
             "source_commit": "a" * 40,
         }
+        return manifest
+
+    def _acronym_transition_fixture(self) -> dict[str, object]:
+        manifest = self._transition_fixture()
+        manifest["identity"]["acronym"] = "AMC"  # type: ignore[index]
+        release = manifest["state"]["releases"]["current"]  # type: ignore[index]
+        release["canary"] = 4
+        release["artifact"]["filename"] = "architectural-material-closure-0.1.0-canary4.jar"
         return manifest
 
     @staticmethod
@@ -96,6 +105,60 @@ class WorkbenchStatusTests(unittest.TestCase):
         release["canary"] = 2
         with self.assertRaisesRegex(ValueError, "built_at.*required"):
             validate_status_transition(previous, current)
+        release["built_at"] = "2026-09-16T05:11:00Z"
+        validate_status_transition(previous, current)
+
+    def test_legacy_acronym_artifact_is_valid_and_metadata_does_not_force_a_rename(self) -> None:
+        path = ROOT / "projects" / "architectural-material-closure" / "WORKBENCH_STATUS.json"
+        manifest = load_json(path)
+        self.assertEqual(manifest["identity"]["acronym"], "AMC")
+        self.assertEqual(
+            manifest["state"]["releases"]["current"]["artifact"]["filename"],
+            "architectural-material-closure-0.1.0-canary5.jar",
+        )
+        validate_status(manifest, path.parent)
+
+        previous = self._acronym_transition_fixture()
+        current = self._next_transition(previous)
+        validate_status_transition(previous, current)
+
+    def test_new_acronym_artifact_uses_canonical_canary_filename(self) -> None:
+        previous = self._acronym_transition_fixture()
+        current = self._next_transition(previous)
+        release = current["state"]["releases"]["current"]  # type: ignore[index]
+        release["canary"] = 5
+        release["artifact"] = {"filename": "AMC C5.jar", "sha256": "b" * 64}
+        release["source_commit"] = "b" * 40
+        release["built_at"] = "2026-09-16T05:11:00Z"
+        validate_status_transition(previous, current)
+
+        release["artifact"]["filename"] = "architectural-material-closure-0.1.0-canary5.jar"
+        with self.assertRaisesRegex(ValueError, r"artifact\.filename.*AMC C5<extension>"):
+            validate_status_transition(previous, current)
+
+        release["artifact"]["filename"] = "AMC C6.jar"
+        with self.assertRaisesRegex(ValueError, r"artifact\.filename.*AMC C5<extension>"):
+            validate_status_transition(previous, current)
+
+    def test_project_without_a_canonical_acronym_is_not_forced_to_use_an_invented_one(self) -> None:
+        previous = self._transition_fixture()
+        previous["state"]["releases"]["current"]["canary"] = 4  # type: ignore[index]
+        current = self._next_transition(previous)
+        release = current["state"]["releases"]["current"]  # type: ignore[index]
+        release["canary"] = 5
+        release["artifact"] = {"filename": "long-form-project-0.1.0-canary5.jar", "sha256": "b" * 64}
+        release["source_commit"] = "b" * 40
+        release["built_at"] = "2026-09-16T05:11:00Z"
+        validate_status_transition(previous, current)
+
+    def test_acronym_artifact_preserves_non_jar_extensions(self) -> None:
+        previous = self._acronym_transition_fixture()
+        previous["identity"]["acronym"] = "PACK"  # type: ignore[index]
+        current = self._next_transition(previous)
+        release = current["state"]["releases"]["current"]  # type: ignore[index]
+        release["canary"] = 5
+        release["artifact"] = {"filename": "PACK C5.zip", "sha256": "b" * 64}
+        release["source_commit"] = "b" * 40
         release["built_at"] = "2026-09-16T05:11:00Z"
         validate_status_transition(previous, current)
 
@@ -234,6 +297,17 @@ class WorkbenchStatusTests(unittest.TestCase):
 
         current["definition"]["lifecycle"] = "PARKED"  # type: ignore[index]
         with self.assertRaisesRegex(ValueError, r"permits only schema_version and release\.canary metadata"):
+            validate_status_transition_from_base(previous, current)
+
+    def test_acronym_metadata_migration_does_not_require_a_project_revision(self) -> None:
+        previous = self._transition_fixture()
+        current = copy.deepcopy(previous)
+        current["identity"]["acronym"] = "AMC"  # type: ignore[index]
+
+        self.assertEqual(validate_status_transition_from_base(previous, current), "migration")
+
+        current["definition"]["lifecycle"] = "PARKED"  # type: ignore[index]
+        with self.assertRaisesRegex(ValueError, r"permits only adding identity\.acronym"):
             validate_status_transition_from_base(previous, current)
 
     def test_v2_migration_cannot_hide_a_release_transition(self) -> None:
