@@ -67,13 +67,14 @@ final class ProviderBoundaryContractTest {
             "mangrove", "cherry", "pale_oak", "crimson", "warped");
 
     @Test
-    void c13CatalogContainsOnlyNonGeometryMacawsPathsForms() throws Exception {
+    void catalogContainsExactlyTheAuditedPathsAndSeventyEightPavings() throws Exception {
         Set<String> expectedPaths = expectedPathIds();
         Set<String> expectedPavings = product(PAVING_MATERIALS, PAVING_DESIGNS, "_");
         assertEquals(77, expectedPaths.size());
         assertEquals(78, expectedPavings.size());
 
-        Set<String> catalogPaths = catalogMembers("mcwpaths");
+        Set<String> catalogPaths = catalogMembers(
+                AuditedShapeFamily.Category.BUILDING_ACCESSORY, "mcwpaths");
         Set<String> expectedCatalogPaths = new LinkedHashSet<>(expectedPaths);
         expectedCatalogPaths.addAll(expectedPavings);
         assertEquals(155, expectedCatalogPaths.size());
@@ -93,7 +94,7 @@ final class ProviderBoundaryContractTest {
     }
 
     @Test
-    void c13LeavesMacawsPatternGeometryAndPathBlocksOutsideTheCatalog() throws Exception {
+    void everyOtherMacawsPathsFormRemainsOutsideTheCatalog() throws Exception {
         Set<String> expectedPavings = product(PAVING_MATERIALS, PAVING_DESIGNS, "_");
         Set<String> expectedPathBlocks = Set.of(
                 "dirt_path_block", "gravel_path_block", "podzol_path_block",
@@ -129,19 +130,14 @@ final class ProviderBoundaryContractTest {
             assertEquals(expectedFullBlocks, fullBlocks);
             assertEquals(52, fullBlocks.size());
 
-            Set<String> c13Eligible = new LinkedHashSet<>(all);
-            c13Eligible.removeAll(pathBlocks);
-            c13Eligible.removeAll(fullBlocks);
-            c13Eligible.removeAll(slabs);
-            c13Eligible.removeAll(stairs);
-            assertEquals(155, c13Eligible.size());
-            assertEquals(namespaced("mcwpaths", c13Eligible), catalogMembers("mcwpaths"));
-            Set<String> excluded = new LinkedHashSet<>(pathBlocks);
-            excluded.addAll(fullBlocks);
+            Set<String> excluded = new LinkedHashSet<>();
+            excluded.addAll(pathBlocks);
             excluded.addAll(slabs);
             excluded.addAll(stairs);
+            excluded.addAll(fullBlocks);
+            assertEquals(161, excluded.size());
             assertTrue(disjoint(namespaced("mcwpaths", excluded), allCatalogMembers()),
-                    "A BGE-owned Macaw Paths geometry member entered an IBF family");
+                    "An explicitly excluded Macaw Paths form entered an IBF family");
         }
     }
 
@@ -230,8 +226,10 @@ final class ProviderBoundaryContractTest {
                 assertTrue(disjoint(providerAccessories, excludedPartition));
             }
 
-            assertTrue(catalogMembers("mcwwindows").containsAll(
-                    namespaced("mcwwindows", expectedProviderAccessories)));
+            Set<String> expectedCatalogAccessories = new LinkedHashSet<>(expectedProviderAccessories);
+            expectedCatalogAccessories.remove("prismarine_parapet");
+            assertEquals(namespaced("mcwwindows", expectedCatalogAccessories),
+                    catalogMembers(AuditedShapeFamily.Category.BUILDING_ACCESSORY, "mcwwindows"));
         }
     }
 
@@ -249,10 +247,10 @@ final class ProviderBoundaryContractTest {
         }
 
         Map<String, String> familyByMember = familyKeyByMember();
-        assertEquals("interchangeable_block_families:cnm/masonry_detail/blackstone",
+        assertEquals("interchangeable_block_families:cnm/building_accessory/polished_blackstone",
                 familyByMember.get("mcwwindows:blackstone_parapet"));
-        assertEquals("interchangeable_block_families:cnm/masonry_detail/prismarine",
-                familyByMember.get("mcwwindows:prismarine_parapet"));
+        assertFalse(familyByMember.containsKey("mcwwindows:prismarine_parapet"),
+                "The prismarine-bricks parapet must remain excluded as a singleton material family");
         assertEquals("interchangeable_block_families:cnm/building_accessory/gold",
                 familyByMember.get("mcwwindows:golden_curtain_rod"));
         assertEquals("interchangeable_block_families:cnm/building_accessory/iron",
@@ -304,9 +302,9 @@ final class ProviderBoundaryContractTest {
         return Set.copyOf(result);
     }
 
-    private static Set<String> catalogMembers(String namespace) {
+    private static Set<String> catalogMembers(AuditedShapeFamily.Category category, String namespace) {
         Set<String> result = new LinkedHashSet<>();
-        for (AuditedShapeFamily family : AuditedShapeFamilies.families()) {
+        for (AuditedShapeFamily family : AuditedShapeFamilies.families(category)) {
             for (var member : family.members()) {
                 if (member.toString().startsWith(namespace + ":")) result.add(member.toString());
             }

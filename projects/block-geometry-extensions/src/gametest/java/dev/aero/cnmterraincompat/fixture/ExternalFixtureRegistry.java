@@ -51,25 +51,6 @@ public final class ExternalFixtureRegistry {
         register("mcwpaths", "red_sand_path_block", Blocks.RED_SAND, false);
     }
 
-    /** Exact C4 pattern matrix: AMC owns the full block plus its native slab and stair. */
-    public static void registerArchitecturalMaterialClosure() {
-        for (String material : new String[] {"prismarine", "quartz", "nether_brick", "end_brick"}) {
-            Block template = switch (material) {
-                case "prismarine" -> Blocks.PRISMARINE_BRICKS;
-                case "quartz" -> Blocks.QUARTZ_BLOCK;
-                case "nether_brick" -> Blocks.NETHER_BRICKS;
-                case "end_brick" -> Blocks.END_STONE_BRICKS;
-                default -> throw new IllegalArgumentException(material);
-            };
-            for (String pattern : new String[] {"running_bond", "flagstone", "windmill_weave", "crystal_floor"}) {
-                String root = material + "_" + pattern;
-                Block source = register("architectural_material_closure", root, template, false);
-                registerSlab("architectural_material_closure", root + "_slab", source);
-                registerStairs("architectural_material_closure", root + "_stairs", source);
-            }
-        }
-    }
-
     public static void registerMynxTrees() {
         Block wisteriaLog = register("mynx_trees", "wisteria_log", Blocks.CHERRY_LOG, true);
         Block wisteriaWood = register("mynx_trees", "wisteria_wood", Blocks.CHERRY_WOOD, true);

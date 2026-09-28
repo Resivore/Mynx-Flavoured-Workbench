@@ -15,7 +15,6 @@
     "ProviderMovementMaterialMixin",
     "ProviderPointedDripstoneMixin",
     "MacawsPathsInitializationMixin",
-    "ArchitecturalMaterialClosureInitializationMixin",
     "MossyStoneInitializationMixin",
     "MynxTreesInitializationMixin",
     "RibbitsInitializationMixin",

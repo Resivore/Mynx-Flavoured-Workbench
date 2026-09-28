@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 102 — AMC C5 Pattern Surfaces",
-  "description": "Completes the explicitly audited AMC pattern roots using AMC C5's resolved texture surfaces while reusing native slabs and stairs.",
+  "name": "Block Geometry Extensions Canary 103 — C100 Behavior Restoration",
+  "description": "Restores the exact C100 explicit-provider geometry behavior and preserves its native families, canonical selectors, and BBB compatibility visibility.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {
@@ -21,8 +21,5 @@
     "minecraft": "~26.2",
     "fabric-api": "*",
     "clutternomore": ">=2.0.7"
-  },
-  "suggests": {
-    "architectural_material_closure": "*"
   }
 }

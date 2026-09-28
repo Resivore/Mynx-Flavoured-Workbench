@@ -18,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AcceptedBinaryIsolationContractTest {
     private static final String CNM_JAR_PROPERTY = "cnmUpstreamReferenceJar";
     private static final String NIBARU_INTEGRATION_JAR_PROPERTY = "cnmIntegrationReferenceJar";
-    private static final long CURRENT_BGE_C102_SIZE = 6424215L;
-    private static final String CURRENT_BGE_C102_SHA256 =
-            "99A4EC8F82BBED4CD7458310B8A903E49B17F253C53CF15575DF247CE1AEBD0E";
+    private static final long ACCEPTED_NIBARU_INTEGRATION_SIZE = 189071L;
+    private static final String ACCEPTED_NIBARU_INTEGRATION_SHA256 =
+            "0E84FB7B8C69E31C3C22A592D0667DB66C2918C8FD9F461BD2C216D377722E69";
 
     @Test
     void exactCnmBinaryStillOwnsShapeAffinityAndTransmuteCopyWhenProvided() throws Exception {
@@ -45,11 +45,11 @@ class AcceptedBinaryIsolationContractTest {
     }
 
     @Test
-    void currentBgeShapeMapAdapterIsTheExactC102ValidationProvider() throws Exception {
+    void acceptedNibaruShapeMapAdapterRemainsByteForByteUntouchedWhenProvided() throws Exception {
         Path jarPath = configuredPath(NIBARU_INTEGRATION_JAR_PROPERTY);
         assertExactArtifact(jarPath,
-                CURRENT_BGE_C102_SIZE,
-                CURRENT_BGE_C102_SHA256);
+                ACCEPTED_NIBARU_INTEGRATION_SIZE,
+                ACCEPTED_NIBARU_INTEGRATION_SHA256);
 
         try (JarFile jar = new JarFile(jarPath.toFile())) {
             String adapter = classConstants(jar,
@@ -64,7 +64,7 @@ class AcceptedBinaryIsolationContractTest {
                     "STEP",
                     "dev/tazer/clutternomore/common/shape_map/ShapeMap$Mapping"
             }) {
-                assertTrue(adapter.contains(required), "C102 adapter lost " + required);
+                assertTrue(adapter.contains(required), "Accepted adapter lost " + required);
             }
             for (String forbidden : new String[]{
                     "interchangeable_block_families",
@@ -75,7 +75,7 @@ class AcceptedBinaryIsolationContractTest {
                     "dramaticdoors"
             }) {
                 assertFalse(adapter.contains(forbidden),
-                        "C102 Nibaru adapter unexpectedly absorbed IBF mapping ownership: " + forbidden);
+                        "Accepted Nibaru adapter unexpectedly absorbed IBF mapping ownership: " + forbidden);
             }
         }
     }

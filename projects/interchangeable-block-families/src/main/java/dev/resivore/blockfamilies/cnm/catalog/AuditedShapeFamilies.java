@@ -12,7 +12,6 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BUILDING_ACCESSORY;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.DISPLAY_FIXTURE;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.FENCE_GATE;
-import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.MASONRY_DETAIL;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.THREE_HIGH_DOOR;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.TRAPDOOR;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.TWO_HIGH_DOOR;
@@ -26,33 +25,11 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 166;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_607;
-    public static final int EXPECTED_LARGEST_FAMILY_SIZE = 26;
+    public static final int EXPECTED_FAMILY_COUNT = 182;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_402;
+    public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
-    /*
-     * These C7/C9 family shells are deliberately superseded, member-for-member,
-     * by the complete C12 masonry families. Keeping both would give a provider
-     * cell two ShapeMap owners.
-     */
-    private static final Set<String> C12_REHOMED_MASONRY_KEYS = Set.of(
-            "cnm/window/andesite", "cnm/window/bricks", "cnm/window/dark_prismarine",
-            "cnm/window/deepslate", "cnm/window/diorite", "cnm/window/granite",
-            "cnm/window/polished_blackstone", "cnm/window/prismarine_bricks",
-            "cnm/window/quartz_block", "cnm/window/red_sandstone", "cnm/window/sandstone",
-            "cnm/window/stone",
-            "cnm/bbb_detail/stone/stone", "cnm/bbb_detail/stone/blackstone",
-            "cnm/bbb_detail/stone/deepslate", "cnm/bbb_detail/stone/nether_brick",
-            "cnm/bbb_detail/stone/sandstone", "cnm/bbb_detail/stone/red_sandstone",
-            "cnm/bbb_detail/stone/quartz",
-            "cnm/building_accessory/stone", "cnm/building_accessory/polished_blackstone",
-            "cnm/building_accessory/andesite", "cnm/building_accessory/diorite",
-            "cnm/building_accessory/granite", "cnm/building_accessory/sandstone",
-            "cnm/building_accessory/red_sandstone", "cnm/building_accessory/brick",
-            "cnm/building_accessory/mossy_stone", "cnm/building_accessory/cobbled_deepslate",
-            "cnm/building_accessory/deepslate", "cnm/building_accessory/mud_brick",
-            "cnm/building_accessory/blackstone", "cnm/building_accessory/dark_prismarine");
 
     private static final List<AuditedShapeFamily> TWO_HIGH_DOORS = List.of(
             family("cnm/two_high_door/oak", TWO_HIGH_DOOR, minecraft("oak_door"),
@@ -1109,9 +1086,6 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/stone/quartz", BBB_DETAIL, bbb("quartz_column"), bbb("quartz_urn"), bbb("quartz_moulding"), bbb("quartz_fence"), bbb("quartz_frame"))
     );
 
-
-    private static final List<AuditedShapeFamily> MASONRY = MasonryC12Families.families();
-
     private static final List<AuditedShapeFamily> BUILDING_ACCESSORIES = List.of(
             family("cnm/building_accessory/oak", BUILDING_ACCESSORY, minecraft("oak_button"),
                     minecraft("oak_pressure_plate"),
@@ -1403,13 +1377,12 @@ public final class AuditedShapeFamilies {
             case TWO_HIGH_DOOR -> TWO_HIGH_DOORS;
             case THREE_HIGH_DOOR -> THREE_HIGH_DOORS;
             case TRAPDOOR -> TRAPDOORS;
-            case WINDOW -> withoutC12RehomedMasonry(WINDOWS);
+            case WINDOW -> WINDOWS;
             case DISPLAY_FIXTURE -> DISPLAY_FIXTURES;
             case FENCE_GATE -> FENCE_GATES;
             case BAR_CHAIN -> BAR_CHAINS;
-            case BBB_DETAIL -> withoutC12RehomedMasonry(BBB_DETAILS);
-            case MASONRY_DETAIL -> MASONRY;
-            case BUILDING_ACCESSORY -> withoutC12RehomedMasonry(BUILDING_ACCESSORIES);
+            case BBB_DETAIL -> BBB_DETAILS;
+            case BUILDING_ACCESSORY -> BUILDING_ACCESSORIES;
         };
     }
 
@@ -1465,10 +1438,6 @@ public final class AuditedShapeFamilies {
         return Identifier.fromNamespaceAndPath("bbb", path);
     }
 
-    private static Identifier amc(String path) {
-        return Identifier.fromNamespaceAndPath("architectural_material_closure", path);
-    }
-
     private static Identifier ribbits(String path) {
         return Identifier.fromNamespaceAndPath("ribbits", path);
     }
@@ -1481,30 +1450,18 @@ public final class AuditedShapeFamilies {
         return Identifier.fromNamespaceAndPath("mcwwindows", path);
     }
 
-    private static List<AuditedShapeFamily> withoutC12RehomedMasonry(List<AuditedShapeFamily> families) {
-        return families.stream().filter(family -> !C12_REHOMED_MASONRY_KEYS.contains(family.key().getPath())).toList();
-    }
-
     private static List<AuditedShapeFamily> allFamilies() {
         List<AuditedShapeFamily> families = new ArrayList<>(EXPECTED_FAMILY_COUNT);
         families.addAll(TWO_HIGH_DOORS);
         families.addAll(THREE_HIGH_DOORS);
         families.addAll(TRAPDOORS);
-        families.addAll(withoutC12RehomedMasonry(WINDOWS));
+        families.addAll(WINDOWS);
         families.addAll(DISPLAY_FIXTURES);
         families.addAll(FENCE_GATES);
         families.addAll(BAR_CHAINS);
-        families.addAll(withoutC12RehomedMasonry(BBB_DETAILS));
-        families.addAll(MASONRY);
-        families.addAll(withoutC12RehomedMasonry(BUILDING_ACCESSORIES));
+        families.addAll(BBB_DETAILS);
+        families.addAll(BUILDING_ACCESSORIES);
         return List.copyOf(families);
-    }
-
-    @SafeVarargs
-    private static List<AuditedShapeFamily> combined(List<AuditedShapeFamily>... groups) {
-        List<AuditedShapeFamily> result = new ArrayList<>();
-        for (List<AuditedShapeFamily> group : groups) result.addAll(group);
-        return List.copyOf(result);
     }
 
     private static Set<Identifier> uniqueMembers() {

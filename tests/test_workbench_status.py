@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import copy
+import json
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
 from tools.workbench import (
     _release_identity,
+    load_git_historical_current,
     load_json,
     validate_public_text,
     validate_repository,
@@ -109,14 +113,13 @@ class WorkbenchStatusTests(unittest.TestCase):
         validate_status_transition(previous, current)
 
     def test_legacy_acronym_artifact_is_valid_and_metadata_does_not_force_a_rename(self) -> None:
-        path = ROOT / "projects" / "architectural-material-closure" / "WORKBENCH_STATUS.json"
-        manifest = load_json(path)
+        manifest = self._acronym_transition_fixture()
         self.assertEqual(manifest["identity"]["acronym"], "AMC")
         self.assertEqual(
             manifest["state"]["releases"]["current"]["artifact"]["filename"],
-            "architectural-material-closure-0.1.0-canary5.jar",
+            "architectural-material-closure-0.1.0-canary4.jar",
         )
-        validate_status(manifest, path.parent)
+        validate_status(manifest)
 
         previous = self._acronym_transition_fixture()
         current = self._next_transition(previous)
@@ -249,6 +252,142 @@ class WorkbenchStatusTests(unittest.TestCase):
 
         current["state"]["releases"]["current"]["canary"] = 1  # type: ignore[index]
         validate_status_transition(previous, current)
+
+    def test_current_release_after_a_planned_reset_continues_the_recorded_canary(self) -> None:
+        previous = self._transition_fixture()
+        historical = copy.deepcopy(previous["state"]["releases"]["current"])  # type: ignore[index]
+        historical["canary"] = 5
+        previous["state"]["releases"]["current"] = None  # type: ignore[index]
+        previous["definition"]["lifecycle"] = "PLANNED"  # type: ignore[index]
+        current = self._next_transition(previous)
+        current["definition"]["lifecycle"] = "ACTIVE"  # type: ignore[index]
+        current["state"]["releases"]["current"] = copy.deepcopy(historical)  # type: ignore[index]
+        release = current["state"]["releases"]["current"]  # type: ignore[index]
+        release["artifact"] = {"filename": "fixture-6.jar", "sha256": "b" * 64}
+        release["canary"] = 6
+        release["built_at"] = "2026-09-16T05:11:00Z"
+        validate_status_transition(previous, current, historical_current=historical)
+
+        for malformed in (1, 5, 7):
+            with self.subTest(canary=malformed):
+                release["canary"] = malformed
+                with self.assertRaisesRegex(ValueError, r"current\.canary.*must be C6"):
+                    validate_status_transition(previous, current, historical_current=historical)
+
+        release["artifact"] = copy.deepcopy(historical["artifact"])
+        release["canary"] = 5
+        validate_status_transition(previous, current, historical_current=historical)
+        release["canary"] = 6
+        with self.assertRaisesRegex(ValueError, r"current\.canary.*must be C5"):
+            validate_status_transition(previous, current, historical_current=historical)
+
+    @staticmethod
+    def _fixture_git(root: Path, *arguments: str) -> str:
+        return subprocess.run(
+            ["git", "-C", str(root), "-c", "user.name=Workbench fixture", "-c", "user.email=fixture@example.invalid",
+             "-c", "commit.gpgsign=false", *arguments],
+            check=True, capture_output=True, text=True, encoding="utf-8",
+        ).stdout.strip()
+
+    def _commit_fixture_manifests(self, root: Path, message: str) -> str:
+        self._fixture_git(root, "add", "--all")
+        self._fixture_git(root, "commit", "-m", message)
+        return self._fixture_git(root, "rev-parse", "HEAD")
+
+    @staticmethod
+    def _write_fixture_manifest(root: Path, directory: str, manifest: dict[str, object]) -> Path:
+        path = root / "projects" / directory / "WORKBENCH_STATUS.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+        return path
+
+    def test_repository_recovers_latest_current_by_uuid_across_a_project_move(self) -> None:
+        historical = self._transition_fixture()
+        historical["state"]["releases"]["current"]["canary"] = 4  # type: ignore[index]
+        project_uuid = historical["identity"]["uuid"]  # type: ignore[index]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._fixture_git(root, "init", "--initial-branch=main")
+            old_path = self._write_fixture_manifest(root, "original", historical)
+            self._commit_fixture_manifests(root, "Record C4")
+
+            historical = copy.deepcopy(historical)
+            historical["state"]["releases"]["current"]["canary"] = 5  # type: ignore[index]
+            historical["state"]["releases"]["current"]["artifact"]["sha256"] = "b" * 64  # type: ignore[index]
+            self._write_fixture_manifest(root, "original", historical)
+            self._commit_fixture_manifests(root, "Record C5")
+
+            previous = self._next_transition(historical)
+            previous["state"]["releases"]["current"] = None  # type: ignore[index]
+            previous["definition"]["lifecycle"] = "PLANNED"  # type: ignore[index]
+            old_path.unlink()
+            current_path = self._write_fixture_manifest(root, "moved", previous)
+            unrelated = self._transition_fixture()
+            unrelated["identity"]["uuid"] = "b92b6878-9218-42e9-b1ea-dce7cd326813"  # type: ignore[index]
+            unrelated["state"]["releases"]["current"]["canary"] = 99  # type: ignore[index]
+            self._write_fixture_manifest(root, "unrelated", unrelated)
+            base_commit = self._commit_fixture_manifests(root, "Reset and move project; record unrelated C99")
+
+            recovered = load_git_historical_current(root, base_commit, project_uuid)
+            self.assertEqual(recovered, historical["state"]["releases"]["current"])  # type: ignore[index]
+            current = copy.deepcopy(previous)
+            current["definition"]["lifecycle"] = "ACTIVE"  # type: ignore[index]
+            current["state"]["releases"]["current"] = copy.deepcopy(recovered)  # type: ignore[index]
+            release = current["state"]["releases"]["current"]  # type: ignore[index]
+            release["canary"] = 6
+            release["artifact"] = {"filename": "fixture-6.jar", "sha256": "c" * 64}
+            release["built_at"] = "2026-09-16T05:12:00Z"
+            current["synchronization"] = {  # type: ignore[index]
+                "revision": 3, "activity_at": "2026-09-16T05:12:00Z", "updated_at": "2026-09-16T05:12:00Z",
+                "last_codex_at": "2026-09-16T05:12:00Z", "source_commit": "c" * 40,
+            }
+            with mock.patch("tools.workbench.load_repository_statuses", return_value={
+                project_uuid: (current_path, current), unrelated["identity"]["uuid"]: (root / "unrelated", unrelated),  # type: ignore[index]
+            }):
+                self.assertEqual(validate_repository_transitions(root, base_commit)["transition"], 1)
+                release["canary"] = 1
+                with self.assertRaisesRegex(ValueError, r"current\.canary.*must be C6"):
+                    validate_repository_transitions(root, base_commit)
+
+    def test_unrelated_release_history_does_not_change_a_first_current_release(self) -> None:
+        previous = self._transition_fixture()
+        first_release = copy.deepcopy(previous["state"]["releases"]["current"])  # type: ignore[index]
+        previous["state"]["releases"]["current"] = None  # type: ignore[index]
+        project_uuid = previous["identity"]["uuid"]  # type: ignore[index]
+        unrelated = self._transition_fixture()
+        unrelated["identity"]["uuid"] = "b92b6878-9218-42e9-b1ea-dce7cd326813"  # type: ignore[index]
+        unrelated["state"]["releases"]["current"]["canary"] = 99  # type: ignore[index]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._fixture_git(root, "init", "--initial-branch=main")
+            self._write_fixture_manifest(root, "unrelated", unrelated)
+            self._commit_fixture_manifests(root, "Record unrelated release")
+            current_path = self._write_fixture_manifest(root, "planned", previous)
+            base_commit = self._commit_fixture_manifests(root, "Add never-released project")
+            self.assertIsNone(load_git_historical_current(root, base_commit, project_uuid))
+            current = self._next_transition(previous)
+            current["state"]["releases"]["current"] = first_release  # type: ignore[index]
+            first_release["built_at"] = "2026-09-16T05:11:00Z"
+            with mock.patch("tools.workbench.load_repository_statuses", return_value={
+                project_uuid: (current_path, current), unrelated["identity"]["uuid"]: (root / "unrelated", unrelated),  # type: ignore[index]
+            }):
+                self.assertEqual(validate_repository_transitions(root, base_commit)["transition"], 1)
+                first_release["canary"] = 2
+                with self.assertRaisesRegex(ValueError, r"current\.canary.*C1.*first current release"):
+                    validate_repository_transitions(root, base_commit)
+
+    def test_historical_canary_recovery_requires_an_explicit_recorded_ordinal(self) -> None:
+        historical = self._transition_fixture()
+        historical["state"]["releases"]["current"].pop("canary")  # type: ignore[index]
+        historical["state"]["releases"]["current"]["version"] = "C5"  # type: ignore[index]
+        historical["synchronization"]["revision"] = 5  # type: ignore[index]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._fixture_git(root, "init", "--initial-branch=main")
+            self._write_fixture_manifest(root, "historical", historical)
+            base_commit = self._commit_fixture_manifests(root, "Record release without a known ordinal")
+            with self.assertRaisesRegex(ValueError, r"current\.canary.*required"):
+                load_git_historical_current(root, base_commit, historical["identity"]["uuid"])  # type: ignore[index]
 
     def test_known_release_canary_is_consistent_across_slots(self) -> None:
         manifest = self._transition_fixture()

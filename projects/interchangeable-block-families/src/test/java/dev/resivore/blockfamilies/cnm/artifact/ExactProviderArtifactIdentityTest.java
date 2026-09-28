@@ -64,8 +64,8 @@ final class ExactProviderArtifactIdentityTest {
                     "0A979A75101076E987A35807F8EB293631FE5E664B252E5DB0AA263D4EEDF07F",
                     "more_slabs_stairs_and_walls", "4.2.0+26.2-port-canary43-native-directional-material-axis")),
             Map.entry("cnmIntegrationReferenceJar", new ArtifactContract(
-                    "99A4EC8F82BBED4CD7458310B8A903E49B17F253C53CF15575DF247CE1AEBD0E",
-                    "cnm_terrain_slabs_compat", "4.2.46-bge.canary102.amc-c5-pattern-surfaces+26.2")),
+                    "0E84FB7B8C69E31C3C22A592D0667DB66C2918C8FD9F461BD2C216D377722E69",
+                    "cnm_terrain_slabs_compat", "0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis")),
             Map.entry("qsnReferenceJar", new ArtifactContract(
                     "43F1130527F782A291231C682791B4FD3766A20916C691CBDB98F91FDCC47E53",
                     "quick-stack-nearby", "0.4.0")),

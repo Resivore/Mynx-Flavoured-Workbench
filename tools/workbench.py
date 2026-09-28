@@ -516,7 +516,12 @@ def validate_status(data: dict[str, Any], project_directory: Path | None = None)
     return data
 
 
-def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]) -> None:
+def validate_status_transition(
+    previous: dict[str, Any],
+    current: dict[str, Any],
+    *,
+    historical_current: dict[str, Any] | None = None,
+) -> None:
     """Require one immutable-identity synchronization step."""
 
     validate_status(previous)
@@ -550,17 +555,27 @@ def validate_status_transition(previous: dict[str, Any], current: dict[str, Any]
     before_release = previous["state"]["releases"]["current"]
     after_release = current["state"]["releases"]["current"]
     before_canaries = _release_canaries(previous["state"]["releases"])
+    ordinal_before_release = before_release
+    if before_release is None and after_release is not None and historical_current is not None:
+        _release(historical_current, "historical.current", require_canary=True)
+        ordinal_before_release = historical_current
+        identity = _canary_release_identity(historical_current)
+        historical_canary = historical_current["canary"]
+        known_canary = before_canaries.get(identity)
+        if known_canary is not None and known_canary != historical_canary:
+            _fail("historical.current.canary", f"must preserve C{known_canary} already recorded for these exact artifact bytes")
+        before_canaries[identity] = historical_canary
     if after_release is not None:
         after_canary = after_release["canary"]
         historical_canary = before_canaries.get(_canary_release_identity(after_release))
         if historical_canary is not None:
             expected_canary = historical_canary
             relationship = "previously recorded exact artifact bytes"
-        elif before_release is None:
+        elif ordinal_before_release is None:
             expected_canary = 1
             relationship = "the first current release"
         else:
-            expected_canary = before_release["canary"] + 1
+            expected_canary = ordinal_before_release["canary"] + 1
             relationship = "new finalized artifact bytes"
         if after_canary != expected_canary:
             _fail(
@@ -651,7 +666,12 @@ def _without_acronym_metadata(manifest: dict[str, Any]) -> dict[str, Any]:
     return normalized
 
 
-def validate_status_transition_from_base(previous: dict[str, Any], current: dict[str, Any]) -> str:
+def validate_status_transition_from_base(
+    previous: dict[str, Any],
+    current: dict[str, Any],
+    *,
+    historical_current: dict[str, Any] | None = None,
+) -> str:
     """Validate one status change, including shared additive metadata migrations.
 
     Returns ``migration`` or ``transition`` for the caller's integration summary.
@@ -676,7 +696,7 @@ def validate_status_transition_from_base(previous: dict[str, Any], current: dict
             "$.identity.acronym",
             "the shared acronym migration permits only adding identity.acronym; project transitions require a migrated base",
         )
-    validate_status_transition(previous, current)
+    validate_status_transition(previous, current, historical_current=historical_current)
     return "transition"
 
 
@@ -750,6 +770,46 @@ def load_git_statuses(
     return commit, statuses
 
 
+def load_git_historical_current(root: Path, base_commit: str, project_uuid: str) -> dict[str, Any] | None:
+    """Recover the latest current release from canonical ancestry, even after moves.
+
+    Only explicit recorded Canary metadata is evidence. Scan changed manifests
+    in first-parent history by UUID rather than following one directory name, so
+    a planned interval or a project rename cannot restart its release numbering.
+    """
+
+    history = _git_text(
+        root,
+        "log",
+        "--first-parent",
+        "--format=%H",
+        "--name-only",
+        "--diff-filter=AM",
+        "--no-renames",
+        "--diff-merges=first-parent",
+        base_commit,
+        "--",
+        ":(glob)projects/*/WORKBENCH_STATUS.json",
+        ":(glob)resourcepacks/*/WORKBENCH_STATUS.json",
+    )
+    commit = None
+    for line in history.splitlines():
+        if COMMIT_RE.fullmatch(line):
+            commit = line
+            continue
+        path = PurePosixPath(line)
+        if commit is None or len(path.parts) != 3 or path.name != "WORKBENCH_STATUS.json":
+            continue
+        manifest = _json_from_text(_git_text(root, "show", f"{commit}:{path.as_posix()}"), f"{commit}:{path.as_posix()}")
+        if manifest.get("identity", {}).get("uuid") != project_uuid:
+            continue
+        release = manifest.get("state", {}).get("releases", {}).get("current")
+        if release is not None:
+            _release(release, f"{commit}:{path.as_posix()}.state.releases.current", require_canary=True)
+            return release
+    return None
+
+
 def validate_repository_transitions(root: Path, base_ref: str) -> dict[str, int | str]:
     """Validate one integration step per changed project against a stable base.
 
@@ -799,7 +859,13 @@ def validate_repository_transitions(root: Path, base_ref: str) -> dict[str, int 
         if previous == current:
             continue
         try:
-            kind = validate_status_transition_from_base(previous, current)
+            historical_current = None
+            if (
+                previous["state"]["releases"]["current"] is None
+                and current["state"]["releases"]["current"] is not None
+            ):
+                historical_current = load_git_historical_current(root, commit, project_uuid)
+            kind = validate_status_transition_from_base(previous, current, historical_current=historical_current)
         except ValidationError as exc:
             raise ValidationError(f"{current_path} against {commit}: {exc}") from exc
         counts[kind] = int(counts[kind]) + 1

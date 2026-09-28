@@ -15,7 +15,6 @@ import java.util.Set;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BAR_CHAIN;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.BUILDING_ACCESSORY;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.FENCE_GATE;
-import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.MASONRY_DETAIL;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.THREE_HIGH_DOOR;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.TRAPDOOR;
 import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category.TWO_HIGH_DOOR;
@@ -105,14 +104,24 @@ final class AuditedAccessoryFamiliesTest {
                         id("minecraft:heavy_weighted_pressure_plate"),
                         id("mcwwindows:metal_curtain_rod")),
                 family("iron").members());
-        AuditedShapeFamily blackstone = masonryFamily("blackstone");
-        assertTrue(blackstone.members().containsAll(List.of(
+        assertEquals(List.of(
                         id("minecraft:polished_blackstone_button"),
                         id("minecraft:polished_blackstone_pressure_plate"),
-                        id("mcwwindows:blackstone_parapet"),
+                        id("mcwwindows:blackstone_parapet")),
+                family("polished_blackstone").members());
+        assertEquals(List.of(
                         id("mcwpaths:blackstone_running_bond_path"),
-                        id("mcwpaths:blackstone_dumble_paving"))),
-                "C12 rehomes the blackstone provider cells into one masonry family");
+                        id("mcwpaths:blackstone_strewn_rocky_path"),
+                        id("mcwpaths:blackstone_windmill_weave_path"),
+                        id("mcwpaths:blackstone_flagstone_path"),
+                        id("mcwpaths:blackstone_crystal_floor_path"),
+                        id("mcwpaths:blackstone_diamond_paving"),
+                        id("mcwpaths:blackstone_basket_weave_paving"),
+                        id("mcwpaths:blackstone_square_paving"),
+                        id("mcwpaths:blackstone_honeycomb_paving"),
+                        id("mcwpaths:blackstone_clover_paving"),
+                        id("mcwpaths:blackstone_dumble_paving")),
+                family("blackstone").members());
 
         Set<Identifier> oak = Set.copyOf(family("oak").members());
         Set<Identifier> spruce = Set.copyOf(family("spruce").members());
@@ -125,13 +134,13 @@ final class AuditedAccessoryFamiliesTest {
                         family(wood).key() + " crosses its species boundary at " + member);
             }
         }
-        assertTrue(blackstone.members().contains(id("mcwwindows:blackstone_parapet")));
-        assertTrue(masonryFamily("prismarine").members().contains(id("mcwwindows:prismarine_parapet")),
-                "C12 uses the exact provider parapet rather than an AMC duplicate");
+        assertFalse(family("blackstone").members().contains(id("mcwwindows:blackstone_parapet")));
+        assertFalse(allMembers().contains(id("mcwwindows:prismarine_parapet")),
+                "Unapproved singleton parapet entered the catalog");
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(21, accessories.size());
-        assertEquals(98, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(35, accessories.size());
+        assertEquals(250, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
@@ -175,7 +184,7 @@ final class AuditedAccessoryFamiliesTest {
         }
 
         Set<String> actual = new LinkedHashSet<>();
-        for (AuditedShapeFamily family : AuditedShapeFamilies.families()) {
+        for (AuditedShapeFamily family : AuditedShapeFamilies.families(BUILDING_ACCESSORY)) {
             for (Identifier member : family.members()) {
                 if (member.getNamespace().equals("mcwpaths")) {
                     actual.add(member.toString());
@@ -188,6 +197,12 @@ final class AuditedAccessoryFamiliesTest {
         assertTrue(actual.stream().noneMatch(value -> value.endsWith("_path_block")));
 
         for (String excluded : List.of(
+                "mcwpaths:andesite_running_bond",
+                "mcwpaths:andesite_crystal_floor",
+                "mcwpaths:andesite_flagstone",
+                "mcwpaths:andesite_windmill_weave",
+                "mcwpaths:andesite_running_bond_slab",
+                "mcwpaths:andesite_running_bond_stairs",
                 "mcwpaths:andesite_running_bond_paving",
                 "mcwpaths:andesite_paving_slab",
                 "mcwpaths:andesite_paving_stairs",
@@ -208,13 +223,12 @@ final class AuditedAccessoryFamiliesTest {
                 .filter(family -> legacy.contains(family.category()))
                 .filter(family -> !family.key().getPath().equals("cnm/fence_gate/ribbits_mossy_oak_planks"))
                 .filter(family -> !family.key().getPath().startsWith("cnm/fence_gate/enderscape_"))
-                .filter(family -> !family.key().getPath().startsWith("cnm/window/masonry/"))
                 .toList();
 
-        // C12 rehomes twelve legacy window shells into its complete masonry
-        // matrix. The remaining pre-C7 family set stays distinct and literal.
-        assertEquals(84, legacyFamilies.size());
-        assertEquals(918, legacyFamilies.stream().mapToInt(family -> family.members().size()).sum());
+        assertEquals(96, legacyFamilies.size());
+        assertEquals(968, legacyFamilies.stream().mapToInt(family -> family.members().size()).sum());
+        assertEquals("F8B115E088749AE24204FB71999CDCFF4BE4867D732C70D2777EE91726D17335",
+                digest(legacyFamilies));
     }
 
     @Test
@@ -249,15 +263,8 @@ final class AuditedAccessoryFamiliesTest {
 
     private static AuditedShapeFamily family(String keySuffix) {
         Identifier key = id("interchangeable_block_families:cnm/building_accessory/" + keySuffix);
-        return AuditedShapeFamilies.families().stream()
+        return AuditedShapeFamilies.families(BUILDING_ACCESSORY).stream()
                 .filter(value -> value.key().equals(key))
-                .findFirst()
-                .orElseThrow();
-    }
-
-    private static AuditedShapeFamily masonryFamily(String material) {
-        return AuditedShapeFamilies.families(MASONRY_DETAIL).stream()
-                .filter(value -> value.key().getPath().equals("cnm/masonry_detail/" + material))
                 .findFirst()
                 .orElseThrow();
     }
