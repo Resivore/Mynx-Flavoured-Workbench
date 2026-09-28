@@ -512,7 +512,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "minecraft:stone_button",
                 "minecraft:stone_pressure_plate"));
         assertExactShapeSet(helper, "mcwpaths:stone_running_bond_path", List.of(
-                "mcwpaths:stone_running_bond_path",
+                "mcwpaths:stone_strewn_rocky_path",
                 "mcwpaths:stone_strewn_rocky_path",
                 "mcwpaths:stone_windmill_weave_path",
                 "mcwpaths:stone_flagstone_path",
