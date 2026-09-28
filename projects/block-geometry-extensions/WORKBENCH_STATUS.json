@@ -36,7 +36,7 @@
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
       "C92 restores C78's explicit material/profile architecture and removes C79-C91 arbitrary-CNM discovery. C93 and C94 preserve the explicit provider catalog, role ownership, placed resources, and item presentation. C99 removes the C95-C98 spruce tint interception and tracing experiment, restores the exact C94 spruce/client contract, and retains C96's generated Veiled Leaves and Silver Birch Leaves Stair frames. C99 also makes Bookshelf Corner, Quarter Column, and Layer top/bottom faces select the existing Matcha bookshelf-top resource only while the active pack supplies it, keeps valid oak-planks fallback and Bookshelf side faces, and locks Bookshelf Stair wood UVs to the Minecraft 26.2 non-directional Stair frame without changing physical shape or placement.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.47-bge.canary103.c100-behavior-restoration+26.2`.",
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.48-bge.canary104.bbb-enderscape-presentation+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks plus five distinct Macaw soil Path blocks, six Mynx Trees log/wood/leaf sources, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, all 12 BBB beam parents including Pale Oak, 68 exact Enderscape sources, and the provider-owned Mossy Stone root. C93 adopts exact vanilla or Enderscape Slab/Stairs/Wall blocks wherever supplied, suppresses overlapping fallback registrations while Enderscape is loaded, supplies only genuinely absent standard roles plus the five BGE-specific roles, and validates exactly one visible nine-role ShapeMap variation for each explicit family. The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` remains a declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's thin Beam Wall topology remains canonical for all 12 Beam families, and the three Enderscape private Beam variants preserve that topology with their own palettes."
     ],
     "boundaries": {
@@ -51,6 +51,7 @@
         "C94 changes only item/selector presentation: it removes the C93-only catalog display override, restores each affected item's C92 model chain, and routes all 15 Beam Vertical Slab and Step items through inventory-only wrappers over their unchanged direct-Y placed models. It changes no placed blockstate or block-model resource, texture artwork, registration, placement rule, geometry state, provider ownership, selector order, economy, or architecture boundary.",
         "C99 selectively removes only the abandoned C95-C98 spruce tint/trace path and the exact Sodium diagnostic dependency. It retains C94 spruce/client behavior and C96's two-family tinted-Stair model-frame correction. Its Bookshelf changes use the existing resource-pack-controlled `minecraft:block/bookshelf_top` seam when supplied, with oak-planks fallback and unchanged Bookshelf sides; only the native Bookshelf Stair blockstate UV-lock selectors change among packaged placed resources. Native `minecraft:spruce_leaves` assets, visible tint ownership, all placement/collision/item behavior, other catalog families, and external Foundation resources remain outside BGE.",
         "C100 changes only the CNM shared creative/search presentation predicate for the exact 24 retained BBB Beam Slab/Stair compatibility identities. Those registered BBB items remain outside ShapeMap and all canonical BGE roles; BGE axis-aware Beam Slab/Stairs, BBB Beam Walls, selector membership/order, private Murublight/Celestial/Veiled Beam families, registrations, recipes, placement, rendering, geometry, textures, and persistence identities are unchanged.",
+        "C104 changes only the shared Creative/search/JEI presentation decision for `bbb:veiled_beam`, `bbb:veiled_wall`, `bbb:celestial_beam`, `bbb:celestial_wall`, `bbb:murublight_beam`, and `bbb:murublight_wall`. The six live BBB identities remain registered and are intentionally not C100 selector-suppressed aliases; Enderscape Planks selector composition/order, all Beam geometry, recipes, resources, placement, rendering, and persistence identities remain unchanged.",
         "Clutter No More source and artifacts remain external and unchanged; its ShapeMap remains the canonical family and switching mechanism.",
         "C58 is limited to the user-authored glass-Corner geometry/UV route; generic glass Quarter Column projection and all non-glass Corner outputs remain C57-equivalent.",
         "C68 changes only normal axis-material Layer face UV rectangles: it preserves Layer bounds, placement, collision, state, texture roles, grain rotation, special visual paths, non-axis materials, all other geometries, registration, data, display transforms, and external-material support.",
@@ -70,7 +71,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C103 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C104 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -93,18 +94,18 @@
     ]
   },
   "state": {
-    "milestone": "C103 restores production and catalog behavior to actual C100 source b243c37ede3e0163f32c45e7213952cfd06fb330 and release record 23fe3f6e47142a69394143281827d558616427c0. All 163/163 controlled GameTests and current architecture/resource/archive checks pass; exact C100 payloads are retained apart from Fabric release presentation. The 148 explicit optional-provider roots remain intact. C103 is ACTIVE and runtime-untested; accepted C70 and rollback C72 are unchanged.",
+    "milestone": "C104 hides only six redundant BBB optional-Enderscape Beam root/Wall menu entries through the existing shared presentation path. C100 selector-suppressed aliases remain separate; all three Enderscape Planks selectors retain their C103 sequence and Beam geometry. All 163/163 controlled GameTests and current architecture/resource/archive checks pass. C104 is ACTIVE and runtime-untested; accepted C70 and rollback C72 are unchanged.",
     "releases": {
       "current": {
-        "version": "C103 (C100 Behavior Restoration; embedded 4.2.47-bge.canary103.c100-behavior-restoration+26.2)",
-        "canary": 103,
-        "embedded_version": "4.2.47-bge.canary103.c100-behavior-restoration+26.2",
+        "version": "C104 (BBB Enderscape Presentation; embedded 4.2.48-bge.canary104.bbb-enderscape-presentation+26.2)",
+        "canary": 104,
+        "embedded_version": "4.2.48-bge.canary104.bbb-enderscape-presentation+26.2",
         "artifact": {
-          "filename": "BGE C103.jar",
-          "sha256": "2acda50968d512bdc0f0fbae366eb29dfe0022f3a060a1dfc602f61440b3467a"
+          "filename": "BGE C104.jar",
+          "sha256": "0ec890c1d062816e1eb62664ae77936bd8c7ba61b66069e18e833b94e33a51b9"
         },
-        "built_at": "2026-09-28T04:00:36.0958650Z",
-        "source_commit": "f7c642529c9aa9d2657c7d03e346706da423a351",
+        "built_at": "2026-09-28T05:29:45.9693646Z",
+        "source_commit": "3aa5423ca8693b432868270695f585c9b6df0fe3",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -113,17 +114,17 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The exact C103 artifact targets Minecraft 26.2 and retains the same-release Fabric predicate validated at the C100 behavioral boundary.",
+              "reason": "The exact C104 artifact targets Minecraft 26.2 and retains the same-release Fabric predicate validated for its narrow BBB optional-Enderscape presentation correction.",
               "regression_evidence": [
-                "Java 25 clean build produced PRIVATE_LOCAL_ONLY BGE C103.jar, 6,422,977 bytes, SHA-256 2acda50968d512bdc0f0fbae366eb29dfe0022f3a060a1dfc602f61440b3467a, finalized at 2026-09-28T04:00:36.0958650Z from coherent implementation checkpoint f7c642529c9aa9d2657c7d03e346706da423a351.",
-                "All 163/163 controlled Minecraft 26.2 GameTests passed with exactly 148 explicit optional-provider roots, 1,332 external role relations, 982 generated roles, and retained C100 native and BBB compatibility behavior.",
-                "The current architecture, glass, native resource/semantic suites, and archive verifier passed. All 11,364 archive entry names match exact C100; 11,363 entry payloads are byte-identical, and only Fabric name, description, and version differ. The six approved private Beam derivatives remain local with zero provider-resource leaks.",
-                "No Minecraft gameplay-runtime result or acceptance is inferred for C103."
+                "Java 25 clean build produced PRIVATE_LOCAL_ONLY BGE C104.jar, 6,423,298 bytes, SHA-256 0ec890c1d062816e1eb62664ae77936bd8c7ba61b66069e18e833b94e33a51b9, finalized at 2026-09-28T05:29:45.9693646Z from coherent implementation/artifact checkpoint 3aa5423ca8693b432868270695f585c9b6df0fe3.",
+                "All 163/163 controlled Minecraft 26.2 GameTests passed. Focused C104 coverage registers the exact six BBB optional-Enderscape identities, proves each is presentation-hidden through CHooks.denyItem without C100 selector suppression, preserves every exact 18-item Enderscape Planks/Beam sequence and Beam order, and proves the presentation-hidden set is exactly the C100 24 plus C104 six IDs.",
+                "Material-profile architecture, authored-glass, all 12 native resource/semantic suites, Bookshelf reference check, and unified archive verification passed. The verifier found zero provider-resource leaks, zero forbidden architecture entries, six approved private Beam PNGs, and no added/deleted packaged placed resources.",
+                "No Minecraft gameplay-runtime result or acceptance is inferred for C104."
               ]
             }
           ]
         },
-        "summary": "Restores the exact C100 148-root explicit-provider catalog and all native geometry behavior; PRIVATE_LOCAL_ONLY."
+        "summary": "Hides exactly six redundant BBB optional-Enderscape Beam root/Wall presentation entries while preserving all selector geometry; PRIVATE_LOCAL_ONLY."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -193,10 +194,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 65,
-    "activity_at": "2026-09-28T04:08:36.351893Z",
-    "updated_at": "2026-09-28T04:08:36.351893Z",
-    "last_codex_at": "2026-09-28T04:08:36.351893Z",
-    "source_commit": "f7c642529c9aa9d2657c7d03e346706da423a351"
+    "revision": 66,
+    "activity_at": "2026-09-28T05:31:39.2523597Z",
+    "updated_at": "2026-09-28T05:31:39.2523597Z",
+    "last_codex_at": "2026-09-28T05:31:39.2523597Z",
+    "source_commit": "3aa5423ca8693b432868270695f585c9b6df0fe3"
   }
 }
