@@ -1,11 +1,13 @@
 # Testing
 
-Foundation v5 is `ACTIVE` and has static archive/resource validation only. No Minecraft runtime observation has been performed.
+Foundation v6 is `ACTIVE` and has static archive/resource validation only. No Minecraft runtime observation has been performed.
 
-In an authorized Minecraft Java 26.2 environment with Foundation v5 above the source packs, inspect the Creative inventory or give each exact item:
+In an authorized Minecraft Java 26.2 environment, enable Foundation v6 as the single consolidated Foundation/Matcha pack and retain the exact artifact filename and SHA-256 with any observation.
 
-- `enderscape:veiled_leaves` must use the existing veiled bushy geometry and remain untinted.
-- `mynx_trees:silver_birch_leaves` must use the existing Silver Birch bushy geometry with its normal item tint.
-- `mynx_trees:wisteria_leaves` must use the existing Wisteria bushy geometry and remain untinted.
+Check representative Foundation-only resources: `enderscape:veiled_leaves`, `mynx_trees:silver_birch_leaves`, and `mynx_trees:wisteria_leaves` must retain their Foundation bushy inventory behavior (Silver Birch has its normal tint; Veiled and Wisteria remain untinted).
 
-Place each leaf block and confirm its in-world Foundation v4 bushy appearance is unchanged. Record the exact artifact filename and SHA-256 if an inventory preview is flat, has a missing model/texture, uses the wrong texture, or has unexpected tinting.
+Check a Matcha-only resource by inspecting a shulker box (`assets/minecraft/textures/entity/shulker/shulker.png`) and confirm its overlay appearance loads without a missing texture.
+
+Check several former collision paths: a lily pad, a birch door, and an item frame must show the Matcha Overlays v37 appearance, because `assets/minecraft/blockstates/lily_pad.json`, `assets/minecraft/textures/block/birch_door_bottom.png`, and `assets/minecraft/textures/item/item_frame.png` are Matcha-wins paths.
+
+Record the exact artifact filename and SHA-256 if any representative asset is missing, flat, wrongly tinted, or resolves to an unexpected source appearance.
