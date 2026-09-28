@@ -625,3 +625,14 @@
 - Artifact: PRIVATE_LOCAL_ONLY `BGE C102.jar`, 6,424,215 bytes, SHA-256 `99A4EC8F82BBED4CD7458310B8A903E49B17F253C53CF15575DF247CE1AEBD0E`, finalized at `2026-09-27T01:26:04.8930979Z` from the preceding checkpoint above.
 - Result: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`.
 - Next state: Under owner-directed runtime verification, check the C102 nine-role AMC families and patterned surface fidelity against this exact SHA-256.
+
+## 2026-09-28T04:08:36.351893Z — Finalize BGE C103 with C100-equivalent behavior
+
+- Revision: 65
+- Source checkpoint: `f7c642529c9aa9d2657c7d03e346706da423a351`
+- Changes: Removed C101/C102 AMC catalog additions, optional metadata, initialization hook, provider fixture, and integration-specific validation. Production Java/resources and controlled behavior match actual C100 checkpoint b243c37ede3e0163f32c45e7213952cfd06fb330; the 148-root explicit catalog and every legitimate C100 change remain intact.
+- Build/static: Java 25 clean build and all 163/163 controlled GameTests passed: 148 roots, 1,332 external relations, and 982 generated roles. Current architecture, authored-glass, all 12 native PowerShell suites, Bookshelf reference check, and unified archive verifier passed. Exact C100 archive comparison found the same 11,364 entries, with 11,363 byte-identical payloads and only Fabric name/description/version differences. The supplementary frozen C79 Audit-CanaryJar inventory check rejects the unchanged C100 native accounting; that legacy audit was left unchanged. Shared repository suite passed 75 tests with one pre-existing Windows symlink-privilege skip.
+- Runtime: No Minecraft runtime result was recorded and no testing profile was inspected or modified.
+- Artifact: PRIVATE_LOCAL_ONLY `BGE C103.jar`, 6,422,977 bytes, SHA-256 `2acda50968d512bdc0f0fbae366eb29dfe0022f3a060a1dfc602f61440b3467a`, finalized at `2026-09-28T04:00:36.0958650Z` from the preceding coherent implementation/artifact checkpoint above. Six approved private Beam derivatives remain local; originals inputs were read-only. Required artifact retention verified the exact filename and SHA-256 in the primary checkout.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Manifest revision 64 to 65; accepted C70 and rollback C72 identities and retained bytes remain unchanged.
+- Next state: Under owner-directed verification, record observations against exact C103 bytes using TESTING.md; acceptance remains an explicit owner decision.

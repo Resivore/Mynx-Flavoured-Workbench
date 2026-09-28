@@ -52,3 +52,14 @@
 - Artifact: Current retained C5 is `architectural-material-closure-0.1.0-canary5.jar`, 1,799,641 bytes, SHA-256 `85202102993D2FBA6FA9CD17576E9D8209CFEA8C71050D73DA55CD3A8E79C1D1`, finalized at `2026-09-27T00:48:08.2473578Z` from the preceding checkpoint above.
 - Result: `ACTIVE / STATIC_PASS / RUNTIME_UNTESTED`.
 - Next state: Obtain owner-supplied runtime observations against the exact C5 bytes before acceptance or a successor.
+
+## 2026-09-28T04:08:36.351893Z — Return Architectural Material Closure to PLANNED
+
+- Revision: 6
+- Source checkpoint: `f7c642529c9aa9d2657c7d03e346706da423a351`
+- Changes: Removed the tracked implementation, build, source, test, and resource machinery. Retained the immutable identity and deliberately vague concept; scope and integration with other Workbench projects remain undetermined. Historical log entries are unchanged.
+- Build/static: Repository controls and removal checks pass. No AMC implementation, active dependencies, current artifact, or integration contract remains. Shared transition validation now recovers explicit historical Canaries by UUID from canonical main ancestry, preserving the future C5-to-C6 continuation without new manifest fields.
+- Runtime: No Minecraft runtime result was recorded and no testing profile was inspected or modified.
+- Artifact: None current, accepted, or rollback. No AMC C6 artifact was produced; C1-C5 remain historical provenance only.
+- Result: PLANNED / NOT_RUN / RUNTIME_UNTESTED; manifest revision 5 to 6.
+- Next state: Define scope and verification from first principles under future owner direction before producing a genuine new implementation.

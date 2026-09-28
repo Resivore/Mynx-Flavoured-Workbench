@@ -21,13 +21,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Preserve exact accepted C7 byte-for-byte as the accepted baseline while C13 excludes the literal BGE-owned patterned geometry cells from C12's provider-first masonry matrix; C13 remains runtime-untested."
+      "Preserve exact accepted C7 byte-for-byte while C14 restores the complete C9 functional catalog, retaining all legitimate C7/C8/C9 work; C14 remains runtime-untested."
     ],
     "scope": [
-      "Preserve every accepted C7 family, every C8/C9/C10 addition, and every canonical parent while excluding C13's exact literal BGE-owned patterned full/slab/stair geometry: the 17 audited masonry profiles retain 442 eligible cells (253 provider, 189 AMC), yielding 166 families, 1,607 unique item IDs, and a 26-member maximum without suffix, tag, or namespace inference.",
+      "Preserve every accepted C7 family, every C8 addition, and every canonical parent while extending exactly three C8 Enderscape Fence/Fence Gate families with matching BBB Frame/Lattice pairs and adding exactly three four-member BBB Enderscape Trim/Balustrade/Support/Pallet detail families, yielding 182 families, 1,402 unique item IDs, and a 22-member maximum without suffix, tag, or namespace inference.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain exact accepted C7 and historical rollback C3 artifacts while C12 is the current candidate; no owner acceptance or manual Minecraft runtime result is inferred from static evidence."
+      "Retain exact accepted C7 and historical rollback C3 artifacts while C14 is the current candidate; no owner acceptance or manual Minecraft runtime result is inferred from controlled build and GameTest evidence."
     ],
     "boundaries": {
       "owned_paths": [
@@ -37,8 +37,8 @@
         "Clutter No More owns ShapeMap, selection controls, 1:1 transmuteCopy switching, recipe equivalence and cleanup, and the graph consumed by Quick Stack Nearby; IBF does not add a second registry, switcher, keybind, networking protocol, recipe engine, or storage-equivalence system.",
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
-        "Partial provider materialization, dynamic discovery, registry-name or tag inference, and cross-material or cross-finish collapsing remain outside the audited contract. C12's approved provider-first masonry cells include only their explicitly enumerated Macaw paving, full, slab, and stair forms.",
-        "C12 is an unaccepted candidate and does not alter the exact accepted C7 release identity, any Minecraft testing profile, or the separate human-owned server-release record.",
+        "Partial provider materialization, dynamic discovery, registry-name or tag inference, and cross-material or cross-finish collapsing remain outside the audited contract. The actual C9 catalog includes 77 audited Macaw thin Paths and 78 Pavings; Macaw path blocks and patterned full/slab/stair geometry remain excluded.",
+        "C14 is an unaccepted candidate and does not alter the exact accepted C7 release identity, any Minecraft testing profile, or the separate human-owned server-release record.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -47,7 +47,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version targeted by C9; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
+        "reason": "Exact game version targeted by C14; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
       },
       {
         "type": "MOD",
@@ -95,19 +95,13 @@
         "type": "MOD",
         "identifier": "mcwpaths",
         "requirement": "=1.1.1; Modrinth VRLhWB91:LLYA3vec; mcw-paths-1.1.1-mc26.2fabric.jar SHA-256 39128a12cb64fd61286b631714da742d7b6ea0fa8d4573c103081d01e4993bc2",
-        "reason": "Required C4 provider for exactly 77 audited thin path forms; pavings and other path-family forms remain excluded."
+        "reason": "Required provider for the actual C9 catalog of exactly 77 audited thin Paths and 78 Pavings; path blocks and patterned full/slab/stair geometry remain excluded."
       },
       {
         "type": "MOD",
         "identifier": "mcwtrpdoors",
         "requirement": "=1.1.5; Modrinth n2fvCDlM:guJEg4jK; mcw-trapdoors-1.1.5-mc26.2fabric.jar SHA-256 6411cb0ff6c6cc4312deed48c3ca69cdcbbae72e80ff4ed0269f2d0a78acd32d",
         "reason": "Required provider for audited trapdoor families."
-      },
-      {
-        "type": "PROJECT",
-        "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
-        "requirement": "runtime architectural_material_closure:*; controlled validation input AMC C5 (0.1.0-canary5), architectural-material-closure-0.1.0-canary5.jar, 1,799,641 bytes, SHA-256 85202102993d2fba6fa9cd17576e9d8209cfea8c71050d73da55cd3a8e79c1d1",
-        "reason": "AMC is an actively developed external provider, so IBF's Fabric runtime dependency is presence-only. The exact C5 artifact is controlled validation evidence for C13's literal provider-first boundary."
       },
       {
         "type": "MOD",
@@ -130,8 +124,8 @@
       {
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
-        "requirement": "controlled validation BGE C102, BGE C102.jar, 6,424,215 bytes, SHA-256 99a4ec8f82bbed4cd7458310b8a903e49b17f253c53cf15575df247ce1aebd0e",
-        "reason": "C13's controlled GameTests load the exact current BGE provider to prove its pre-existing AMC patterned nine-role components remain entirely outside IBF ownership."
+        "requirement": "Historical C52 (legacy Integration 1.39), cnm-nibaru-integration-0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis.jar SHA-256 0e84fb7b8c69e31c3c22a592d0667db66c2918c8fd9f461bd2c216d377722e69",
+        "reason": "Exact historical C52 geometry provider used with accepted Nibaru C45 for the restored C9 controlled isolation and regression validation; current BGE acceptance remains independently recorded."
       },
       {
         "type": "OTHER",
@@ -143,29 +137,29 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "=25",
-        "reason": "Required Java release for Minecraft 26.2 and the controlled C9 build."
+        "reason": "Required Java release for Minecraft 26.2 and the controlled C14 build."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1 with Fabric Loom 1.17.19",
-        "reason": "Exact build-tool baseline used for the controlled C9 build and GameTest validation."
+        "reason": "Exact build-tool baseline used for the controlled C14 build and GameTest validation."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 13 excludes all 204 literal BGE-owned patterned full/slab/stair cells from IBF ownership while retaining the 442-cell eligible provider-first masonry subset. Controlled C5/C102/C13 GameTests pass the exact pre-existing nine-role component ordering without weakening the fail-closed cross-family guard. Exact C7 remains the byte-for-byte accepted baseline until explicit owner acceptance; no manual Minecraft runtime result is recorded.",
+    "milestone": "C14 restores the actual C9 implementation and catalog from checkpoint 464b8b334581c17277aa1512af12017c51355345 and release record 1abfc1241498fe11ddb0fbf1484c73ed0905b741: 182 families, 1,402 unique members, maximum family size 22. All 56/56 unit/static/catalog/recipe checks, 26/26 controlled GameTests, and archive isolation/build checks pass using the restored non-AMC dependency set. All C9 archive payloads are byte-identical except the embedded Fabric version. C14 is ACTIVE and runtime-untested; accepted C7 and rollback C3 remain unchanged.",
     "releases": {
       "current": {
-        "version": "C13 (0.1.0-canary13)",
-        "canary": 13,
-        "embedded_version": "0.1.0-canary13",
+        "version": "C14 (0.1.0-canary14)",
+        "canary": 14,
+        "embedded_version": "0.1.0-canary14",
         "artifact": {
-          "filename": "interchangeable-block-families-0.1.0-canary13.jar",
-          "sha256": "9fbe4627414ccc0a4eba33c8912244fb55d47f6be4b6ecac1752f699f37974ab"
+          "filename": "IBF C14.jar",
+          "sha256": "d17176029929232ea650a187936b1e4582c615c36287a1a4ee9a07c466f913bc"
         },
-        "built_at": "2026-09-27T01:36:09.9004633Z",
-        "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269",
+        "built_at": "2026-09-28T04:02:47.1977917Z",
+        "source_commit": "f7c642529c9aa9d2657c7d03e346706da423a351",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -174,16 +168,16 @@
               "relationship": "depends",
               "dependency_id": "bbb",
               "predicate": "=2.0pre4+26.2-enderscape-dev.7",
-              "reason": "C10 retains C9's BBB Enderscape families; the provider version is not Fabric Extended SemVer, so an equality predicate remains the narrow valid contract rather than an ordered range.",
+              "reason": "C14 retains C9's audited BBB Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package. The dev.7 provider version is not Fabric Extended SemVer, so the equality predicate remains the narrow valid contract; dev.6 lacks the required package.",
               "regression_evidence": [
-                "BuildingButBetterEnderscapeProviderContractTest verifies the exact BBB artifact filename, size, SHA-256, required package resources, and Fabric metadata predicate.",
-                "The Fabric VersionPredicate exact match accepts dev.7 and rejects pre-C9 pale-oak dev.6 before ShapeMap resolution.",
-                "Controlled C9 GameTests passed all 26 tests with the exact BBB dev.7 provider and 182-family/1,402-member catalog."
+                "Fresh C14 BuildingButBetterEnderscapeProviderContractTest and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, all 18 audited provider items, required resources, and Fabric metadata.",
+                "The Fabric VersionPredicate equality check accepts dev.7 and rejects the incompatible pre-C9 pale-oak dev.6 package before ShapeMap resolution.",
+                "All 56/56 unit/static/catalog/recipe checks and 26/26 controlled C14 GameTests passed with the exact restored non-AMC C9 providers; the catalog retains 182 families, 1,402 unique members, and maximum family size 22."
               ]
             }
           ]
         },
-        "summary": "Excludes BGE-owned patterned geometry from the literal masonry catalog while preserving fail-closed IBF boundaries."
+        "summary": "Restores the complete C9 catalog of 182 families and 1,402 unique members with all C7/C8/C9 behavior intact."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -220,10 +214,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 13,
-    "activity_at": "2026-09-27T01:36:09.9004633Z",
-    "updated_at": "2026-09-27T01:36:09.9004633Z",
-    "last_codex_at": "2026-09-27T01:36:09.9004633Z",
-    "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269"
+    "revision": 14,
+    "activity_at": "2026-09-28T04:08:36.351893Z",
+    "updated_at": "2026-09-28T04:08:36.351893Z",
+    "last_codex_at": "2026-09-28T04:08:36.351893Z",
+    "source_commit": "f7c642529c9aa9d2657c7d03e346706da423a351"
   }
 }

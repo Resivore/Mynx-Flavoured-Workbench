@@ -136,3 +136,14 @@
 - Artifact: Current retained C13 is `interchangeable-block-families-0.1.0-canary13.jar`, 70,830 bytes, SHA-256 `9FBE4627414CCC0A4EBA33C8912244FB55D47F6BE4B6ECAC1752F699F37974AB`, finalized at `2026-09-27T01:36:09.9004633Z` from the preceding checkpoint above.
 - Result: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`.
 - Next state: Obtain owner-supplied runtime observations against the exact coordinated C5/C102/C13 release set before acceptance or a successor.
+
+## 2026-09-28T04:08:36.351893Z — Finalize IBF C14 with complete C9 catalog semantics
+
+- Revision: 14
+- Source checkpoint: `f7c642529c9aa9d2657c7d03e346706da423a351`
+- Changes: Removed the entire C10-C13 AMC integration layer and its catalog, dependency, fixture, recipe, boundary, and compatibility machinery. Restored actual C9 source 464b8b334581c17277aa1512af12017c51355345, retaining every C7/C8/C9 family and canonical parent. Corrected stale manifest prose to reflect actual C9 code: 77 thin Paths plus 78 Pavings remain legitimate catalog members.
+- Build/static: Java 25 test/runGameTest/build/stageCanaryArtifact passed using the exact restored non-AMC C9 inputs: 56/56 JUnit checks across 13 suites, 26/26 required controlled GameTests, production isolation, 182 families, 1,402 unique members, maximum 22. Catalog serialization SHA-256 0ff094610f07f1d93e6b95f95ac61f6011bb10423d77ce34548cf973b23ceea7 matches C9. All 30 archive entry names and 19 production classes match C9 byte-for-byte; only Fabric embedded version differs. Fresh BBB dev.7 exception checks passed and reject incompatible dev.6.
+- Runtime: No Minecraft runtime result was recorded and no testing profile was inspected or modified.
+- Artifact: `IBF C14.jar`, 57,104 bytes, SHA-256 `d17176029929232ea650a187936b1e4582c615c36287a1a4ee9a07c466f913bc`, finalized at `2026-09-28T04:02:47.1977917Z` from the preceding coherent implementation/artifact checkpoint above. Provider artifacts remain external and originals inputs were read-only. Required artifact retention verified the exact filename and SHA-256 in the primary checkout.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Manifest revision 13 to 14; exact accepted C7 and rollback C3 identities and retained bytes remain unchanged.
+- Next state: Under owner-directed verification, exercise the retained C7/C8/C9 families against exact C14 bytes using TESTING.md; acceptance remains an explicit owner decision.

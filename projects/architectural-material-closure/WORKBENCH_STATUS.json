@@ -6,115 +6,50 @@
     "name": "Architectural Material Closure",
     "project_id": "architectural-material-closure",
     "acronym": "AMC",
-    "aliases": ["AMC"],
+    "aliases": [
+      "AMC"
+    ],
     "legacy_names": [],
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACTIVE",
+    "lifecycle": "PLANNED",
     "goals": [
-      "Close verified masonry material-form holes with locally derived, reference-faithful additive blocks for the owner's private modpack.",
-      "Keep Interchangeable Block Families as the sole Clutter No More ShapeMap authority while AMC owns only its original blocks, data, recipes, and presentation."
+      "Address gaps in the architectural/building-block options available in the modpack."
     ],
     "scope": [
-      "Canary 5 retains the approved 646-cell masonry audit across 17 profiles: 409 existing Minecraft/BBB/Macaw cells remain provider-owned and AMC registers only the 237 genuine gaps, including native controls, BBB details, Macaw paths/pavings/patterns, and Macaw Windows forms.",
-      "C5 semantically resolves model references separately from concrete texture sprites, including inherited texture variables; protected provider-derived closures and the JAR remain generated only into ignored local paths.",
-      "C5 remains an additive content candidate: it supplies no ShapeMap data, no provider-registry inference, no compatibility implementation, and no claimed manual Minecraft runtime result."
+      "Architectural Material Closure (AMC) is a planned project for addressing gaps in the architectural/building-block options available in the modpack. Its eventual scope, source materials, supported forms, provider relationships, implementation strategy, and integration with other Workbench projects have not yet been determined."
     ],
     "boundaries": {
-      "owned_paths": ["projects/architectural-material-closure"],
+      "owned_paths": [
+        "projects/architectural-material-closure"
+      ],
       "exclusions": [
-        "Committing, pushing, publishing, or redistributing provider-derived models, textures, blockstates, recipes, data, or derivative JAR bytes. Exact local private derivation from BBB and Macaw reference artifacts is owner-authorized only through ignored build and artifact paths.",
-        "A second ShapeMap, equivalence, switching, recipe-cleanup, networking, or storage system; Interchangeable Block Families remains the sole authority for those concerns.",
-        "Dynamic material discovery, registry-name or tag inference, provider mutation, replacing a provider block, or creating an alternate item in another provider namespace.",
-        "Minecraft deployment, testing-profile access, runtime-state mutation, acceptance, or inferring manual runtime success from static checks."
+        "No implementation, active runtime dependencies, or integration contract is currently defined."
       ]
     },
-    "dependencies": [
-      {
-        "type": "MOD",
-        "identifier": "minecraft",
-        "requirement": "=26.2",
-        "reason": "Exact game version for the C1 block registrations, data codecs, and generated resources."
-      },
-      {
-        "type": "MOD",
-        "identifier": "fabricloader",
-        "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader declared by C1."
-      },
-      {
-        "type": "MOD",
-        "identifier": "fabric-api",
-        "requirement": ">=0.157.0+26.2",
-        "reason": "Provides the supported Building Blocks creative-tab insertion used by C1."
-      },
-      {
-        "type": "TOOL",
-        "identifier": "java",
-        "requirement": "=25",
-        "reason": "Compilation release and controlled static-validation runtime for Minecraft 26.2."
-      },
-      {
-        "type": "TOOL",
-        "identifier": "gradle",
-        "requirement": "=9.5.1",
-        "reason": "Exact build-tool version used to produce and verify C1."
-      },
-      {
-        "type": "TOOL",
-        "identifier": "fabric-loom",
-        "requirement": "=1.17.19",
-        "reason": "Pinned Fabric build plugin used to produce C1."
-      },
-      {
-        "type": "MOD",
-        "identifier": "mcwwindows",
-        "requirement": ">=2.4.2; controlled local reference mcw-windows-2.4.2-mc26.2fabric.jar",
-        "reason": "C4 uses Macaw Windows' stateful classes at runtime and locally materializes its audited window, parapet, Gothic, arrow-slit, and shutter form resources."
-      },
-      {
-        "type": "MOD",
-        "identifier": "mcwpaths",
-        "requirement": ">=1.1.1; controlled local reference mcw-paths-1.1.1-mc26.2fabric.jar",
-        "reason": "C4 uses Macaw Paths' path, facing-path, and engraved-block behavior at runtime and locally materializes its audited thin-path, paving, and pattern resources."
-      }
-    ]
+    "dependencies": []
   },
   "state": {
-    "milestone": "Canary 5 retains the provider-first 646-cell masonry audit and corrects semantic resource closure: models cannot satisfy sprite references, inherited texture variables resolve recursively, and all concrete AMC textures reach an exact local or legitimate provider PNG. No deployment or manual Minecraft runtime observation has been supplied.",
+    "milestone": "PLANNED with no implementation or current, accepted, or rollback release. C1-C5 remain historical provenance only and establish no design baseline; a future genuine implementation continues from the historical C5 ordinal.",
     "releases": {
-      "current": {
-        "version": "0.1.0-canary5",
-        "canary": 5,
-        "artifact": {
-          "filename": "architectural-material-closure-0.1.0-canary5.jar",
-          "sha256": "85202102993d2fba6fa9cd17576e9d8209cfea8c71050d73da55cd3a8e79c1d1"
-        },
-        "built_at": "2026-09-27T00:48:08.2473578Z",
-        "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269",
-        "runtime_dependency_policy": {
-          "contract": "CAPABILITY_OR_PROVIDER",
-          "exceptions": []
-        },
-        "summary": "Corrects semantic model-versus-sprite resolution while retaining all 646 provider-first masonry cells."
-      },
+      "current": null,
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "STATIC_PASS",
+      "build": "NOT_RUN",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-27T00:48:08.2473578Z",
-    "updated_at": "2026-09-27T00:48:08.2473578Z",
-    "last_codex_at": "2026-09-27T00:48:08.2473578Z",
-    "source_commit": "1811c86b2b2221836deb299ebd11e32427e86269"
+    "revision": 6,
+    "activity_at": "2026-09-28T04:08:36.351893Z",
+    "updated_at": "2026-09-28T04:08:36.351893Z",
+    "last_codex_at": "2026-09-28T04:08:36.351893Z",
+    "source_commit": "f7c642529c9aa9d2657c7d03e346706da423a351"
   }
 }
