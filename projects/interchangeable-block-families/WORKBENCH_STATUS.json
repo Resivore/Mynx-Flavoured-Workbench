@@ -21,10 +21,10 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Preserve exact accepted C7 byte-for-byte while C14 restores the complete C9 functional catalog, retaining all legitimate C7/C8/C9 work; C14 remains runtime-untested."
+      "Preserve exact accepted C7 byte-for-byte while C15 restructures the literal C14 accessory, Path/Paving, BBB masonry, and Macaw's Windows families from exact provider inventories; C15 remains runtime-untested."
     ],
     "scope": [
-      "Preserve every accepted C7 family, every C8 addition, and every canonical parent while extending exactly three C8 Enderscape Fence/Fence Gate families with matching BBB Frame/Lattice pairs and adding exactly three four-member BBB Enderscape Trim/Balustrade/Support/Pallet detail families, yielding 182 families, 1,402 unique item IDs, and a 22-member maximum without suffix, tag, or namespace inference.",
+      "Preserve every accepted C7 family and C8/C9 addition unrelated to this audit while separating Button-parent stone and wood accessories from thin Macaw Path/Paving families; C15 contains 181 literal families, 1,396 unique item IDs, and a 22-member maximum without suffix, tag, or namespace inference.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
       "Retain exact accepted C7 and historical rollback C3 artifacts while C14 is the current candidate; no owner acceptance or manual Minecraft runtime result is inferred from controlled build and GameTest evidence."
@@ -38,7 +38,7 @@
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
         "Partial provider materialization, dynamic discovery, registry-name or tag inference, and cross-material or cross-finish collapsing remain outside the audited contract. The actual C9 catalog includes 77 audited Macaw thin Paths and 78 Pavings; Macaw path blocks and patterned full/slab/stair geometry remain excluded.",
-        "C14 is an unaccepted candidate and does not alter the exact accepted C7 release identity, any Minecraft testing profile, or the separate human-owned server-release record.",
+        "C15 is an unaccepted candidate and does not alter the exact accepted C7 release identity, any Minecraft testing profile, or the separate human-owned server-release record.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -47,7 +47,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version targeted by C14; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
+        "reason": "Exact game version targeted by C15; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
       },
       {
         "type": "MOD",
@@ -148,18 +148,18 @@
     ]
   },
   "state": {
-    "milestone": "C14 restores the actual C9 implementation and catalog from checkpoint 464b8b334581c17277aa1512af12017c51355345 and release record 1abfc1241498fe11ddb0fbf1484c73ed0905b741: 182 families, 1,402 unique members, maximum family size 22. All 56/56 unit/static/catalog/recipe checks, 26/26 controlled GameTests, and archive isolation/build checks pass using the restored non-AMC dependency set. All C9 archive payloads are byte-identical except the embedded Fabric version. C14 is ACTIVE and runtime-untested; accepted C7 and rollback C3 remain unchanged.",
+    "milestone": "C15 restructures the C14 literal catalog from the exact Minecraft, BBB dev.7, Macaw's Paths 1.1.1, Macaw's Windows 2.4.2, and Enderscape providers: 181 families, 1,396 unique members, maximum family size 22. All 54 focused Java unit/static/catalog/recipe checks, 26 controlled GameTests, production isolation, and artifact staging pass with the documented restored support inputs. C15 is ACTIVE and runtime-untested; accepted C7 and rollback C3 remain unchanged.",
     "releases": {
       "current": {
-        "version": "C14 (0.1.0-canary14)",
-        "canary": 14,
-        "embedded_version": "0.1.0-canary14",
+        "version": "C15 (0.1.0-canary15)",
+        "canary": 15,
+        "embedded_version": "0.1.0-canary15",
         "artifact": {
-          "filename": "IBF C14.jar",
-          "sha256": "d17176029929232ea650a187936b1e4582c615c36287a1a4ee9a07c466f913bc"
+          "filename": "IBF C15.jar",
+          "sha256": "e3764ad9463c9b3eb210b2889bcd22fed20f6e7d49a1302c86466d979adb2c1c"
         },
-        "built_at": "2026-09-28T04:02:47.1977917Z",
-        "source_commit": "f7c642529c9aa9d2657c7d03e346706da423a351",
+        "built_at": "2026-09-28T15:06:34.0328687Z",
+        "source_commit": "4c02ac0bb38e1f27d5a7454c2a1d9a1a7c52c711",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -168,16 +168,16 @@
               "relationship": "depends",
               "dependency_id": "bbb",
               "predicate": "=2.0pre4+26.2-enderscape-dev.7",
-              "reason": "C14 retains C9's audited BBB Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package. The dev.7 provider version is not Fabric Extended SemVer, so the equality predicate remains the narrow valid contract; dev.6 lacks the required package.",
+              "reason": "C15 retains C9's audited BBB Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package and adds only the exact Nether Brick arrow slit to the literal BBB masonry family. The dev.7 provider version is not Fabric Extended SemVer, so the equality predicate remains the narrow valid contract; dev.6 lacks the required package.",
               "regression_evidence": [
-                "Fresh C14 BuildingButBetterEnderscapeProviderContractTest and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, all 18 audited provider items, required resources, and Fabric metadata.",
+                "Fresh C15 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
                 "The Fabric VersionPredicate equality check accepts dev.7 and rejects the incompatible pre-C9 pale-oak dev.6 package before ShapeMap resolution.",
-                "All 56/56 unit/static/catalog/recipe checks and 26/26 controlled C14 GameTests passed with the exact restored non-AMC C9 providers; the catalog retains 182 families, 1,402 unique members, and maximum family size 22."
+                "All 54 focused Java unit/static/catalog/recipe checks and 26 controlled C15 GameTests passed with the exact restored support inputs; the catalog has 181 families, 1,396 unique members, and maximum family size 22."
               ]
             }
           ]
         },
-        "summary": "Restores the complete C9 catalog of 182 families and 1,402 unique members with all C7/C8/C9 behavior intact."
+        "summary": "Separates Button-parent accessories from thin Paths, relocates wood shutters, and appends exact BBB and Gothic forms."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -214,10 +214,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 14,
-    "activity_at": "2026-09-28T04:08:36.351893Z",
-    "updated_at": "2026-09-28T04:08:36.351893Z",
-    "last_codex_at": "2026-09-28T04:08:36.351893Z",
-    "source_commit": "f7c642529c9aa9d2657c7d03e346706da423a351"
+    "revision": 15,
+    "activity_at": "2026-09-28T15:06:34.0328687Z",
+    "updated_at": "2026-09-28T15:06:34.0328687Z",
+    "last_codex_at": "2026-09-28T15:06:34.0328687Z",
+    "source_commit": "4c02ac0bb38e1f27d5a7454c2a1d9a1a7c52c711"
   }
 }

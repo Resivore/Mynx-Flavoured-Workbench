@@ -147,3 +147,14 @@
 - Artifact: `IBF C14.jar`, 57,104 bytes, SHA-256 `d17176029929232ea650a187936b1e4582c615c36287a1a4ee9a07c466f913bc`, finalized at `2026-09-28T04:02:47.1977917Z` from the preceding coherent implementation/artifact checkpoint above. Provider artifacts remain external and originals inputs were read-only. Required artifact retention verified the exact filename and SHA-256 in the primary checkout.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Manifest revision 13 to 14; exact accepted C7 and rollback C3 identities and retained bytes remain unchanged.
 - Next state: Under owner-directed verification, exercise the retained C7/C8/C9 families against exact C14 bytes using TESTING.md; acceptance remains an explicit owner decision.
+
+## 2026-09-28T15:06:34.0328687Z — Finalize IBF C15 family-catalog restructuring
+
+- Revision: 15
+- Source checkpoint: `4c02ac0bb38e1f27d5a7454c2a1d9a1a7c52c711`
+- Changes: Reworked the literal audit from exact Minecraft, Macaw's Paths 1.1.1, Macaw's Windows 2.4.2, BBB dev.7, and Enderscape provider inventories. Button-parent wood families now own their exact shutters/louvered shutters, Stone Button and Stone thin Path/Paving are separate, no Button-less accessory family is promoted, thin Paths exclude parapets and patterned geometry, BBB Nether Brick appends only its exact arrow slit, and matching Stone/Blackstone Gothic windows are appended without collapsing window families.
+- Build/static: Java 25 / Gradle 9.5.1 / Fabric Loom 1.17.19 passed all 54 focused unit/static/catalog/recipe checks, production archive isolation, and artifact staging. Controlled validation loaded 85 mods with the documented test-only Ribbits support set and passed all 26 required Fabric GameTests. The catalog is 181 families, 1,396 unique members, largest family size 22; its SHA-256 serialization is `4b753028b9820913d068901d8b3ba93f13bad6dab6c95aa312ba70f2b1c4b8b5`. The assembled cleanup corpus removes 1,113 non-parent results and zero canonical-parent results.
+- Runtime: No manual Minecraft runtime result was recorded and no testing profile was inspected or modified.
+- Artifact: `IBF C15.jar`, 57,017 bytes, SHA-256 `e3764ad9463c9b3eb210b2889bcd22fed20f6e7d49a1302c86466d979adb2c1c`, finalized at `2026-09-28T15:06:34.0328687Z` from the preceding coherent implementation/artifact checkpoint above. Provider artifacts remain external and originals inputs were read-only.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Manifest revision 14 to 15; exact accepted C7 and rollback C3 identities and retained bytes remain unchanged.
+- Next state: Under owner-directed verification, exercise the C15 Button, Path/Paving, BBB masonry, and Gothic-window families against these exact bytes; acceptance remains an explicit owner decision.
