@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary16'
+version = '0.1.0-canary17'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c16')
+layout.buildDirectory = layout.projectDirectory.dir('build/c17')
 
 repositories {
     mavenCentral()
@@ -14,6 +14,7 @@ def providerJar = file('../../originals/mods/mcw-windows-2.4.2-mc26.2fabric.jar'
 def pathsJar = file('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar')
 def bbbJar = file(providers.gradleProperty('bbbJar').getOrElse(
         '../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar'))
+def stoneShutterJar = file(providers.gradleProperty('stoneShutterJar').getOrElse('artifacts/AMC C9.jar'))
 def clientJar = file(providers.gradleProperty('vanillaClient').getOrElse(
         new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/26.2/minecraft-client.jar').path))
 def python = providers.gradleProperty('python').getOrElse('python')
@@ -31,9 +32,9 @@ java {
 }
 
 tasks.register('generateAmcResources', Exec) {
-    inputs.files('tools/generate.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar)
+    inputs.files('tools/generate.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar, stoneShutterJar)
     outputs.dir(privateResources)
-    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, privateResources.get().asFile
+    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, stoneShutterJar, privateResources.get().asFile
 }
 
 sourceSets.main.resources.srcDir(privateResources)
@@ -44,7 +45,7 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C16.jar'
+    archiveFileName = 'AMC C17.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
@@ -66,6 +67,6 @@ fabricApi {
 }
 
 loom.runs.named('gameTest') {
-    runDir 'build/c16/gametest'
+    runDir 'build/c17/gametest'
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

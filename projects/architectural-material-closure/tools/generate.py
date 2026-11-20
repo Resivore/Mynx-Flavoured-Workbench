@@ -42,6 +42,16 @@ def adapt(value):
     return stone_reference(value) if isinstance(value, str) else value
 
 
+def remap_stone_shutter(source, client, dest, material):
+    tile = masonry.image(client, f"assets/minecraft/textures/block/{material}.png")
+    target = sorted({p[:3] for p in tile.getdata() if p[3] == 255}, key=masonry.rank)
+    mapping = masonry.rank_mapping({p[:3] for p in source.getdata() if p[3] == 255}, target)
+    result = source.copy()
+    result.putdata([(*mapping[p[:3]], p[3]) if p[3] == 255 else p for p in source.getdata()])
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    result.save(dest)
+
+
 def shade_shutter(provider, client, dest, substrate):
     def image(archive, path):
         return Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
@@ -181,7 +191,7 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
     write(f"data/{NS}/loot_table/blocks", loot)
 
 
-def generate_macaw(root, provider, client, tags, material, substrate, slab, forms):
+def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None):
     ids = {f"mcwwindows:andesite_{form}": f"{NS}:{material}_{form}" for form in forms}
     for source_id, own_id in ids.items():
         source = source_id.split(":")[1]
@@ -234,7 +244,11 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
             additions = [own for ref, own in ids.items() if ref in members]
             if additions:
                 tags.setdefault(path[5:-5], []).extend(additions)
-    shade_shutter(provider, client, root / f"assets/{NS}/textures/block/{material}_louvered_shutter.png", substrate)
+    dest = root / f"assets/{NS}/textures/block/{material}_louvered_shutter.png"
+    if stone_artwork is None:
+        shade_shutter(provider, client, dest, substrate)
+    else:
+        remap_stone_shutter(stone_artwork, client, dest, material)
 
 
 def generate_stone_forms(root, provider, client, tags, names, material):
@@ -258,7 +272,7 @@ def generate_stone_forms(root, provider, client, tags, names, material):
         tags.setdefault(tag, []).extend(values)
 
 
-def generate(provider, client, bbb, path_provider, root):
+def generate(provider, client, bbb, path_provider, stone_shutter, root):
     def adapt_resource(template):
         src = template.format(ns="mcwwindows", material="andesite")
         dst = template.format(ns=NS, material="stone")
@@ -303,7 +317,8 @@ def generate(provider, client, bbb, path_provider, root):
         windows = ("louvered_shutter",)
         if material == "mud_bricks":
             windows = ("window", "window2", "four_window", "pane_window", "parapet", *windows)
-        generate_macaw(root, provider, client, tags, material, substrate, slab, windows)
+        generate_macaw(root, provider, client, tags, material, substrate, slab, windows,
+                       stone_artwork=stone_shutter if material in ("prismarine_bricks", "dark_prismarine") else None)
         masonry.generate(root, bbb, client, material, tags, write_json, recipe_unlock, substrate=substrate, slab=slab)
         for form in ("button", "pressure_plate", *windows, *masonry.FORMS):
             name = f"{material}_{form}"
@@ -321,7 +336,7 @@ def generate(provider, client, bbb, path_provider, root):
 
 
 if __name__ == "__main__":
-    provider_path, client_path, bbb_path, paths_path, root = map(Path, sys.argv[1:])
+    provider_path, client_path, bbb_path, paths_path, stone_path, root = map(Path, sys.argv[1:])
     if not root.resolve().is_relative_to(Path(__file__).resolve().parents[1] / "build"):
         sys.exit("Private derived assets must be generated under AMC's ignored build directory")
     if hashlib.sha256(provider_path.read_bytes()).hexdigest() != PROVIDER_SHA256:
@@ -332,5 +347,9 @@ if __name__ == "__main__":
         sys.exit("Unexpected BBB 26.2 reference bytes")
     if hashlib.sha256(paths_path.read_bytes()).hexdigest() != paths.REFERENCE_SHA256:
         sys.exit("Unexpected Macaw's Paths reference bytes")
+    if hashlib.sha256(stone_path.read_bytes()).hexdigest() != "f32b382563252e8a73a0bfd0b9ca0abacb02dd3c81a2a074b9d200fb5f147e8b":
+        sys.exit("Expected the retained AMC C9 artifact")
+    with ZipFile(stone_path) as c9:
+        stone_shutter = masonry.image(c9, f"assets/{NS}/textures/block/stone_louvered_shutter.png")
     with ZipFile(provider_path) as provider, ZipFile(client_path) as client, ZipFile(bbb_path) as bbb, ZipFile(paths_path) as path_provider:
-        generate(provider, client, bbb, path_provider, root)
+        generate(provider, client, bbb, path_provider, stone_shutter, root)

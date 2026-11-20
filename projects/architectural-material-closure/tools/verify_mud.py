@@ -1,4 +1,5 @@
 """Audit AMC's six standard Macaw variants against the 26.2 provider archive."""
+from fractions import Fraction
 from io import BytesIO
 import json
 from statistics import median
@@ -37,6 +38,27 @@ def check_sandstone_caps(child, archive, client, material, material_slot):
     del slots["top"], slots["bottom"]
 
 
+def check_ranked_shutter(stone, tile, result, material):
+    # verify.py also checks the packaged Stone PNG against its finalized C9 digest.
+    assert stone.size == tile.size == result.size == (16, 16)
+    source = list(stone.getdata())
+    shades = sorted({p[0] for p in source if p[3] == 255})
+    assert len(shades) == 16 and sum(p[3] == 255 for p in source) == 207
+    colors = sorted({p[:3] for p in tile.getdata() if p[3] == 255},
+                    key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
+    assert len(colors) == {"prismarine_bricks": 8, "dark_prismarine": 6}[material]
+    for before, after in zip(source, result.getdata(), strict=True):
+        if before[3] == 255:
+            assert before[0] == before[1] == before[2]
+            rank = Fraction(shades.index(before[0]), len(shades) - 1)
+            index = int(rank * (len(colors) - 1) + Fraction(1, 2))
+            assert after == (*colors[index], 255), (material, before, after)
+        else:
+            assert before == after == (0, 0, 0, 0)
+    assert {p[:3] for p in result.getdata() if p[3] == 255} == set(colors)
+    print(f"Verified all 256 {material} shutter pixels against the 16 C9 ranks and {len(colors)} vanilla colors.")
+
+
 def check_shutter(jar, provider, client, expected, material, substrate):
     def image(archive, path):
         return Image.open(BytesIO(archive.read(path))).convert("RGBA")
@@ -45,6 +67,10 @@ def check_shutter(jar, provider, client, expected, material, substrate):
     expected.add(path)
     result = image(jar, path)
     base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
+    if material in ("prismarine_bricks", "dark_prismarine"):
+        stone = image(jar, f"assets/{NS}/textures/block/stone_louvered_shutter.png")
+        check_ranked_shutter(stone, base, result, material)
+        return
     reference = image(provider, "assets/mcwwindows/textures/block/andesite_louvered_shutter.png")
     assert base.size == reference.size == result.size == (16, 16)
     if material in ("sandstone", "red_sandstone"):

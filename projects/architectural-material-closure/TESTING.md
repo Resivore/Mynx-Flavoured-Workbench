@@ -1,8 +1,12 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 16
+## Owner verification for Canary 17
 
-Match the SHA-256 of `AMC C16.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 85 AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C17.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 85 AMC IDs use the namespace `architectural_material_closure`.
+
+### C17 prismarine shutter correction
+
+Place the Stone, Prismarine Bricks and Dark Prismarine Louvered Shutters side by side, facing the same way under the same light. Compare the five slats, recesses, raised edges, grain and transparent gaps with the Stone shutter. Check both hinges, open and closed positions, a vertical pair and the held and inventory views. Note whether the eight-color Prismarine Bricks and six-color Dark Prismarine versions keep the slats distinct at ordinary viewing distance. Record the C17 hash and any affected face or pose with the owner's observations.
 
 ### Sandstone and Red Sandstone
 
@@ -12,13 +16,13 @@ Run these checks for both materials. Place the corresponding vanilla block along
 2. Face each Parapet in four directions and place and remove a flower pot above it. Inspect the top, underside and edge of both the ledge and support. Compare their shape and orientation with Macaw's Andesite Parapet.
 3. Compare both windows with the Macaw Stone Brick Gothic Window and Arrow Slit. Inspect the masonry cap and underside, the narrow faces of the opening, and the visible side bands. Form stacks, remove the middle block, then toggle the Gothic Window and check its glass and conditional iron bars in the reference states.
 4. Face the shutter in each direction, use both hinges and toggle a vertical pair. Compare its five shaded slats with the C9 Stone shutter. Check the co-located side grain on the broad faces and the vanilla top and bottom on the narrow caps.
-5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C16 hash, orientation, state and screenshots for any visual differences.
+5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C17 hash, orientation, state and screenshots for any visual differences.
 
 ### Prismarine Bricks and Dark Prismarine
 
 1. For each material, find the Button and Pressure Plate in Redstone Blocks and the other additions in Building Blocks. Compare the controls with vanilla Stone controls on the same supports and redstone circuit. Inspect their faces alongside vanilla Prismarine Bricks or Dark Prismarine.
 2. Build the five BBB forms for each material and perform the Column, Urn, Moulding, Fence and Frame checks below. Inspect connected bands, carved edges, soil and inventory views. Compare with the matching BBB Stone forms under the same light.
-3. Place left and right shutter hinges, open and close a vertical stack, and inspect the back and slat recesses. Compare the grain with the adjacent vanilla material and the structural shadows with the Stone shutter.
+3. Place left and right shutter hinges, open and close a vertical stack, and inspect the back and slat recesses. Compare the grain and structural shadows with the Stone shutter, and the colors with the corresponding vanilla block.
 4. In a stonecutter, use Prismarine Bricks to obtain four of each thin path or paving, or one of each patterned full block. Compare all fifteen side by side with their Dark Prismarine counterparts from Macaw's Paths. Check inventory, held, placed and dropped appearances. Inspect these patterns:
    - Thin paths: Running Bond, Strewn Rocky, Windmill Weave, Flagstone and Crystal Floor. Place several Strewn Rocky paths to see the weighted arrangements.
    - Pavings: Diamond, Basket Weave, Square, Honeycomb, Clover and Dumble. Inspect gaps, edge thickness and side faces. Place Dumble from all four directions.
@@ -60,11 +64,11 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C16 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C17 are pending.
 
 ## Controlled build checks
 
-From the AMC directory, use Java 25, Gradle 9.5.1 and Python with Pillow. The generator checks the read-only Macaw provider JARs in `originals/mods`, the retained BBB C9 JAR in the sibling BBB project's `artifacts/` directory, and the official 26.2 client in Loom's cache. Set `-PvanillaClient=<path>` for another copy of that exact client and `-PbbbJar=<path>` for another copy of the verified BBB reference.
+From the AMC directory, use Java 25, Gradle 9.5.1 and Python with Pillow. The generator checks the read-only Macaw provider JARs in `originals/mods`, the retained BBB C9 JAR in the sibling BBB project's `artifacts/` directory, and the official 26.2 client in Loom's cache. The two prismarine shutters use the Stone PNG extracted from the hash-verified `artifacts/AMC C9.jar`. Use `-PstoneShutterJar=<path>` for another copy of that artifact. Set `-PvanillaClient=<path>` for another copy of that exact client and `-PbbbJar=<path>` for another copy of the verified BBB reference.
 
 ```text
 gradle build runGameTest --rerun-tasks -Ppython=<interpreter>
