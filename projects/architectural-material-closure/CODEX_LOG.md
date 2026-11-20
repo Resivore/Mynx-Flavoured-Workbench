@@ -74,3 +74,14 @@
 - Artifact: Finalized local-only `AMC C6.jar` (`0.1.0-canary6`, 16,048 bytes), SHA-256 `bcae1883c4ca7f7f720dcfb2a55b37f265d729adf351bc1f13e7d8fcf8179adc`, built at `2026-11-20T16:36:00.7526718Z` from source checkpoint `1f5c59e2104e4d36e49d64f5a4c9019c0b7da6fb`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. No accepted or rollback release.
 - Next state: Owner testing and acceptance of the exact retained C6 artifact.
+
+## 2026-11-20T17:01:04Z — Correct the Stone Louvered Shutter surface for Canary 7
+
+- Revision: 8
+- Source checkpoint: `52dad4756a45c9c30ffea452eee504eb02dcac90`
+- Changes: C6 remapped individual andesite shutter texels into Stone's palette. C7 samples vanilla Stone at matching UVs and transfers four light levels measured across the repeated Macaw masonry slats for the raised face, lip, recess and short end return. The marked upper recess uses the same authored structure as the other four. All 49 transparent pixels are preserved.
+- Build/static: Java 25, Gradle 9.5.1 and Loom 1.17.19 passed `build runGameTest --rerun-tasks`, including packaged resource closure and all three controlled GameTests. Of 207 visible pixels, 122 match Stone exactly and 85 follow region-specific lighting on the underlying Stone. A comparison of all 24 C6 and C7 JAR entries found only the shutter PNG and embedded version changed. Parapet resources, shutter geometry, states, items, recipes, loot, tags and class bytes match C6.
+- Runtime: The owner reported the C6 parapet was correct and supplied a C6 screenshot marking the weak upper shutter recess and describing excess andesite character. Owner gameplay and shader observations for C7 are pending.
+- Artifact: Local-only `AMC C7.jar` (`0.1.0-canary7`, 16,206 bytes), SHA-256 `311d0b201e342e556309b8babf84f84abb77cfebd77df4763c5015681f2a73c3`, finalized at `2026-11-20T17:00:06.9216629Z` from the preceding source checkpoint.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. C7 is unaccepted.
+- Next state: Compare the retained C7 shutter with vanilla Stone under the owner's lighting, including the upper recess and both hinge sides.
