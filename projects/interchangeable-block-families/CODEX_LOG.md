@@ -235,3 +235,14 @@
 - Artifact: `IBF C22.jar`, embedded version `0.1.0-canary22`, 60,019 bytes, SHA-256 `98aaf408316570067b02ba43810c69e5f02a478e5c36df64b0f1d053ca25aaf1`, finalized at `2026-11-20T22:21:07.8387300Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner-directed End Stone Bricks and Polished Blackstone checks in TESTING.md.
+
+## 2026-11-20T22:39:01.2320214Z — IBF C23 integrates AMC Mossy Stone Bricks
+
+- Revision: 23
+- Source checkpoint: `cee53653a5dc02c163b37a1eff1cc8fabf9e746e`
+- Changes: Added three selectors with the AMC Mossy Stone Bricks Button, Column and Window as canonical parents. The fifteen items each have one membership. Removing just the three keys reproduces the complete ordered C22 catalog digest, including the separate eleven-member Macaw Mossy Stone Paths/Pavings family.
+- Build/static: Exact AMC C22 and AMC-absent runs each passed 55 JUnit tests, 34 controlled Fabric GameTests, archive isolation and build. With AMC, 209 families and 1,573 items resolved. Without AMC, 181 families and 1,397 items resolved. Named stacks of seven kept their counts and component patches through forward and reverse transfers. The Macaw path selector operated in both runs. The audited recipe corpus removed 1,286 alternate recipes with AMC and 1,114 without, with zero canonical removals. The three new parent crafting recipes and Column stonecutting recipe survived cleanup. Catalog SHA-256 `71e85a472c26c030e24439fedce4ecbdbe538667fe126f91c9d1b86f89b0198b`.
+- Runtime: Owner-directed manual Minecraft verification and acceptance are pending.
+- Artifact: `IBF C23.jar`, embedded version `0.1.0-canary23`, 60,261 bytes, SHA-256 `6879a263b8f33b9dd0a8a689e615b6c75c87844dce5a4393e5f8a18622d68a4a`, finalized at `2026-11-20T22:39:01.2320214Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner-directed Mossy Stone Bricks selector, recipe and reload checks in TESTING.md.
