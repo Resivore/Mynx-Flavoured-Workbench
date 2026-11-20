@@ -216,10 +216,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "dramaticdoors:tall_waxed_oxidized_copper_door",
             "mcwwindows:end_brick_gothic",
             "mcwwindows:nether_brick_gothic",
-            "mcwwindows:mud_brick_gothic",
             "mcwwindows:cobblestone_arrow_slit",
             "mcwwindows:ender_brick_arrow_slit",
-            "mcwwindows:mud_brick_arrow_slit",
             "mcwwindows:blackstone_brick_arrow_slit",
             "mcwwindows:prismarine_brick_arrow_slit",
             "mcwwindows:dark_prismarine_brick_arrow_slit",
@@ -272,7 +270,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 187 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 190 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -299,7 +297,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_432 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_447 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1072,6 +1070,37 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                         "Missing AMC parent produced a partial selector");
             }
             assertSelectorRoundTrip(helper, windows);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void mudBricksSelectorsRequireTheirAmcParents(GameTestHelper helper) {
+        String amc = "architectural_material_closure:mud_bricks_";
+        String slit = "mcwwindows:mud_brick_arrow_slit";
+        String gothic = "mcwwindows:mud_brick_gothic";
+        if (Boolean.getBoolean("ibf.test.amcExpected")) {
+            assertSelectorRoundTrip(helper, List.of(amc + "button", amc + "pressure_plate",
+                    amc + "parapet", amc + "louvered_shutter"));
+            assertSelectorRoundTrip(helper, List.of(amc + "column", amc + "urn", amc + "moulding",
+                    amc + "fence", amc + "frame", slit));
+            assertSelectorRoundTrip(helper, List.of(amc + "window", amc + "window2", amc + "four_window",
+                    amc + "pane_window", gothic));
+            helper.assertTrue(hasRecipe(helper, amc + "column_from_stonecutting"), "Lost Mud Bricks Column stonecutting");
+            for (String alternate : List.of("urn", "moulding", "fence")) {
+                helper.assertTrue(!hasRecipe(helper, amc + alternate + "_from_stonecutting"),
+                        "Retained alternate stonecutting recipe for " + alternate);
+            }
+            assertSeparate(helper, amc + "button", "mcwpaths:mud_brick_running_bond_path",
+                    "Mud Bricks accessories merged with Paths");
+        } else {
+            for (String standalone : List.of(slit, gothic)) {
+                Item item = requiredItem(standalone);
+                helper.assertTrue(!AuditedShapeRuntime.isAudited(item) && !ShapeMap.isShape(item)
+                                && hasRecipe(helper, standalone),
+                        "Absent AMC changed standalone Macaw item " + standalone);
+            }
+            assertSeparate(helper, slit, gothic, "Mud Brick Arrow Slit and Gothic Window joined without AMC");
         }
         helper.succeed();
     }

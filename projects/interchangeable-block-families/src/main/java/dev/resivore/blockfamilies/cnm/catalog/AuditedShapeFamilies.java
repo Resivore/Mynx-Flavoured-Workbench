@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 187;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_432;
+    public static final int EXPECTED_FAMILY_COUNT = 190;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_447;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -836,6 +836,9 @@ public final class AuditedShapeFamilies {
                     mcwWindows("mangrove_plank_window2"),
                     mcwWindows("mangrove_plank_four_window"),
                     mcwWindows("mangrove_plank_pane_window")),
+            family("cnm/window/mud_bricks", WINDOW, amc("mud_bricks_window"),
+                    amc("mud_bricks_window2"), amc("mud_bricks_four_window"), amc("mud_bricks_pane_window"),
+                    mcwWindows("mud_brick_gothic")),
             family("cnm/window/oak_log", WINDOW, mcwWindows("oak_window"),
                     mcwWindows("oak_window2"),
                     mcwWindows("oak_four_window"),
@@ -1065,6 +1068,9 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/stone/granite", BBB_DETAIL, amc("granite_column"),
                     amc("granite_urn"), amc("granite_moulding"), amc("granite_fence"),
                     amc("granite_frame"), amc("granite_arrow_slit")),
+            family("cnm/bbb_detail/stone/mud_bricks", BBB_DETAIL, amc("mud_bricks_column"),
+                    amc("mud_bricks_urn"), amc("mud_bricks_moulding"), amc("mud_bricks_fence"),
+                    amc("mud_bricks_frame"), mcwWindows("mud_brick_arrow_slit")),
             family("cnm/bbb_detail/stone/blackstone", BBB_DETAIL, bbb("blackstone_column"), bbb("blackstone_urn"), bbb("blackstone_moulding"), bbb("blackstone_fence"), bbb("blackstone_frame")),
             family("cnm/bbb_detail/stone/deepslate", BBB_DETAIL, bbb("deepslate_column"), bbb("deepslate_urn"), bbb("deepslate_moulding"), bbb("deepslate_fence"), bbb("deepslate_frame")),
             family("cnm/bbb_detail/stone/nether_brick", BBB_DETAIL, bbb("nether_brick_column"), bbb("nether_brick_urn"), bbb("nether_brick_moulding"), bbb("nether_brick_fence"), bbb("nether_brick_frame"), mcwWindows("nether_brick_arrow_slit")),
@@ -1313,6 +1319,8 @@ public final class AuditedShapeFamilies {
                     mcwPaths("deepslate_honeycomb_paving"),
                     mcwPaths("deepslate_clover_paving"),
                     mcwPaths("deepslate_dumble_paving")),
+            family("cnm/building_accessory/mud_bricks_button", BUILDING_ACCESSORY, amc("mud_bricks_button"),
+                    amc("mud_bricks_pressure_plate"), amc("mud_bricks_parapet"), amc("mud_bricks_louvered_shutter")),
             family("cnm/building_accessory/mud_brick", BUILDING_ACCESSORY,
                     mcwPaths("mud_brick_running_bond_path"),
                     mcwPaths("mud_brick_strewn_rocky_path"),

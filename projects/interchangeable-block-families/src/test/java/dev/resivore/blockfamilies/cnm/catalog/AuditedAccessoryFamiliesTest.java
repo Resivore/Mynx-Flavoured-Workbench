@@ -136,8 +136,8 @@ final class AuditedAccessoryFamiliesTest {
                 "Unapproved singleton parapet entered the catalog");
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(37, accessories.size());
-        assertEquals(279, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(38, accessories.size());
+        assertEquals(283, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
