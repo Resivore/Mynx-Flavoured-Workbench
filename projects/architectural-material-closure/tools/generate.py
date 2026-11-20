@@ -192,6 +192,7 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
 
 
 def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None):
+    sandstone = material in ("sandstone", "red_sandstone")
     ids = {f"mcwwindows:andesite_{form}": f"{NS}:{material}_{form}" for form in forms}
     for source_id, own_id in ids.items():
         source = source_id.split(":")[1]
@@ -222,6 +223,8 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
                 else:
                     assert sprite in ("minecraft:block/glass", "mcwwindows:block/glass")
             bind_sandstone_caps(model, provider, material, "#1" if source.endswith("_parapet") else "#0")
+            if sandstone and source == "andesite_louvered_shutter":
+                model["textures"]["bottom"] = model["textures"]["top"]
             write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
         recipe = masonry.load_json(provider, f"data/mcwwindows/recipe/{source}.json")
@@ -246,7 +249,7 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
                 tags.setdefault(path[5:-5], []).extend(additions)
     dest = root / f"assets/{NS}/textures/block/{material}_louvered_shutter.png"
     if stone_artwork is None:
-        shade_shutter(provider, client, dest, substrate)
+        shade_shutter(provider, client, dest, material + "_top" if sandstone else substrate)
     else:
         remap_stone_shutter(stone_artwork, client, dest, material)
 

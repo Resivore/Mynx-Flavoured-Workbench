@@ -1,12 +1,12 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 17
+## Owner verification for Canary 18
 
-Match the SHA-256 of `AMC C17.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 85 AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C18.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 85 AMC IDs use the namespace `architectural_material_closure`.
 
 ### C17 prismarine shutter correction
 
-Place the Stone, Prismarine Bricks and Dark Prismarine Louvered Shutters side by side, facing the same way under the same light. Compare the five slats, recesses, raised edges, grain and transparent gaps with the Stone shutter. Check both hinges, open and closed positions, a vertical pair and the held and inventory views. Note whether the eight-color Prismarine Bricks and six-color Dark Prismarine versions keep the slats distinct at ordinary viewing distance. Record the C17 hash and any affected face or pose with the owner's observations.
+Place the Stone, Prismarine Bricks and Dark Prismarine Louvered Shutters side by side, facing the same way under the same light. Compare the five slats, recesses, raised edges, grain and transparent gaps with the Stone shutter. Check both hinges, open and closed positions, a vertical pair and the held and inventory views. Note whether the eight-color Prismarine Bricks and six-color Dark Prismarine versions keep the slats distinct at ordinary viewing distance. Record the C18 hash and any affected face or pose with the owner's observations.
 
 ### Sandstone and Red Sandstone
 
@@ -15,8 +15,8 @@ Run these checks for both materials. Place the corresponding vanilla block along
 1. Find the Button and Pressure Plate in Redstone Blocks and the Parapet, Gothic Window, Arrow Slit and Louvered Shutter in Building Blocks. Inspect the held and inventory models. Place the button on the floor, wall and ceiling. Its outward cap rotates with the button. Inspect the plate from above and along its edge. Compare activation, release and support removal with the vanilla Stone controls.
 2. Face each Parapet in four directions and place and remove a flower pot above it. Inspect the top, underside and edge of both the ledge and support. Compare their shape and orientation with Macaw's Andesite Parapet.
 3. Compare both windows with the Macaw Stone Brick Gothic Window and Arrow Slit. Inspect the masonry cap and underside, the narrow faces of the opening, and the visible side bands. Form stacks, remove the middle block, then toggle the Gothic Window and check its glass and conditional iron bars in the reference states.
-4. Face the shutter in each direction, use both hinges and toggle a vertical pair. Compare its five shaded slats with the C9 Stone shutter. Check the co-located side grain on the broad faces and the vanilla top and bottom on the narrow caps.
-5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C17 hash, orientation, state and screenshots for any visual differences.
+4. Face the shutter in each direction, use both hinges and toggle a vertical pair. Compare its five shaded slats with the C9 Stone shutter. Compare the broad faces, narrow edges and underside with the top face of the corresponding vanilla block. Check that the smoother grain follows the original UVs, with the five slats, raised lips and dark recesses visible in open, closed and held views.
+5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C18 hash, orientation, state and screenshots for any visual differences.
 
 ### Prismarine Bricks and Dark Prismarine
 
@@ -64,7 +64,7 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C17 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C18 are pending.
 
 ## Controlled build checks
 

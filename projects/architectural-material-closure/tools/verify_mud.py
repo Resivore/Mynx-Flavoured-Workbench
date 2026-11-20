@@ -11,12 +11,14 @@ MACAW_FORMS = {"window": (32, 9), "window2": (16, 2), "four_window": (16, 2),
                "pane_window": (64, 8), "parapet": (8, 2), "louvered_shutter": (16, 4)}
 
 
-def check_sandstone_caps(child, archive, client, material, material_slot):
+def check_sandstone_caps(child, archive, client, material, material_slot, *, shutter=False):
     if material not in ("sandstone", "red_sandstone"):
         return
     ns, parent = child["parent"].split(":")
     reference = json.loads(archive.read(f"assets/{ns}/models/{parent}.json"))
     material_faces = json.loads(client.read(f"assets/minecraft/models/block/{material}.json"))["textures"]
+    if shutter:
+        material_faces["bottom"] = material_faces["top"]
     slots = child["textures"]
     assert slots["top"] == material_faces["top"] and slots["bottom"] == material_faces["bottom"]
     for cap in ("top", "bottom"):
@@ -129,7 +131,8 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         else:
             assert namespace == NS and actual.replace(NS + ":", "mcwwindows:").replace(material + "_", "andesite_") == ref
         generated = read(archives[namespace], f"assets/{namespace}/models/{model}.json")
-        check_sandstone_caps(generated, provider, client, material, "#1" if form == "parapet" else "#0")
+        check_sandstone_caps(generated, provider, client, material, "#1" if form == "parapet" else "#0",
+                            shutter=form == "louvered_shutter")
         bindings = original.pop("textures")
         slots = generated.pop("textures")
         assert original == generated, (form, ref, "model or parent changed")
@@ -202,4 +205,6 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         assert unlock["rewards"]["recipes"] == [own_id] and unlock["criteria"]["recipe"]["conditions"]["recipe"] == own_id
         assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": ingredient}]
         print(f"{own}: matched {state_count} blockstate entries and {model_count} model choices.")
+    if material in ("sandstone", "red_sandstone"):
+        substrate = material + "_top"
     check_shutter(jar, provider, client, expected, material, substrate)
