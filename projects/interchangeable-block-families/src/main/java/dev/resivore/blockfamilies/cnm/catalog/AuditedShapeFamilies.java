@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 203;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_533;
+    public static final int EXPECTED_FAMILY_COUNT = 206;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_558;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -837,6 +837,9 @@ public final class AuditedShapeFamilies {
                     mcwWindows("mangrove_plank_window2"),
                     mcwWindows("mangrove_plank_four_window"),
                     mcwWindows("mangrove_plank_pane_window")),
+            family("cnm/window/end_stone_bricks", WINDOW, amc("end_stone_bricks_window"),
+                    amc("end_stone_bricks_window2"), amc("end_stone_bricks_four_window"), amc("end_stone_bricks_pane_window"),
+                    mcwWindows("end_brick_gothic")),
             family("cnm/window/mud_bricks", WINDOW, amc("mud_bricks_window"),
                     amc("mud_bricks_window2"), amc("mud_bricks_four_window"), amc("mud_bricks_pane_window"),
                     mcwWindows("mud_brick_gothic")),
@@ -1075,6 +1078,9 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/stone/granite", BBB_DETAIL, amc("granite_column"),
                     amc("granite_urn"), amc("granite_moulding"), amc("granite_fence"),
                     amc("granite_frame"), amc("granite_arrow_slit")),
+            family("cnm/bbb_detail/stone/end_stone_bricks", BBB_DETAIL, amc("end_stone_bricks_column"),
+                    amc("end_stone_bricks_urn"), amc("end_stone_bricks_moulding"), amc("end_stone_bricks_fence"),
+                    amc("end_stone_bricks_frame"), mcwWindows("ender_brick_arrow_slit")),
             family("cnm/bbb_detail/stone/mud_bricks", BBB_DETAIL, amc("mud_bricks_column"),
                     amc("mud_bricks_urn"), amc("mud_bricks_moulding"), amc("mud_bricks_fence"),
                     amc("mud_bricks_frame"), mcwWindows("mud_brick_arrow_slit")),
@@ -1220,7 +1226,7 @@ public final class AuditedShapeFamilies {
             family("cnm/building_accessory/polished_blackstone", BUILDING_ACCESSORY,
                     minecraft("polished_blackstone_button"),
                     minecraft("polished_blackstone_pressure_plate"),
-                    mcwWindows("blackstone_parapet")),
+                    mcwWindows("blackstone_parapet"), amc("polished_blackstone_louvered_shutter")),
             family("cnm/building_accessory/andesite_button", BUILDING_ACCESSORY, amc("andesite_button"),
                     amc("andesite_pressure_plate"), mcwWindows("andesite_parapet"),
                     mcwWindows("andesite_louvered_shutter")),
@@ -1370,6 +1376,12 @@ public final class AuditedShapeFamilies {
                     mcwPaths("blackstone_honeycomb_paving"),
                     mcwPaths("blackstone_clover_paving"),
                     mcwPaths("blackstone_dumble_paving")),
+            family("cnm/building_accessory/end_stone_bricks", BUILDING_ACCESSORY, amc("end_stone_bricks_running_bond_path"),
+                    amc("end_stone_bricks_strewn_rocky_path"), amc("end_stone_bricks_windmill_weave_path"),
+                    amc("end_stone_bricks_flagstone_path"), amc("end_stone_bricks_crystal_floor_path"),
+                    amc("end_stone_bricks_diamond_paving"), amc("end_stone_bricks_basket_weave_paving"),
+                    amc("end_stone_bricks_square_paving"), amc("end_stone_bricks_honeycomb_paving"),
+                    amc("end_stone_bricks_clover_paving"), amc("end_stone_bricks_dumble_paving")),
             family("cnm/building_accessory/quartz_button", BUILDING_ACCESSORY, amc("quartz_button"),
                     amc("quartz_pressure_plate"), amc("quartz_parapet"), amc("quartz_louvered_shutter")),
             family("cnm/building_accessory/quartz", BUILDING_ACCESSORY, amc("quartz_running_bond_path"),
@@ -1417,7 +1429,8 @@ public final class AuditedShapeFamilies {
             family("cnm/building_accessory/enderscape_murublight", BUILDING_ACCESSORY,
                     enderscape("murublight_button"), enderscape("murublight_pressure_plate")),
             family("cnm/building_accessory/enderscape_polished_end_stone", BUILDING_ACCESSORY,
-                    enderscape("polished_end_stone_button"), enderscape("polished_end_stone_pressure_plate")),
+                    enderscape("polished_end_stone_button"), enderscape("polished_end_stone_pressure_plate"),
+                    amc("end_stone_bricks_parapet"), amc("end_stone_bricks_louvered_shutter")),
             family("cnm/building_accessory/enderscape_polished_mirestone", BUILDING_ACCESSORY,
                     enderscape("polished_mirestone_button"), enderscape("polished_mirestone_pressure_plate")),
             family("cnm/building_accessory/enderscape_polished_veradite", BUILDING_ACCESSORY,

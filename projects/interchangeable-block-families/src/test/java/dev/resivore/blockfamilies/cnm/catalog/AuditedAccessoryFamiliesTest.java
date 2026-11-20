@@ -104,7 +104,7 @@ final class AuditedAccessoryFamiliesTest {
         assertEquals(List.of(
                         id("minecraft:polished_blackstone_button"),
                         id("minecraft:polished_blackstone_pressure_plate"),
-                        id("mcwwindows:blackstone_parapet")),
+                        id("mcwwindows:blackstone_parapet"), id("architectural_material_closure:polished_blackstone_louvered_shutter")),
                 family("polished_blackstone").members());
         assertEquals(List.of(
                         id("mcwpaths:blackstone_running_bond_path"),
@@ -135,8 +135,8 @@ final class AuditedAccessoryFamiliesTest {
         assertTrue(family("prismarine_bricks_button").members().contains(id("mcwwindows:prismarine_parapet")));
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(48, accessories.size());
-        assertEquals(344, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(49, accessories.size());
+        assertEquals(358, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }

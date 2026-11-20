@@ -82,7 +82,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             List.of("enderscape:celestial_button", "enderscape:celestial_pressure_plate"),
             List.of("enderscape:murublight_button", "enderscape:murublight_pressure_plate"),
             List.of("enderscape:polished_end_stone_button",
-                    "enderscape:polished_end_stone_pressure_plate"),
+                    "enderscape:polished_end_stone_pressure_plate",
+                    "architectural_material_closure:end_stone_bricks_parapet",
+                    "architectural_material_closure:end_stone_bricks_louvered_shutter"),
             List.of("enderscape:polished_mirestone_button",
                     "enderscape:polished_mirestone_pressure_plate"),
             List.of("enderscape:polished_veradite_button",
@@ -214,9 +216,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "dramaticdoors:tall_waxed_exposed_copper_door",
             "dramaticdoors:tall_waxed_weathered_copper_door",
             "dramaticdoors:tall_waxed_oxidized_copper_door",
-            "mcwwindows:end_brick_gothic",
             "mcwwindows:cobblestone_arrow_slit",
-            "mcwwindows:ender_brick_arrow_slit",
             "mcwwindows:blackstone_brick_arrow_slit",
             "minecraft:nether_brick_fence",
             "minecraft:copper_door",
@@ -265,7 +265,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 203 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 206 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -292,7 +292,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_533 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_558 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -998,7 +998,10 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                             + ", actual=" + actual.members());
             helper.assertTrue(actual.canonicalParent().equals(expectedIds.getFirst()),
                     label + " canonical parent changed for " + actual.key());
-            assertExactShapeSet(helper, expectedValues.getFirst(), expectedValues);
+            List<String> active = expectedValues.stream()
+                    .filter(value -> Boolean.getBoolean("ibf.test.amcExpected") || !value.startsWith("architectural_material_closure:"))
+                    .toList();
+            assertExactShapeSet(helper, active.getFirst(), active);
         }
     }
 
@@ -1166,7 +1169,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
 
         if (amcPresent) {
             String prefix = "architectural_material_closure:prismarine_bricks_";
-            assertPathsAndIndependentFullBlocks(helper, prefix);
+            assertPathsAndIndependentFullBlocks(helper, prefix, prefix + "button");
         }
         helper.succeed();
     }
@@ -1180,8 +1183,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     nether + "four_window", nether + "pane_window", gothic));
             assertSelectorRoundTrip(helper, List.of(nether + "button", nether + "pressure_plate",
                     nether + "parapet", nether + "louvered_shutter"));
-            assertPathsAndIndependentFullBlocks(helper, "architectural_material_closure:quartz_");
-            assertPathsAndIndependentFullBlocks(helper, nether);
+            assertPathsAndIndependentFullBlocks(helper, "architectural_material_closure:quartz_", "architectural_material_closure:quartz_button");
+            assertPathsAndIndependentFullBlocks(helper, nether, nether + "button");
         } else {
             Item item = requiredItem(gothic);
             helper.assertTrue(!AuditedShapeRuntime.isAudited(item) && !ShapeMap.isShape(item) && hasRecipe(helper, gothic),
@@ -1195,12 +1198,47 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         helper.succeed();
     }
 
-    private static void assertPathsAndIndependentFullBlocks(GameTestHelper helper, String prefix) {
+    @GameTest(maxTicks = 40)
+    public void endStoneBricksAndPolishedBlackstoneFollowTheirProviders(GameTestHelper helper) {
+        String prefix = "architectural_material_closure:end_stone_bricks_";
+        String gothic = "mcwwindows:end_brick_gothic";
+        String slit = "mcwwindows:ender_brick_arrow_slit";
+        List<String> endStone = new ArrayList<>(List.of("enderscape:polished_end_stone_button",
+                "enderscape:polished_end_stone_pressure_plate"));
+        List<String> blackstone = new ArrayList<>(List.of("minecraft:polished_blackstone_button",
+                "minecraft:polished_blackstone_pressure_plate", "mcwwindows:blackstone_parapet"));
+        if (Boolean.getBoolean("ibf.test.amcExpected")) {
+            endStone.add(prefix + "parapet");
+            endStone.add(prefix + "louvered_shutter");
+            blackstone.add("architectural_material_closure:polished_blackstone_louvered_shutter");
+            assertSelectorRoundTrip(helper, List.of(prefix + "window", prefix + "window2", prefix + "four_window",
+                    prefix + "pane_window", gothic));
+            assertSelectorRoundTrip(helper, List.of(prefix + "column", prefix + "urn", prefix + "moulding",
+                    prefix + "fence", prefix + "frame", slit));
+            helper.assertTrue(hasRecipe(helper, prefix + "column_from_stonecutting"), "Missing Column stonecutting recipe");
+            for (String form : List.of("urn", "moulding", "fence")) {
+                helper.assertTrue(!hasRecipe(helper, prefix + form + "_from_stonecutting"),
+                        "Retained alternate stonecutting recipe for " + form);
+            }
+            assertPathsAndIndependentFullBlocks(helper, prefix, endStone.getFirst());
+        } else {
+            for (String standalone : List.of(gothic, slit)) {
+                Item item = requiredItem(standalone);
+                helper.assertTrue(!AuditedShapeRuntime.isAudited(item) && !ShapeMap.isShape(item) && hasRecipe(helper, standalone),
+                        "Expected independent provider item and recipe for " + standalone);
+            }
+        }
+        assertSelectorRoundTrip(helper, endStone);
+        assertSelectorRoundTrip(helper, blackstone);
+        helper.succeed();
+    }
+
+    private static void assertPathsAndIndependentFullBlocks(GameTestHelper helper, String prefix, String accessoryParent) {
         assertSelectorRoundTrip(helper, List.of(prefix + "running_bond_path", prefix + "strewn_rocky_path",
                 prefix + "windmill_weave_path", prefix + "flagstone_path", prefix + "crystal_floor_path",
                 prefix + "diamond_paving", prefix + "basket_weave_paving", prefix + "square_paving",
                 prefix + "honeycomb_paving", prefix + "clover_paving", prefix + "dumble_paving"));
-        assertSeparate(helper, prefix + "button", prefix + "running_bond_path", "Accessory and path selectors joined");
+        assertSeparate(helper, accessoryParent, prefix + "running_bond_path", "Accessory and path selectors joined");
 
         ServerPlayer player = survivalPlayer(helper);
         BlockPos pos = new BlockPos(3, 1, 3);
