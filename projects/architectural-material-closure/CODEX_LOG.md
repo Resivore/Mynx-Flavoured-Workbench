@@ -63,3 +63,14 @@
 - Artifact: None current, accepted, or rollback. No AMC C6 artifact was produced; C1-C5 remain historical provenance only.
 - Result: PLANNED / NOT_RUN / RUNTIME_UNTESTED; manifest revision 5 to 6.
 - Next state: Define scope and verification from first principles under future owner direction before producing a genuine new implementation.
+
+## 2026-11-20T16:36:58Z — Finalize Architectural Material Closure Canary 6
+
+- Revision: 7
+- Source checkpoint: `1f5c59e2104e4d36e49d64f5a4c9019c0b7da6fb`
+- Changes: Registered Stone Parapet and Stone Louvered Shutter under `architectural_material_closure`, each with a matching item. Inspected the andesite pair in Macaw's Windows 2.4.2 for 26.2 Fabric (provider SHA-256 `40ba9c55f191f8bd4758293683ed2bcf6d0c76c8f54f9fc8a0dccabdbcfd36ad`). AMC uses its block classes, six model parents, state transforms and UVs. The parapet binds vanilla Stone directly. BBB's luminance rank method maps the shutter's 13 opaque tones to the four vanilla Stone greys and preserves all 49 transparent pixels.
+- Build/static: Java 25, Gradle 9.5.1 and Loom 1.17.19 passed `build runGameTest --rerun-tasks`. The archive check verified the complete model and sprite references, all 256 pixel mappings, five slat shadows, crafting data, self-drops, tags and payload isolation. Three controlled Fabric GameTests passed for registry ownership, loaded recipes and drops, placement and shapes, pot support and shutter interactions.
+- Runtime: Owner-supplied runtime evidence is pending. No Minecraft testing profile was accessed.
+- Artifact: Finalized local-only `AMC C6.jar` (`0.1.0-canary6`, 16,048 bytes), SHA-256 `bcae1883c4ca7f7f720dcfb2a55b37f265d729adf351bc1f13e7d8fcf8179adc`, built at `2026-11-20T16:36:00.7526718Z` from source checkpoint `1f5c59e2104e4d36e49d64f5a4c9019c0b7da6fb`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. No accepted or rollback release.
+- Next state: Owner testing and acceptance of the exact retained C6 artifact.

@@ -13,43 +13,85 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "PLANNED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Address gaps in the architectural/building-block options available in the modpack."
     ],
     "scope": [
-      "Architectural Material Closure (AMC) is a planned project for addressing gaps in the architectural/building-block options available in the modpack. Its eventual scope, source materials, supported forms, provider relationships, implementation strategy, and integration with other Workbench projects have not yet been determined."
+      "Provide the Stone Parapet and Stone Louvered Shutter as two AMC blocks with matching items for Minecraft Java 26.2 Fabric.",
+      "Use the Macaw masonry block classes and model parents. Bind the parapet directly to vanilla Stone and generate the shutter sprite locally from the andesite shutter artwork using BBB's luminance-ranked remapping and the vanilla Stone palette."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/architectural-material-closure"
       ],
       "exclusions": [
-        "No implementation, active runtime dependencies, or integration contract is currently defined."
+        "Other materials and architectural forms, provider replacement, and IBF family integration are outside AMC C6.",
+        "Provider-derived resources and the release JAR remain in ignored local output. C1–C5 are historical provenance."
       ]
     },
-    "dependencies": []
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "~26.2",
+        "reason": "Target game and source of the Stone sprite and palette."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Loads the AMC and Macaw entrypoints on Fabric."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabric-api",
+        "requirement": "*",
+        "reason": "Supplies creative tab events."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwwindows",
+        "requirement": "*",
+        "reason": "Supplies the Parapet and Shutter implementations, model parents, tags and shutter sound. The controlled build used Macaw's Windows 2.4.2 for 26.2 Fabric."
+      }
+    ]
   },
   "state": {
-    "milestone": "PLANNED with no implementation or current, accepted, or rollback release. C1-C5 remain historical provenance only and establish no design baseline; a future genuine implementation continues from the historical C5 ordinal.",
+    "milestone": "C6 introduces two Stone forms. Packaged resource checks and three controlled Fabric GameTests passed. Owner testing of the exact retained artifact is pending.",
     "releases": {
-      "current": null,
+      "current": {
+        "version": "C6 (0.1.0-canary6)",
+        "canary": 6,
+        "embedded_version": "0.1.0-canary6",
+        "artifact": {
+          "filename": "AMC C6.jar",
+          "sha256": "bcae1883c4ca7f7f720dcfb2a55b37f265d729adf351bc1f13e7d8fcf8179adc"
+        },
+        "built_at": "2026-11-20T16:36:00.7526718Z",
+        "source_commit": "1f5c59e2104e4d36e49d64f5a4c9019c0b7da6fb",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        },
+        "summary": "Adds a Stone Parapet with flower-pot support and a Stone Louvered Shutter with the Macaw slat artwork recolored to vanilla Stone."
+      },
       "accepted": null,
       "rollback": null,
       "accepted_current": "NO_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "NOT_RUN",
+      "build": "CONTROLLED_VALIDATION_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-28T04:08:36.351893Z",
-    "updated_at": "2026-09-28T04:08:36.351893Z",
-    "last_codex_at": "2026-09-28T04:08:36.351893Z",
-    "source_commit": "f7c642529c9aa9d2657c7d03e346706da423a351"
+    "revision": 7,
+    "activity_at": "2026-11-20T16:36:58Z",
+    "updated_at": "2026-11-20T16:36:58Z",
+    "last_codex_at": "2026-11-20T16:36:58Z",
+    "source_commit": "1f5c59e2104e4d36e49d64f5a4c9019c0b7da6fb"
   }
 }
