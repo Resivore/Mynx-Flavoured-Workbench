@@ -155,3 +155,15 @@
 - Runtime: The owner requested less pronounced dark and light speckles on the C12 Granite BBB forms. Owner gameplay observations for C13 are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare the five Granite forms with C12 under matching lighting and record owner verification and acceptance.
+
+## 2026-11-20T18:47:01Z — Add the Mud Bricks family in Canary 14
+
+- Revision: 15
+- Source checkpoint: `1bb0cf8144bfcd35e5d7a73078f5d06322234934`
+- Changes: Registered 13 Mud Bricks block/item pairs. The Button and Pressure Plate use vanilla 26.2 Stone controls. The four windows, Parapet and Louvered Shutter use the corresponding Andesite classes and model hierarchies from Macaw's Windows 2.4.2. The controls, window frames and parapet map Packed Mud directly. The shutter applies the C9 five-slat lighting and 75% shadow depth to co-located Packed Mud pixels. The five BBB masonry forms use the retained BBB C9 Stone family, description items and ten authored sheets remapped to the six-color Packed Mud palette. Recipes use Packed Mud for full blocks and vanilla Mud Brick Slabs for slab ingredients.
+- Build/static: Java 25 / Gradle 9.5.1 passed `build runGameTest --rerun-tasks`, all 45 controlled Fabric GameTests and all 591 production-entry checks. Verified exactly 42 registered block/item pairs. Matched 152 Macaw blockstate entries and 27 model choices to provider definitions, parents and face bindings, including the glass-only center. Checked all 256 shutter pixels independently. Matched all 199 BBB state entries and 69 model nodes, including UVs, rotations, culling and inventory transforms, and verified all ten remapped sheets pixel by pixel. Server tests exercised placement, redstone, window joining/opening/locking, parapet supports, shutter stacking, waterlogging, hammer interactions, urn soil/planting, drops, tags, recipes and creative tabs.
+- Compared the finalized artifact with hash-verified C13. All 422 previous files remain, including 402 byte-identical entries. The only differences in existing files were release metadata, English names and additive shared tags. All prior classes, individual assets, recipes and loot matched, including the C9 Stone shutter sprite and C13 Granite sheets.
+- Artifact: Local-only `AMC C14.jar`, version `0.1.0-canary14`, 309,286 bytes, SHA-256 `303b955fbaa86d05e8a7c62414a2ea8e3abfbc2b8507b94b5c4eea242336be35`, finalized at `2026-11-20T18:45:26.7561778Z`.
+- Runtime: Owner gameplay observations for C14 are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify the Mud Bricks family using TESTING.md and record owner observations and the acceptance decision.
