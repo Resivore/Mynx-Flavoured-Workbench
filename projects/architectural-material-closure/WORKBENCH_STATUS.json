@@ -24,7 +24,7 @@
       "Provide Andesite, Diorite and Granite variants of BBB's Stone Column, Urn, Moulding, Fence and Frame using the provider classes, description items and original model hierarchies. Remap ten authored sheets independently for each material using its vanilla palette. Granite BBB textures use the eight interior colors of the luminance-ranked vanilla Granite palette.",
       "Provide 13 Mud Bricks block/item pairs. Use Packed Mud directly for the two controls, four standard Macaw windows and parapet. Use Packed Mud grain with structural shading for the louvered shutter and its full palette for the five BBB masonry forms.",
       "Provide 23 Prismarine Bricks and eight Dark Prismarine forms. Each material has vanilla controls, a Macaw louvered shutter and five BBB masonry forms. Prismarine Bricks also has five thin paths, six pavings and four engravable full blocks based on Macaw's Paths. Both louvered shutters use the finalized C9 Stone shutter artwork remapped by luminance rank to the full vanilla palette of the respective material.",
-      "Provide a Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter for Sandstone and Red Sandstone. Bind vanilla top, bottom and side sprites at the original model UVs, with C9 structural shading on each shutter's side substrate."
+      "Provide a Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter for Sandstone and Red Sandstone. The controls, parapets and windows use directional vanilla textures. Each shutter uses the matching vanilla top sprite on every face at the original UVs, with C9 structural shading on the five slats and frame."
     ],
     "boundaries": {
       "owned_paths": [
@@ -75,23 +75,23 @@
     ]
   },
   "state": {
-    "milestone": "C17 revises the Prismarine Bricks and Dark Prismarine shutter artwork. All 79 controlled GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C18 corrects the Sandstone and Red Sandstone shutter grain. All 79 controlled GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C17 (0.1.0-canary17)",
-        "canary": 17,
-        "embedded_version": "0.1.0-canary17",
+        "version": "C18 (0.1.0-canary18)",
+        "canary": 18,
+        "embedded_version": "0.1.0-canary18",
         "artifact": {
-          "filename": "AMC C17.jar",
-          "sha256": "89273323f7eb38a379b7e1b5a6377f4114520ae9a334310220f8cd52265c6050"
+          "filename": "AMC C18.jar",
+          "sha256": "e2df867fee36a05caa0217740f9418a8c554f99876e2af42de594ff9b5b94b82"
         },
-        "built_at": "2026-11-20T19:18:56.2208408Z",
-        "source_commit": "520be10090d0d49db0731b9be5a3d4083ab988c2",
+        "built_at": "2026-11-20T19:25:30.2324653Z",
+        "source_commit": "de27ca0a52a3f3b4a61cd09e9e9e4bf594d34149",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Recolors the Prismarine Bricks and Dark Prismarine Louvered Shutters from the finalized Stone shutter using each material's full vanilla palette."
+        "summary": "Uses vanilla sandstone top grain on every Sandstone and Red Sandstone shutter face while preserving the five-slat structural shading."
       },
       "accepted": null,
       "rollback": null,
@@ -105,10 +105,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 18,
-    "activity_at": "2026-11-20T19:20:03Z",
-    "updated_at": "2026-11-20T19:20:03Z",
-    "last_codex_at": "2026-11-20T19:20:03Z",
-    "source_commit": "520be10090d0d49db0731b9be5a3d4083ab988c2"
+    "revision": 19,
+    "activity_at": "2026-11-20T19:26:44Z",
+    "updated_at": "2026-11-20T19:26:44Z",
+    "last_codex_at": "2026-11-20T19:26:44Z",
+    "source_commit": "de27ca0a52a3f3b4a61cd09e9e9e4bf594d34149"
   }
 }

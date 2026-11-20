@@ -203,3 +203,15 @@
 - Runtime: Owner gameplay verification and acceptance are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare both revised shutters beside the Stone shutter using TESTING.md and record owner observations.
+
+## 2026-11-20T19:26:44Z — Use top-face grain on both sandstone shutters in Canary 18
+
+- Revision: 19
+- Source checkpoint: `de27ca0a52a3f3b4a61cd09e9e9e4bf594d34149`
+- Changes: The Sandstone and Red Sandstone Louvered Shutters shade the vanilla sandstone_top and red_sandstone_top sprites at the original shutter UVs. Both caps use the corresponding top sprite directly. Each of the eight pose models changes only its bottom texture binding.
+- Build/static: The offline Java 25 / Gradle 9.5.1 build passed all 79 Fabric GameTests and all 1,040 production-entry checks for 85 block/item pairs. Per shutter, checked all 256 RGBA pixels against the co-located vanilla top grain, Macaw alpha and C9 gains, including the five raised slats, darkened lips, returns and recesses at 75% of C7 shadow depth. All 49 transparent pixels matched. Verified all six faces across all four poses per material, with identical geometry, UVs, rotations, state and inventory definitions.
+- Compared finalized C18 against C17 SHA-256 `89273323f7eb38a379b7e1b5a6377f4114520ae9a334310220f8cd52265c6050`. All 1,040 entry names matched. The two PNGs changed at 195 Sandstone and 201 Red Sandstone pixels. The eight bottom bindings and version field account for the other nine changed entries. The remaining 1,029 entries matched byte-for-byte, including the C17 prismarine sprites and all production classes.
+- Artifact: Local-only `AMC C18.jar`, version `0.1.0-canary18`, 550,441 bytes, SHA-256 `e2df867fee36a05caa0217740f9418a8c554f99876e2af42de594ff9b5b94b82`, finalized at `2026-11-20T19:25:30.2324653Z`.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Inspect the two shutters beside the vanilla top surfaces using TESTING.md and record the owner's observations.
