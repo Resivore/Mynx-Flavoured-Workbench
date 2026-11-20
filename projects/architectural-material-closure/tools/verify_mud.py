@@ -51,7 +51,7 @@ def check_ranked_shutter(stone, tile, result, material):
     assert len(shades) == 16 and sum(p[3] == 255 for p in source) == 207
     colors = sorted({p[:3] for p in tile.getdata() if p[3] == 255},
                     key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
-    assert len(colors) == {"prismarine_bricks": 8, "dark_prismarine": 6}[material]
+    assert len(colors) == {"prismarine_bricks": 8, "dark_prismarine": 6, "deepslate": 5, "nether_bricks": 7}[material]
     for before, after in zip(source, result.getdata(), strict=True):
         if before[3] == 255:
             assert before[0] == before[1] == before[2]
@@ -64,22 +64,15 @@ def check_ranked_shutter(stone, tile, result, material):
     print(f"Verified all 256 {material} shutter pixels against the 16 C9 ranks and {len(colors)} vanilla colors.")
 
 
-def check_shutter(jar, provider, client, expected, material, substrate, bbb):
+def check_shutter(jar, provider, client, expected, material, substrate):
     def image(archive, path):
         return Image.open(BytesIO(archive.read(path))).convert("RGBA")
 
     path = f"assets/{NS}/textures/block/{material}_louvered_shutter.png"
     expected.add(path)
     result = image(jar, path)
-    if material == "nether_bricks":
-        # Independent face-local addressing for the BBB bottom quad rotated 270 degrees.
-        sheet = image(bbb, "assets/bbb/textures/block/moulding/nether_brick.png")
-        base = Image.new("RGBA", (16, 16))
-        base.putdata([sheet.getpixel((15 - y, 32 + x)) for y in range(16) for x in range(16)])
-        substrate = "the rotated BBB Nether Brick Moulding underside"
-    else:
-        base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
-    if material in ("prismarine_bricks", "dark_prismarine"):
+    base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
+    if material in ("prismarine_bricks", "dark_prismarine", "deepslate", "nether_bricks"):
         stone = image(jar, f"assets/{NS}/textures/block/stone_louvered_shutter.png")
         check_ranked_shutter(stone, base, result, material)
         return
@@ -121,7 +114,7 @@ def check_shutter(jar, provider, client, expected, material, substrate, bbb):
     print(f"Verified all 256 shutter pixels against {substrate} and the five reference slats.")
 
 
-def check_windows(jar, provider, client, expected, material, substrate, slab, *, bbb=None):
+def check_windows(jar, provider, client, expected, material, substrate, slab):
     side = "quartz_block_side" if material == "quartz" else substrate
     shutter = f"{NS}:block/{material}_louvered_shutter"
 
@@ -218,4 +211,4 @@ def check_windows(jar, provider, client, expected, material, substrate, slab, *,
         print(f"{own}: matched {state_count} blockstate entries and {model_count} model choices.")
     if material in ("sandstone", "red_sandstone"):
         side = material + "_top"
-    check_shutter(jar, provider, client, expected, material, side, bbb)
+    check_shutter(jar, provider, client, expected, material, side)

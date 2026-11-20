@@ -52,13 +52,12 @@ def remap_stone_shutter(source, client, dest, material):
     result.save(dest)
 
 
-def shade_shutter(provider, client, dest, substrate, *, base=None):
+def shade_shutter(provider, client, dest, substrate):
     def image(archive, path):
         return Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
 
     shutter = image(provider, "assets/mcwwindows/textures/block/andesite_louvered_shutter.png")
-    if base is None:
-        base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
+    base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
     light = shutter.convert("L")
 
     # The broad-face UV is [0,1,11,16]. Measure equivalent regions across
@@ -109,26 +108,6 @@ def recipe_unlock(root, name, material, category):
         "requirements": [["material", "recipe"]],
         "rewards": {"recipes": [recipe]},
     })
-
-
-def nether_moulding_underside(bbb):
-    state = masonry.load_json(bbb, "assets/bbb/blockstates/nether_brick_moulding.json")
-    variant = state["variants"]["facing=east,half=bottom,shape=straight,dentil=false"]
-    assert set(variant) == {"model"}  # Unrotated straight reference pose.
-
-    def model(identifier):
-        ns, path = identifier.split(":")
-        return masonry.load_json(bbb, f"assets/{ns}/models/{path}.json")
-
-    child = model(variant["model"])
-    template = model(child["parent"])
-    underside, = (e["faces"]["down"] for e in template["elements"] if e["from"][1] == 0 and "down" in e["faces"])
-    ns, path = child["textures"][underside["texture"].removeprefix("#")].split(":")
-    sheet = masonry.image(bbb, f"assets/{ns}/textures/{path}.png")
-    assert sheet.size == tuple(template["texture_size"]) == (80, 80)
-    bounds = tuple(round(uv * size / 16) for uv, size in zip(underside["uv"], sheet.size * 2))
-    assert bounds == (0, 32, 16, 48) and underside["rotation"] == 270
-    return sheet.crop(bounds).transpose(Image.Transpose.ROTATE_90)
 
 
 def bind_directional_caps(model, archive, material, material_slot):
@@ -215,7 +194,7 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
     write(f"data/{NS}/loot_table/blocks", loot)
 
 
-def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None, shutter_base=None):
+def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None):
     side = "quartz_block_side" if material == "quartz" else substrate
     sandstone = material in ("sandstone", "red_sandstone")
     ids = {f"mcwwindows:andesite_{form}": f"{NS}:{material}_{form}" for form in forms}
@@ -274,7 +253,7 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
                 tags.setdefault(path[5:-5], []).extend(additions)
     dest = root / f"assets/{NS}/textures/block/{material}_louvered_shutter.png"
     if stone_artwork is None:
-        shade_shutter(provider, client, dest, material + "_top" if sandstone else side, base=shutter_base)
+        shade_shutter(provider, client, dest, material + "_top" if sandstone else side)
     else:
         remap_stone_shutter(stone_artwork, client, dest, material)
 
@@ -369,11 +348,10 @@ def generate(provider, client, bbb, path_provider, stone_shutter, root):
                                       ("nether_bricks", "nether_bricks", "nether_brick_slab")):
         generate_stone_forms(root, provider, client, tags, names, material)
         windows = FORMS
-        base = None
         if material == "nether_bricks":
             windows = ("window", "window2", "four_window", "pane_window", *FORMS)
-            base = nether_moulding_underside(bbb)
-        generate_macaw(root, provider, client, tags, material, ingredient, slab, windows, shutter_base=base)
+        generate_macaw(root, provider, client, tags, material, ingredient, slab, windows,
+                       stone_artwork=stone_shutter if material in ("deepslate", "nether_bricks") else None)
         for form in windows:
             name = f"{material}_{form}"
             names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
@@ -399,6 +377,9 @@ if __name__ == "__main__":
     if hashlib.sha256(stone_path.read_bytes()).hexdigest() != "f32b382563252e8a73a0bfd0b9ca0abacb02dd3c81a2a074b9d200fb5f147e8b":
         sys.exit("Expected the retained AMC C9 artifact")
     with ZipFile(stone_path) as c9:
-        stone_shutter = masonry.image(c9, f"assets/{NS}/textures/block/stone_louvered_shutter.png")
+        artwork = c9.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
+        if hashlib.sha256(artwork).hexdigest() != "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878":
+            sys.exit("Expected the finalized C9 Stone shutter PNG")
+        stone_shutter = Image.open(io.BytesIO(artwork)).convert("RGBA")
     with ZipFile(provider_path) as provider, ZipFile(client_path) as client, ZipFile(bbb_path) as bbb, ZipFile(paths_path) as path_provider:
         generate(provider, client, bbb, path_provider, stone_shutter, root)

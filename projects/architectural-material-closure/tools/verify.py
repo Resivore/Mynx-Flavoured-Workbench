@@ -334,7 +334,7 @@ def verify(jar, provider, client, bbb, paths):
                                       ("quartz", "quartz_block", "quartz_slab"),
                                       ("nether_bricks", "nether_bricks", "nether_brick_slab")):
         check_direct(jar, provider, client, material, expected)
-        check_windows(jar, provider, client, expected, material, ingredient, slab, bbb=bbb)
+        check_windows(jar, provider, client, expected, material, ingredient, slab)
     for material in ("prismarine_bricks", "quartz", "nether_bricks"):
         check_paths(jar, paths, client, expected, material)
     check_tags(jar, bbb, provider, client, paths, expected)
