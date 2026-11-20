@@ -21,7 +21,7 @@
       "Provide the Stone Parapet and Stone Louvered Shutter as two AMC blocks with matching items for Minecraft Java 26.2 Fabric.",
       "Use the Macaw masonry block classes and model parents. The parapet maps vanilla Stone directly. The shutter uses the same Stone grain at matching UV coordinates, with structural lighting measured across the reference shutter's five repeated slats.",
       "Provide Andesite, Diorite and Granite Buttons and Pressure Plates using the vanilla Stone controls, and Gothic Windows and Arrow Slits using the Macaw Stone Brick forms. Bind each material's vanilla sprite directly and preserve Macaw's glass and iron bars.",
-      "Provide Andesite, Diorite and Granite variants of BBB's Stone Column, Urn, Moulding, Fence and Frame using the provider classes, description items and original model hierarchies. Remap ten authored sheets independently for each material using its vanilla palette."
+      "Provide Andesite, Diorite and Granite variants of BBB's Stone Column, Urn, Moulding, Fence and Frame using the provider classes, description items and original model hierarchies. Remap ten authored sheets independently for each material using its vanilla palette. Granite BBB textures use the eight interior colors of the luminance-ranked vanilla Granite palette."
     ],
     "boundaries": {
       "owned_paths": [
@@ -66,23 +66,23 @@
     ]
   },
   "state": {
-    "milestone": "C12 adds nine Diorite and nine Granite block/item pairs. All 34 controlled GameTests and package checks passed, including separate reference geometry and palette checks for both new materials. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C13 corrects the Granite BBB palette. All 34 controlled GameTests and the pixel and archive comparisons passed. Owner visual verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C12 (0.1.0-canary12)",
-        "canary": 12,
-        "embedded_version": "0.1.0-canary12",
+        "version": "C13 (0.1.0-canary13)",
+        "canary": 13,
+        "embedded_version": "0.1.0-canary13",
         "artifact": {
-          "filename": "AMC C12.jar",
-          "sha256": "bb285091a6043df96f54fe83a94ca41f851c4d5ddfaea713ffb9b7786ad15732"
+          "filename": "AMC C13.jar",
+          "sha256": "891521ce6f62dfeccb930438558933c6a8ff3446dd850cc1825a020076014a4f"
         },
-        "built_at": "2026-11-20T18:03:50.3354011Z",
-        "source_commit": "071fcbe6427121d2b2303c7aa89ba8b67631dddf",
+        "built_at": "2026-11-20T18:26:25.7551417Z",
+        "source_commit": "a57b46150155e085382a0737e3d89300874a710e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds Diorite and Granite variants of all nine Andesite forms, including the five BBB masonry forms."
+        "summary": "Softens light and dark speckling on the five Granite BBB forms by limiting their artwork to the eight interior vanilla Granite shades."
       },
       "accepted": null,
       "rollback": null,
@@ -96,10 +96,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 13,
-    "activity_at": "2026-11-20T18:05:43Z",
-    "updated_at": "2026-11-20T18:05:43Z",
-    "last_codex_at": "2026-11-20T18:05:43Z",
-    "source_commit": "071fcbe6427121d2b2303c7aa89ba8b67631dddf"
+    "revision": 14,
+    "activity_at": "2026-11-20T18:28:00Z",
+    "updated_at": "2026-11-20T18:28:00Z",
+    "last_codex_at": "2026-11-20T18:28:00Z",
+    "source_commit": "a57b46150155e085382a0737e3d89300874a710e"
   }
 }

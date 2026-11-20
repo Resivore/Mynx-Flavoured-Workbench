@@ -143,3 +143,15 @@
 - Runtime: Owner gameplay verification of the exact C12 release is pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare both new families in game using TESTING.md and record the owner's observations and explicit acceptance decision.
+
+## 2026-11-20T18:28:00Z — Clip the Granite BBB palette in Canary 13
+
+- Revision: 14
+- Source checkpoint: `a57b46150155e085382a0737e3d89300874a710e`
+- Changes: Removed the darkest (#4D352C) and lightest (#E3C0AF) distinct opaque vanilla Granite colors before BBB rank transfer. The retained ramp in ascending luminance is #5F4034, #7F5646, #926251, #9F6B58, #A97764, #B48877, #B49B91, #C99781. The five joined column sheets still share a source ramp.
+- Build/static: Java 25 and Gradle 9.5.1 passed `build runGameTest --rerun-tasks` and all 34 controlled Fabric GameTests. The verifier compared every texel with the BBB artwork, including transparent padding and moulding backing, and checked 199 Granite BBB state entries and 69 model nodes. All eight interior shades occur among 7,558 material pixels. Extreme-color pixels fell from 1,080 to zero. All 5,638 transparent pixels and 884 opaque black backing pixels matched C12 exactly.
+- Compared the finalized JAR against the verified C12 SHA-256 `bb285091a6043df96f54fe83a94ca41f851c4d5ddfaea713ffb9b7786ad15732`. Of 422 production files, 411 matched byte for byte. Only the five column sheets, polished Granite, urn, moulding, fence and frame PNGs changed, plus the embedded version in fabric.mod.json. Every class, blockstate, model, recipe and tag matched. The soiled urn continues to use BBB's dirt overlay.
+- Artifact: Local-only `AMC C13.jar`, version `0.1.0-canary13`, 222,553 bytes, SHA-256 `891521ce6f62dfeccb930438558933c6a8ff3446dd850cc1825a020076014a4f`, finalized at `2026-11-20T18:26:25.7551417Z`.
+- Runtime: The owner requested less pronounced dark and light speckles on the C12 Granite BBB forms. Owner gameplay observations for C13 are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare the five Granite forms with C12 under matching lighting and record owner verification and acceptance.
