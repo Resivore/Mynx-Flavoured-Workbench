@@ -37,6 +37,8 @@ def rank(rgb):
 def stage_textures(root, bbb, client, material):
     tile = image(client, f"assets/minecraft/textures/block/{material}.png")
     target = sorted({rgb[:3] for rgb in tile.getdata() if rgb[3] == 255}, key=rank)
+    if material == "granite":
+        target = target[1:-1]  # Keep the interior shades across all six BBB ramps.
     for group in RAMPS:
         sheets = {name: image(bbb, f"assets/bbb/textures/block/{name}.png") for name in group}
         colors = {pixel[:3] for sheet in sheets.values() for pixel in sheet.getdata() if pixel[3]}

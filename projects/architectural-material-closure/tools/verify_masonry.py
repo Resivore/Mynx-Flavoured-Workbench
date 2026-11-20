@@ -119,6 +119,9 @@ def check_sheets(jar, bbb, client, material, expected, sheets):
 
     _, tile = pixels(client, f"assets/minecraft/textures/block/{material}.png")
     target = palette(pixel[:3] for pixel in tile if pixel[3] == 255)
+    if material == "granite":
+        darkest, *target, lightest = target
+        assert len(target) == 8 and darkest not in target and lightest not in target
     groups = {}
     for name in sheets:
         group = "column" if name.startswith("block/column/") else name

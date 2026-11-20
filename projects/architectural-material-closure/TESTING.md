@@ -1,8 +1,10 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 12
+## Owner verification for Canary 13
 
-Match the SHA-256 of `AMC C12.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows and Building But Better. The controlled reference versions were Macaw 2.4.2 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 29 AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C13.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows and Building But Better. The controlled reference versions were Macaw 2.4.2 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 29 AMC IDs use the namespace `architectural_material_closure`.
+
+Compare the Granite Column, Urn, Moulding, Fence and Frame with C12 captures at the same distance and lighting. Check whether the darkest and lightest speckles are reduced while bevels, recesses and connected column bands remain distinct. Inspect the soiled Urn for its dirt surface. Use a Granite Gothic Window and adjacent vanilla Granite as controls for the original full-palette texture.
 
 Run the following checks once with Diorite and once with Granite. For each BBB form, place its Andesite and `bbb:stone_<form>` counterparts beside it under the same lighting. Check the inventory icon, both hands and a dropped item. After placement, inspect the faces from several angles and compare the highlights and shadows to the reference. Compare the material colors to the corresponding vanilla Diorite or Granite block. Check the joins between column layers and the dirt in the soiled urn.
 
@@ -27,7 +29,7 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C12 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C13 are pending.
 
 ## Controlled build checks
 
