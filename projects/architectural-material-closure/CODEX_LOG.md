@@ -131,3 +131,15 @@
 - Runtime: Owner gameplay verification of C11 is pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare the retained C11 forms with BBB in game using TESTING.md and record the owner's observations.
+
+## 2026-11-20T18:05:43Z — Extend nine architectural forms to Diorite and Granite in Canary 12
+
+- Revision: 13
+- Source checkpoint: `071fcbe6427121d2b2303c7aa89ba8b67631dddf`
+- Changes: Added nine block/item pairs for each of Diorite and Granite. The Button and Pressure Plate use Minecraft 26.2's Stone controls. The Gothic Window and Arrow Slit use the Macaw 2.4.2 Stone Brick classes and parents, with direct vanilla material sprites and the original glass and conditional bars. The Column, Urn, Moulding, Fence and Frame use BBB C9's Stone classes, description items, complete model graphs and C11's luminance-ranked palette transfer. The ten sheets per family retain alpha, shared column shading, moulding backing and the separate dirt overlay.
+- Build/static: Java 25 and Gradle 9.5.1 passed `build runGameTest --rerun-tasks` and all 34 controlled Fabric GameTests. For each new material the package verifier compared 52 direct-form state entries and 13 material models to Minecraft and Macaw, plus 199 BBB state entries and 69 model nodes to the retained BBB C9 reference. Verified all ten sheets per material pixel by pixel against the actual vanilla tile (six Diorite colors, ten Granite colors). Checked all 422 production files, all 29 block/item pairs, creative placement, loaded data, redstone, placement, shape and fluid states, joins, hammer interactions, and urn behavior.
+- Compared the finalized archive with the SHA-256-verified C11 JAR. All 169 old files remain. 149 matched byte for byte, including all previous classes, individual resources and the 75%-shadow shutter PNG. The 20 changed files comprise release metadata, English names and 18 additive shared tags. The 253 new files are the family initializer and resources for the 18 new blocks.
+- Artifact: Local-only `AMC C12.jar`, version `0.1.0-canary12`, 222,526 bytes, SHA-256 `bb285091a6043df96f54fe83a94ca41f851c4d5ddfaea713ffb9b7786ad15732`, finalized at `2026-11-20T18:03:50.3354011Z`.
+- Runtime: Owner gameplay verification of the exact C12 release is pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare both new families in game using TESTING.md and record the owner's observations and explicit acceptance decision.

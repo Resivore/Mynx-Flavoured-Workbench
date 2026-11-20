@@ -20,8 +20,8 @@
     "scope": [
       "Provide the Stone Parapet and Stone Louvered Shutter as two AMC blocks with matching items for Minecraft Java 26.2 Fabric.",
       "Use the Macaw masonry block classes and model parents. The parapet maps vanilla Stone directly. The shutter uses the same Stone grain at matching UV coordinates, with structural lighting measured across the reference shutter's five repeated slats.",
-      "Provide an Andesite Button and Pressure Plate using the vanilla Stone controls, and an Andesite Gothic Window and Arrow Slit using the Macaw Stone Brick forms. Each has a matching AMC item. All four bind the vanilla Andesite sprite directly to the material faces.",
-      "Provide Andesite variants of BBB's Stone Column, Urn, Moulding, Fence and Frame using the provider classes, item behavior and exact model hierarchies. Adapt the ten BBB material sheets using ranked vanilla Andesite colors."
+      "Provide Andesite, Diorite and Granite Buttons and Pressure Plates using the vanilla Stone controls, and Gothic Windows and Arrow Slits using the Macaw Stone Brick forms. Bind each material's vanilla sprite directly and preserve Macaw's glass and iron bars.",
+      "Provide Andesite, Diorite and Granite variants of BBB's Stone Column, Urn, Moulding, Fence and Frame using the provider classes, description items and original model hierarchies. Remap ten authored sheets independently for each material using its vanilla palette."
     ],
     "boundaries": {
       "owned_paths": [
@@ -37,7 +37,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Target game, Stone redstone controls, and source of vanilla Stone, Andesite, glass and iron-bar sprites."
+        "reason": "Target game, Stone redstone controls and source of Stone, Andesite, Diorite, Granite, glass and iron-bar sprites."
       },
       {
         "type": "MOD",
@@ -66,23 +66,23 @@
     ]
   },
   "state": {
-    "milestone": "C11 adds five BBB Andesite masonry forms. The package passed reference geometry and texture checks, and all 13 controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C12 adds nine Diorite and nine Granite block/item pairs. All 34 controlled GameTests and package checks passed, including separate reference geometry and palette checks for both new materials. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C11 (0.1.0-canary11)",
-        "canary": 11,
-        "embedded_version": "0.1.0-canary11",
+        "version": "C12 (0.1.0-canary12)",
+        "canary": 12,
+        "embedded_version": "0.1.0-canary12",
         "artifact": {
-          "filename": "AMC C11.jar",
-          "sha256": "6e0306dfdbd758b5e8e2f810dde3fcafa67e69b48141b96b6eb3ba53ec496fc3"
+          "filename": "AMC C12.jar",
+          "sha256": "bb285091a6043df96f54fe83a94ca41f851c4d5ddfaea713ffb9b7786ad15732"
         },
-        "built_at": "2026-11-20T17:45:18.3879137Z",
-        "source_commit": "d03766e43e016296eb7208561a5dc805da72c6d5",
+        "built_at": "2026-11-20T18:03:50.3354011Z",
+        "source_commit": "071fcbe6427121d2b2303c7aa89ba8b67631dddf",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds an Andesite Column, Urn, Moulding, Fence and Frame with BBB's masonry geometry, interactions and shading."
+        "summary": "Adds Diorite and Granite variants of all nine Andesite forms, including the five BBB masonry forms."
       },
       "accepted": null,
       "rollback": null,
@@ -96,10 +96,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 12,
-    "activity_at": "2026-11-20T17:47:25Z",
-    "updated_at": "2026-11-20T17:47:25Z",
-    "last_codex_at": "2026-11-20T17:47:25Z",
-    "source_commit": "d03766e43e016296eb7208561a5dc805da72c6d5"
+    "revision": 13,
+    "activity_at": "2026-11-20T18:05:43Z",
+    "updated_at": "2026-11-20T18:05:43Z",
+    "last_codex_at": "2026-11-20T18:05:43Z",
+    "source_commit": "071fcbe6427121d2b2303c7aa89ba8b67631dddf"
   }
 }
