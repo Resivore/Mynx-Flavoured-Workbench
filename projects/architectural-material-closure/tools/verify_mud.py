@@ -126,15 +126,15 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
 
     archives = {"mcwwindows": provider, "minecraft": client, NS: jar}
 
-    def check_model(pair, form):
+    def check_model(pair, form, origin, source_ns, source_material):
         ref, actual = pair
-        original = read(provider, f"assets/mcwwindows/models/{ref.split(':')[1]}.json")
+        original = read(origin, f"assets/{source_ns}/models/{ref.split(':')[1]}.json")
         namespace, model = actual.split(":")
         if ref.endswith("/mid_m"):
             assert form == "window" and actual == ref
             assert original["textures"] == {"0": "mcwwindows:block/glass", "particle": "mcwwindows:block/glass"}
         else:
-            assert namespace == NS and actual.replace(NS + ":", "mcwwindows:").replace(material + "_", "andesite_") == ref
+            assert namespace == NS and actual.replace(NS + ":", source_ns + ":").replace(material + "_", source_material + "_") == ref
         generated = read(archives[namespace], f"assets/{namespace}/models/{model}.json")
         check_directional_caps(generated, provider, client, material, "#1" if form == "parapet" else "#0",
                             shutter=form == "louvered_shutter")
@@ -144,6 +144,8 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         targets = {"minecraft:block/andesite": f"minecraft:block/{side}",
                    "minecraft:block/polished_andesite": f"minecraft:block/{side}",
                    "mcwwindows:block/andesite_louvered_shutter": shutter}
+        if material == "mossy_stone_bricks":
+            targets = {"minecraft:block/stone": f"{NS}:block/mossed_stone", NS + ":block/stone_louvered_shutter": shutter}
         assert slots == {k: targets.get(v, v) for k, v in bindings.items()}
         node = generated
         elements = node.get("elements")
@@ -169,18 +171,22 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         elif ref.endswith("/mid_m"):
             assert visible == {"mcwwindows:block/glass"}
         else:
-            assert f"minecraft:block/{side}" in visible
-            assert visible <= {"mcwwindows:block/glass", "minecraft:block/glass", f"minecraft:block/{side}"}
+            surface = f"{NS}:block/mossed_stone" if material == "mossy_stone_bricks" else f"minecraft:block/{side}"
+            assert surface in visible
+            assert visible <= {"mcwwindows:block/glass", "minecraft:block/glass", surface}
 
     for form, (state_count, model_count) in MACAW_FORMS.items():
-        if material not in ("mud_bricks", "nether_bricks", "end_stone_bricks") and form != "louvered_shutter" and not (
+        if material not in ("mud_bricks", "nether_bricks", "end_stone_bricks", "mossy_stone_bricks") and form != "louvered_shutter" and not (
                 material in ("sandstone", "red_sandstone", "deepslate", "quartz") and form == "parapet"):
             continue
-        src, own = "andesite_" + form, material + "_" + form
-        ref_id, own_id = "mcwwindows:" + src, NS + ":" + own
+        source_material = "stone" if material == "mossy_stone_bricks" else "andesite"
+        source_ns = NS if material == "mossy_stone_bricks" and form in ("parapet", "louvered_shutter") else "mcwwindows"
+        origin = archives[source_ns]
+        src, own = source_material + "_" + form, material + "_" + form
+        ref_id, own_id = source_ns + ":" + src, NS + ":" + own
         pairs = set()
         for folder in ("blockstates", "items"):
-            ref = read(provider, f"assets/mcwwindows/{folder}/{src}.json")
+            ref = read(origin, f"assets/{source_ns}/{folder}/{src}.json")
             actual = read(jar, f"assets/{NS}/{folder}/{own}.json")
 
             def choices(obj):
@@ -198,13 +204,13 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
             assert actual == ref, (form, folder, "state selection or transforms")
         assert len(pairs) == model_count
         for pair in pairs:
-            check_model(pair, form)
+            check_model(pair, form, origin, source_ns, source_material)
 
         for folder in ("recipe", "loot_table/blocks"):
-            ref = read(provider, f"data/mcwwindows/{folder}/{src}.json")
+            ref = read(origin, f"data/{source_ns}/{folder}/{src}.json")
             actual = read(jar, f"data/{NS}/{folder}/{own}.json")
-            content = json.dumps(ref).replace(ref_id, own_id).replace('"minecraft:andesite"', f'"minecraft:{substrate}"')
-            assert actual == json.loads(content.replace("minecraft:andesite_slab", f"minecraft:{slab}"))
+            content = json.dumps(ref).replace(ref_id, own_id).replace(f'"minecraft:{source_material}"', f'"minecraft:{substrate}"')
+            assert actual == json.loads(content.replace(f"minecraft:{source_material}_slab", f"minecraft:{slab}"))
         unlock = read(jar, f"data/{NS}/advancement/recipes/building_blocks/{own}.json")
         ingredient = f"minecraft:{slab}" if form == "louvered_shutter" else f"minecraft:{substrate}"
         assert unlock["rewards"]["recipes"] == [own_id] and unlock["criteria"]["recipe"]["conditions"]["recipe"] == own_id
@@ -212,4 +218,5 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         print(f"{own}: matched {state_count} blockstate entries and {model_count} model choices.")
     if material in ("sandstone", "red_sandstone"):
         side = material + "_top"
-    check_shutter(jar, provider, client, expected, material, side)
+    if material != "mossy_stone_bricks":
+        check_shutter(jar, provider, client, expected, material, side)

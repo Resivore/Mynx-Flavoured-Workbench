@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary21'
+version = '0.1.0-canary22'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c21')
+layout.buildDirectory = layout.projectDirectory.dir('build/c22')
 
 repositories {
     mavenCentral()
@@ -32,7 +32,7 @@ java {
 }
 
 tasks.register('generateAmcResources', Exec) {
-    inputs.files('tools/generate.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar, stoneShutterJar)
+    inputs.files('tools/generate.py', 'tools/moss.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar, stoneShutterJar)
     outputs.dir(privateResources)
     commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, stoneShutterJar, privateResources.get().asFile
 }
@@ -45,12 +45,12 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C21.jar'
+    archiveFileName = 'AMC C22.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
     dependsOn jar
-    inputs.files('tools/verify.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
+    inputs.files('tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
     commandLine python, 'tools/verify.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar
 }
 
@@ -72,6 +72,6 @@ dependencies {
 }
 
 loom.runs.named('gameTest') {
-    runDir 'build/c21/gametest'
+    runDir 'build/c22/gametest'
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

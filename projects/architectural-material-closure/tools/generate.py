@@ -10,6 +10,7 @@ from zipfile import ZipFile
 from PIL import Image
 
 import masonry
+import moss
 import paths
 
 NS = "architectural_material_closure"
@@ -131,6 +132,10 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
     substrate = substrate or ("quartz_block" if material == "quartz" else material)
     side = "quartz_block_side" if material == "quartz" else substrate
     slab = "deepslate_brick_slab" if material == "deepslate" else material + "_slab"
+    sprite_id = f"minecraft:block/{side}"
+    if material == moss.MATERIAL:
+        slab = "mossy_stone_brick_slab"
+        sprite_id = f"{NS}:block/mossed_stone" + ("_bricks" if namespace == "mcwwindows" else "")
     name = f"{material}_{form}"
 
     def load(path):
@@ -167,7 +172,7 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
         assert model.keys() == {"parent", "textures"}
         for slot, sprite in model["textures"].items():
             if sprite in ("minecraft:block/stone", "minecraft:block/stone_bricks"):
-                model["textures"][slot] = f"minecraft:block/{side}"
+                model["textures"][slot] = sprite_id
             else:
                 assert slot == "3" and sprite == "minecraft:block/glass"
         bind_directional_caps(model, archive, material, "#texture" if namespace == "minecraft" else "#0")
@@ -194,15 +199,16 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
     write(f"data/{NS}/loot_table/blocks", loot)
 
 
-def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None):
+def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None,
+                   ref_ns="mcwwindows", ref_material="andesite"):
     side = "quartz_block_side" if material == "quartz" else substrate
     sandstone = material in ("sandstone", "red_sandstone")
-    ids = {f"mcwwindows:andesite_{form}": f"{NS}:{material}_{form}" for form in forms}
+    ids = {f"{ref_ns}:{ref_material}_{form}": f"{NS}:{material}_{form}" for form in forms}
     for source_id, own_id in ids.items():
         source = source_id.split(":")[1]
         name = own_id.split(":")[1]
-        states = masonry.load_json(provider, f"assets/mcwwindows/blockstates/{source}.json")
-        item = masonry.load_json(provider, f"assets/mcwwindows/items/{source}.json")
+        states = masonry.load_json(provider, f"assets/{ref_ns}/blockstates/{source}.json")
+        item = masonry.load_json(provider, f"assets/{ref_ns}/items/{source}.json")
         choices = (states["variants"].values() if "variants" in states
                    else [part["apply"] for part in states["multipart"]])
         models = {}
@@ -210,19 +216,21 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
             reference = choice["model"]
             if reference == "mcwwindows:block/parent/resizeable/mid_m":
                 continue  # Glass-only center shared by the connected windows.
-            assert reference.startswith("mcwwindows:block/") and "/andesite_" in reference
+            assert reference.startswith(f"{ref_ns}:block/") and f"/{ref_material}_" in reference
             path = reference.split(":")[1]
-            models[path] = path.replace("/andesite_", f"/{material}_")
+            models[path] = path.replace(f"/{ref_material}_", f"/{material}_")
             choice["model"] = f"{NS}:{models[path]}"
         write_json(root, f"assets/{NS}/blockstates/{name}.json", states)
         write_json(root, f"assets/{NS}/items/{name}.json", item)
 
         for path, dest in models.items():
-            model = masonry.load_json(provider, f"assets/mcwwindows/models/{path}.json")
+            model = masonry.load_json(provider, f"assets/{ref_ns}/models/{path}.json")
             for slot, sprite in model["textures"].items():
                 if sprite in ("minecraft:block/andesite", "minecraft:block/polished_andesite"):
                     model["textures"][slot] = f"minecraft:block/{side}"
-                elif sprite == "mcwwindows:block/andesite_louvered_shutter":
+                elif material == moss.MATERIAL and sprite == "minecraft:block/stone":
+                    model["textures"][slot] = f"{NS}:block/mossed_stone"
+                elif sprite == f"{ref_ns}:block/{ref_material}_louvered_shutter":
                     model["textures"][slot] = f"{NS}:block/{material}_louvered_shutter"
                 else:
                     assert sprite in ("minecraft:block/glass", "mcwwindows:block/glass")
@@ -231,15 +239,15 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
                 model["textures"]["bottom"] = model["textures"]["top"]
             write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
-        recipe = masonry.load_json(provider, f"data/mcwwindows/recipe/{source}.json")
-        materials = {"minecraft:andesite": f"minecraft:{substrate}", "minecraft:andesite_slab": f"minecraft:{slab}"}
+        recipe = masonry.load_json(provider, f"data/{ref_ns}/recipe/{source}.json")
+        materials = {f"minecraft:{ref_material}": f"minecraft:{substrate}", f"minecraft:{ref_material}_slab": f"minecraft:{slab}"}
         recipe["key"] = {k: materials.get(v, v) for k, v in recipe["key"].items()}
         assert recipe["result"]["id"] == source_id
         recipe["result"]["id"] = own_id
         write_json(root, f"data/{NS}/recipe/{name}.json", recipe)
         ingredient = slab if name.endswith("_shutter") else substrate
         recipe_unlock(root, name, ingredient, "building_blocks")
-        loot = masonry.load_json(provider, f"data/mcwwindows/loot_table/blocks/{source}.json")
+        loot = masonry.load_json(provider, f"data/{ref_ns}/loot_table/blocks/{source}.json")
         entry, = loot["pools"][0]["entries"]
         assert entry["name"] == source_id
         entry["name"] = own_id
@@ -251,6 +259,8 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
             additions = [own for ref, own in ids.items() if ref in members]
             if additions:
                 tags.setdefault(path[5:-5], []).extend(additions)
+    if "louvered_shutter" not in forms or material == moss.MATERIAL:
+        return
     dest = root / f"assets/{NS}/textures/block/{material}_louvered_shutter.png"
     if stone_artwork is None:
         shade_shutter(provider, client, dest, material + "_top" if sandstone else side)
@@ -285,7 +295,7 @@ def generate_stone_forms(root, provider, client, tags, names, material):
             tags.setdefault(tag, []).extend(values)
 
 
-def generate(provider, client, bbb, path_provider, stone_shutter, root):
+def generate(provider, client, bbb, path_provider, stone_reference_jar, stone_shutter, root):
     def adapt_resource(template):
         src = template.format(ns="mcwwindows", material="andesite")
         dst = template.format(ns=NS, material="stone")
@@ -369,6 +379,19 @@ def generate(provider, client, bbb, path_provider, stone_shutter, root):
     generate_macaw(root, provider, client, tags, "polished_blackstone", "polished_blackstone",
                    "polished_blackstone_slab", ("louvered_shutter",), stone_artwork=stone_shutter)
     names[f"block.{NS}.polished_blackstone_louvered_shutter"] = "Polished Blackstone Louvered Shutter"
+    material = moss.MATERIAL
+    slab = "mossy_stone_brick_slab"
+    moss.stage(root, client, bbb, stone_shutter)
+    generate_stone_forms(root, provider, client, tags, names, material)
+    masonry.generate(root, bbb, client, material, tags, write_json, recipe_unlock, slab=slab,
+                     particle=f"{NS}:block/mossed_stone", ranked_textures=False)
+    standard_windows = ("window", "window2", "four_window", "pane_window")
+    generate_macaw(root, provider, client, tags, material, material, slab, standard_windows, ref_material="stone")
+    generate_macaw(root, stone_reference_jar, client, tags, material, material, slab, FORMS,
+                   ref_ns=NS, ref_material="stone")
+    for form in (*masonry.FORMS, *standard_windows, *FORMS):
+        name = f"{material}_{form}"
+        names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     for tag, values in tags.items():
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})
@@ -393,5 +416,5 @@ if __name__ == "__main__":
         if hashlib.sha256(artwork).hexdigest() != "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878":
             sys.exit("Expected the finalized C9 Stone shutter PNG")
         stone_shutter = Image.open(io.BytesIO(artwork)).convert("RGBA")
-    with ZipFile(provider_path) as provider, ZipFile(client_path) as client, ZipFile(bbb_path) as bbb, ZipFile(paths_path) as path_provider:
-        generate(provider, client, bbb, path_provider, stone_shutter, root)
+        with ZipFile(provider_path) as provider, ZipFile(client_path) as client, ZipFile(bbb_path) as bbb, ZipFile(paths_path) as path_provider:
+            generate(provider, client, bbb, path_provider, c9, stone_shutter, root)

@@ -8,6 +8,7 @@ from zipfile import ZipFile
 
 from PIL import Image
 
+from verify_moss import check_moss
 from verify_mud import MACAW_FORMS, check_directional_caps, check_windows
 from verify_paths import FORMS as PATH_FORMS, check_paths
 
@@ -129,7 +130,9 @@ def check_direct(jar, provider, client, material, expected):
     substrate = {"mud_bricks": "packed_mud", "quartz": "quartz_block"}.get(material, material)
     side = "quartz_block_side" if material == "quartz" else substrate
     slab = "deepslate_brick_slab" if material == "deepslate" else material + "_slab"
-    forms = controls | masonry if material in (*MATERIALS, "sandstone", "red_sandstone", "deepslate", "quartz") else controls
+    if material == "mossy_stone_bricks":
+        slab = "mossy_stone_brick_slab"
+    forms = controls | masonry if material in (*MATERIALS, "mossy_stone_bricks", "sandstone", "red_sandstone", "deepslate", "quartz") else controls
     for form, (source, model_count) in forms.items():
         archive, namespace = (client, "minecraft") if form in controls else (provider, "mcwwindows")
         name = material + "_" + form
@@ -172,6 +175,10 @@ def check_direct(jar, provider, client, material, expected):
             reference = read_json(archive, f"assets/{namespace}/models/{path.replace(name, source)}.json")
             slots = {"texture": f"minecraft:block/{side}"} if form in controls else {
                 "0": f"minecraft:block/{side}", "particle": f"minecraft:block/{side}"}
+            if material == "mossy_stone_bricks":
+                for slot, source_sprite in reference["textures"].items():
+                    if source_sprite in ("minecraft:block/stone", "minecraft:block/stone_bricks"):
+                        slots[slot] = source_sprite.replace("minecraft:block/", f"{NS}:block/mossed_")
             if form == "gothic_window":
                 slots["3"] = "minecraft:block/glass"
             check_directional_caps(child, archive, client, material, "#texture" if form in controls else "#0")
@@ -190,7 +197,8 @@ def check_direct(jar, provider, client, material, expected):
                         assert face["texture"].removeprefix("#") in slots
                 parent = inherited.get("parent")
             for texture in slots.values():
-                client.getinfo("assets/minecraft/textures/" + texture.split(":")[1] + ".png")
+                ns, sprite = texture.split(":")
+                (client if ns == "minecraft" else jar).getinfo(f"assets/{ns}/textures/{sprite}.png")
 
         recipe = resource(f"data/{NS}/recipe/{name}.json")
         original = read_json(archive, f"data/{namespace}/recipe/{source}.json")
@@ -279,6 +287,18 @@ def check_tags(jar, bbb, provider, client, paths, expected):
                     selected.sort(key=lambda f: members.index(prefix + f))
                 if selected:
                     tags.setdefault(path[5:-5], []).extend(material + "_" + f for f in selected)
+    for archive, namespace, refs in (
+            (client, "minecraft", {"stone_button": "button", "stone_pressure_plate": "pressure_plate"}),
+            (provider, "mcwwindows", {"stone_brick_gothic": "gothic_window", "stone_brick_arrow_slit": "arrow_slit"}),
+            (bbb, "bbb", {"stone_" + f: f for f in COVERAGE}),
+            (provider, "mcwwindows", {"stone_" + f: f for f in ("window", "window2", "four_window", "pane_window")}),
+            (jar, NS, {"stone_parapet": "parapet", "stone_louvered_shutter": "louvered_shutter"})):
+        for path in archive.namelist():
+            if "/tags/" in path and path.endswith(".json"):
+                members = read_json(archive, path)["values"]
+                additions = ["mossy_stone_bricks_" + form for source, form in refs.items() if namespace + ":" + source in members]
+                if additions:
+                    tags.setdefault(path[5:-5], []).extend(additions)
     for tag, values in tags.items():
         path = f"data/{tag}.json"
         expected.add(path)
@@ -313,7 +333,9 @@ def verify(jar, provider, client, bbb, paths):
     expected.add("dev/resivore/amc/EndStoneBricksBlocks.class")
     forms.extend("end_stone_bricks_" + form for form in (*COVERAGE, *PATH_FORMS, *MACAW_FORMS))
     forms.append("polished_blackstone_louvered_shutter")
-    assert len(forms) == len(set(forms)) == 162
+    expected.add("dev/resivore/amc/MossyStoneBricksBlocks.class")
+    forms.extend("mossy_stone_bricks_" + form for form in (*DIRECT, *COVERAGE, *MACAW_FORMS))
+    assert len(forms) == len(set(forms)) == 177
     assert names == {f"block.{NS}.{name}": name.replace("window2", "window 2").replace("_", " ").title() for name in forms}
     models = set()
     for form in FORMS:
@@ -356,12 +378,16 @@ def verify(jar, provider, client, bbb, paths):
         check_windows(jar, provider, client, expected, material, material, slab)
     for material in ("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks"):
         check_paths(jar, paths, client, expected, material)
+    check_direct(jar, provider, client, "mossy_stone_bricks", expected)
+    check_masonry(jar, bbb, client, "mossy_stone_bricks", expected)
+    check_windows(jar, provider, client, expected, "mossy_stone_bricks", "mossy_stone_bricks", "mossy_stone_brick_slab")
+    check_moss(jar, bbb, client, expected)
     check_tags(jar, bbb, provider, client, paths, expected)
     assert set(files) == expected, set(files).symmetric_difference(expected)
     check_texture(jar, provider, client)
     sprite = jar.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
     assert hashlib.sha256(sprite).hexdigest() == "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878"
-    print(f"Verified 162 block/item sets, state and sprite closure, recipes, drops, tags, "
+    print(f"Verified 177 block/item sets, state and sprite closure, recipes, drops, tags, "
           f"the exact C9 shutter sprite and all {len(files)} production entries.")
 
 

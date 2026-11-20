@@ -59,6 +59,15 @@ public final class DirectFormTests {
                 result.put("parapet", BlockInit.ANDESITE_PARAPET);
                 result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
             }
+            case "mossy_stone_bricks" -> {
+                result.putAll(REFERENCES);
+                result.put("window", BlockInit.STONE_WINDOW);
+                result.put("window2", BlockInit.STONE_WINDOW2);
+                result.put("four_window", BlockInit.STONE_FOUR_WINDOW);
+                result.put("pane_window", BlockInit.STONE_PANE_WINDOW);
+                result.put("parapet", block("stone", "parapet"));
+                result.put("louvered_shutter", block("stone", "louvered_shutter"));
+            }
             case "polished_blackstone" -> result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
             case "end_stone_bricks" -> {
                 result.putAll(MUD_REFERENCES);
@@ -122,6 +131,11 @@ public final class DirectFormTests {
     @GameTest
     public void netherBricksReferenceStatesAndData(GameTestHelper helper) {
         referenceStatesAndData(helper, "nether_bricks");
+    }
+
+    @GameTest
+    public void mossyStoneBricksReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "mossy_stone_bricks");
     }
 
     @GameTest
@@ -233,6 +247,11 @@ public final class DirectFormTests {
     }
 
     @GameTest
+    public void mossyStoneBricksPlacement(GameTestHelper helper) {
+        placement(helper, "mossy_stone_bricks");
+    }
+
+    @GameTest
     public void polishedBlackstonePlacement(GameTestHelper helper) {
         placement(helper, "polished_blackstone");
     }
@@ -341,6 +360,11 @@ public final class DirectFormTests {
     }
 
     @GameTest
+    public void mossyStoneBricksButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "mossy_stone_bricks");
+    }
+
+    @GameTest
     public void redSandstoneButtonPulse(GameTestHelper helper) {
         buttonPulse(helper, "red_sandstone");
     }
@@ -410,6 +434,11 @@ public final class DirectFormTests {
     @GameTest(maxTicks = 40)
     public void netherBricksPressurePlateSensitivity(GameTestHelper helper) {
         pressurePlateSensitivity(helper, "nether_bricks");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void mossyStoneBricksPressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "mossy_stone_bricks");
     }
 
     @GameTest(maxTicks = 40)
@@ -504,6 +533,11 @@ public final class DirectFormTests {
     }
 
     @GameTest
+    public void mossyStoneBricksWindowInteractions(GameTestHelper helper) {
+        windowInteractions(helper, "mossy_stone_bricks");
+    }
+
+    @GameTest
     public void endStoneBricksWindowInteractions(GameTestHelper helper) {
         windowInteractions(helper, "end_stone_bricks");
     }
@@ -513,7 +547,7 @@ public final class DirectFormTests {
         var absolute = helper.absolutePos(LEFT);
         var hit = new BlockHitResult(Vec3.atCenterOf(absolute), Direction.NORTH, absolute, false);
         for (String form : List.of("window", "window2", "four_window", "pane_window")) {
-            for (Block window : List.of(MUD_REFERENCES.get(form), block(material, form))) {
+            for (Block window : List.of(references(material).get(form), block(material, form))) {
                 helper.setBlock(LEFT, window);
                 if (form.equals("window")) {
                     helper.setBlock(LEFT.above(), window);
@@ -557,6 +591,11 @@ public final class DirectFormTests {
     @GameTest
     public void sandstoneStackedMasonry(GameTestHelper helper) {
         stackedMasonry(helper, "sandstone");
+    }
+
+    @GameTest
+    public void mossyStoneBricksStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "mossy_stone_bricks");
     }
 
     @GameTest

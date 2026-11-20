@@ -53,7 +53,8 @@ def check_geometry(jar, bbb, client, material, substrate, form, expected, sheets
                     assert sprite == "block/dirt"
                     client.getinfo("assets/minecraft/textures/block/dirt.png")
             elif sprite == "block/stone":
-                assert slot == "particle" and bound[slot] == f"minecraft:block/{substrate}"
+                particle = f"{NS}:block/mossed_stone" if material == "mossy_stone_bricks" else f"minecraft:block/{substrate}"
+                assert slot == "particle" and bound[slot] == particle
             else:
                 assert sprite.startswith("bbb:block/") and bound[slot] == amc(sprite, material)
                 sheets.add(sprite.split(":")[1])
@@ -155,7 +156,7 @@ def check_sheets(jar, bbb, client, material, substrate, expected, sheets):
 def check_masonry(jar, bbb, client, material, expected):
     substrate = "packed_mud" if material == "mud_bricks" else material
     slab = {"mud_bricks": "mud_brick_slab", "prismarine_bricks": "prismarine_brick_slab",
-           "end_stone_bricks": "end_stone_brick_slab"}.get(material, material + "_slab")
+           "mossy_stone_bricks": "mossy_stone_brick_slab", "end_stone_bricks": "end_stone_brick_slab"}.get(material, material + "_slab")
     sheets = set()
     for form in COVERAGE:
         check_geometry(jar, bbb, client, material, substrate, form, expected, sheets)
@@ -180,4 +181,7 @@ def check_masonry(jar, bbb, client, material, expected):
                 assert unlock["rewards"]["recipes"] == [own + suffix]
                 assert unlock["criteria"]["recipe"]["conditions"]["recipe"] == own + suffix
                 assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": "minecraft:" + ingredient}]
-    check_sheets(jar, bbb, client, material, substrate, expected, sheets)
+    if material == "mossy_stone_bricks":
+        assert len(sheets) == 10  # check_moss audits these ten atlases texel by texel.
+    else:
+        check_sheets(jar, bbb, client, material, substrate, expected, sheets)

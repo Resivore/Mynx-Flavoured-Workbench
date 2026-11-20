@@ -75,9 +75,9 @@ public final class StoneTests {
     public void registryAndResources(GameTestHelper helper) {
         var ids = new java.util.HashSet<>(Set.of(id("parapet"), id("louvered_shutter")));
         for (String material : java.util.List.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine",
-                "sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks", "end_stone_bricks", "polished_blackstone")) {
+                "sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks", "end_stone_bricks", "polished_blackstone", "mossy_stone_bricks")) {
             var forms = new java.util.ArrayList<>(DirectFormTests.references(material).keySet());
-            if (Set.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine", "end_stone_bricks").contains(material)) {
+            if (Set.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine", "end_stone_bricks", "mossy_stone_bricks").contains(material)) {
                 forms.addAll(java.util.List.of("column", "urn", "moulding", "fence", "frame"));
             }
             for (String form : forms) {
@@ -90,7 +90,7 @@ public final class StoneTests {
                 }
             }
         }
-        helper.assertTrue(ids.size() == 162, "Expected 162 block/item pairs");
+        helper.assertTrue(ids.size() == 177, "Expected 177 block/item pairs");
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());
@@ -197,6 +197,13 @@ public final class StoneTests {
         var blocks = BuiltInRegistries.BLOCK;
         supportsAndShutterInteraction(helper, blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "end_stone_bricks_parapet")),
                 blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "end_stone_bricks_louvered_shutter")));
+    }
+
+    @GameTest
+    public void mossyStoneBricksSupportsAndShutterInteraction(GameTestHelper helper) {
+        var blocks = BuiltInRegistries.BLOCK;
+        supportsAndShutterInteraction(helper, blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "mossy_stone_bricks_parapet")),
+                blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "mossy_stone_bricks_louvered_shutter")));
     }
 
     @GameTest

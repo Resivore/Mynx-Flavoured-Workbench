@@ -61,10 +61,11 @@ def stage_textures(root, bbb, client, material, substrate):
             sheet.save(dest)
 
 
-def generate(root, bbb, client, material, tags, write_json, recipe_unlock, *, substrate=None, slab=None):
+def generate(root, bbb, client, material, tags, write_json, recipe_unlock, *, substrate=None, slab=None, particle=None, ranked_textures=True):
     substrate = substrate or material
     slab = slab or material + "_slab"
-    stage_textures(root, bbb, client, material, substrate)
+    if ranked_textures:
+        stage_textures(root, bbb, client, material, substrate)
     sprites = {"bbb:block/" + sheet for group in RAMPS for sheet in group}
     staged = set()
 
@@ -82,7 +83,7 @@ def generate(root, bbb, client, material, tags, write_json, recipe_unlock, *, su
                 if sprite in sprites:
                     model["textures"][slot] = material_id(sprite, material)
                 elif slot == "particle" and sprite == "block/stone":
-                    model["textures"][slot] = f"minecraft:block/{substrate}"
+                    model["textures"][slot] = particle or f"minecraft:block/{substrate}"
                 else:
                     raise ValueError(f"Unaudited {reference} sprite {slot}: {sprite}")
             write_json(root, f"assets/{NS}/models/{dest.split(':')[1]}.json", model)
