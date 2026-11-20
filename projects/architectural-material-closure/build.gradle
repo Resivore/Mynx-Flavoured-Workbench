@@ -1,0 +1,68 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+
+version = '0.1.0-canary6'
+group = 'dev.resivore'
+layout.buildDirectory = layout.projectDirectory.dir('build/c6')
+
+repositories {
+    mavenCentral()
+}
+
+def providerJar = file('../../originals/mods/mcw-windows-2.4.2-mc26.2fabric.jar')
+def clientJar = file(providers.gradleProperty('vanillaClient').getOrElse(
+        new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/26.2/minecraft-client.jar').path))
+def python = providers.gradleProperty('python').getOrElse('python')
+def privateResources = layout.buildDirectory.dir('generated/privateResources')
+
+dependencies {
+    minecraft 'com.mojang:minecraft:26.2'
+    implementation 'net.fabricmc:fabric-loader:0.19.3'
+    implementation 'net.fabricmc.fabric-api:fabric-api:0.157.0+26.2'
+    implementation files(providerJar)
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+}
+
+tasks.register('generateStoneResources', Exec) {
+    inputs.files('tools/generate.py', providerJar, clientJar)
+    outputs.dir(privateResources)
+    commandLine python, 'tools/generate.py', providerJar, clientJar, privateResources.get().asFile
+}
+
+sourceSets.main.resources.srcDir(privateResources)
+processResources {
+    dependsOn 'generateStoneResources'
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+
+tasks.named('jar') {
+    archiveFileName = 'AMC C6.jar'
+}
+
+tasks.register('verifyStoneJar', Exec) {
+    dependsOn jar
+    inputs.files('tools/verify.py', providerJar, clientJar, jar.archiveFile)
+    commandLine python, 'tools/verify.py', jar.archiveFile.get().asFile, providerJar, clientJar
+}
+
+check.dependsOn 'verifyStoneJar'
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'amc-tests'
+        enableGameTests = true
+        enableClientGameTests = false
+        clearRunDirectory = false
+    }
+}
+
+loom.runs.named('gameTest') {
+    runDir 'build/c6/gametest'
+    vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
+}

@@ -1,0 +1,125 @@
+package dev.resivore.amc.test;
+
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.kikoz.mcwwindows.init.BlockInit;
+import net.kikoz.mcwwindows.objects.Parapet;
+import net.kikoz.mcwwindows.objects.Shutter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public final class StoneTests {
+    private static final String NAMESPACE = "architectural_material_closure";
+    private static final BlockPos POSITION = new BlockPos(1, 1, 1);
+
+    private static Identifier id(String form) {
+        return Identifier.fromNamespaceAndPath(NAMESPACE, "stone_" + form);
+    }
+
+    private static Block block(String form) {
+        return BuiltInRegistries.BLOCK.getValue(id(form));
+    }
+
+    @GameTest
+    public void registryAndResources(GameTestHelper helper) {
+        var ids = Set.of(id("parapet"), id("louvered_shutter"));
+        for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
+            var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
+                    .collect(Collectors.toSet());
+            helper.assertTrue(registered.equals(ids), "Unexpected AMC registry entries: " + registered);
+        }
+        for (String form : java.util.List.of("parapet", "louvered_shutter")) {
+            var key = id(form);
+            var stone = block(form);
+            var item = BuiltInRegistries.ITEM.getValue(key);
+            var providerKey = Identifier.fromNamespaceAndPath("mcwwindows", "andesite_" + form);
+            var reference = BuiltInRegistries.BLOCK.getValue(providerKey);
+            helper.assertTrue(reference == (form.equals("parapet") ? BlockInit.ANDESITE_PARAPET
+                    : BlockInit.ANDESITE_LOUVERED_SHUTTER), "Provider identity changed");
+            helper.assertTrue(stone != reference && stone.getClass() == reference.getClass(), "Wrong implementation");
+            helper.assertTrue(!BuiltInRegistries.BLOCK.containsKey(Identifier.fromNamespaceAndPath(
+                    "mcwwindows", key.getPath())), "Macaw already owns the Stone form");
+            helper.assertTrue(item instanceof BlockItem bi && bi.getBlock() == stone && stone.asItem() == item,
+                    "Block item binding failed");
+            var tag = Identifier.fromNamespaceAndPath("mcwwindows", form.equals("parapet") ? "parapets" : "shutters");
+            helper.assertTrue(stone.defaultBlockState().is(BlockTags.MINEABLE_WITH_PICKAXE)
+                    && stone.defaultBlockState().is(TagKey.create(Registries.BLOCK, tag)), "Missing block tag");
+            helper.assertTrue(helper.getLevel().recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, key))
+                    .isPresent(), "Recipe failed to load");
+            var drops = Block.getDrops(stone.defaultBlockState(), helper.getLevel(), helper.absolutePos(POSITION), null);
+            helper.assertTrue(drops.size() == 1 && drops.getFirst().is(item) && drops.getFirst().getCount() == 1,
+                    "Expected one matching self-drop");
+            var pos = helper.absolutePos(POSITION);
+            for (var state : reference.getStateDefinition().getPossibleStates()) {
+                var actual = stone.withPropertiesOf(state);
+                helper.assertTrue(actual.getValues().toList().equals(state.getValues().toList()), "Missing state properties");
+                helper.assertTrue(actual.getShape(helper.getLevel(), pos).toAabbs()
+                        .equals(state.getShape(helper.getLevel(), pos).toAabbs()), "Wrong outline");
+                helper.assertTrue(actual.getCollisionShape(helper.getLevel(), pos).toAabbs()
+                        .equals(state.getCollisionShape(helper.getLevel(), pos).toAabbs()), "Wrong collision");
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest
+    public void masonryPlacement(GameTestHelper helper) {
+        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var pos = helper.absolutePos(POSITION);
+        for (int yaw : new int[]{0, 90, 180, 270}) {
+            player.setYRot(yaw);
+            for (double offset : new double[]{0.2, 0.8}) {
+                var hit = new BlockHitResult(new Vec3(pos.getX() + offset, pos.getY(), pos.getZ() + offset),
+                        Direction.UP, pos, false);
+                for (var reference : java.util.List.of(BlockInit.ANDESITE_PARAPET, BlockInit.ANDESITE_LOUVERED_SHUTTER)) {
+                    var stone = block(reference instanceof Parapet ? "parapet" : "louvered_shutter");
+                    var expected = reference.getStateForPlacement(new BlockPlaceContext(player, InteractionHand.MAIN_HAND,
+                            reference.asItem().getDefaultInstance(), hit));
+                    var actual = stone.getStateForPlacement(new BlockPlaceContext(player, InteractionHand.MAIN_HAND,
+                            stone.asItem().getDefaultInstance(), hit));
+                    helper.assertTrue(actual.getValues().toList().equals(expected.getValues().toList()), "Placement differs at yaw " + yaw);
+                }
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest
+    public void supportsAndShutterInteraction(GameTestHelper helper) {
+        helper.setBlock(POSITION, block("parapet"));
+        helper.setBlock(POSITION.above(), Blocks.FLOWER_POT);
+        helper.assertTrue(helper.getBlockState(POSITION).getValue(Parapet.FLOWER) == Parapet.Flower.FLOWER,
+                "Flower pot did not enable the support");
+        helper.setBlock(POSITION.above(), Blocks.AIR);
+        helper.assertTrue(helper.getBlockState(POSITION).getValue(Parapet.FLOWER) == Parapet.Flower.EMPTY,
+                "Removing pot did not clear the support");
+        var shutter = block("louvered_shutter").defaultBlockState().setValue(Shutter.OPEN, false);
+        helper.setBlock(POSITION, shutter);
+        helper.setBlock(POSITION.above(), shutter);
+        helper.setBlock(POSITION.east(), BlockInit.ANDESITE_LOUVERED_SHUTTER.defaultBlockState().setValue(Shutter.OPEN, false));
+        for (boolean open : new boolean[]{true, false}) {
+            helper.useBlock(POSITION);
+            helper.assertTrue(helper.getBlockState(POSITION).getValue(Shutter.OPEN) == open
+                    && helper.getBlockState(POSITION.above()).getValue(Shutter.OPEN) == open, "Stack toggle failed");
+            helper.assertTrue(!helper.getBlockState(POSITION.east()).getValue(Shutter.OPEN), "Provider shutter was toggled");
+        }
+        helper.succeed();
+    }
+}

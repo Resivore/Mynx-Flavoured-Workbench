@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "architectural_material_closure",
+  "version": "${version}",
+  "name": "Architectural Material Closure",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.resivore.amc.StoneBlocks"]
+  },
+  "depends": {
+    "minecraft": "~26.2",
+    "fabricloader": ">=0.19.3",
+    "java": ">=25",
+    "fabric-api": "*",
+    "mcwwindows": "*"
+  }
+}
