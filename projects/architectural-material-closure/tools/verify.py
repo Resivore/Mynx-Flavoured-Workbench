@@ -73,24 +73,46 @@ def check_texture(jar, provider, client):
     stone = image(client, "minecraft", "stone")
     assert source.size == result.size == (16, 16)
     assert source.getchannel("A").tobytes() == result.getchannel("A").tobytes()
-    def pixels(im):
-        return (im.getpixel((x, y)) for y in range(im.height) for x in range(im.width))
+    assert source.size == stone.size
+    # Every visible pixel is either the co-located Stone pixel or that same
+    # pixel under one consistent lighting gain per structural region.
+    gains = {}
+    unshaded = 0
+    for y in range(16):
+        for x in range(16):
+            pixel = result.getpixel((x, y))
+            if not pixel[3]:
+                assert pixel == source.getpixel((x, y))
+                continue
+            grey = stone.getpixel((x, y))[0]
+            assert pixel[0] == pixel[1] == pixel[2]
+            region = None
+            if y >= 1 and 2 <= x <= 9:
+                if y % 3 == 1:
+                    region = "raised"
+                elif y % 3 == 0:
+                    region = "lip" if x == 2 else "recess"
+                elif x == 9:
+                    region = "return"
+            if region is None:
+                assert pixel == stone.getpixel((x, y)), (x, y, "Stone grain changed")
+                unshaded += 1
+            else:
+                # Intersect the gain intervals permitted by integer rounding.
+                lo, hi = gains.get(region, (0, float("inf")))
+                gains[region] = (max(lo, (pixel[0] - 0.5) / grey), min(hi, (pixel[0] + 0.5) / grey))
+    assert unshaded == 122
+    for region, (low, high) in gains.items():
+        assert low <= high, f"Source mottling leaked into {region}"
+    assert 0 < gains["return"][1] < gains["lip"][0] < 1 < gains["raised"][0]
+    assert 0 < gains["recess"][1] < gains["lip"][0]
 
-    colors = lambda im: {p[:3] for p in pixels(im) if p[3] != 0}
-    key = lambda p: (sum(k * v for k, v in zip((299, 587, 114), p)), p)
-    shades, greys = sorted(colors(source), key=key), sorted(colors(stone), key=key)
-    assert len(shades) == 13 and len(greys) == 4 and colors(result) == set(greys)
-    for before, after in zip(pixels(source), pixels(result)):
-        if before[3]:
-            index = int(0.5 + shades.index(before[:3]) * (len(greys) - 1) / (len(shades) - 1))
-            assert after[:3] == greys[index]
-        else:
-            assert after == before
-    # The broad face samples x=0..10. Each authored slat shadow still contrasts
-    # with the lit row above it, even after reducing thirteen tones to four.
+    # The five dark bands and their raised ends must read against the actual
+    # adjacent Stone even where vanilla grain would reverse the contrast.
     for y in (3, 6, 9, 12, 15):
-        mean = lambda row: sum(result.getpixel((x, row))[0] for x in range(2, 10)) / 8
-        assert mean(y - 1) > mean(y), f"Lost slat contrast at row {y}"
+        for x in range(3, 9):
+            assert result.getpixel((x, y))[0] + 12 <= result.getpixel((x, y - 1))[0]
+        assert result.getpixel((9, y - 1))[0] + 12 <= result.getpixel((10, y - 1))[0]
 
 
 def verify(jar, provider, client):

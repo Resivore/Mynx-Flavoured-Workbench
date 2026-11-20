@@ -4,6 +4,7 @@ import io
 import json
 import sys
 from pathlib import Path
+from statistics import median
 from zipfile import ZipFile
 
 from PIL import Image
@@ -38,29 +39,48 @@ def adapt(value):
     return stone_reference(value) if isinstance(value, str) else value
 
 
-def palette(image):
-    colors = {pixel[:3] for _, pixel in image.getcolors(image.width * image.height) if pixel[3]}
-    return sorted(colors, key=lambda c: (299 * c[0] + 587 * c[1] + 114 * c[2], c))
-
-
-def recolor(provider, client, dest):
+def shade_stone_shutter(provider, client, dest):
     def image(archive, path):
         return Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
 
     shutter = image(provider, "assets/mcwwindows/textures/block/andesite_louvered_shutter.png")
     stone = image(client, "assets/minecraft/textures/block/stone.png")
-    source, target = palette(shutter), palette(stone)
-    # BBB rounds the linearly scaled luminance rank to the nearest palette index.
-    scale = len(source) - 1
-    mapping = {c: target[(2 * i * (len(target) - 1) + scale) // (2 * scale)]
-               for i, c in enumerate(source)}
-    for y in range(shutter.height):
-        for x in range(shutter.width):
-            pixel = shutter.getpixel((x, y))
-            if pixel[3]:
-                shutter.putpixel((x, y), (*mapping[pixel[:3]], pixel[3]))
+    light = shutter.convert("L")
+
+    # The broad-face UV is [0,1,11,16]. Measure equivalent regions across
+    # its five slats so isolated mineral flecks cannot become surface detail.
+    def region_light(columns, first_row):
+        return median(light.getpixel((x, y)) for y in range(first_row, 16, 3) for x in columns)
+
+    face = region_light(range(3, 9), 2)
+
+    def gain(columns, row):
+        # Deepen the measured relief to keep the recess legible even on the
+        # lightest Stone texels. A neutral region retains unit gain.
+        return (region_light(columns, row) / face) ** 2.25
+
+    raised = gain(range(2, 10), 1)
+    lip = gain([2], 3)
+    recess = gain(range(3, 10), 3)
+    end_return = gain([9], 2)
+
+    result = stone.copy()
+    result.putalpha(shutter.getchannel("A"))
+    for top in range(1, 16, 3):
+        for row, columns, factor in (
+            (top, range(2, 10), raised),
+            (top + 1, [9], end_return),
+            (top + 2, [2], lip),
+            (top + 2, range(3, 10), recess),
+        ):
+            for x in columns:
+                r, g, b, a = result.getpixel((x, row))
+                result.putpixel((x, row), (*[min(255, round(v * factor)) for v in (r, g, b)], a))
+
+    # Preserve the provider's fully transparent padding as well as the alpha mask.
+    result.paste(shutter, mask=shutter.getchannel("A").point(lambda a: 255 if a == 0 else 0))
     dest.parent.mkdir(parents=True, exist_ok=True)
-    shutter.save(dest)
+    result.save(dest)
 
 
 def generate(provider, client, root):
@@ -92,7 +112,7 @@ def generate(provider, client, root):
     for model in models:
         adapt_resource("assets/{ns}/models/block/" + model + ".json")
 
-    recolor(provider, client, root / f"assets/{NS}/textures/block/stone_louvered_shutter.png")
+    shade_stone_shutter(provider, client, root / f"assets/{NS}/textures/block/stone_louvered_shutter.png")
     write_json(root, f"assets/{NS}/lang/en_us.json", {
         f"block.{NS}.stone_parapet": "Stone Parapet",
         f"block.{NS}.stone_louvered_shutter": "Stone Louvered Shutter",
