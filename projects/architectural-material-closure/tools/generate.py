@@ -56,8 +56,8 @@ def shade_stone_shutter(provider, client, dest):
 
     def gain(columns, row):
         full_gain = (region_light(columns, row) / face) ** 2.25
-        # Unit gain is the original Stone texel. Halve only the shadow deficit.
-        return (1.0 + full_gain) / 2 if full_gain < 1.0 else full_gain
+        # C7 used the full shadow depth and C8 used half. Keep their midpoint.
+        return 1.0 - 0.75 * (1.0 - full_gain) if full_gain < 1.0 else full_gain
 
     raised = gain(range(2, 10), 1)
     lip = gain([2], 3)

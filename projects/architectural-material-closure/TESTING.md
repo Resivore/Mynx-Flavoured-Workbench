@@ -1,13 +1,13 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 8
+## Owner verification for Canary 9
 
-Use the exact retained `AMC C8.jar` and compare its SHA-256 with the current release in `WORKBENCH_STATUS.json`. The reference pair is Macaw's Windows 2.4.2 Andesite Parapet and Andesite Louvered Shutter on Minecraft Java 26.2 Fabric.
+Use the exact retained `AMC C9.jar` and compare its SHA-256 with the current release in `WORKBENCH_STATUS.json`. The reference pair is Macaw's Windows 2.4.2 Andesite Parapet and Andesite Louvered Shutter on Minecraft Java 26.2 Fabric.
 
 1. Find Stone Parapet and Stone Louvered Shutter in Building Blocks. Confirm their inventory and held models render. Both item IDs use the namespace `architectural_material_closure`.
 2. Craft five parapets using three sticks across the first row and stick, Stone, stick across the second. Craft three shutters from three Stone Slabs in one column. Mine each with a pickaxe and check for one matching block item.
 3. Place a Stone parapet beside an andesite parapet in each horizontal orientation. Compare the outline, ledge and face alignment. Add and remove a flower pot above each and compare the support. The AMC ledge and support should both show vanilla Stone.
-4. Compare C8 with a C7 capture at the same angle, lighting and shader settings, with vanilla Stone alongside. Check that the bevels, five recessed bands and short upward returns look softer while keeping their positions and relative depth. Compare the Stone grain and raised faces on both hinge sides, open and closed, and in the inventory model.
+4. Compare the C9 shutter with C7 and C8 captures at the same angle and lighting, with the same shader settings. Check that the bevels, five recessed bands and short upward returns look intermediate in depth. Compare the Stone grain and highlights on both hinge sides, open and closed, and in the inventory model.
 5. Open and close a vertical pair of Stone shutters together. Try using one while holding its own item, then with an empty hand. Compare with a Macaw pair and confirm an adjacent andesite shutter remains independent. Save and rejoin to check placement and state persistence.
 
 Record the exact artifact hash, observed results, and any failing orientation, hinge, or pot state. Include a screenshot for a rendering issue. Owner runtime evidence is pending.

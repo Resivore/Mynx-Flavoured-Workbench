@@ -107,11 +107,10 @@ def check_texture(jar, provider, client):
     assert 0 < gains["return"][1] < gains["lip"][0] < 1 < gains["raised"][0]
     assert 0 < gains["recess"][1] < gains["lip"][0]
 
-    # Each region samples the same 127-grey Stone somewhere in the C7 sprite.
-    # Verify its observed C7 level against the gain range for every C8 texel.
-    c7_at_127 = {"return": 72, "recess": 78, "lip": 100, "raised": 146}
-    for region, old in c7_at_127.items():
-        target = (127 + old) / 2 if old < 127 else old
+    # Levels observed in the two retained shutter sprites on 127-grey Stone.
+    levels_at_127 = {"return": (72, 99), "recess": (78, 103), "lip": (100, 114), "raised": (146, 146)}
+    for region, (c7, c8) in levels_at_127.items():
+        target = (c7 + c8) / 2
         low, high = gains[region]
         assert low * 127 <= target + 0.5 and high * 127 >= target - 0.5, region
 
