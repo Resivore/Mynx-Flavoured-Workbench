@@ -21,13 +21,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Use AMC registrations for the Stone accessories and the Andesite, Diorite, and Granite accessory, masonry detail, and Gothic window forms. Integrate the thirteen AMC Mud Bricks forms with the Macaw Mud Brick Gothic Window and Arrow Slit. Integrate the Prismarine Bricks and Dark Prismarine accessories and masonry details, and the eleven thin Prismarine Bricks paths and pavings. Integrate the twelve AMC Sandstone and Red Sandstone forms into their accessory, window, and masonry detail selectors."
+      "Use AMC registrations for the Stone accessories and the Andesite, Diorite, and Granite accessory, masonry detail, and Gothic window forms. Integrate the thirteen AMC Mud Bricks forms with the Macaw Mud Brick Gothic Window and Arrow Slit. Integrate the Prismarine Bricks and Dark Prismarine accessories and masonry details, and the eleven thin Prismarine Bricks paths and pavings. Integrate the twelve AMC Sandstone and Red Sandstone forms into their accessory, window, and masonry detail selectors. Integrate the Deepslate, Quartz and Nether Bricks accessory, window, masonry and thin path forms admitted by C21."
     ],
     "scope": [
-      "With AMC C16 the catalog resolves 197 families and 1,490 distinct items. Without AMC it resolves 181 families and 1,397 items. The largest family contains 22 items. For each sandstone, C20 adds one Button family and appends one member each to the existing Window and Column families. Both eleven-member Macaw Path selectors retain their C19 definitions.",
+      "With AMC C19 the catalog resolves 203 families and 1,533 distinct items. Without AMC it resolves 181 families and 1,397 items. The largest family contains 22 items. Six new families and four extensions admit 42 AMC forms and the existing Macaw Nether Brick Gothic Window. The eight Quartz and Nether Bricks patterned full blocks retain their own recipes and placement.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain the accepted C7 and historical rollback C3 artifacts while C20 undergoes owner-directed verification."
+      "Retain the accepted C7 and historical rollback C3 artifacts while C21 undergoes owner-directed verification."
     ],
     "boundaries": {
       "owned_paths": [
@@ -38,7 +38,7 @@
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
         "Required providers supply every audited item. An absent AMC parent omits its whole family. Existing vanilla, Macaw, and BBB parents retain their registered alternates when AMC is absent.",
-        "C20 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
+        "C21 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -47,7 +47,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version targeted by C20; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
+        "reason": "Exact game version targeted by C21; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
       },
       {
         "type": "MOD",
@@ -137,35 +137,35 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "=25",
-        "reason": "Required Java release for Minecraft 26.2 and the controlled C20 build."
+        "reason": "Required Java release for Minecraft 26.2 and the controlled C21 build."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1 with Fabric Loom 1.17.19",
-        "reason": "Exact build-tool baseline used for the controlled C20 build and GameTest validation."
+        "reason": "Exact build-tool baseline used for the controlled C21 build and GameTest validation."
       },
       {
         "type": "PROJECT",
         "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
-        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C16.jar, SHA-256 d47cfb71e03030738d447d1a567f7d04fdc27fe54055b06345033bafd4b49c2f.",
-        "reason": "Provides the Stone accessories and the Button, Pressure Plate, Column, Urn, Moulding, Fence, Frame, Arrow Slit, and Gothic Window for each of Andesite, Diorite, and Granite. C14 also supplies the thirteen Mud Bricks accessory, masonry, and window items. C15 supplies the 27 Prismarine accessory, masonry, path and paving items admitted by C19. C16 supplies six registered forms each for Sandstone and Red Sandstone."
+        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C19.jar, SHA-256 861f184482b9113d83057c473073ce4baa0c396e531c98a03a9b5170410bb775.",
+        "reason": "Provides the Stone accessories and the Button, Pressure Plate, Column, Urn, Moulding, Fence, Frame, Arrow Slit, and Gothic Window for each of Andesite, Diorite, and Granite. C14 also supplies the thirteen Mud Bricks accessory, masonry, and window items. C15 supplies the 27 Prismarine accessory, masonry, path and paving items admitted by C19. C16 supplies six registered forms each for Sandstone and Red Sandstone. C19 supplies the six Deepslate, seventeen Quartz and nineteen Nether Bricks items admitted by C21."
       }
     ]
   },
   "state": {
-    "milestone": "All twelve AMC C16 items resolved exactly once. Both provider configurations passed 55 JUnit tests and 31 controlled Fabric GameTests, including selector round trips and recipe checks. Removing the C20 additions reproduces the complete ordered C19 catalog digest. Owner runtime verification is pending.",
+    "milestone": "Confirmed all 50 AMC C19 registrations, 42 unique admissions and eight independent full blocks. Both provider configurations passed 55 JUnit tests and 32 controlled Fabric GameTests. Removing only the C21 additions reproduces the complete ordered C20 catalog digest. Owner runtime verification is pending.",
     "releases": {
       "current": {
-        "version": "C20 (0.1.0-canary20)",
-        "canary": 20,
-        "embedded_version": "0.1.0-canary20",
+        "version": "C21 (0.1.0-canary21)",
+        "canary": 21,
+        "embedded_version": "0.1.0-canary21",
         "artifact": {
-          "filename": "IBF C20.jar",
-          "sha256": "90a423755d4a0bb31ca636ffa04c2bacf76a627362003fc1134a4e5262203bb3"
+          "filename": "IBF C21.jar",
+          "sha256": "f4b2fe43299533e0ae5db1f3aa8693c092eedd1edc2f2c6ce5bcac1e75797442"
         },
-        "built_at": "2026-11-20T19:25:24.4245247Z",
-        "source_commit": "c616755f6760467931149f56c123958a57d390a2",
+        "built_at": "2026-11-20T21:50:09.2970545Z",
+        "source_commit": "c3a884b2ace9c998cf4f7747c91407bebd4b886d",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -176,14 +176,14 @@
               "predicate": "=2.0pre4+26.2-enderscape-dev.7",
               "reason": "BBB dev.7 supplies the audited Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package. Its provider version does not support Fabric semantic version ordering. The dev.6 provider lacks the required package.",
               "regression_evidence": [
-                "Fresh C20 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
+                "Fresh C21 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
                 "The Fabric VersionPredicate equality check accepts dev.7 and rejects the incompatible pre-C9 pale-oak dev.6 package before ShapeMap resolution.",
-                "Runs with AMC C16 present and absent passed all 55 C20 JUnit checks, including the BBB provider contracts, and all 31 controlled GameTests."
+                "Runs with AMC C19 present and absent passed all 55 C21 JUnit checks, including the BBB provider contracts, and all 32 controlled GameTests."
               ]
             }
           ]
         },
-        "summary": "Adds Sandstone and Red Sandstone Button selectors and extends their Macaw Window and BBB Column selectors with AMC Gothic Windows and Arrow Slits."
+        "summary": "Integrates Deepslate, Quartz and Nether Bricks accessories, windows, masonry details, and thin paths and pavings while preserving independent patterned full blocks."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -220,10 +220,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 20,
-    "activity_at": "2026-11-20T19:25:24.4245247Z",
-    "updated_at": "2026-11-20T19:25:24.4245247Z",
-    "last_codex_at": "2026-11-20T19:25:24.4245247Z",
-    "source_commit": "c616755f6760467931149f56c123958a57d390a2"
+    "revision": 21,
+    "activity_at": "2026-11-20T21:50:09.2970545Z",
+    "updated_at": "2026-11-20T21:50:09.2970545Z",
+    "last_codex_at": "2026-11-20T21:50:09.2970545Z",
+    "source_commit": "c3a884b2ace9c998cf4f7747c91407bebd4b886d"
   }
 }

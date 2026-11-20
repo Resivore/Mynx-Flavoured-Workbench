@@ -213,3 +213,14 @@
 - Artifact: `IBF C20.jar`, embedded version `0.1.0-canary20`, 59,076 bytes, SHA-256 `90a423755d4a0bb31ca636ffa04c2bacf76a627362003fc1134a4e5262203bb3`, finalized at `2026-11-20T19:25:24.4245247Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner-directed Sandstone selector, recipe and reload checks in TESTING.md.
+
+## 2026-11-20T21:50:09.2970545Z — IBF C21 integrates AMC C19 Deepslate, Quartz and Nether Bricks
+
+- Revision: 21
+- Source checkpoint: `c3a884b2ace9c998cf4f7747c91407bebd4b886d`
+- Changes: Added three Button families, two eleven-member Paths/Pavings families, and one Nether Bricks Window family. Extended the existing Deepslate and Quartz Macaw Window and BBB Column families. All 42 intended AMC items and the Macaw Nether Brick Gothic Window resolve once. The eight patterned full blocks remain independent. Removing the C21 additions reproduces the entire ordered C20 catalog, including both Deepslate path families and the Nether Brick BBB family.
+- Build/static: Exact AMC C19 and AMC-absent runs each passed 55 JUnit tests, 32 controlled Fabric GameTests, production archive isolation and build. With AMC, 203 families and 1,533 items resolved. Without AMC, 181 families and 1,397 items resolved and the unparented Macaw Gothic Window kept its recipe. Selector round trips preserved stack counts and component patches. The eight excluded full blocks placed independently and retained their recipes. The audited corpus removed 1,246 alternate recipes with AMC and 1,114 without, with zero canonical removals. Ordered catalog SHA-256 `9700ae6b2d7dbde923a0d3c5c28422c450bab5eb73686e23da83695a3cbde159`.
+- Runtime: Owner-directed manual Minecraft runtime verification and acceptance are pending.
+- Artifact: `IBF C21.jar`, embedded version `0.1.0-canary21`, 59,677 bytes, SHA-256 `f4b2fe43299533e0ae5db1f3aa8693c092eedd1edc2f2c6ce5bcac1e75797442`, finalized at `2026-11-20T21:50:09.2970545Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner-directed selector, independent patterned block and reload checks in TESTING.md.
