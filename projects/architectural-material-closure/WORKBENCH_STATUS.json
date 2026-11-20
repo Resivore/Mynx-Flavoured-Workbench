@@ -58,23 +58,23 @@
     ]
   },
   "state": {
-    "milestone": "The owner confirmed C7's Stone material, shutter structure and shading placement and reported excessive shadow strength. C8 halves structural darkening relative to each underlying vanilla Stone texel. Packaged resource checks and three controlled Fabric GameTests passed. Owner visual verification of C8 is pending.",
+    "milestone": "C9 sets the Stone Louvered Shutter's shadow depth midway between C7 and C8. Comparison against both retained sprites, packaged resource checks and three controlled Fabric GameTests passed. Owner visual verification of C9 is pending.",
     "releases": {
       "current": {
-        "version": "C8 (0.1.0-canary8)",
-        "canary": 8,
-        "embedded_version": "0.1.0-canary8",
+        "version": "C9 (0.1.0-canary9)",
+        "canary": 9,
+        "embedded_version": "0.1.0-canary9",
         "artifact": {
-          "filename": "AMC C8.jar",
-          "sha256": "24b6ba8963c33a822a1800c2655e993a6d9aa0037816a062c73a1bdb46eb6469"
+          "filename": "AMC C9.jar",
+          "sha256": "f32b382563252e8a73a0bfd0b9ca0abacb02dd3c81a2a074b9d200fb5f147e8b"
         },
-        "built_at": "2026-11-20T17:06:02.1449339Z",
-        "source_commit": "9695ee304040b722999d6c6470faf94a3b924229",
+        "built_at": "2026-11-20T17:09:39.4236259Z",
+        "source_commit": "a795c3ca3844366fcfbe18ddb359d661e7477225",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Softens the Stone Louvered Shutter’s existing shadows by halving their depth relative to vanilla Stone."
+        "summary": "Sets the Stone Louvered Shutter’s recess and bevel shadows halfway between C7 and C8."
       },
       "accepted": null,
       "rollback": null,
@@ -88,10 +88,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-11-20T17:06:55Z",
-    "updated_at": "2026-11-20T17:06:55Z",
-    "last_codex_at": "2026-11-20T17:06:55Z",
-    "source_commit": "9695ee304040b722999d6c6470faf94a3b924229"
+    "revision": 10,
+    "activity_at": "2026-11-20T17:10:29Z",
+    "updated_at": "2026-11-20T17:10:29Z",
+    "last_codex_at": "2026-11-20T17:10:29Z",
+    "source_commit": "a795c3ca3844366fcfbe18ddb359d661e7477225"
   }
 }

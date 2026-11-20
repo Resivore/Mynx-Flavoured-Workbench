@@ -96,3 +96,14 @@
 - Artifact: Local-only `AMC C8.jar` (`0.1.0-canary8`, 16,193 bytes), SHA-256 `24b6ba8963c33a822a1800c2655e993a6d9aa0037816a062c73a1bdb46eb6469`, finalized at `2026-11-20T17:06:02.1449339Z` from the preceding source checkpoint.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. C8 is unaccepted.
 - Next state: Compare the retained C8 shutter with C7 in the same lighting and record the owner's visual result.
+
+## 2026-11-20T17:10:29Z — Set Stone Louvered Shutter shading midway between C7 and C8
+
+- Revision: 10
+- Source checkpoint: `a795c3ca3844366fcfbe18ddb359d661e7477225`
+- Changes: Set structural shadow depth to three quarters of C7's depth relative to the underlying Stone. The existing slat masks and highlight gain are preserved.
+- Build/static: `build runGameTest --rerun-tasks` passed packaged resource checks and all three controlled Fabric GameTests. All 45 shadow pixels were within half an 8-bit grey level of the arithmetic midpoint of the retained C7 and C8 pixels. The other 211 RGBA pixels matched both releases exactly. Only the shutter PNG and embedded version differed among all 24 C8 and C9 archive entries.
+- Runtime: The owner requested an intermediate shadow strength. Owner gameplay observations for C9 are pending.
+- Artifact: Local-only `AMC C9.jar` (`0.1.0-canary9`, 16,191 bytes), SHA-256 `f32b382563252e8a73a0bfd0b9ca0abacb02dd3c81a2a074b9d200fb5f147e8b`, finalized at `2026-11-20T17:09:39.4236259Z` from the preceding source checkpoint.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify C9's shadow strength in game beside C7 and C8 captures under matching lighting.
