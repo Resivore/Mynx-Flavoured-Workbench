@@ -59,6 +59,12 @@ public final class DirectFormTests {
                 result.put("parapet", BlockInit.ANDESITE_PARAPET);
                 result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
             }
+            case "polished_blackstone" -> result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
+            case "end_stone_bricks" -> {
+                result.putAll(MUD_REFERENCES);
+                result.remove("button");
+                result.remove("pressure_plate");
+            }
             case "mud_bricks", "nether_bricks" -> result.putAll(MUD_REFERENCES);
             case "prismarine_bricks", "dark_prismarine" -> {
                 result.put("button", Blocks.STONE_BUTTON);
@@ -67,7 +73,7 @@ public final class DirectFormTests {
             }
             default -> result.putAll(REFERENCES);
         }
-        if (List.of("prismarine_bricks", "quartz", "nether_bricks").contains(material)) {
+        if (List.of("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks").contains(material)) {
             for (var form : PATH_FORMS) {
                 result.put(form, BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("mcwpaths", "dark_prismarine_" + form)));
             }
@@ -116,6 +122,16 @@ public final class DirectFormTests {
     @GameTest
     public void netherBricksReferenceStatesAndData(GameTestHelper helper) {
         referenceStatesAndData(helper, "nether_bricks");
+    }
+
+    @GameTest
+    public void polishedBlackstoneReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "polished_blackstone");
+    }
+
+    @GameTest
+    public void endStoneBricksReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "end_stone_bricks");
     }
 
     @GameTest
@@ -214,6 +230,16 @@ public final class DirectFormTests {
     @GameTest
     public void netherBricksPlacement(GameTestHelper helper) {
         placement(helper, "nether_bricks");
+    }
+
+    @GameTest
+    public void polishedBlackstonePlacement(GameTestHelper helper) {
+        placement(helper, "polished_blackstone");
+    }
+
+    @GameTest
+    public void endStoneBricksPlacement(GameTestHelper helper) {
+        placement(helper, "end_stone_bricks");
     }
 
     @GameTest
@@ -443,6 +469,11 @@ public final class DirectFormTests {
         engraving(helper, "nether_bricks");
     }
 
+    @GameTest
+    public void endStoneBricksEngraving(GameTestHelper helper) {
+        engraving(helper, "end_stone_bricks");
+    }
+
     private static void engraving(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
@@ -470,6 +501,11 @@ public final class DirectFormTests {
     @GameTest
     public void netherBricksWindowInteractions(GameTestHelper helper) {
         windowInteractions(helper, "nether_bricks");
+    }
+
+    @GameTest
+    public void endStoneBricksWindowInteractions(GameTestHelper helper) {
+        windowInteractions(helper, "end_stone_bricks");
     }
 
     private static void windowInteractions(GameTestHelper helper, String material) {

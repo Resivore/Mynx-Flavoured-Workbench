@@ -58,12 +58,26 @@ public final class StoneTests {
     }
 
     @GameTest
+    public void endStoneBricksProviderOwnership(GameTestHelper helper) {
+        for (String name : java.util.List.of("extshape:end_stone_brick_button", "extshape:end_stone_brick_pressure_plate",
+                "mcwwindows:end_brick_gothic", "mcwwindows:ender_brick_arrow_slit")) {
+            var key = Identifier.parse(name);
+            helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(key) && BuiltInRegistries.ITEM.containsKey(key),
+                    "Missing provider registration " + key);
+            var block = BuiltInRegistries.BLOCK.getValue(key);
+            helper.assertTrue(BuiltInRegistries.ITEM.getValue(key) instanceof BlockItem item && item.getBlock() == block,
+                    "Provider block/item mismatch " + key);
+        }
+        helper.succeed();
+    }
+
+    @GameTest
     public void registryAndResources(GameTestHelper helper) {
         var ids = new java.util.HashSet<>(Set.of(id("parapet"), id("louvered_shutter")));
         for (String material : java.util.List.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine",
-                "sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks")) {
+                "sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks", "end_stone_bricks", "polished_blackstone")) {
             var forms = new java.util.ArrayList<>(DirectFormTests.references(material).keySet());
-            if (Set.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine").contains(material)) {
+            if (Set.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine", "end_stone_bricks").contains(material)) {
                 forms.addAll(java.util.List.of("column", "urn", "moulding", "fence", "frame"));
             }
             for (String form : forms) {
@@ -76,7 +90,7 @@ public final class StoneTests {
                 }
             }
         }
-        helper.assertTrue(ids.size() == 135, "Expected 135 block/item pairs");
+        helper.assertTrue(ids.size() == 162, "Expected 162 block/item pairs");
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());
@@ -179,6 +193,13 @@ public final class StoneTests {
     }
 
     @GameTest
+    public void endStoneBricksSupportsAndShutterInteraction(GameTestHelper helper) {
+        var blocks = BuiltInRegistries.BLOCK;
+        supportsAndShutterInteraction(helper, blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "end_stone_bricks_parapet")),
+                blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "end_stone_bricks_louvered_shutter")));
+    }
+
+    @GameTest
     public void redSandstoneSupportsAndShutterInteraction(GameTestHelper helper) {
         var blocks = BuiltInRegistries.BLOCK;
         supportsAndShutterInteraction(helper, blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "red_sandstone_parapet")),
@@ -206,6 +227,12 @@ public final class StoneTests {
     public void darkPrismarineShutterInteraction(GameTestHelper helper) {
         shutterInteraction(helper, BuiltInRegistries.BLOCK.getValue(
                 Identifier.fromNamespaceAndPath(NAMESPACE, "dark_prismarine_louvered_shutter")));
+    }
+
+    @GameTest
+    public void polishedBlackstoneShutterInteraction(GameTestHelper helper) {
+        shutterInteraction(helper, BuiltInRegistries.BLOCK.getValue(
+                Identifier.fromNamespaceAndPath(NAMESPACE, "polished_blackstone_louvered_shutter")));
     }
 
     private static void shutterInteraction(GameTestHelper helper, Block shutterBlock) {

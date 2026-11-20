@@ -1,8 +1,15 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 20
+## Owner verification for Canary 21
 
-Match the SHA-256 of `AMC C20.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 135 AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C21.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 162 AMC IDs use the namespace `architectural_material_closure`.
+
+### End Stone Bricks and Polished Blackstone
+
+1. Find all 26 End Stone Bricks items and the Polished Blackstone Louvered Shutter in Building Blocks. Compare held and inventory views with the placed blocks. With Extended Block Shapes installed, check the existing button and pressure plate under the `extshape` namespace. Macaw's Windows supplies `mcwwindows:end_brick_gothic` and `mcwwindows:ender_brick_arrow_slit`.
+2. Compare each End Stone Bricks masonry form with its BBB Stone counterpart. Use the five checks in the masonry table below, including waterlogging, column joins, planting and soil, moulding corners, fence fills and frame diagonals. Inspect the carved surfaces and joins against vanilla End Stone Bricks.
+3. Stonecut End Stone Bricks into all fifteen Paths forms. Check the eleven thin paths and pavings against their Macaw Dark Prismarine references, including weighted Strewn Rocky variants and Dumble orientation. Tile Running Bond, Flagstone, Windmill Weave and Crystal Floor separately. Engrave each with a pickaxe, save and rejoin, then restore its original pattern.
+4. Place the four standard windows and the parapet beside Macaw's Andesite references and vanilla End Stone Bricks. Check window joins, the glass-only center, opening and locking where applicable, and the parapet's flower-pot support. Craft each shutter from three matching slabs in a column. Inspect both hinges and toggle vertical pairs. Under matching light, compare each shutter's five slats, raised lips, recesses and gaps with the Stone shutter and its colors with its respective vanilla block.
 
 ### Deepslate, Quartz and Nether Bricks
 
@@ -13,7 +20,7 @@ Match the SHA-256 of `AMC C20.jar` to the current release in `WORKBENCH_STATUS.j
 
 ### C17 prismarine shutter correction
 
-Place the Stone, Prismarine Bricks and Dark Prismarine Louvered Shutters side by side, facing the same way under the same light. Compare the five slats, recesses, raised edges, grain and transparent gaps with the Stone shutter. Check both hinges, open and closed positions, a vertical pair and the held and inventory views. Note whether the eight-color Prismarine Bricks and six-color Dark Prismarine versions keep the slats distinct at ordinary viewing distance. Record the C20 hash and any affected face or pose with the owner's observations.
+Place the Stone, Prismarine Bricks and Dark Prismarine Louvered Shutters side by side, facing the same way under the same light. Compare the five slats, recesses, raised edges, grain and transparent gaps with the Stone shutter. Check both hinges, open and closed positions, a vertical pair and the held and inventory views. Note whether the eight-color Prismarine Bricks and six-color Dark Prismarine versions keep the slats distinct at ordinary viewing distance. Record the C21 hash and any affected face or pose with the owner's observations.
 
 ### Sandstone and Red Sandstone
 
@@ -23,7 +30,7 @@ Run these checks for both materials. Place the corresponding vanilla block along
 2. Face each Parapet in four directions and place and remove a flower pot above it. Inspect the top, underside and edge of both the ledge and support. Compare their shape and orientation with Macaw's Andesite Parapet.
 3. Compare both windows with the Macaw Stone Brick Gothic Window and Arrow Slit. Inspect the masonry cap and underside, the narrow faces of the opening, and the visible side bands. Form stacks, remove the middle block, then toggle the Gothic Window and check its glass and conditional iron bars in the reference states.
 4. Face the shutter in each direction, use both hinges and toggle a vertical pair. Compare its five shaded slats with the C9 Stone shutter. Compare the broad faces, narrow edges and underside with the top face of the corresponding vanilla block. Check that the smoother grain follows the original UVs, with the five slats, raised lips and dark recesses visible in open, closed and held views.
-5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C20 hash, orientation, state and screenshots for any visual differences.
+5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C21 hash, orientation, state and screenshots for any visual differences.
 
 ### Prismarine Bricks and Dark Prismarine
 
@@ -71,11 +78,11 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C20 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C21 are pending.
 
 ## Controlled build checks
 
-From the AMC directory, use Java 25, Gradle 9.5.1 and Python with Pillow. The generator checks the read-only Macaw provider JARs in `originals/mods`, the retained BBB C9 JAR in the sibling BBB project's `artifacts/` directory, and the official 26.2 client in Loom's cache. The Prismarine Bricks, Dark Prismarine, Deepslate and Nether Bricks shutters use the Stone PNG extracted from the hash-verified `artifacts/AMC C9.jar`. Use `-PstoneShutterJar=<path>` for another copy of that artifact. Set `-PvanillaClient=<path>` for another copy of that exact client and `-PbbbJar=<path>` for another copy of the verified BBB reference.
+From the AMC directory, use Java 25, Gradle 9.5.1 and Python with Pillow. The controlled GameTest run also loads the local Extended Block Shapes 3.1.6 JAR to verify the existing End Stone Brick control registrations. The generator checks the read-only Macaw provider JARs in `originals/mods`, the retained BBB C9 JAR in the sibling BBB project's `artifacts/` directory, and the official 26.2 client in Loom's cache. The Prismarine Bricks, Dark Prismarine, Deepslate, Nether Bricks, End Stone Bricks and Polished Blackstone shutters use the Stone PNG extracted from the hash-verified `artifacts/AMC C9.jar`. Use `-PstoneShutterJar=<path>` for another copy of that artifact. Set `-PvanillaClient=<path>` for another copy of that exact client and `-PbbbJar=<path>` for another copy of the verified BBB reference.
 
 ```text
 gradle build runGameTest --rerun-tasks -Ppython=<interpreter>

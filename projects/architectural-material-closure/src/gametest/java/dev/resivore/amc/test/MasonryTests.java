@@ -78,6 +78,11 @@ public final class MasonryTests {
     }
 
     @GameTest
+    public void endStoneBricksCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "end_stone_bricks");
+    }
+
+    @GameTest
     public void prismarineBricksCompleteStateAndShapeParity(GameTestHelper helper) {
         completeStateAndShapeParity(helper, "prismarine_bricks");
     }
@@ -146,6 +151,11 @@ public final class MasonryTests {
     @GameTest
     public void mudBricksWetAndDryPlacement(GameTestHelper helper) {
         wetAndDryPlacement(helper, "mud_bricks");
+    }
+
+    @GameTest
+    public void endStoneBricksWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "end_stone_bricks");
     }
 
     @GameTest
@@ -223,6 +233,11 @@ public final class MasonryTests {
     }
 
     @GameTest
+    public void endStoneBricksColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "end_stone_bricks");
+    }
+
+    @GameTest
     public void prismarineBricksColumnAndMouldingChanges(GameTestHelper helper) {
         columnAndMouldingChanges(helper, "prismarine_bricks");
     }
@@ -279,6 +294,11 @@ public final class MasonryTests {
     @GameTest
     public void mudBricksFenceAndFrameChanges(GameTestHelper helper) {
         fenceAndFrameChanges(helper, "mud_bricks");
+    }
+
+    @GameTest
+    public void endStoneBricksFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "end_stone_bricks");
     }
 
     @GameTest
@@ -344,6 +364,11 @@ public final class MasonryTests {
     @GameTest
     public void mudBricksUrnSoilAndPlant(GameTestHelper helper) {
         urnSoilAndPlant(helper, "mud_bricks");
+    }
+
+    @GameTest
+    public void endStoneBricksUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "end_stone_bricks");
     }
 
     @GameTest

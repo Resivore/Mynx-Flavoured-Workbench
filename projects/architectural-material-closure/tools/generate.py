@@ -357,6 +357,18 @@ def generate(provider, client, bbb, path_provider, stone_shutter, root):
             names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
         if material != "deepslate":
             paths.generate(root, path_provider, client, tags, names, write_json, recipe_unlock, material)
+    end_bricks = "end_stone_bricks"
+    masonry.generate(root, bbb, client, end_bricks, tags, write_json, recipe_unlock, slab="end_stone_brick_slab")
+    windows = ("window", "window2", "four_window", "pane_window", *FORMS)
+    generate_macaw(root, provider, client, tags, end_bricks, end_bricks, "end_stone_brick_slab", windows,
+                   stone_artwork=stone_shutter)
+    paths.generate(root, path_provider, client, tags, names, write_json, recipe_unlock, end_bricks)
+    for form in (*masonry.FORMS, *windows):
+        name = f"{end_bricks}_{form}"
+        names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
+    generate_macaw(root, provider, client, tags, "polished_blackstone", "polished_blackstone",
+                   "polished_blackstone_slab", ("louvered_shutter",), stone_artwork=stone_shutter)
+    names[f"block.{NS}.polished_blackstone_louvered_shutter"] = "Polished Blackstone Louvered Shutter"
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     for tag, values in tags.items():
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})

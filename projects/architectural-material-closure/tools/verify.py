@@ -266,6 +266,19 @@ def check_tags(jar, bbb, provider, client, paths, expected):
                         prefix = "mcwpaths:dark_prismarine_"
                         if member.startswith(prefix) and member[len(prefix):] in PATH_FORMS:
                             tags.setdefault(path[5:-5], []).append(material + "_" + member[len(prefix):])
+    for archive, prefix, material, forms in (
+            (bbb, "bbb:stone_", "end_stone_bricks", COVERAGE),
+            (provider, "mcwwindows:andesite_", "end_stone_bricks", MACAW_FORMS),
+            (paths, "mcwpaths:dark_prismarine_", "end_stone_bricks", PATH_FORMS),
+            (provider, "mcwwindows:andesite_", "polished_blackstone", ("louvered_shutter",))):
+        for path in archive.namelist():
+            if path.startswith("data/") and "/tags/" in path and path.endswith(".json"):
+                members = read_json(archive, path)["values"]
+                selected = [f for f in forms if prefix + f in members]
+                if archive is paths:
+                    selected.sort(key=lambda f: members.index(prefix + f))
+                if selected:
+                    tags.setdefault(path[5:-5], []).extend(material + "_" + f for f in selected)
     for tag, values in tags.items():
         path = f"data/{tag}.json"
         expected.add(path)
@@ -297,7 +310,10 @@ def verify(jar, provider, client, bbb, paths):
     forms.extend("nether_bricks_" + form for form in ("button", "pressure_plate", *MACAW_FORMS))
     for material in ("quartz", "nether_bricks"):
         forms.extend(f"{material}_{form}" for form in PATH_FORMS)
-    assert len(forms) == len(set(forms)) == 135
+    expected.add("dev/resivore/amc/EndStoneBricksBlocks.class")
+    forms.extend("end_stone_bricks_" + form for form in (*COVERAGE, *PATH_FORMS, *MACAW_FORMS))
+    forms.append("polished_blackstone_louvered_shutter")
+    assert len(forms) == len(set(forms)) == 162
     assert names == {f"block.{NS}.{name}": name.replace("window2", "window 2").replace("_", " ").title() for name in forms}
     models = set()
     for form in FORMS:
@@ -335,14 +351,17 @@ def verify(jar, provider, client, bbb, paths):
                                       ("nether_bricks", "nether_bricks", "nether_brick_slab")):
         check_direct(jar, provider, client, material, expected)
         check_windows(jar, provider, client, expected, material, ingredient, slab)
-    for material in ("prismarine_bricks", "quartz", "nether_bricks"):
+    check_masonry(jar, bbb, client, "end_stone_bricks", expected)
+    for material, slab in (("end_stone_bricks", "end_stone_brick_slab"), ("polished_blackstone", "polished_blackstone_slab")):
+        check_windows(jar, provider, client, expected, material, material, slab)
+    for material in ("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks"):
         check_paths(jar, paths, client, expected, material)
     check_tags(jar, bbb, provider, client, paths, expected)
     assert set(files) == expected, set(files).symmetric_difference(expected)
     check_texture(jar, provider, client)
     sprite = jar.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
     assert hashlib.sha256(sprite).hexdigest() == "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878"
-    print(f"Verified 135 block/item sets, state and sprite closure, recipes, drops, tags, "
+    print(f"Verified 162 block/item sets, state and sprite closure, recipes, drops, tags, "
           f"the exact C9 shutter sprite and all {len(files)} production entries.")
 
 

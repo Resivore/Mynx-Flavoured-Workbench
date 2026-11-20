@@ -92,7 +92,7 @@ def check_paths(jar, provider, client, expected, material="prismarine_bricks"):
                       key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
 
     colors = palette(image(client, f"assets/minecraft/textures/block/{palette_tile}.png"))
-    assert len(colors) == {"quartz": 6, "nether_bricks": 7, "prismarine_bricks": 8}[material] and len(sheets) == 11 and len(set(sheets.values())) == 11
+    assert len(colors) == {"quartz": 6, "nether_bricks": 7, "prismarine_bricks": 8, "end_stone_bricks": 8}[material] and len(sheets) == 11 and len(set(sheets.values())) == 11
     for source, target in sheets.items():
         ns, sprite = source.split(":")
         original = image(provider if ns == "mcwpaths" else client, f"assets/{ns}/textures/{sprite}.png")

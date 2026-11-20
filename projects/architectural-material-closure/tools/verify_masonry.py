@@ -154,7 +154,8 @@ def check_sheets(jar, bbb, client, material, substrate, expected, sheets):
 
 def check_masonry(jar, bbb, client, material, expected):
     substrate = "packed_mud" if material == "mud_bricks" else material
-    slab = {"mud_bricks": "mud_brick_slab", "prismarine_bricks": "prismarine_brick_slab"}.get(material, material + "_slab")
+    slab = {"mud_bricks": "mud_brick_slab", "prismarine_bricks": "prismarine_brick_slab",
+           "end_stone_bricks": "end_stone_brick_slab"}.get(material, material + "_slab")
     sheets = set()
     for form in COVERAGE:
         check_geometry(jar, bbb, client, material, substrate, form, expected, sheets)

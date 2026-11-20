@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary20'
+version = '0.1.0-canary21'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c20')
+layout.buildDirectory = layout.projectDirectory.dir('build/c21')
 
 repositories {
     mavenCentral()
@@ -45,7 +45,7 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C20.jar'
+    archiveFileName = 'AMC C21.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
@@ -66,7 +66,12 @@ fabricApi {
     }
 }
 
+// Check ownership of the existing End Stone Brick controls in the test registry.
+dependencies {
+    gametestRuntimeOnly files('../../originals/mods/extshape-fabric-3.1.6+mc26.2.jar')
+}
+
 loom.runs.named('gameTest') {
-    runDir 'build/c20/gametest'
+    runDir 'build/c21/gametest'
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

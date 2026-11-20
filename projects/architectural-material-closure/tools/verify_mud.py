@@ -51,7 +51,8 @@ def check_ranked_shutter(stone, tile, result, material):
     assert len(shades) == 16 and sum(p[3] == 255 for p in source) == 207
     colors = sorted({p[:3] for p in tile.getdata() if p[3] == 255},
                     key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
-    assert len(colors) == {"prismarine_bricks": 8, "dark_prismarine": 6, "deepslate": 5, "nether_bricks": 7}[material]
+    assert len(colors) == {"prismarine_bricks": 8, "dark_prismarine": 6, "deepslate": 5, "nether_bricks": 7,
+                           "end_stone_bricks": 8, "polished_blackstone": 6}[material]
     for before, after in zip(source, result.getdata(), strict=True):
         if before[3] == 255:
             assert before[0] == before[1] == before[2]
@@ -72,7 +73,7 @@ def check_shutter(jar, provider, client, expected, material, substrate):
     expected.add(path)
     result = image(jar, path)
     base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
-    if material in ("prismarine_bricks", "dark_prismarine", "deepslate", "nether_bricks"):
+    if material in ("prismarine_bricks", "dark_prismarine", "deepslate", "nether_bricks", "end_stone_bricks", "polished_blackstone"):
         stone = image(jar, f"assets/{NS}/textures/block/stone_louvered_shutter.png")
         check_ranked_shutter(stone, base, result, material)
         return
@@ -172,7 +173,7 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
             assert visible <= {"mcwwindows:block/glass", "minecraft:block/glass", f"minecraft:block/{side}"}
 
     for form, (state_count, model_count) in MACAW_FORMS.items():
-        if material not in ("mud_bricks", "nether_bricks") and form != "louvered_shutter" and not (
+        if material not in ("mud_bricks", "nether_bricks", "end_stone_bricks") and form != "louvered_shutter" and not (
                 material in ("sandstone", "red_sandstone", "deepslate", "quartz") and form == "parapet"):
             continue
         src, own = "andesite_" + form, material + "_" + form
