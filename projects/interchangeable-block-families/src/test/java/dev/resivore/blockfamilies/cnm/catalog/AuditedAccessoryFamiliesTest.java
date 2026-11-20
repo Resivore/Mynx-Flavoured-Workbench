@@ -132,12 +132,11 @@ final class AuditedAccessoryFamiliesTest {
             }
         }
         assertFalse(family("blackstone").members().contains(id("mcwwindows:blackstone_parapet")));
-        assertFalse(allMembers().contains(id("mcwwindows:prismarine_parapet")),
-                "Unapproved singleton parapet entered the catalog");
+        assertTrue(family("prismarine_bricks_button").members().contains(id("mcwwindows:prismarine_parapet")));
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(38, accessories.size());
-        assertEquals(283, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(41, accessories.size());
+        assertEquals(302, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
@@ -264,12 +263,12 @@ final class AuditedAccessoryFamiliesTest {
 
         for (String missingButtonMaterial : List.of("gold", "iron",
                 "sandstone", "red_sandstone", "brick", "mossy_stone", "cobbled_deepslate", "deepslate",
-                "mud_brick", "blackstone", "dark_prismarine")) {
+                "mud_brick", "blackstone")) {
             assertFalse(accessories.stream().anyMatch(value -> value.key().getPath()
                     .equals("cnm/building_accessory/" + missingButtonMaterial + "_button")));
         }
         assertFalse(all.contains(id("mcwwindows:iron_shutter")));
-        assertFalse(all.contains(id("mcwwindows:dark_prismarine_parapet")));
+        assertTrue(family("dark_prismarine_button").members().contains(id("mcwwindows:dark_prismarine_parapet")));
     }
 
     @Test

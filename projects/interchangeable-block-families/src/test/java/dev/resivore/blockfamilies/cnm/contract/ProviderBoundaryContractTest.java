@@ -228,7 +228,6 @@ final class ProviderBoundaryContractTest {
 
         Set<String> expectedCatalogAccessories = new LinkedHashSet<>(expectedProviderAccessories);
         expectedCatalogAccessories.removeAll(Set.of(
-                "prismarine_parapet", "dark_prismarine_parapet",
                 "golden_curtain_rod", "metal_curtain_rod"));
         expectedCatalogAccessories.addAll(expectedShutters());
             assertEquals(namespaced("mcwwindows", expectedCatalogAccessories),
@@ -252,8 +251,10 @@ final class ProviderBoundaryContractTest {
         Map<String, String> familyByMember = familyKeyByMember();
         assertEquals("interchangeable_block_families:cnm/building_accessory/polished_blackstone",
                 familyByMember.get("mcwwindows:blackstone_parapet"));
-        assertFalse(familyByMember.containsKey("mcwwindows:prismarine_parapet"),
-                "The prismarine-bricks parapet must remain excluded as a singleton material family");
+        assertEquals("interchangeable_block_families:cnm/building_accessory/prismarine_bricks_button",
+                familyByMember.get("mcwwindows:prismarine_parapet"));
+        assertEquals("interchangeable_block_families:cnm/building_accessory/dark_prismarine_button",
+                familyByMember.get("mcwwindows:dark_prismarine_parapet"));
         assertFalse(familyByMember.containsKey("mcwwindows:golden_curtain_rod"));
         assertFalse(familyByMember.containsKey("mcwwindows:metal_curtain_rod"));
     }

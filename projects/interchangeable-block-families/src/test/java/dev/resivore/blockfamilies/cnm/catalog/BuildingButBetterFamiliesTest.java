@@ -27,7 +27,7 @@ final class BuildingButBetterFamiliesTest {
     @Test
     void everyRegisteredWoodHasOneExactTrimDetailFamilyIncludingPaleOak() {
         Map<String, AuditedShapeFamily> details = detailsByPath();
-        assertEquals(26, details.size());
+        assertEquals(28, details.size());
         for (String wood : WOODS) {
             assertEquals(List.of(bbb(wood + "_trim"), bbb(wood + "_balustrade"),
                     bbb(wood + "_support"), bbb(wood + "_pallet")),
@@ -111,7 +111,7 @@ final class BuildingButBetterFamiliesTest {
             assertEquals(List.of(id(prefix + "_column"), id(prefix + "_urn"), id(prefix + "_moulding"),
                     id(prefix + "_fence"), id(prefix + "_frame"), id(prefix + "_arrow_slit")), family.members());
         }
-        assertEquals(STONES.size() + 4, details.keySet().stream().filter(path -> path.startsWith("cnm/bbb_detail/stone/")).count());
+        assertEquals(STONES.size() + 6, details.keySet().stream().filter(path -> path.startsWith("cnm/bbb_detail/stone/")).count());
     }
 
     @Test

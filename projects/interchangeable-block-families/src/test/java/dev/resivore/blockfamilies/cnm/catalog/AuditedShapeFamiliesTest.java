@@ -30,8 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
-        assertEquals(190, AuditedShapeFamilies.families().size());
-        assertEquals(1_447, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(195, AuditedShapeFamilies.families().size());
+        assertEquals(1_478, AuditedShapeFamilies.uniqueMemberCount());
         assertEquals(22, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
@@ -50,8 +50,8 @@ class AuditedShapeFamiliesTest {
                 DISPLAY_FIXTURE, 15,
                 FENCE_GATE, 16,
                 BAR_CHAIN, 10,
-                BBB_DETAIL, 26,
-                BUILDING_ACCESSORY, 38);
+                BBB_DETAIL, 28,
+                BUILDING_ACCESSORY, 41);
         Map<AuditedShapeFamily.Category, Integer> expectedMembers = Map.of(
                 TWO_HIGH_DOOR, 273,
                 THREE_HIGH_DOOR, 229,
@@ -60,8 +60,8 @@ class AuditedShapeFamiliesTest {
                 DISPLAY_FIXTURE, 45,
                 FENCE_GATE, 62,
                 BAR_CHAIN, 30,
-                BBB_DETAIL, 121,
-                BUILDING_ACCESSORY, 283);
+                BBB_DETAIL, 133,
+                BUILDING_ACCESSORY, 302);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
             List<AuditedShapeFamily> families = AuditedShapeFamilies.families(category);
@@ -86,8 +86,8 @@ class AuditedShapeFamiliesTest {
             }
         }
 
-        assertEquals(190, keys.size());
-        assertEquals(1_447, members.size());
+        assertEquals(195, keys.size());
+        assertEquals(1_478, members.size());
     }
 
     @Test
@@ -133,8 +133,8 @@ class AuditedShapeFamiliesTest {
         assertEquals(Map.of(3, 15L), sizeDistribution(DISPLAY_FIXTURE));
         assertEquals(Map.of(2, 1L, 4, 15L), sizeDistribution(FENCE_GATE));
         assertEquals(Map.of(2, 1L, 3, 8L, 4, 1L), sizeDistribution(BAR_CHAIN));
-        assertEquals(Map.of(4, 15L, 5, 5L, 6, 6L), sizeDistribution(BBB_DETAIL));
-        assertEquals(Map.of(2, 7L, 3, 1L, 4, 6L, 9, 11L, 11, 13L),
+        assertEquals(Map.of(4, 15L, 5, 5L, 6, 8L), sizeDistribution(BBB_DETAIL));
+        assertEquals(Map.of(2, 7L, 3, 1L, 4, 8L, 9, 11L, 11, 14L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }
 
@@ -176,8 +176,10 @@ class AuditedShapeFamiliesTest {
                 id("mcwwindows", "ender_brick_arrow_slit"),
                 id("mcwwindows", "ender_brick_arrow_slit"),
                 id("mcwwindows", "blackstone_brick_arrow_slit"),
-                id("mcwwindows", "prismarine_brick_arrow_slit"),
-                id("mcwwindows", "dark_prismarine_brick_arrow_slit"),
+                id("architectural_material_closure", "prismarine_bricks_running_bond"),
+                id("architectural_material_closure", "prismarine_bricks_windmill_weave"),
+                id("architectural_material_closure", "prismarine_bricks_crystal_floor"),
+                id("architectural_material_closure", "prismarine_bricks_flagstone"),
                 id("mcwwindows", "crimson_window"),
                 id("mcwwindows", "stripped_warped_log_window"),
                 id("minecraft", "nether_brick_fence"),
@@ -221,15 +223,24 @@ class AuditedShapeFamiliesTest {
 
     @Test
     void canonicalExpandedCatalogHasStableDigest() throws NoSuchAlgorithmException {
-        assertEquals("D92138F9362A8CBB8BF7B9D220390072B7639866DA1C9BF50D7010FF4ABB9575",
+        assertEquals("B1C74A1432ECF8AC0C229AD1A964F0C67D7DC4EAE80FB04EED2D6094CACD2C05",
                 digest(AuditedShapeFamilies.families()));
     }
 
     @Test
-    void excludingTheThreeMudBricksFamiliesReproducesTheEntireC17Catalog() throws NoSuchAlgorithmException {
+    void earlierCanaryCatalogsKeepTheirExactOrderAndMembership() throws NoSuchAlgorithmException {
+        Set<String> prismarineAdditions = Set.of("cnm/building_accessory/prismarine_bricks_button",
+                "cnm/building_accessory/dark_prismarine_button", "cnm/building_accessory/prismarine_bricks",
+                "cnm/bbb_detail/stone/prismarine_bricks", "cnm/bbb_detail/stone/dark_prismarine");
+        List<AuditedShapeFamily> c18 = AuditedShapeFamilies.families().stream()
+                .filter(family -> !prismarineAdditions.contains(family.key().getPath()))
+                .toList();
+        assertEquals(190, c18.size());
+        assertEquals("D92138F9362A8CBB8BF7B9D220390072B7639866DA1C9BF50D7010FF4ABB9575", digest(c18));
+
         Set<String> additions = Set.of("cnm/building_accessory/mud_bricks_button",
                 "cnm/bbb_detail/stone/mud_bricks", "cnm/window/mud_bricks");
-        List<AuditedShapeFamily> previous = AuditedShapeFamilies.families().stream()
+        List<AuditedShapeFamily> previous = c18.stream()
                 .filter(family -> !additions.contains(family.key().getPath()))
                 .toList();
         assertEquals(187, previous.size());

@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 190;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_447;
+    public static final int EXPECTED_FAMILY_COUNT = 195;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_478;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -1071,6 +1071,14 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/stone/mud_bricks", BBB_DETAIL, amc("mud_bricks_column"),
                     amc("mud_bricks_urn"), amc("mud_bricks_moulding"), amc("mud_bricks_fence"),
                     amc("mud_bricks_frame"), mcwWindows("mud_brick_arrow_slit")),
+            family("cnm/bbb_detail/stone/prismarine_bricks", BBB_DETAIL, amc("prismarine_bricks_column"),
+                    amc("prismarine_bricks_urn"), amc("prismarine_bricks_moulding"),
+                    amc("prismarine_bricks_fence"), amc("prismarine_bricks_frame"),
+                    mcwWindows("prismarine_brick_arrow_slit")),
+            family("cnm/bbb_detail/stone/dark_prismarine", BBB_DETAIL, amc("dark_prismarine_column"),
+                    amc("dark_prismarine_urn"), amc("dark_prismarine_moulding"),
+                    amc("dark_prismarine_fence"), amc("dark_prismarine_frame"),
+                    mcwWindows("dark_prismarine_brick_arrow_slit")),
             family("cnm/bbb_detail/stone/blackstone", BBB_DETAIL, bbb("blackstone_column"), bbb("blackstone_urn"), bbb("blackstone_moulding"), bbb("blackstone_fence"), bbb("blackstone_frame")),
             family("cnm/bbb_detail/stone/deepslate", BBB_DETAIL, bbb("deepslate_column"), bbb("deepslate_urn"), bbb("deepslate_moulding"), bbb("deepslate_fence"), bbb("deepslate_frame")),
             family("cnm/bbb_detail/stone/nether_brick", BBB_DETAIL, bbb("nether_brick_column"), bbb("nether_brick_urn"), bbb("nether_brick_moulding"), bbb("nether_brick_fence"), bbb("nether_brick_frame"), mcwWindows("nether_brick_arrow_slit")),
@@ -1345,6 +1353,18 @@ public final class AuditedShapeFamilies {
                     mcwPaths("blackstone_honeycomb_paving"),
                     mcwPaths("blackstone_clover_paving"),
                     mcwPaths("blackstone_dumble_paving")),
+            family("cnm/building_accessory/prismarine_bricks_button", BUILDING_ACCESSORY, amc("prismarine_bricks_button"),
+                    amc("prismarine_bricks_pressure_plate"), mcwWindows("prismarine_parapet"),
+                    amc("prismarine_bricks_louvered_shutter")),
+            family("cnm/building_accessory/prismarine_bricks", BUILDING_ACCESSORY, amc("prismarine_bricks_running_bond_path"),
+                    amc("prismarine_bricks_strewn_rocky_path"), amc("prismarine_bricks_windmill_weave_path"),
+                    amc("prismarine_bricks_flagstone_path"), amc("prismarine_bricks_crystal_floor_path"),
+                    amc("prismarine_bricks_diamond_paving"), amc("prismarine_bricks_basket_weave_paving"),
+                    amc("prismarine_bricks_square_paving"), amc("prismarine_bricks_honeycomb_paving"),
+                    amc("prismarine_bricks_clover_paving"), amc("prismarine_bricks_dumble_paving")),
+            family("cnm/building_accessory/dark_prismarine_button", BUILDING_ACCESSORY, amc("dark_prismarine_button"),
+                    amc("dark_prismarine_pressure_plate"), mcwWindows("dark_prismarine_parapet"),
+                    amc("dark_prismarine_louvered_shutter")),
             family("cnm/building_accessory/dark_prismarine", BUILDING_ACCESSORY,
                     mcwPaths("dark_prismarine_running_bond_path"),
                     mcwPaths("dark_prismarine_strewn_rocky_path"),

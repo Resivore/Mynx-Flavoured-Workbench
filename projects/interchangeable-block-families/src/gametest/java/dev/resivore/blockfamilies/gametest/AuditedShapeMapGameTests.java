@@ -219,8 +219,6 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "mcwwindows:cobblestone_arrow_slit",
             "mcwwindows:ender_brick_arrow_slit",
             "mcwwindows:blackstone_brick_arrow_slit",
-            "mcwwindows:prismarine_brick_arrow_slit",
-            "mcwwindows:dark_prismarine_brick_arrow_slit",
             "minecraft:nether_brick_fence",
             "minecraft:copper_door",
             "minecraft:exposed_copper_door",
@@ -243,11 +241,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "mcwpaths:andesite_running_bond_stairs",
             "mcwpaths:andesite_running_bond",
             "mcwpaths:dirt_path_block",
-            "mcwwindows:dark_prismarine_parapet",
             "mcwwindows:iron_shutter",
             "mcwwindows:golden_curtain_rod",
             "mcwwindows:metal_curtain_rod",
-            "mcwwindows:prismarine_parapet",
             "mcwwindows:red_curtain"
     );
 
@@ -270,7 +266,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 190 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 195 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -297,7 +293,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_447 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_478 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1101,6 +1097,62 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                         "Absent AMC changed standalone Macaw item " + standalone);
             }
             assertSeparate(helper, slit, gothic, "Mud Brick Arrow Slit and Gothic Window joined without AMC");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void prismarineFamiliesFollowTheirProviders(GameTestHelper helper) {
+        boolean amcPresent = Boolean.getBoolean("ibf.test.amcExpected");
+        for (String material : List.of("prismarine_bricks", "dark_prismarine")) {
+            String prefix = "architectural_material_closure:" + material + "_";
+            String macaw = material.equals("prismarine_bricks") ? "mcwwindows:prismarine" : "mcwwindows:dark_prismarine";
+            String parapet = macaw + "_parapet";
+            String slit = macaw + "_brick_arrow_slit";
+            if (amcPresent) {
+                assertSelectorRoundTrip(helper, List.of(prefix + "button", prefix + "pressure_plate",
+                        parapet, prefix + "louvered_shutter"));
+                assertSelectorRoundTrip(helper, List.of(prefix + "column", prefix + "urn", prefix + "moulding",
+                        prefix + "fence", prefix + "frame", slit));
+                helper.assertTrue(hasRecipe(helper, prefix + "column_from_stonecutting"), "Lost column stonecutting");
+                for (String alternate : List.of("urn", "moulding", "fence")) {
+                    helper.assertTrue(!hasRecipe(helper, prefix + alternate + "_from_stonecutting"),
+                            "Retained alternate stonecutting recipe for " + prefix + alternate);
+                }
+            } else {
+                for (String standalone : List.of(parapet, slit)) {
+                    Item item = requiredItem(standalone);
+                    helper.assertTrue(!AuditedShapeRuntime.isAudited(item) && !ShapeMap.isShape(item)
+                                    && hasRecipe(helper, standalone),
+                            "Absent AMC changed standalone Macaw item " + standalone);
+                }
+                assertSeparate(helper, parapet, slit, "Unparented Prismarine selectors joined");
+            }
+        }
+
+        if (amcPresent) {
+            String prefix = "architectural_material_closure:prismarine_bricks_";
+            assertSelectorRoundTrip(helper, List.of(prefix + "running_bond_path", prefix + "strewn_rocky_path",
+                    prefix + "windmill_weave_path", prefix + "flagstone_path", prefix + "crystal_floor_path",
+                    prefix + "diamond_paving", prefix + "basket_weave_paving", prefix + "square_paving",
+                    prefix + "honeycomb_paving", prefix + "clover_paving", prefix + "dumble_paving"));
+            assertSeparate(helper, prefix + "button", prefix + "running_bond_path", "Accessory and path selectors joined");
+
+            ServerPlayer player = survivalPlayer(helper);
+            BlockPos pos = new BlockPos(3, 1, 3);
+            helper.setBlock(pos.below(), Blocks.STONE);
+            for (String form : List.of("running_bond", "flagstone", "windmill_weave", "crystal_floor")) {
+                String fullId = prefix + form;
+                Item item = requiredItem(fullId);
+                helper.assertTrue(!AuditedShapeRuntime.isAudited(item) && !ShapeMap.isShape(item)
+                                && hasRecipe(helper, fullId), "Patterned full block lost independent acquisition: " + fullId);
+                helper.setBlock(pos, Blocks.AIR);
+                ItemStack stack = new ItemStack(item);
+                player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                helper.placeAt(player, stack, pos.below(), Direction.UP);
+                helper.assertTrue(BuiltInRegistries.BLOCK.getKey(helper.getBlockState(pos).getBlock()).equals(id(fullId)),
+                        "Patterned full block failed independent placement: " + fullId);
+            }
         }
         helper.succeed();
     }
