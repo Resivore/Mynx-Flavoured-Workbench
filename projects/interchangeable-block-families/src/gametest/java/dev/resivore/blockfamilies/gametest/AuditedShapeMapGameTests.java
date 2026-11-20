@@ -6,6 +6,7 @@ import dev.resivore.blockfamilies.cnm.runtime.AuditedShapeRuntime;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -290,20 +291,24 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
 
             Item parent = requiredItem(family.canonicalParent());
             List<Identifier> actual = ids(ShapeMap.getShapes(parent));
-            helper.assertTrue(actual.equals(family.members()),
+            List<Identifier> expected = family.canonicalParent().equals(id("minecraft:stone_button"))
+                    ? stoneAccessoryMembers().stream().map(AuditedShapeMapGameTests::id).toList()
+                    : family.members();
+            helper.assertTrue(actual.equals(expected),
                     "Resolved order differs for " + family.key() + ": expected="
-                            + family.members() + ", actual=" + actual);
+                            + expected + ", actual=" + actual);
 
-            for (Identifier id : family.members()) {
+            for (Identifier id : expected) {
                 helper.assertTrue(seen.add(id), "Audited ID materialized more than once: " + id);
                 helper.assertTrue(ShapeMap.getParent(requiredItem(id)) == parent,
                         "Resolved parent differs for " + id + " in " + family.key());
             }
-            largest = Math.max(largest, family.members().size());
+            largest = Math.max(largest, actual.size());
         }
 
-        helper.assertTrue(seen.size() == AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
-                "Expected " + AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_398 : 1_396;
+        helper.assertTrue(seen.size() == expectedCount,
+                "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
         helper.assertTrue(largest == AuditedShapeFamilies.EXPECTED_LARGEST_FAMILY_SIZE,
                 "Expected largest runtime family size 22, found " + largest);
@@ -508,9 +513,6 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwwindows:oak_curtain_rod",
                 "mcwwindows:oak_shutter",
                 "mcwwindows:oak_louvered_shutter"));
-        assertExactShapeSet(helper, "minecraft:stone_button", List.of(
-                "minecraft:stone_button",
-                "minecraft:stone_pressure_plate"));
         assertExactShapeSet(helper, "mcwpaths:stone_running_bond_path", List.of(
                 "mcwpaths:stone_running_bond_path",
                 "mcwpaths:stone_strewn_rocky_path",
@@ -1015,6 +1017,36 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(ShapeMap.getParent(firstItem) != ShapeMap.getParent(secondItem)
                         && !ShapeMap.inSameShapeSet(firstItem, secondItem),
                 label + ": " + first + " / " + second);
+    }
+
+    private static List<String> stoneAccessoryMembers() {
+        return Boolean.getBoolean("ibf.test.amcExpected")
+                ? List.of("minecraft:stone_button", "minecraft:stone_pressure_plate",
+                        "architectural_material_closure:stone_parapet",
+                        "architectural_material_closure:stone_louvered_shutter")
+                : List.of("minecraft:stone_button", "minecraft:stone_pressure_plate");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void stoneAccessoriesSwitchInOrderAndReturnToButton(GameTestHelper helper) {
+        helper.assertTrue(FabricLoader.getInstance().isModLoaded("architectural_material_closure")
+                        == Boolean.getBoolean("ibf.test.amcExpected"),
+                "AMC presence differs from the requested GameTest configuration");
+        List<String> members = stoneAccessoryMembers();
+        assertExactShapeSet(helper, "minecraft:stone_button", members);
+        Item button = requiredItem("minecraft:stone_button");
+        ItemStack stack = new ItemStack(button, 7);
+        stack.set(DataComponents.CUSTOM_NAME, Component.literal("Stone selector"));
+        for (int index = 1; index < members.size(); index++) {
+            ItemStack next = ShapeMap.transferStack(stack, index);
+            assertTransferred(helper, stack, next, requiredItem(members.get(index)), members.get(index));
+            helper.assertTrue(!hasRecipe(helper, members.get(index)),
+                    "CNM retained an alternate recipe for " + members.get(index));
+            stack = next;
+        }
+        assertTransferred(helper, stack, ShapeMap.transferStack(stack, 0), button, "Return to Stone Button");
+        helper.assertTrue(hasRecipe(helper, "minecraft:stone_button"), "Stone Button recipe missing");
+        helper.succeed();
     }
 
     private static void assertExactShapeSet(

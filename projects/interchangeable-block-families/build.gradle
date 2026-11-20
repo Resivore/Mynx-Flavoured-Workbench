@@ -258,7 +258,14 @@ fabricApi {
     }
 }
 
+// Exercise the same ShapeMap contract with or without the optional AMC provider.
+def amcReferenceJar = providers.gradleProperty('amc_reference_jar')
+if (amcReferenceJar.isPresent()) {
+    dependencies.add('gametestRuntimeOnly', files(amcReferenceJar.get()))
+}
+
 loom.runs.named('gameTest') {
+    vmArg "-Dibf.test.amcExpected=${amcReferenceJar.isPresent()}"
     // Providers remain loaded so IBF exercises their live registrations. Limit
     // execution to the IBF suite rather than treating an upstream provider's
     // own GameTest failures as failures of this project.

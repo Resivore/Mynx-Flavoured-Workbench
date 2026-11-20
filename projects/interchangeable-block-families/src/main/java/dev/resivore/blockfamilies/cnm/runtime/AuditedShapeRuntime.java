@@ -3,6 +3,7 @@ package dev.resivore.blockfamilies.cnm.runtime;
 import dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamilies;
 import dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
@@ -168,9 +169,13 @@ public final class AuditedShapeRuntime {
 
         ArrayList<ResolvedFamily> families = new ArrayList<>(definitions.size());
         IdentityHashMap<Item, ResolvedFamily> byMember = new IdentityHashMap<>();
+        boolean amcLoaded = FabricLoader.getInstance().isModLoaded("architectural_material_closure");
         for (AuditedShapeFamily definition : definitions) {
             ArrayList<Item> members = new ArrayList<>(definition.members().size());
             for (Identifier id : definition.members()) {
+                if (!amcLoaded && id.getNamespace().equals("architectural_material_closure")) {
+                    continue;
+                }
                 if (!BuiltInRegistries.ITEM.containsKey(id)) {
                     throw new IllegalStateException("Missing audited IBF item: " + id
                             + " (family " + definition.key() + ")");

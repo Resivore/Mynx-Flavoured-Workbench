@@ -31,7 +31,7 @@ class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
         assertEquals(181, AuditedShapeFamilies.families().size());
-        assertEquals(1_396, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(1_398, AuditedShapeFamilies.uniqueMemberCount());
         assertEquals(22, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
@@ -61,7 +61,7 @@ class AuditedShapeFamiliesTest {
                 FENCE_GATE, 62,
                 BAR_CHAIN, 30,
                 BBB_DETAIL, 96,
-                BUILDING_ACCESSORY, 265);
+                BUILDING_ACCESSORY, 267);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
             List<AuditedShapeFamily> families = AuditedShapeFamilies.families(category);
@@ -87,7 +87,7 @@ class AuditedShapeFamiliesTest {
         }
 
         assertEquals(181, keys.size());
-        assertEquals(1_396, members.size());
+        assertEquals(1_398, members.size());
     }
 
     @Test
@@ -134,7 +134,7 @@ class AuditedShapeFamiliesTest {
         assertEquals(Map.of(2, 1L, 4, 15L), sizeDistribution(FENCE_GATE));
         assertEquals(Map.of(2, 1L, 3, 8L, 4, 1L), sizeDistribution(BAR_CHAIN));
         assertEquals(Map.of(4, 15L, 5, 6L, 6, 1L), sizeDistribution(BBB_DETAIL));
-        assertEquals(Map.of(2, 8L, 3, 1L, 4, 1L, 9, 11L, 11, 13L),
+        assertEquals(Map.of(2, 7L, 3, 1L, 4, 2L, 9, 11L, 11, 13L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }
 
@@ -227,7 +227,7 @@ class AuditedShapeFamiliesTest {
 
     @Test
     void canonicalExpandedCatalogHasStableDigest() throws NoSuchAlgorithmException {
-        assertEquals("4B753028B9820913D068901D8B3BA93F13BAD6DAB6C95AA312BA70F2B1C4B8B5",
+        assertEquals("099C8EAF1EC9049A487F69139FB5E4AB42BDFBD76EC8B82ACCA97E289CEA044A",
                 digest(AuditedShapeFamilies.families()));
     }
 

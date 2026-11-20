@@ -137,7 +137,7 @@ final class AuditedAccessoryFamiliesTest {
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
         assertEquals(34, accessories.size());
-        assertEquals(265, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(267, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
@@ -244,7 +244,10 @@ final class AuditedAccessoryFamiliesTest {
         AuditedShapeFamily stonePath = accessories.stream()
                 .filter(value -> value.key().getPath().equals("cnm/building_accessory/stone_path"))
                 .findFirst().orElseThrow();
-        assertEquals(List.of(id("minecraft:stone_button"), id("minecraft:stone_pressure_plate")),
+        assertEquals(id("minecraft:stone_button"), stoneButton.canonicalParent());
+        assertEquals(List.of(id("minecraft:stone_button"), id("minecraft:stone_pressure_plate"),
+                        id("architectural_material_closure:stone_parapet"),
+                        id("architectural_material_closure:stone_louvered_shutter")),
                 stoneButton.members());
         assertEquals(id("mcwpaths:stone_running_bond_path"), stonePath.canonicalParent());
         assertTrue(stonePath.members().stream().allMatch(value -> value.getNamespace().equals("mcwpaths")));

@@ -26,7 +26,7 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  */
 public final class AuditedShapeFamilies {
     public static final int EXPECTED_FAMILY_COUNT = 181;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_396;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_398;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -1169,7 +1169,8 @@ public final class AuditedShapeFamilies {
                     mcwWindows("warped_shutter"),
                     mcwWindows("warped_louvered_shutter")),
             family("cnm/building_accessory/stone_button", BUILDING_ACCESSORY, minecraft("stone_button"),
-                    minecraft("stone_pressure_plate")),
+                    minecraft("stone_pressure_plate"),
+                    amc("stone_parapet"), amc("stone_louvered_shutter")),
             family("cnm/building_accessory/stone_path", BUILDING_ACCESSORY,
                     mcwPaths("stone_running_bond_path"),
                     mcwPaths("stone_strewn_rocky_path"),
@@ -1436,6 +1437,10 @@ public final class AuditedShapeFamilies {
 
     private static Identifier enderscape(String path) {
         return Identifier.fromNamespaceAndPath("enderscape", path);
+    }
+
+    private static Identifier amc(String path) {
+        return Identifier.fromNamespaceAndPath("architectural_material_closure", path);
     }
 
     private static Identifier mcwWindows(String path) {
