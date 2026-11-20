@@ -224,3 +224,14 @@
 - Artifact: `IBF C21.jar`, embedded version `0.1.0-canary21`, 59,677 bytes, SHA-256 `f4b2fe43299533e0ae5db1f3aa8693c092eedd1edc2f2c6ce5bcac1e75797442`, finalized at `2026-11-20T21:50:09.2970545Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner-directed selector, independent patterned block and reload checks in TESTING.md.
+
+## 2026-11-20T22:21:07.8387300Z — IBF C22 integrates End Stone Bricks and the Polished Blackstone shutter
+
+- Revision: 22
+- Source checkpoint: `72135957b1f155e1dea6ba3b8aeeb06bb89342c9`
+- Changes: Added three AMC-parented End Stone Bricks families (Column, Window and Running Bond Path). Appended the AMC parapet and shutter to Enderscape's Polished End Stone Button family, and the AMC shutter to the existing Polished Blackstone family. Exactly 23 AMC items have unique membership. The four patterned full blocks remain independent. Removing only the C22 additions reproduces the complete ordered C21 digest.
+- Build/static: Exact AMC C21 and AMC-absent runs each passed 55 JUnit tests, 33 controlled Fabric GameTests, archive isolation and build. Both used the standard provider set and full Matcha fixture, with Extended Block Shapes absent. With AMC, 206 families and 1,558 items resolved. Without AMC, 181 families and 1,397 items resolved, including both original Button selectors, and both Macaw items kept their standalone recipes. Named seven-item stacks retained count and components through selector round trips. All four full blocks retained independent recipes and placed successfully. The audited corpus removed 1,271 alternate recipes with AMC and 1,114 without, with zero canonical removals. Catalog SHA-256 `01b6dd6ff7b4466963ddd5b6962a4eb3ed0a3bb25153b5229378eefe5920231e`.
+- Runtime: Owner-directed manual Minecraft verification and acceptance are pending.
+- Artifact: `IBF C22.jar`, embedded version `0.1.0-canary22`, 60,019 bytes, SHA-256 `98aaf408316570067b02ba43810c69e5f02a478e5c36df64b0f1d053ca25aaf1`, finalized at `2026-11-20T22:21:07.8387300Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner-directed End Stone Bricks and Polished Blackstone checks in TESTING.md.
