@@ -253,3 +253,16 @@
 - Runtime: Owner gameplay verification and acceptance are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Follow TESTING.md with the retained C21 artifact and record owner observations.
+
+## 2026-11-20T22:34:25Z — Add selectively mossed Stone forms in Canary 22
+
+- Revision: 23
+- Source checkpoint: `4523bca9c621697851196be3f08e1b763c714e80`
+- Changes: Added exactly 15 Mossy Stone Bricks pairs. Used vanilla Stone controls, BBB C9's five Stone masonry forms, Macaw's Windows 2.4.2 Stone Window, Window 2, Four Window, Pane Window, Stone Brick Gothic and Arrow Slit, and AMC C9's Stone Parapet and Louvered Shutter. Verified the Stone shutter PNG at SHA-256 c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878.
+- Compared vanilla stone_bricks and mossy_stone_bricks at matching coordinates. Five new moss colors occupy 87 of 256 positions. Applied their hue in native UV coordinates with luminance scaled to the corresponding Stone source pixel, using the measured vanilla moss-to-stone luminance ratio of 0.8789766. Preserved neutral changes outside the mask as original Stone, plus alpha, black moulding backing, soil, glass and iron bars.
+- Build/static: Offline Java 25 / Gradle 9.5.1 build passed all 125 controlled Fabric GameTests and verified 1,881 package entries. Independently checked all 14,848 RGBA pixels on 13 derived sprites, including 2,888 moss pixels. On the shutter 75 material pixels received moss. At x=4, the raised lip at y=1 changed from gray 134 to RGB (110,129,77) and the recess at y=3 from gray 90 to (72,88,52). Confirmed original state graphs, geometry, UVs, glass-only center, conditional bars, drops, recipes, inventories, tags, creative placement and controlled interactions.
+- Compared the finalized release with C21 SHA-256 0a39d8f6f1e83cf1b2d5bdf85552e190386e56d8873c9db6e122b0097de81c66. All 162 previous pairs and 1,695 prior entries were preserved, with 1,670 byte-identical entries, including all nine production classes and every existing model, recipe and sprite. Only version/entrypoint metadata, translations and 23 shared tag lists changed. C22 adds 186 entries.
+- Artifact: Local-only `AMC C22.jar`, version `0.1.0-canary22`, 976,420 bytes, SHA-256 `ced8e122ac4bad974e41dc93dfcad3c643940e77cf0ae83dedf93ebfd33a391e`, finalized at `2026-11-20T22:32:44.5206551Z`.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare the new forms with their Stone references at matching orientation and light using TESTING.md.

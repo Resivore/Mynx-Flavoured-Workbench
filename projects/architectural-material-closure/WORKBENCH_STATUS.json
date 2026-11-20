@@ -26,7 +26,8 @@
       "Provide 23 Prismarine Bricks and eight Dark Prismarine forms. Each material has vanilla controls, a Macaw louvered shutter and five BBB masonry forms. Prismarine Bricks also has five thin paths, six pavings and four engravable full blocks based on Macaw's Paths. Both louvered shutters use the finalized C9 Stone shutter artwork remapped by luminance rank to the full vanilla palette of the respective material.",
       "Provide a Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter for Sandstone and Red Sandstone. The controls, parapets and windows use directional vanilla textures. Each shutter uses the matching vanilla top sprite on every face at the original UVs, with C9 structural shading on the five slats and frame.",
       "Provide six Deepslate, 21 Quartz and 23 Nether Bricks forms. Use vanilla controls, Macaw's Windows geometry and interactions, and directional Deepslate and Quartz textures. The Deepslate and Nether Bricks shutter artwork uses the finalized C9 Stone shutter remapped to the full corresponding vanilla palette. Quartz and Nether Bricks each have eleven thin Macaw paths and pavings and four independent engravable full blocks with full vanilla palette transfers.",
-      "Provide 26 End Stone Bricks forms: five BBB masonry forms, fifteen Macaw paths and pavings including four independent engravable full blocks, four standard windows, a parapet and a louvered shutter. Provide one Polished Blackstone Louvered Shutter. Both shutters transfer the finalized Stone artwork to their full vanilla palettes."
+      "Provide 26 End Stone Bricks forms: five BBB masonry forms, fifteen Macaw paths and pavings including four independent engravable full blocks, four standard windows, a parapet and a louvered shutter. Provide one Polished Blackstone Louvered Shutter. Both shutters transfer the finalized Stone artwork to their full vanilla palettes.",
+      "Provide 15 Mossy Stone Bricks controls, masonry and window forms. Selectively moss the corresponding vanilla, BBB, Macaw and AMC Stone artwork using the vanilla moss footprint and the brightness of each source pixel."
     ],
     "boundaries": {
       "owned_paths": [
@@ -77,23 +78,23 @@
     ]
   },
   "state": {
-    "milestone": "C21 adds 27 block/item pairs. All 113 controlled Fabric GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C22 brings AMC to 177 block/item pairs. All 125 controlled Fabric GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C21 (0.1.0-canary21)",
-        "canary": 21,
-        "embedded_version": "0.1.0-canary21",
+        "version": "C22 (0.1.0-canary22)",
+        "canary": 22,
+        "embedded_version": "0.1.0-canary22",
         "artifact": {
-          "filename": "AMC C21.jar",
-          "sha256": "0a39d8f6f1e83cf1b2d5bdf85552e190386e56d8873c9db6e122b0097de81c66"
+          "filename": "AMC C22.jar",
+          "sha256": "ced8e122ac4bad974e41dc93dfcad3c643940e77cf0ae83dedf93ebfd33a391e"
         },
-        "built_at": "2026-11-20T22:08:02.0511293Z",
-        "source_commit": "55082ff898f28e9ca3d613369fb206648d7e41e8",
+        "built_at": "2026-11-20T22:32:44.5206551Z",
+        "source_commit": "4523bca9c621697851196be3f08e1b763c714e80",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 26 End Stone Bricks forms and a Polished Blackstone Louvered Shutter, bringing AMC to 162 block/item pairs."
+        "summary": "Adds 15 Mossy Stone Bricks forms with selective moss that follows the original Stone artwork and its local shading."
       },
       "accepted": null,
       "rollback": null,
@@ -107,10 +108,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 22,
-    "activity_at": "2026-11-20T22:09:39Z",
-    "updated_at": "2026-11-20T22:09:39Z",
-    "last_codex_at": "2026-11-20T22:09:39Z",
-    "source_commit": "55082ff898f28e9ca3d613369fb206648d7e41e8"
+    "revision": 23,
+    "activity_at": "2026-11-20T22:34:25Z",
+    "updated_at": "2026-11-20T22:34:25Z",
+    "last_codex_at": "2026-11-20T22:34:25Z",
+    "source_commit": "4523bca9c621697851196be3f08e1b763c714e80"
   }
 }
