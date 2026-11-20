@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary9'
+version = '0.1.0-canary10'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c9')
+layout.buildDirectory = layout.projectDirectory.dir('build/c10')
 
 repositories {
     mavenCentral()
@@ -27,7 +27,7 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(25)
 }
 
-tasks.register('generateStoneResources', Exec) {
+tasks.register('generateAmcResources', Exec) {
     inputs.files('tools/generate.py', providerJar, clientJar)
     outputs.dir(privateResources)
     commandLine python, 'tools/generate.py', providerJar, clientJar, privateResources.get().asFile
@@ -35,22 +35,22 @@ tasks.register('generateStoneResources', Exec) {
 
 sourceSets.main.resources.srcDir(privateResources)
 processResources {
-    dependsOn 'generateStoneResources'
+    dependsOn 'generateAmcResources'
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') { expand version: project.version }
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C9.jar'
+    archiveFileName = 'AMC C10.jar'
 }
 
-tasks.register('verifyStoneJar', Exec) {
+tasks.register('verifyAmcJar', Exec) {
     dependsOn jar
     inputs.files('tools/verify.py', providerJar, clientJar, jar.archiveFile)
     commandLine python, 'tools/verify.py', jar.archiveFile.get().asFile, providerJar, clientJar
 }
 
-check.dependsOn 'verifyStoneJar'
+check.dependsOn 'verifyAmcJar'
 
 fabricApi {
     configureTests {
@@ -63,6 +63,6 @@ fabricApi {
 }
 
 loom.runs.named('gameTest') {
-    runDir 'build/c9/gametest'
+    runDir 'build/c10/gametest'
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

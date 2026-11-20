@@ -39,7 +39,11 @@ public final class StoneTests {
 
     @GameTest
     public void registryAndResources(GameTestHelper helper) {
-        var ids = Set.of(id("parapet"), id("louvered_shutter"));
+        var ids = Set.of(id("parapet"), id("louvered_shutter"),
+                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_button"),
+                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_pressure_plate"),
+                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_gothic_window"),
+                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_arrow_slit"));
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());

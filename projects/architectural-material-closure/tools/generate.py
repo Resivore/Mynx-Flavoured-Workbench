@@ -1,4 +1,4 @@
-"""Stage the two Stone resources under AMC's ignored build directory."""
+"""Stage AMC resources under the project's ignored build directory."""
 import hashlib
 import io
 import json
@@ -83,6 +83,81 @@ def shade_stone_shutter(provider, client, dest):
     result.save(dest)
 
 
+def recipe_unlock(root, name, material, category):
+    recipe = f"{NS}:{name}"
+    write_json(root, f"data/{NS}/advancement/recipes/{category}/{name}.json", {
+        "parent": "minecraft:recipes/root",
+        "criteria": {
+            "material": {"trigger": "minecraft:inventory_changed", "conditions": {
+                "items": [{"items": "minecraft:" + material}]}},
+            "recipe": {"trigger": "minecraft:recipe_unlocked", "conditions": {"recipe": recipe}},
+        },
+        "requirements": [["material", "recipe"]],
+        "rewards": {"recipes": [recipe]},
+    })
+
+
+def generate_andesite(root, archive, namespace, source, name):
+    def load(path):
+        return json.loads(archive.read(path))
+
+    def write(folder, value):
+        write_json(root, f"{folder}/{name}.json", value)
+
+    source_id = f"{namespace}:{source}"
+    own_id = f"{NS}:{name}"
+    models = {}
+
+    def bind(entry):
+        model = entry["model"]
+        # Gothic's optional iron bars are an independent provider model.
+        if model == "mcwwindows:block/gothic/iron_bars":
+            return
+        prefix, path = model.split(":")
+        assert prefix == namespace and path.rsplit("/", 1)[-1].startswith(source)
+        dest = path.replace(source, name)
+        models[path] = dest
+        entry["model"] = f"{NS}:{dest}"
+
+    states = load(f"assets/{namespace}/blockstates/{source}.json")
+    entries = states["variants"].values() if "variants" in states else (p["apply"] for p in states["multipart"])
+    for entry in entries:
+        bind(entry)
+    item = load(f"assets/{namespace}/items/{source}.json")
+    bind(item["model"])
+    write(f"assets/{NS}/blockstates", states)
+    write(f"assets/{NS}/items", item)
+    for path, dest in models.items():
+        model = load(f"assets/{namespace}/models/{path}.json")
+        assert model.keys() == {"parent", "textures"}
+        for slot, sprite in model["textures"].items():
+            if sprite in ("minecraft:block/stone", "minecraft:block/stone_bricks"):
+                model["textures"][slot] = "minecraft:block/andesite"
+            else:
+                assert slot == "3" and sprite == "minecraft:block/glass"
+        write_json(root, f"assets/{NS}/models/{dest}.json", model)
+
+    recipe = load(f"data/{namespace}/recipe/{source}.json")
+    materials = {"minecraft:stone": "minecraft:andesite", "minecraft:stone_bricks": "minecraft:andesite",
+                 "minecraft:stone_brick_slab": "minecraft:andesite_slab", "minecraft:glass_pane": "minecraft:glass_pane"}
+    if "key" in recipe:
+        recipe["key"] = {key: materials[value] for key, value in recipe["key"].items()}
+    else:
+        recipe["ingredients"] = [materials[value] for value in recipe["ingredients"]]
+    assert recipe["result"]["id"] == source_id
+    recipe["result"]["id"] = own_id
+    write(f"data/{NS}/recipe", recipe)
+    category = "redstone" if namespace == "minecraft" else "building_blocks"
+    recipe_unlock(root, name, "andesite", category)
+    loot = load(f"data/{namespace}/loot_table/blocks/{source}.json")
+    entry, = loot["pools"][0]["entries"]
+    assert entry["name"] == source_id
+    entry["name"] = own_id
+    if "random_sequence" in loot:
+        loot["random_sequence"] = f"{NS}:blocks/{name}"
+    write(f"data/{NS}/loot_table/blocks", loot)
+
+
 def generate(provider, client, root):
     def adapt_resource(template):
         src = template.format(ns="mcwwindows", material="andesite")
@@ -94,17 +169,7 @@ def generate(provider, client, root):
                          "data/{ns}/recipe/", "data/{ns}/loot_table/blocks/"):
             adapt_resource(template + "{material}_" + form + ".json")
         material = "stone" if form == "parapet" else "stone_slab"
-        recipe = f"{NS}:stone_{form}"
-        write_json(root, f"data/{NS}/advancement/recipes/building_blocks/stone_{form}.json", {
-            "parent": "minecraft:recipes/root",
-            "criteria": {
-                "material": {"trigger": "minecraft:inventory_changed", "conditions": {
-                    "items": [{"items": "minecraft:" + material}]}},
-                "recipe": {"trigger": "minecraft:recipe_unlocked", "conditions": {"recipe": recipe}},
-            },
-            "requirements": [["material", "recipe"]],
-            "rewards": {"recipes": [recipe]},
-        })
+        recipe_unlock(root, f"stone_{form}", material, "building_blocks")
 
     models = ["parapet/{material}_parapet", "parapet/{material}_support"]
     models += ["shutter/{material}_louvered_shutter_" + pose
@@ -113,12 +178,29 @@ def generate(provider, client, root):
         adapt_resource("assets/{ns}/models/block/" + model + ".json")
 
     shade_stone_shutter(provider, client, root / f"assets/{NS}/textures/block/stone_louvered_shutter.png")
-    write_json(root, f"assets/{NS}/lang/en_us.json", {
+    names = {
         f"block.{NS}.stone_parapet": "Stone Parapet",
         f"block.{NS}.stone_louvered_shutter": "Stone Louvered Shutter",
-    })
+    }
+    for archive, namespace, source, name in (
+        (client, "minecraft", "stone_button", "andesite_button"),
+        (client, "minecraft", "stone_pressure_plate", "andesite_pressure_plate"),
+        (provider, "mcwwindows", "stone_brick_gothic", "andesite_gothic_window"),
+        (provider, "mcwwindows", "stone_brick_arrow_slit", "andesite_arrow_slit"),
+    ):
+        generate_andesite(root, archive, namespace, source, name)
+        names[f"block.{NS}.{name}"] = name.replace("_", " ").title()
+    write_json(root, f"assets/{NS}/lang/en_us.json", names)
     ids = [f"{NS}:stone_{form}" for form in FORMS]
-    for tag, values in (("minecraft/tags/block/mineable/pickaxe", ids),
+    button, plate, window, slit = [f"{NS}:andesite_{form}" for form in
+                                  ("button", "pressure_plate", "gothic_window", "arrow_slit")]
+    for tag, values in (("minecraft/tags/block/mineable/pickaxe", [*ids, plate, window, slit]),
+                        ("minecraft/tags/block/stone_buttons", [button]),
+                        ("minecraft/tags/item/stone_buttons", [button]),
+                        ("minecraft/tags/block/stone_pressure_plates", [plate]),
+                        ("minecraft/tags/block/walls", [window, slit]),
+                        ("mcwwindows/tags/block/gothic", [window]),
+                        ("mcwwindows/tags/block/arrow_slit", [slit]),
                         ("mcwwindows/tags/block/parapets", ids[:1]),
                         ("mcwwindows/tags/block/shutters", ids[1:])):
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})

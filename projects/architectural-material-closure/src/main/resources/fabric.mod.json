@@ -5,7 +5,7 @@
   "name": "Architectural Material Closure",
   "environment": "*",
   "entrypoints": {
-    "main": ["dev.resivore.amc.StoneBlocks"]
+    "main": ["dev.resivore.amc.StoneBlocks", "dev.resivore.amc.AndesiteBlocks"]
   },
   "depends": {
     "minecraft": "~26.2",

@@ -1,23 +1,23 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 9
+## Owner verification for Canary 10
 
-Use the exact retained `AMC C9.jar` and compare its SHA-256 with the current release in `WORKBENCH_STATUS.json`. The reference pair is Macaw's Windows 2.4.2 Andesite Parapet and Andesite Louvered Shutter on Minecraft Java 26.2 Fabric.
+Match the SHA-256 of `AMC C10.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API and Macaw's Windows 2.4.2. All six AMC IDs use the namespace `architectural_material_closure`.
 
-1. Find Stone Parapet and Stone Louvered Shutter in Building Blocks. Confirm their inventory and held models render. Both item IDs use the namespace `architectural_material_closure`.
-2. Craft five parapets using three sticks across the first row and stick, Stone, stick across the second. Craft three shutters from three Stone Slabs in one column. Mine each with a pickaxe and check for one matching block item.
-3. Place a Stone parapet beside an andesite parapet in each horizontal orientation. Compare the outline, ledge and face alignment. Add and remove a flower pot above each and compare the support. The AMC ledge and support should both show vanilla Stone.
-4. Compare the C9 shutter with C7 and C8 captures at the same angle and lighting, with the same shader settings. Check that the bevels, five recessed bands and short upward returns look intermediate in depth. Compare the Stone grain and highlights on both hinge sides, open and closed, and in the inventory model.
-5. Open and close a vertical pair of Stone shutters together. Try using one while holding its own item, then with an empty hand. Compare with a Macaw pair and confirm an adjacent andesite shutter remains independent. Save and rejoin to check placement and state persistence.
+1. Find Andesite Button and Andesite Pressure Plate in Redstone Blocks, and Andesite Gothic Window and Andesite Arrow Slit in Building Blocks. Check each in inventory, in hand and after placement. Compare the masonry grain to adjacent vanilla Andesite under the same lighting.
+2. Craft one button from one Andesite and one plate from two Andesite side by side. Compare the button to a Stone Button on a floor, wall and ceiling. Use each to power a redstone lamp, compare the 20-tick pulse, try an arrow, and remove its support. Compare the plate to a Stone Pressure Plate with a player, a mob and a dropped item. Check activation and release after the living entity steps off.
+3. Craft four Gothic Windows from a glass pane with one Andesite on each cardinal side. Craft three Arrow Slits in two columns with two Andesite on each of the top and bottom rows and two Andesite Slabs in the middle. Mine all four new blocks with a pickaxe and check each drops one matching item.
+4. Place each masonry form beside its Macaw Stone Brick reference in all four directions. Compare single blocks and columns of two and three. Inspect the frame, opening, face alignment and pick outline from both sides. Remove the middle block and check the upper and lower blocks return to the single model. On Gothic Windows, toggle a connected stack and cycle the part with the Macaw hammer. Compare the glass and conditional iron bars in the corresponding reference states. Save and rejoin to check state persistence.
+5. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observed results, and any failing orientation, hinge, or pot state. Include a screenshot for a rendering issue. Owner runtime evidence is pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C10 are pending.
 
 ## Controlled build checks
 
-From the AMC directory, use Java 25, Gradle 9.5.1 and a Python interpreter with Pillow. Keep `mcw-windows-2.4.2-mc26.2fabric.jar` in the repository's read-only `originals/mods`. The generator checks that JAR's SHA-256 and the official 26.2 client SHA-1 before deriving assets. Gradle uses Loom's cached client by default. Set `-PvanillaClient=<path>` if the official client JAR is elsewhere.
+From the AMC directory, use Java 25, Gradle 9.5.1 and Python with Pillow. The generator checks the read-only Macaw provider JAR in `originals/mods` and the official 26.2 client in Loom's cache. Set `-PvanillaClient=<path>` for another copy of that exact client.
 
 ```text
-gradle build runGameTest -Ppython=<interpreter>
+gradle build runGameTest --rerun-tasks -Ppython=<interpreter>
 ```
 
-`verifyStoneJar` checks the production archive, all state and item model bindings, inherited face UVs, sprite closure, recipes, drops, tags, pixel mapping and slat contrast. Three isolated Fabric GameTests check registrations, loaded data, state shapes, placement, flower-pot updates and shutter interaction. Generated resources, GameTest worlds and the production JAR belong under ignored local output. Retain the verified JAR locally and keep it out of distributions.
+`verifyAmcJar` checks the production file list, translations, recipes, loot, tags, inventory models, exact reference state choices and model parents, sprite bindings, and the C9 shutter PNG. Controlled server GameTests compare registered entries, loaded data, block states, collision, redstone behavior, placement and masonry interactions. The generated resources, isolated GameTest world and retained JAR are local-only.

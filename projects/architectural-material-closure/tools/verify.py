@@ -1,4 +1,5 @@
 """Check the packaged AMC release against the real Macaw and Minecraft resources."""
+import hashlib
 import io
 import json
 import sys
@@ -115,12 +116,95 @@ def check_texture(jar, provider, client):
         assert low * 127 <= target + 0.5 and high * 127 >= target - 0.5, region
 
 
+def check_andesite(jar, provider, client, expected):
+    controls = {"button": ("stone_button", 3), "pressure_plate": ("stone_pressure_plate", 2)}
+    masonry = {"gothic_window": ("stone_brick_gothic", 4), "arrow_slit": ("stone_brick_arrow_slit", 4)}
+    for form, (source, model_count) in (controls | masonry).items():
+        archive, namespace = (client, "minecraft") if form in controls else (provider, "mcwwindows")
+        name = "andesite_" + form
+        own, ref = f"{NS}:{name}", f"{namespace}:{source}"
+        provider_name = "andesite_gothic" if form == "gothic_window" else name
+        for alias in {name, provider_name}:
+            assert f"assets/mcwwindows/blockstates/{alias}.json" not in provider.namelist()
+        assert f"assets/minecraft/blockstates/{name}.json" not in client.namelist()
+        models = set()
+
+        def resource(path):
+            expected.add(path)
+            return read_json(jar, path)
+
+        for folder in ("items", "blockstates"):
+            actual = resource(f"assets/{NS}/{folder}/{name}.json")
+            reference = read_json(archive, f"assets/{namespace}/{folder}/{source}.json")
+            if folder == "items":
+                entries = [actual["model"]]
+            elif "variants" in actual:
+                entries = actual["variants"].values()
+            else:
+                entries = [part["apply"] for part in actual["multipart"]]
+            for entry in entries:
+                model = entry["model"]
+                if model == "mcwwindows:block/gothic/iron_bars":
+                    assert form == "gothic_window"
+                    bars = read_json(provider, "assets/mcwwindows/models/block/gothic/iron_bars.json")
+                    assert bars["elements"] and bars["textures"] == {"3": "minecraft:block/iron_bars"}
+                    client.getinfo("assets/minecraft/textures/block/iron_bars.png")
+                else:
+                    prefix, path = model.split(":")
+                    assert prefix == NS and name in path
+                    models.add(path)
+                    entry["model"] = f"{namespace}:{path.replace(name, source)}"
+            assert actual == reference, (name, folder, "state predicates, transforms or item differ")
+        assert len(models) == model_count
+        for path in models:
+            child = resource(f"assets/{NS}/models/{path}.json")
+            reference = read_json(archive, f"assets/{namespace}/models/{path.replace(name, source)}.json")
+            slots = {"texture": "minecraft:block/andesite"} if form in controls else {
+                "0": "minecraft:block/andesite", "particle": "minecraft:block/andesite"}
+            if form == "gothic_window":
+                slots["3"] = "minecraft:block/glass"
+            assert child == {"parent": reference["parent"], "textures": slots}
+            assert reference["textures"].keys() == slots.keys()
+            # Follow the original geometry and display ancestry all the way to its root.
+            parent = child["parent"]
+            while parent:
+                ns, _, model = parent.partition(":")
+                if not model:
+                    ns, model = "minecraft", ns
+                parent_archive = {"minecraft": client, "mcwwindows": provider}[ns]
+                inherited = read_json(parent_archive, f"assets/{ns}/models/{model}.json")
+                for e in inherited.get("elements", []):
+                    for face in e["faces"].values():
+                        assert face["texture"].removeprefix("#") in slots
+                parent = inherited.get("parent")
+            for texture in slots.values():
+                client.getinfo("assets/minecraft/textures/" + texture.split(":")[1] + ".png")
+
+        recipe = resource(f"data/{NS}/recipe/{name}.json")
+        original = read_json(archive, f"data/{namespace}/recipe/{source}.json")
+        # Compare the entire original recipe and loot structure with just the identity/material swapped.
+        adapted = json.dumps(original).replace(ref, own).replace('"minecraft:stone"', '"minecraft:andesite"')
+        adapted = adapted.replace("minecraft:stone_brick_slab", "minecraft:andesite_slab")
+        assert recipe == json.loads(adapted.replace("minecraft:stone_bricks", "minecraft:andesite"))
+        loot = resource(f"data/{NS}/loot_table/blocks/{name}.json")
+        original = read_json(archive, f"data/{namespace}/loot_table/blocks/{source}.json")
+        assert loot == json.loads(json.dumps(original).replace(ref, own)
+                                  .replace(f"minecraft:blocks/{source}", f"{NS}:blocks/{name}"))
+        category = "redstone" if form in controls else "building_blocks"
+        unlock = resource(f"data/{NS}/advancement/recipes/{category}/{name}.json")
+        assert unlock["rewards"]["recipes"] == [own] and unlock["criteria"]["recipe"]["conditions"]["recipe"] == own
+        assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": "minecraft:andesite"}]
+
+
 def verify(jar, provider, client):
     files = [e.filename for e in jar.infolist() if not e.is_dir()]
     assert len(files) == len(set(files))
     expected = {"META-INF/MANIFEST.MF", "fabric.mod.json", "dev/resivore/amc/StoneBlocks.class",
                 f"assets/{NS}/lang/en_us.json", f"assets/{NS}/textures/block/stone_louvered_shutter.png"}
+    expected.add("dev/resivore/amc/AndesiteBlocks.class")
     names = read_json(jar, f"assets/{NS}/lang/en_us.json")
+    new_forms = ("andesite_button", "andesite_pressure_plate", "andesite_gothic_window", "andesite_arrow_slit")
+    assert names == {f"block.{NS}.{form}": form.replace("_", " ").title() for form in (*FORMS, *new_forms)}
     models = set()
     for form in FORMS:
         own = f"{NS}:{form}"
@@ -143,15 +227,24 @@ def verify(jar, provider, client):
     for model in models:
         compare_model(jar, provider, client, model)
         expected.add(f"assets/{NS}/models/{model}.json")
-    for tag, forms in (("minecraft/tags/block/mineable/pickaxe", FORMS),
+    check_andesite(jar, provider, client, expected)
+    for tag, forms in (("minecraft/tags/block/mineable/pickaxe", FORMS + new_forms[1:]),
+                       ("minecraft/tags/block/stone_buttons", new_forms[:1]),
+                       ("minecraft/tags/item/stone_buttons", new_forms[:1]),
+                       ("minecraft/tags/block/stone_pressure_plates", new_forms[1:2]),
+                       ("minecraft/tags/block/walls", new_forms[2:]),
+                       ("mcwwindows/tags/block/gothic", new_forms[2:3]),
+                       ("mcwwindows/tags/block/arrow_slit", new_forms[3:]),
                        ("mcwwindows/tags/block/parapets", FORMS[:1]), ("mcwwindows/tags/block/shutters", FORMS[1:])):
         path = f"data/{tag}.json"
         expected.add(path)
         assert read_json(jar, path) == {"replace": False, "values": [f"{NS}:{form}" for form in forms]}
     assert set(files) == expected, set(files).symmetric_difference(expected)
     check_texture(jar, provider, client)
-    print("Verified two block/item resource sets, six model parents, all state mappings, recipes, drops, tags, "
-          "and isolated JAR contents. All 256 shutter pixels and five shaded slat rows passed.")
+    sprite = jar.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
+    assert hashlib.sha256(sprite).hexdigest() == "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878"
+    print(f"Verified six block/item sets, 19 material models, state and sprite closure, recipes, drops, tags, "
+          f"the exact C9 shutter sprite and all {len(files)} production entries.")
 
 
 if __name__ == "__main__":
