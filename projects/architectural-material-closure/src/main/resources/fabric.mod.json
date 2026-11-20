@@ -5,13 +5,14 @@
   "name": "Architectural Material Closure",
   "environment": "*",
   "entrypoints": {
-    "main": ["dev.resivore.amc.StoneBlocks", "dev.resivore.amc.AndesiteBlocks"]
+    "main": ["dev.resivore.amc.StoneBlocks", "dev.resivore.amc.AndesiteBlocks", "dev.resivore.amc.MasonryBlocks"]
   },
   "depends": {
     "minecraft": "~26.2",
     "fabricloader": ">=0.19.3",
     "java": ">=25",
     "fabric-api": "*",
-    "mcwwindows": "*"
+    "mcwwindows": "*",
+    "bbb": "*"
   }
 }

@@ -8,6 +8,8 @@ from zipfile import ZipFile
 
 from PIL import Image
 
+from verify_masonry import COVERAGE, check_masonry
+
 NS = "architectural_material_closure"
 FORMS = ("stone_parapet", "stone_louvered_shutter")
 
@@ -196,15 +198,16 @@ def check_andesite(jar, provider, client, expected):
         assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": "minecraft:andesite"}]
 
 
-def verify(jar, provider, client):
+def verify(jar, provider, client, bbb):
     files = [e.filename for e in jar.infolist() if not e.is_dir()]
     assert len(files) == len(set(files))
     expected = {"META-INF/MANIFEST.MF", "fabric.mod.json", "dev/resivore/amc/StoneBlocks.class",
                 f"assets/{NS}/lang/en_us.json", f"assets/{NS}/textures/block/stone_louvered_shutter.png"}
     expected.add("dev/resivore/amc/AndesiteBlocks.class")
+    expected.add("dev/resivore/amc/MasonryBlocks.class")
     names = read_json(jar, f"assets/{NS}/lang/en_us.json")
     new_forms = ("andesite_button", "andesite_pressure_plate", "andesite_gothic_window", "andesite_arrow_slit")
-    assert names == {f"block.{NS}.{form}": form.replace("_", " ").title() for form in (*FORMS, *new_forms)}
+    assert names == {f"block.{NS}.{form}": form.replace("_", " ").title() for form in (*FORMS, *new_forms, *("andesite_" + f for f in COVERAGE))}
     models = set()
     for form in FORMS:
         own = f"{NS}:{form}"
@@ -232,23 +235,24 @@ def verify(jar, provider, client):
                        ("minecraft/tags/block/stone_buttons", new_forms[:1]),
                        ("minecraft/tags/item/stone_buttons", new_forms[:1]),
                        ("minecraft/tags/block/stone_pressure_plates", new_forms[1:2]),
-                       ("minecraft/tags/block/walls", new_forms[2:]),
+                       ("minecraft/tags/block/walls", (*new_forms[2:], "andesite_fence")),
                        ("mcwwindows/tags/block/gothic", new_forms[2:3]),
                        ("mcwwindows/tags/block/arrow_slit", new_forms[3:]),
                        ("mcwwindows/tags/block/parapets", FORMS[:1]), ("mcwwindows/tags/block/shutters", FORMS[1:])):
         path = f"data/{tag}.json"
         expected.add(path)
         assert read_json(jar, path) == {"replace": False, "values": [f"{NS}:{form}" for form in forms]}
+    check_masonry(jar, bbb, client, expected)
     assert set(files) == expected, set(files).symmetric_difference(expected)
     check_texture(jar, provider, client)
     sprite = jar.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
     assert hashlib.sha256(sprite).hexdigest() == "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878"
-    print(f"Verified six block/item sets, 19 material models, state and sprite closure, recipes, drops, tags, "
+    print(f"Verified 11 block/item sets, state and sprite closure, recipes, drops, tags, "
           f"the exact C9 shutter sprite and all {len(files)} production entries.")
 
 
 if __name__ == "__main__":
     if not __debug__:
         sys.exit("Run resource checks without Python optimization")
-    with ZipFile(Path(sys.argv[1])) as jar, ZipFile(sys.argv[2]) as provider, ZipFile(sys.argv[3]) as client:
-        verify(jar, provider, client)
+    with ZipFile(Path(sys.argv[1])) as jar, ZipFile(sys.argv[2]) as provider, ZipFile(sys.argv[3]) as client, ZipFile(sys.argv[4]) as bbb:
+        verify(jar, provider, client, bbb)

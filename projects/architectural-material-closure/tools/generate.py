@@ -9,6 +9,8 @@ from zipfile import ZipFile
 
 from PIL import Image
 
+import masonry
+
 NS = "architectural_material_closure"
 FORMS = ("parapet", "louvered_shutter")
 PROVIDER_SHA256 = "40ba9c55f191f8bd4758293683ed2bcf6d0c76c8f54f9fc8a0dccabdbcfd36ad"
@@ -158,7 +160,7 @@ def generate_andesite(root, archive, namespace, source, name):
     write(f"data/{NS}/loot_table/blocks", loot)
 
 
-def generate(provider, client, root):
+def generate(provider, client, bbb, root):
     def adapt_resource(template):
         src = template.format(ns="mcwwindows", material="andesite")
         dst = template.format(ns=NS, material="stone")
@@ -190,6 +192,8 @@ def generate(provider, client, root):
     ):
         generate_andesite(root, archive, namespace, source, name)
         names[f"block.{NS}.{name}"] = name.replace("_", " ").title()
+    for form in masonry.FORMS:
+        names[f"block.{NS}.andesite_{form}"] = "Andesite " + form.title()
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     ids = [f"{NS}:stone_{form}" for form in FORMS]
     button, plate, window, slit = [f"{NS}:andesite_{form}" for form in
@@ -205,14 +209,18 @@ def generate(provider, client, root):
                         ("mcwwindows/tags/block/shutters", ids[1:])):
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})
 
+    masonry.generate(root, bbb, client, write_json, recipe_unlock)
+
 
 if __name__ == "__main__":
-    provider_path, client_path, root = map(Path, sys.argv[1:])
+    provider_path, client_path, bbb_path, root = map(Path, sys.argv[1:])
     if not root.resolve().is_relative_to(Path(__file__).resolve().parents[1] / "build"):
         sys.exit("Private derived assets must be generated under AMC's ignored build directory")
     if hashlib.sha256(provider_path.read_bytes()).hexdigest() != PROVIDER_SHA256:
         sys.exit("Unexpected Macaw's Windows reference bytes")
     if hashlib.sha1(client_path.read_bytes()).hexdigest() != CLIENT_SHA1:
         sys.exit("Expected the official Minecraft 26.2 client JAR")
-    with ZipFile(provider_path) as provider, ZipFile(client_path) as client:
-        generate(provider, client, root)
+    if hashlib.sha256(bbb_path.read_bytes()).hexdigest() != masonry.REFERENCE_SHA256:
+        sys.exit("Unexpected BBB 26.2 reference bytes")
+    with ZipFile(provider_path) as provider, ZipFile(client_path) as client, ZipFile(bbb_path) as bbb:
+        generate(provider, client, bbb, root)
