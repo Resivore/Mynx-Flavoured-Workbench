@@ -266,7 +266,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 195 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 197 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -293,7 +293,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_478 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_490 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -575,6 +575,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     "bbb:" + stone + "_moulding", "bbb:" + stone + "_fence", "bbb:" + stone + "_frame"));
             if (stone.equals("stone")) expected.add("mcwwindows:stone_brick_arrow_slit");
             if (stone.equals("nether_brick")) expected.add("mcwwindows:nether_brick_arrow_slit");
+            if (Boolean.getBoolean("ibf.test.amcExpected") && (stone.equals("sandstone") || stone.equals("red_sandstone"))) {
+                expected.add("architectural_material_closure:" + stone + "_arrow_slit");
+            }
             assertExactShapeSet(helper, "bbb:" + stone + "_column", expected);
         }
         helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(id("bbb:mossy_oak_frame"))
@@ -1097,6 +1100,36 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                         "Absent AMC changed standalone Macaw item " + standalone);
             }
             assertSeparate(helper, slit, gothic, "Mud Brick Arrow Slit and Gothic Window joined without AMC");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void sandstoneSelectorsRetainTheirProviderParents(GameTestHelper helper) {
+        for (String material : List.of("sandstone", "red_sandstone")) {
+            String amc = "architectural_material_closure:" + material + "_";
+            String macaw = "mcwwindows:" + material + "_";
+            String bbb = "bbb:" + material + "_";
+            String path = "mcwpaths:" + material + "_running_bond_path";
+            List<String> windows = new ArrayList<>(List.of(macaw + "window", macaw + "window2",
+                    macaw + "four_window", macaw + "pane_window"));
+            List<String> details = new ArrayList<>(List.of(bbb + "column", bbb + "urn", bbb + "moulding",
+                    bbb + "fence", bbb + "frame"));
+            if (Boolean.getBoolean("ibf.test.amcExpected")) {
+                assertSelectorRoundTrip(helper, List.of(amc + "button", amc + "pressure_plate",
+                        amc + "parapet", amc + "louvered_shutter"));
+                assertSeparate(helper, amc + "button", path, "Sandstone accessory and path selectors merged");
+                windows.add(amc + "gothic_window");
+                details.add(amc + "arrow_slit");
+            } else {
+                for (String form : List.of("button", "pressure_plate", "parapet", "louvered_shutter",
+                        "gothic_window", "arrow_slit")) {
+                    helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(id(amc + form)), "Unexpected item " + amc + form);
+                }
+            }
+            assertSelectorRoundTrip(helper, windows);
+            assertSelectorRoundTrip(helper, details);
+            helper.assertTrue(hasRecipe(helper, path), "Missing path recipe for " + path);
         }
         helper.succeed();
     }

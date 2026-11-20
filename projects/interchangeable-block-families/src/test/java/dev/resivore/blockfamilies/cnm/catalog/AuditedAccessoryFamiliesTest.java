@@ -135,8 +135,8 @@ final class AuditedAccessoryFamiliesTest {
         assertTrue(family("prismarine_bricks_button").members().contains(id("mcwwindows:prismarine_parapet")));
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(41, accessories.size());
-        assertEquals(302, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(43, accessories.size());
+        assertEquals(310, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
@@ -262,7 +262,7 @@ final class AuditedAccessoryFamiliesTest {
         }
 
         for (String missingButtonMaterial : List.of("gold", "iron",
-                "sandstone", "red_sandstone", "brick", "mossy_stone", "cobbled_deepslate", "deepslate",
+                "brick", "mossy_stone", "cobbled_deepslate", "deepslate",
                 "mud_brick", "blackstone")) {
             assertFalse(accessories.stream().anyMatch(value -> value.key().getPath()
                     .equals("cnm/building_accessory/" + missingButtonMaterial + "_button")));

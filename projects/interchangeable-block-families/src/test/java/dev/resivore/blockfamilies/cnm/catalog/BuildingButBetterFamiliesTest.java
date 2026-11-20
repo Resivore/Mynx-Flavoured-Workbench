@@ -100,6 +100,9 @@ final class BuildingButBetterFamiliesTest {
                     bbb(stone + "_fence"), bbb(stone + "_frame")));
             if (stone.equals("stone")) expected.add(id("mcwwindows:stone_brick_arrow_slit"));
             if (stone.equals("nether_brick")) expected.add(id("mcwwindows:nether_brick_arrow_slit"));
+            if (stone.equals("sandstone") || stone.equals("red_sandstone")) {
+                expected.add(id("architectural_material_closure:" + stone + "_arrow_slit"));
+            }
             AuditedShapeFamily family = details.get("cnm/bbb_detail/stone/" + stone);
             assertEquals(expected, family.members(), stone);
             assertEquals(bbb(stone + "_column"), family.canonicalParent(), stone);

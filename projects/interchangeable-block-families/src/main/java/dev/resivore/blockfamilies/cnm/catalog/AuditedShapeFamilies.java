@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 195;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_478;
+    public static final int EXPECTED_FAMILY_COUNT = 197;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_490;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -872,11 +872,13 @@ public final class AuditedShapeFamilies {
             family("cnm/window/red_sandstone", WINDOW, mcwWindows("red_sandstone_window"),
                     mcwWindows("red_sandstone_window2"),
                     mcwWindows("red_sandstone_four_window"),
-                    mcwWindows("red_sandstone_pane_window")),
+                    mcwWindows("red_sandstone_pane_window"),
+                    amc("red_sandstone_gothic_window")),
             family("cnm/window/sandstone", WINDOW, mcwWindows("sandstone_window"),
                     mcwWindows("sandstone_window2"),
                     mcwWindows("sandstone_four_window"),
-                    mcwWindows("sandstone_pane_window")),
+                    mcwWindows("sandstone_pane_window"),
+                    amc("sandstone_gothic_window")),
             family("cnm/window/spruce_log", WINDOW, mcwWindows("spruce_window"),
                     mcwWindows("spruce_window2"),
                     mcwWindows("spruce_four_window"),
@@ -1082,8 +1084,10 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/stone/blackstone", BBB_DETAIL, bbb("blackstone_column"), bbb("blackstone_urn"), bbb("blackstone_moulding"), bbb("blackstone_fence"), bbb("blackstone_frame")),
             family("cnm/bbb_detail/stone/deepslate", BBB_DETAIL, bbb("deepslate_column"), bbb("deepslate_urn"), bbb("deepslate_moulding"), bbb("deepslate_fence"), bbb("deepslate_frame")),
             family("cnm/bbb_detail/stone/nether_brick", BBB_DETAIL, bbb("nether_brick_column"), bbb("nether_brick_urn"), bbb("nether_brick_moulding"), bbb("nether_brick_fence"), bbb("nether_brick_frame"), mcwWindows("nether_brick_arrow_slit")),
-            family("cnm/bbb_detail/stone/sandstone", BBB_DETAIL, bbb("sandstone_column"), bbb("sandstone_urn"), bbb("sandstone_moulding"), bbb("sandstone_fence"), bbb("sandstone_frame")),
-            family("cnm/bbb_detail/stone/red_sandstone", BBB_DETAIL, bbb("red_sandstone_column"), bbb("red_sandstone_urn"), bbb("red_sandstone_moulding"), bbb("red_sandstone_fence"), bbb("red_sandstone_frame")),
+            family("cnm/bbb_detail/stone/sandstone", BBB_DETAIL, bbb("sandstone_column"), bbb("sandstone_urn"), bbb("sandstone_moulding"), bbb("sandstone_fence"), bbb("sandstone_frame"),
+                    amc("sandstone_arrow_slit")),
+            family("cnm/bbb_detail/stone/red_sandstone", BBB_DETAIL, bbb("red_sandstone_column"), bbb("red_sandstone_urn"), bbb("red_sandstone_moulding"), bbb("red_sandstone_fence"), bbb("red_sandstone_frame"),
+                    amc("red_sandstone_arrow_slit")),
             family("cnm/bbb_detail/stone/quartz", BBB_DETAIL, bbb("quartz_column"), bbb("quartz_urn"), bbb("quartz_moulding"), bbb("quartz_fence"), bbb("quartz_frame"))
     );
 
@@ -1255,6 +1259,8 @@ public final class AuditedShapeFamilies {
                     mcwPaths("granite_honeycomb_paving"),
                     mcwPaths("granite_clover_paving"),
                     mcwPaths("granite_dumble_paving")),
+            family("cnm/building_accessory/sandstone_button", BUILDING_ACCESSORY, amc("sandstone_button"),
+                    amc("sandstone_pressure_plate"), amc("sandstone_parapet"), amc("sandstone_louvered_shutter")),
             family("cnm/building_accessory/sandstone", BUILDING_ACCESSORY,
                     mcwPaths("sandstone_running_bond_path"),
                     mcwPaths("sandstone_strewn_rocky_path"),
@@ -1267,6 +1273,8 @@ public final class AuditedShapeFamilies {
                     mcwPaths("sandstone_honeycomb_paving"),
                     mcwPaths("sandstone_clover_paving"),
                     mcwPaths("sandstone_dumble_paving")),
+            family("cnm/building_accessory/red_sandstone_button", BUILDING_ACCESSORY, amc("red_sandstone_button"),
+                    amc("red_sandstone_pressure_plate"), amc("red_sandstone_parapet"), amc("red_sandstone_louvered_shutter")),
             family("cnm/building_accessory/red_sandstone", BUILDING_ACCESSORY,
                     mcwPaths("red_sandstone_running_bond_path"),
                     mcwPaths("red_sandstone_strewn_rocky_path"),
