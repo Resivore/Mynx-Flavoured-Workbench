@@ -647,3 +647,14 @@
 - Artifact: PRIVATE_LOCAL_ONLY `BGE C104.jar`, 6,423,298 bytes, SHA-256 `0ec890c1d062816e1eb62664ae77936bd8c7ba61b66069e18e833b94e33a51b9`, finalized at `2026-09-28T05:29:45.9693646Z` from preceding coherent implementation/artifact checkpoint `3aa5423ca8693b432868270695f585c9b6df0fe3`. Six approved private Beam derivatives remain local; originals inputs were read-only.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Manifest revision 65 to 66; accepted C70 and rollback C72 identities and retained bytes remain unchanged.
 - Next state: Under owner-directed verification, record only exact C104 presentation observations using TESTING.md; acceptance remains an explicit owner decision.
+
+## 2026-11-20T22:53:27.347479Z — Finalize BGE C105 AMC patterned geometry
+
+- Revision: 67
+- Source checkpoint: `a7da287bc2de6fcf37d532803f54b88f2c964199`
+- Changes: Completed 16 independent AMC C21 patterned families. AMC supplies each engraved full block. The BGE integration supplies all eight derived roles. Projected the Step and Vertical Slab UVs in block coordinates and retained their inventory display frames.
+- Build/static: All 3 AMC-present and 163 AMC-absent controlled Fabric GameTests passed. Verified all 52 native Macaw patterned Slab/Stair pairs, all 1,296 selector transfers, stonecutting, two-way engraving, drops, survival placement and canonical completion. The model audit resolved 1,728 placed selections, 144 previews, 768 models and 5,904 faces against 16 distinct C21 sprites. Architecture, authored glass, native resources/semantics and archive checks passed. Relative to verified C104, one hook class was added, eight entries changed and all packaged assets and data retained their bytes.
+- Runtime: Owner Minecraft verification and acceptance are pending.
+- Artifact: PRIVATE_LOCAL_ONLY `BGE C105.jar`, 6,424,532 bytes, SHA-256 `2a2505cee80cfe2c81bd8d320a0df9cba760c29ee04e489603222cb95ca8d29b`, finalized at `2026-11-20T22:52:27.4469340Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
+- Next state: Verify pattern continuity, item previews and survival behavior against the retained C105 bytes using TESTING.md.
