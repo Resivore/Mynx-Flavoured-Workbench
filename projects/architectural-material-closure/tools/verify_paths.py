@@ -10,11 +10,13 @@ FORMS = ("running_bond_path", "strewn_rocky_path", "windmill_weave_path", "flags
          "diamond_paving", "basket_weave_paving", "square_paving", "honeycomb_paving", "clover_paving", "dumble_paving", *FULL)
 
 
-def check_paths(jar, provider, client, expected):
+def check_paths(jar, provider, client, expected, material="prismarine_bricks"):
+    ingredient = "quartz_block" if material == "quartz" else material
+    palette_tile = "quartz_block_side" if material == "quartz" else material
     sheets = {}
     models = set()
     for form in FORMS:
-        name = f"prismarine_bricks_{form}"
+        name = f"{material}_{form}"
         ref = f"dark_prismarine_{form}"
         own_id, ref_id = f"{NS}:{name}", "mcwpaths:" + ref
         assert f"assets/mcwpaths/blockstates/{name}.json" not in provider.namelist()
@@ -45,10 +47,10 @@ def check_paths(jar, provider, client, expected):
             for slot, source in original_slots.items():
                 target = actual_slots[slot]
                 if form == "strewn_rocky_path":
-                    assert source == "minecraft:block/dark_prismarine" and target == f"{NS}:block/prismarine_bricks_strewn_rocky"
+                    assert source == "minecraft:block/dark_prismarine" and target == f"{NS}:block/{material}_strewn_rocky"
                 else:
                     assert source.startswith("mcwpaths:block/dark_prismarine_")
-                    assert target == source.replace("mcwpaths:", NS + ":").replace("dark_prismarine_", "prismarine_bricks_")
+                    assert target == source.replace("mcwpaths:", NS + ":").replace("dark_prismarine_", f"{material}_")
                 assert sheets.setdefault(source, target) == target
 
             # Both graphs now point to the same immutable ancestors. Resolve all visible face slots
@@ -76,21 +78,21 @@ def check_paths(jar, provider, client, expected):
             expected.add(path)
             reference = json.dumps(read(provider, f"data/mcwpaths/{folder}/{ref}.json"))
             actual = read(jar, path)
-            assert actual == json.loads(reference.replace(ref_id, own_id).replace("minecraft:dark_prismarine", "minecraft:prismarine_bricks"))
+            assert actual == json.loads(reference.replace(ref_id, own_id).replace("minecraft:dark_prismarine", f"minecraft:{ingredient}"))
             if folder == "recipe":
                 assert actual["type"] == "minecraft:stonecutting" and actual["result"]["count"] == (1 if form in FULL else 4)
         unlock = f"data/{NS}/advancement/recipes/building_blocks/{name}.json"
         expected.add(unlock)
         advancement = read(jar, unlock)
         assert advancement["rewards"]["recipes"] == [own_id]
-        assert advancement["criteria"]["material"]["conditions"]["items"] == [{"items": "minecraft:prismarine_bricks"}]
+        assert advancement["criteria"]["material"]["conditions"]["items"] == [{"items": f"minecraft:{ingredient}"}]
 
     def palette(im):
         return sorted({p[:3] for p in im.getdata() if p[3]},
                       key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
 
-    colors = palette(image(client, "assets/minecraft/textures/block/prismarine_bricks.png"))
-    assert len(colors) == 8 and len(sheets) == 11 and len(set(sheets.values())) == 11
+    colors = palette(image(client, f"assets/minecraft/textures/block/{palette_tile}.png"))
+    assert len(colors) == {"quartz": 6, "nether_bricks": 7, "prismarine_bricks": 8}[material] and len(sheets) == 11 and len(set(sheets.values())) == 11
     for source, target in sheets.items():
         ns, sprite = source.split(":")
         original = image(provider if ns == "mcwpaths" else client, f"assets/{ns}/textures/{sprite}.png")
@@ -105,4 +107,4 @@ def check_paths(jar, provider, client, expected):
                 assert after == (*colors[idx], before[3]), source
             else:
                 assert before == after, source
-    print(f"Matched all 15 Paths state and item graphs, {len(models)} model bindings and every pixel of 11 pattern sheets.")
+    print(f"Matched all 15 {material} Paths state and item graphs, {len(models)} model bindings and every pixel of 11 pattern sheets.")

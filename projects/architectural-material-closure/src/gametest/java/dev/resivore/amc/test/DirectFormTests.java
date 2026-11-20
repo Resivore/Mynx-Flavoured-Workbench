@@ -51,18 +51,23 @@ public final class DirectFormTests {
             "honeycomb_paving", "clover_paving", "dumble_paving", "running_bond", "flagstone", "windmill_weave",
             "crystal_floor");
 
-    private static Map<String, Block> references(String material) {
-        if (material.equals("sandstone") || material.equals("red_sandstone")) {
-            var result = new LinkedHashMap<>(REFERENCES);
-            result.put("parapet", BlockInit.ANDESITE_PARAPET);
-            result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
-            return result;
+    static Map<String, Block> references(String material) {
+        var result = new LinkedHashMap<String, Block>();
+        switch (material) {
+            case "sandstone", "red_sandstone", "quartz", "deepslate" -> {
+                result.putAll(REFERENCES);
+                result.put("parapet", BlockInit.ANDESITE_PARAPET);
+                result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
+            }
+            case "mud_bricks", "nether_bricks" -> result.putAll(MUD_REFERENCES);
+            case "prismarine_bricks", "dark_prismarine" -> {
+                result.put("button", Blocks.STONE_BUTTON);
+                result.put("pressure_plate", Blocks.STONE_PRESSURE_PLATE);
+                result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
+            }
+            default -> result.putAll(REFERENCES);
         }
-        if (material.equals("mud_bricks")) return MUD_REFERENCES;
-        if (!material.equals("dark_prismarine") && !material.equals("prismarine_bricks")) return REFERENCES;
-        var result = new LinkedHashMap<>(Map.of("button", Blocks.STONE_BUTTON, "pressure_plate", Blocks.STONE_PRESSURE_PLATE,
-                "louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER));
-        if (material.equals("prismarine_bricks")) {
+        if (List.of("prismarine_bricks", "quartz", "nether_bricks").contains(material)) {
             for (var form : PATH_FORMS) {
                 result.put(form, BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("mcwpaths", "dark_prismarine_" + form)));
             }
@@ -96,6 +101,21 @@ public final class DirectFormTests {
     @GameTest
     public void sandstoneReferenceStatesAndData(GameTestHelper helper) {
         referenceStatesAndData(helper, "sandstone");
+    }
+
+    @GameTest
+    public void deepslateReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "deepslate");
+    }
+
+    @GameTest
+    public void quartzReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "quartz");
+    }
+
+    @GameTest
+    public void netherBricksReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "nether_bricks");
     }
 
     @GameTest
@@ -182,6 +202,21 @@ public final class DirectFormTests {
     }
 
     @GameTest
+    public void deepslatePlacement(GameTestHelper helper) {
+        placement(helper, "deepslate");
+    }
+
+    @GameTest
+    public void quartzPlacement(GameTestHelper helper) {
+        placement(helper, "quartz");
+    }
+
+    @GameTest
+    public void netherBricksPlacement(GameTestHelper helper) {
+        placement(helper, "nether_bricks");
+    }
+
+    @GameTest
     public void redSandstonePlacement(GameTestHelper helper) {
         placement(helper, "red_sandstone");
     }
@@ -227,8 +262,8 @@ public final class DirectFormTests {
     }
 
     @GameTest
-    public void sandstoneControlSupports(GameTestHelper helper) {
-        for (String material : List.of("sandstone", "red_sandstone")) {
+    public void controlSupports(GameTestHelper helper) {
+        for (String material : List.of("sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks")) {
             for (String form : List.of("button", "pressure_plate")) {
                 for (Block control : List.of(block(material, form), REFERENCES.get(form))) {
                     helper.setBlock(LEFT.below(), Blocks.STONE);
@@ -262,6 +297,21 @@ public final class DirectFormTests {
     @GameTest
     public void sandstoneButtonPulse(GameTestHelper helper) {
         buttonPulse(helper, "sandstone");
+    }
+
+    @GameTest
+    public void deepslateButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "deepslate");
+    }
+
+    @GameTest
+    public void quartzButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "quartz");
+    }
+
+    @GameTest
+    public void netherBricksButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "nether_bricks");
     }
 
     @GameTest
@@ -322,6 +372,21 @@ public final class DirectFormTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void deepslatePressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "deepslate");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void quartzPressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "quartz");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void netherBricksPressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "nether_bricks");
+    }
+
+    @GameTest(maxTicks = 40)
     public void redSandstonePressurePlateSensitivity(GameTestHelper helper) {
         pressurePlateSensitivity(helper, "red_sandstone");
     }
@@ -365,12 +430,26 @@ public final class DirectFormTests {
 
     @GameTest
     public void prismarineEngraving(GameTestHelper helper) {
+        engraving(helper, "prismarine_bricks");
+    }
+
+    @GameTest
+    public void quartzEngraving(GameTestHelper helper) {
+        engraving(helper, "quartz");
+    }
+
+    @GameTest
+    public void netherBricksEngraving(GameTestHelper helper) {
+        engraving(helper, "nether_bricks");
+    }
+
+    private static void engraving(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var pos = helper.absolutePos(LEFT);
         var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
         for (String form : List.of("running_bond", "flagstone", "windmill_weave", "crystal_floor")) {
-            for (Block block : List.of(block("prismarine_bricks", form), references("prismarine_bricks").get(form))) {
+            for (Block block : List.of(block(material, form), references(material).get(form))) {
                 helper.setBlock(LEFT, block);
                 var tool = Items.IRON_PICKAXE.getDefaultInstance();
                 player.setItemInHand(InteractionHand.MAIN_HAND, tool);
@@ -385,11 +464,20 @@ public final class DirectFormTests {
 
     @GameTest
     public void mudBricksWindowInteractions(GameTestHelper helper) {
+        windowInteractions(helper, "mud_bricks");
+    }
+
+    @GameTest
+    public void netherBricksWindowInteractions(GameTestHelper helper) {
+        windowInteractions(helper, "nether_bricks");
+    }
+
+    private static void windowInteractions(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var absolute = helper.absolutePos(LEFT);
         var hit = new BlockHitResult(Vec3.atCenterOf(absolute), Direction.NORTH, absolute, false);
         for (String form : List.of("window", "window2", "four_window", "pane_window")) {
-            for (Block window : List.of(MUD_REFERENCES.get(form), block("mud_bricks", form))) {
+            for (Block window : List.of(MUD_REFERENCES.get(form), block(material, form))) {
                 helper.setBlock(LEFT, window);
                 if (form.equals("window")) {
                     helper.setBlock(LEFT.above(), window);
@@ -433,6 +521,16 @@ public final class DirectFormTests {
     @GameTest
     public void sandstoneStackedMasonry(GameTestHelper helper) {
         stackedMasonry(helper, "sandstone");
+    }
+
+    @GameTest
+    public void deepslateStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "deepslate");
+    }
+
+    @GameTest
+    public void quartzStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "quartz");
     }
 
     @GameTest

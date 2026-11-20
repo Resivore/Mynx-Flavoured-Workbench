@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary18'
+version = '0.1.0-canary19'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c18')
+layout.buildDirectory = layout.projectDirectory.dir('build/c19')
 
 repositories {
     mavenCentral()
@@ -45,7 +45,7 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C18.jar'
+    archiveFileName = 'AMC C19.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
@@ -67,6 +67,6 @@ fabricApi {
 }
 
 loom.runs.named('gameTest') {
-    runDir 'build/c18/gametest'
+    runDir 'build/c19/gametest'
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

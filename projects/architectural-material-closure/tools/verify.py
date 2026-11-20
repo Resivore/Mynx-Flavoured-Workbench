@@ -8,7 +8,7 @@ from zipfile import ZipFile
 
 from PIL import Image
 
-from verify_mud import MACAW_FORMS, check_sandstone_caps, check_windows
+from verify_mud import MACAW_FORMS, check_directional_caps, check_windows
 from verify_paths import FORMS as PATH_FORMS, check_paths
 
 from verify_masonry import COVERAGE, check_masonry
@@ -126,8 +126,10 @@ def check_texture(jar, provider, client):
 def check_direct(jar, provider, client, material, expected):
     controls = {"button": ("stone_button", 3), "pressure_plate": ("stone_pressure_plate", 2)}
     masonry = {"gothic_window": ("stone_brick_gothic", 4), "arrow_slit": ("stone_brick_arrow_slit", 4)}
-    substrate = "packed_mud" if material == "mud_bricks" else material
-    forms = controls | masonry if material in (*MATERIALS, "sandstone", "red_sandstone") else controls
+    substrate = {"mud_bricks": "packed_mud", "quartz": "quartz_block"}.get(material, material)
+    side = "quartz_block_side" if material == "quartz" else substrate
+    slab = "deepslate_brick_slab" if material == "deepslate" else material + "_slab"
+    forms = controls | masonry if material in (*MATERIALS, "sandstone", "red_sandstone", "deepslate", "quartz") else controls
     for form, (source, model_count) in forms.items():
         archive, namespace = (client, "minecraft") if form in controls else (provider, "mcwwindows")
         name = material + "_" + form
@@ -168,11 +170,11 @@ def check_direct(jar, provider, client, material, expected):
         for path in models:
             child = resource(f"assets/{NS}/models/{path}.json")
             reference = read_json(archive, f"assets/{namespace}/models/{path.replace(name, source)}.json")
-            slots = {"texture": f"minecraft:block/{substrate}"} if form in controls else {
-                "0": f"minecraft:block/{substrate}", "particle": f"minecraft:block/{substrate}"}
+            slots = {"texture": f"minecraft:block/{side}"} if form in controls else {
+                "0": f"minecraft:block/{side}", "particle": f"minecraft:block/{side}"}
             if form == "gothic_window":
                 slots["3"] = "minecraft:block/glass"
-            check_sandstone_caps(child, archive, client, material, "#texture" if form in controls else "#0")
+            check_directional_caps(child, archive, client, material, "#texture" if form in controls else "#0")
             assert child == {"parent": reference["parent"], "textures": slots}
             assert reference["textures"].keys() == slots.keys()
             # Follow the original geometry and display ancestry all the way to its root.
@@ -194,7 +196,7 @@ def check_direct(jar, provider, client, material, expected):
         original = read_json(archive, f"data/{namespace}/recipe/{source}.json")
         # Compare the entire original recipe and loot structure with just the identity/material swapped.
         adapted = json.dumps(original).replace(ref, own).replace('"minecraft:stone"', f'"minecraft:{substrate}"')
-        adapted = adapted.replace("minecraft:stone_brick_slab", f"minecraft:{material}_slab")
+        adapted = adapted.replace("minecraft:stone_brick_slab", f"minecraft:{slab}")
         assert recipe == json.loads(adapted.replace("minecraft:stone_bricks", f"minecraft:{substrate}"))
         loot = resource(f"data/{NS}/loot_table/blocks/{name}.json")
         original = read_json(archive, f"data/{namespace}/loot_table/blocks/{source}.json")
@@ -206,7 +208,7 @@ def check_direct(jar, provider, client, material, expected):
         assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": f"minecraft:{substrate}"}]
 
 
-def check_tags(jar, bbb, provider, paths, expected):
+def check_tags(jar, bbb, provider, client, paths, expected):
     # Compare direct provider entries here. GameTests also compare resolved memberships.
     tags = {"mcwwindows/tags/block/parapets": [FORMS[0]], "mcwwindows/tags/block/shutters": [FORMS[1]],
             "minecraft/tags/block/mineable/pickaxe": list(FORMS)}
@@ -243,17 +245,27 @@ def check_tags(jar, bbb, provider, paths, expected):
                 form = member.removeprefix("mcwpaths:dark_prismarine_")
                 if member.startswith("mcwpaths:dark_prismarine_") and form in PATH_FORMS:
                     tags.setdefault(path[5:-5], []).append("prismarine_bricks_" + form)
-    for material in ("sandstone", "red_sandstone"):
+    for material in ("sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks"):
+        windows = {"stone_brick_gothic": "gothic_window", "stone_brick_arrow_slit": "arrow_slit",
+                   "andesite_parapet": "parapet", "andesite_louvered_shutter": "louvered_shutter"}
+        if material == "nether_bricks":
+            windows = {"andesite_" + f: f for f in MACAW_FORMS}
         for archive, namespace, refs in (
                 (client, "minecraft", {"stone_button": "button", "stone_pressure_plate": "pressure_plate"}),
-                (provider, "mcwwindows", {"stone_brick_gothic": "gothic_window", "stone_brick_arrow_slit": "arrow_slit",
-                                          "andesite_parapet": "parapet", "andesite_louvered_shutter": "louvered_shutter"})):
+                (provider, "mcwwindows", windows)):
             for path in archive.namelist():
                 if path.startswith("data/") and "/tags/" in path and path.endswith(".json"):
                     members = read_json(archive, path)["values"]
                     additions = [f"{material}_{form}" for source, form in refs.items() if f"{namespace}:{source}" in members]
                     if additions:
                         tags.setdefault(path[5:-5], []).extend(additions)
+        if material in ("quartz", "nether_bricks"):
+            for path in paths.namelist():
+                if "/tags/" in path and path.endswith(".json"):
+                    for member in read_json(paths, path)["values"]:
+                        prefix = "mcwpaths:dark_prismarine_"
+                        if member.startswith(prefix) and member[len(prefix):] in PATH_FORMS:
+                            tags.setdefault(path[5:-5], []).append(material + "_" + member[len(prefix):])
     for tag, values in tags.items():
         path = f"data/{tag}.json"
         expected.add(path)
@@ -279,7 +291,13 @@ def verify(jar, provider, client, bbb, paths):
     expected.add("dev/resivore/amc/SandstoneBlocks.class")
     for material in ("sandstone", "red_sandstone"):
         forms.extend(f"{material}_{form}" for form in (*DIRECT, "parapet", "louvered_shutter"))
-    assert len(forms) == len(set(forms)) == 85
+    expected.add("dev/resivore/amc/DeepslateQuartzNetherBlocks.class")
+    for material in ("deepslate", "quartz"):
+        forms.extend(f"{material}_{form}" for form in (*DIRECT, "parapet", "louvered_shutter"))
+    forms.extend("nether_bricks_" + form for form in ("button", "pressure_plate", *MACAW_FORMS))
+    for material in ("quartz", "nether_bricks"):
+        forms.extend(f"{material}_{form}" for form in PATH_FORMS)
+    assert len(forms) == len(set(forms)) == 135
     assert names == {f"block.{NS}.{name}": name.replace("window2", "window 2").replace("_", " ").title() for name in forms}
     models = set()
     for form in FORMS:
@@ -312,13 +330,19 @@ def verify(jar, provider, client, bbb, paths):
     for material in ("sandstone", "red_sandstone"):
         check_direct(jar, provider, client, material, expected)
         check_windows(jar, provider, client, expected, material, material, material + "_slab")
-    check_paths(jar, paths, client, expected)
-    check_tags(jar, bbb, provider, paths, expected)
+    for material, ingredient, slab in (("deepslate", "deepslate", "deepslate_brick_slab"),
+                                      ("quartz", "quartz_block", "quartz_slab"),
+                                      ("nether_bricks", "nether_bricks", "nether_brick_slab")):
+        check_direct(jar, provider, client, material, expected)
+        check_windows(jar, provider, client, expected, material, ingredient, slab, bbb=bbb)
+    for material in ("prismarine_bricks", "quartz", "nether_bricks"):
+        check_paths(jar, paths, client, expected, material)
+    check_tags(jar, bbb, provider, client, paths, expected)
     assert set(files) == expected, set(files).symmetric_difference(expected)
     check_texture(jar, provider, client)
     sprite = jar.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
     assert hashlib.sha256(sprite).hexdigest() == "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878"
-    print(f"Verified 85 block/item sets, state and sprite closure, recipes, drops, tags, "
+    print(f"Verified 135 block/item sets, state and sprite closure, recipes, drops, tags, "
           f"the exact C9 shutter sprite and all {len(files)} production entries.")
 
 

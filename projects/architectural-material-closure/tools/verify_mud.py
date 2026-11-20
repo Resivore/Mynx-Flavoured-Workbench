@@ -11,12 +11,15 @@ MACAW_FORMS = {"window": (32, 9), "window2": (16, 2), "four_window": (16, 2),
                "pane_window": (64, 8), "parapet": (8, 2), "louvered_shutter": (16, 4)}
 
 
-def check_sandstone_caps(child, archive, client, material, material_slot, *, shutter=False):
-    if material not in ("sandstone", "red_sandstone"):
+def check_directional_caps(child, archive, client, material, material_slot, *, shutter=False):
+    if material not in ("sandstone", "red_sandstone", "deepslate", "quartz"):
         return
     ns, parent = child["parent"].split(":")
     reference = json.loads(archive.read(f"assets/{ns}/models/{parent}.json"))
-    material_faces = json.loads(client.read(f"assets/minecraft/models/block/{material}.json"))["textures"]
+    vanilla = "quartz_block" if material == "quartz" else material
+    material_faces = json.loads(client.read(f"assets/minecraft/models/block/{vanilla}.json"))["textures"]
+    if "end" in material_faces:
+        material_faces.update(top=material_faces["end"], bottom=material_faces["end"])
     if shutter:
         material_faces["bottom"] = material_faces["top"]
     slots = child["textures"]
@@ -61,14 +64,21 @@ def check_ranked_shutter(stone, tile, result, material):
     print(f"Verified all 256 {material} shutter pixels against the 16 C9 ranks and {len(colors)} vanilla colors.")
 
 
-def check_shutter(jar, provider, client, expected, material, substrate):
+def check_shutter(jar, provider, client, expected, material, substrate, bbb):
     def image(archive, path):
         return Image.open(BytesIO(archive.read(path))).convert("RGBA")
 
     path = f"assets/{NS}/textures/block/{material}_louvered_shutter.png"
     expected.add(path)
     result = image(jar, path)
-    base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
+    if material == "nether_bricks":
+        # Independent face-local addressing for the BBB bottom quad rotated 270 degrees.
+        sheet = image(bbb, "assets/bbb/textures/block/moulding/nether_brick.png")
+        base = Image.new("RGBA", (16, 16))
+        base.putdata([sheet.getpixel((15 - y, 32 + x)) for y in range(16) for x in range(16)])
+        substrate = "the rotated BBB Nether Brick Moulding underside"
+    else:
+        base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
     if material in ("prismarine_bricks", "dark_prismarine"):
         stone = image(jar, f"assets/{NS}/textures/block/stone_louvered_shutter.png")
         check_ranked_shutter(stone, base, result, material)
@@ -111,7 +121,8 @@ def check_shutter(jar, provider, client, expected, material, substrate):
     print(f"Verified all 256 shutter pixels against {substrate} and the five reference slats.")
 
 
-def check_windows(jar, provider, client, expected, material, substrate, slab):
+def check_windows(jar, provider, client, expected, material, substrate, slab, *, bbb=None):
+    side = "quartz_block_side" if material == "quartz" else substrate
     shutter = f"{NS}:block/{material}_louvered_shutter"
 
     def read(archive, path):
@@ -131,13 +142,13 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         else:
             assert namespace == NS and actual.replace(NS + ":", "mcwwindows:").replace(material + "_", "andesite_") == ref
         generated = read(archives[namespace], f"assets/{namespace}/models/{model}.json")
-        check_sandstone_caps(generated, provider, client, material, "#1" if form == "parapet" else "#0",
+        check_directional_caps(generated, provider, client, material, "#1" if form == "parapet" else "#0",
                             shutter=form == "louvered_shutter")
         bindings = original.pop("textures")
         slots = generated.pop("textures")
         assert original == generated, (form, ref, "model or parent changed")
-        targets = {"minecraft:block/andesite": f"minecraft:block/{substrate}",
-                   "minecraft:block/polished_andesite": f"minecraft:block/{substrate}",
+        targets = {"minecraft:block/andesite": f"minecraft:block/{side}",
+                   "minecraft:block/polished_andesite": f"minecraft:block/{side}",
                    "mcwwindows:block/andesite_louvered_shutter": shutter}
         assert slots == {k: targets.get(v, v) for k, v in bindings.items()}
         node = generated
@@ -164,12 +175,12 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         elif ref.endswith("/mid_m"):
             assert visible == {"mcwwindows:block/glass"}
         else:
-            assert f"minecraft:block/{substrate}" in visible
-            assert visible <= {"mcwwindows:block/glass", "minecraft:block/glass", f"minecraft:block/{substrate}"}
+            assert f"minecraft:block/{side}" in visible
+            assert visible <= {"mcwwindows:block/glass", "minecraft:block/glass", f"minecraft:block/{side}"}
 
     for form, (state_count, model_count) in MACAW_FORMS.items():
-        if material != "mud_bricks" and form != "louvered_shutter" and not (
-                material in ("sandstone", "red_sandstone") and form == "parapet"):
+        if material not in ("mud_bricks", "nether_bricks") and form != "louvered_shutter" and not (
+                material in ("sandstone", "red_sandstone", "deepslate", "quartz") and form == "parapet"):
             continue
         src, own = "andesite_" + form, material + "_" + form
         ref_id, own_id = "mcwwindows:" + src, NS + ":" + own
@@ -206,5 +217,5 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": ingredient}]
         print(f"{own}: matched {state_count} blockstate entries and {model_count} model choices.")
     if material in ("sandstone", "red_sandstone"):
-        substrate = material + "_top"
-    check_shutter(jar, provider, client, expected, material, substrate)
+        side = material + "_top"
+    check_shutter(jar, provider, client, expected, material, side, bbb)

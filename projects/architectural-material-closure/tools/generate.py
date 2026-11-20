@@ -52,12 +52,13 @@ def remap_stone_shutter(source, client, dest, material):
     result.save(dest)
 
 
-def shade_shutter(provider, client, dest, substrate):
+def shade_shutter(provider, client, dest, substrate, *, base=None):
     def image(archive, path):
         return Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
 
     shutter = image(provider, "assets/mcwwindows/textures/block/andesite_louvered_shutter.png")
-    base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
+    if base is None:
+        base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
     light = shutter.convert("L")
 
     # The broad-face UV is [0,1,11,16]. Measure equivalent regions across
@@ -110,8 +111,28 @@ def recipe_unlock(root, name, material, category):
     })
 
 
-def bind_sandstone_caps(model, archive, material, material_slot):
-    if material not in ("sandstone", "red_sandstone"):
+def nether_moulding_underside(bbb):
+    state = masonry.load_json(bbb, "assets/bbb/blockstates/nether_brick_moulding.json")
+    variant = state["variants"]["facing=east,half=bottom,shape=straight,dentil=false"]
+    assert set(variant) == {"model"}  # Unrotated straight reference pose.
+
+    def model(identifier):
+        ns, path = identifier.split(":")
+        return masonry.load_json(bbb, f"assets/{ns}/models/{path}.json")
+
+    child = model(variant["model"])
+    template = model(child["parent"])
+    underside, = (e["faces"]["down"] for e in template["elements"] if e["from"][1] == 0 and "down" in e["faces"])
+    ns, path = child["textures"][underside["texture"].removeprefix("#")].split(":")
+    sheet = masonry.image(bbb, f"assets/{ns}/textures/{path}.png")
+    assert sheet.size == tuple(template["texture_size"]) == (80, 80)
+    bounds = tuple(round(uv * size / 16) for uv, size in zip(underside["uv"], sheet.size * 2))
+    assert bounds == (0, 32, 16, 48) and underside["rotation"] == 270
+    return sheet.crop(bounds).transpose(Image.Transpose.ROTATE_90)
+
+
+def bind_directional_caps(model, archive, material, material_slot):
+    if material not in ("sandstone", "red_sandstone", "deepslate", "quartz"):
         return
     ns, path = model["parent"].split(":")
     parent = masonry.load_json(archive, f"assets/{ns}/models/{path}.json")
@@ -119,7 +140,8 @@ def bind_sandstone_caps(model, archive, material, material_slot):
     # transforms and lighting, and override its elements with the original UVs intact.
     model["elements"] = parent["elements"]
     for direction, slot in (("up", "top"), ("down", "bottom")):
-        model["textures"][slot] = f"minecraft:block/{material}_{slot}"
+        end = {"quartz": "quartz_block_top", "deepslate": "deepslate_top"}.get(material, f"{material}_{slot}")
+        model["textures"][slot] = f"minecraft:block/{end}"
         for element in model["elements"]:
             face = element["faces"].get(direction)
             if face and face["texture"] == material_slot:
@@ -127,7 +149,9 @@ def bind_sandstone_caps(model, archive, material, material_slot):
 
 
 def generate_direct_form(root, archive, namespace, source, form, material, *, substrate=None):
-    substrate = substrate or material
+    substrate = substrate or ("quartz_block" if material == "quartz" else material)
+    side = "quartz_block_side" if material == "quartz" else substrate
+    slab = "deepslate_brick_slab" if material == "deepslate" else material + "_slab"
     name = f"{material}_{form}"
 
     def load(path):
@@ -164,15 +188,15 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
         assert model.keys() == {"parent", "textures"}
         for slot, sprite in model["textures"].items():
             if sprite in ("minecraft:block/stone", "minecraft:block/stone_bricks"):
-                model["textures"][slot] = f"minecraft:block/{substrate}"
+                model["textures"][slot] = f"minecraft:block/{side}"
             else:
                 assert slot == "3" and sprite == "minecraft:block/glass"
-        bind_sandstone_caps(model, archive, material, "#texture" if namespace == "minecraft" else "#0")
+        bind_directional_caps(model, archive, material, "#texture" if namespace == "minecraft" else "#0")
         write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
     recipe = load(f"data/{namespace}/recipe/{source}.json")
     materials = {"minecraft:stone": f"minecraft:{substrate}", "minecraft:stone_bricks": f"minecraft:{substrate}",
-                 "minecraft:stone_brick_slab": f"minecraft:{material}_slab", "minecraft:glass_pane": "minecraft:glass_pane"}
+                 "minecraft:stone_brick_slab": f"minecraft:{slab}", "minecraft:glass_pane": "minecraft:glass_pane"}
     if "key" in recipe:
         recipe["key"] = {key: materials[value] for key, value in recipe["key"].items()}
     else:
@@ -191,7 +215,8 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
     write(f"data/{NS}/loot_table/blocks", loot)
 
 
-def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None):
+def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None, shutter_base=None):
+    side = "quartz_block_side" if material == "quartz" else substrate
     sandstone = material in ("sandstone", "red_sandstone")
     ids = {f"mcwwindows:andesite_{form}": f"{NS}:{material}_{form}" for form in forms}
     for source_id, own_id in ids.items():
@@ -217,12 +242,12 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
             model = masonry.load_json(provider, f"assets/mcwwindows/models/{path}.json")
             for slot, sprite in model["textures"].items():
                 if sprite in ("minecraft:block/andesite", "minecraft:block/polished_andesite"):
-                    model["textures"][slot] = f"minecraft:block/{substrate}"
+                    model["textures"][slot] = f"minecraft:block/{side}"
                 elif sprite == "mcwwindows:block/andesite_louvered_shutter":
                     model["textures"][slot] = f"{NS}:block/{material}_louvered_shutter"
                 else:
                     assert sprite in ("minecraft:block/glass", "mcwwindows:block/glass")
-            bind_sandstone_caps(model, provider, material, "#1" if source.endswith("_parapet") else "#0")
+            bind_directional_caps(model, provider, material, "#1" if source.endswith("_parapet") else "#0")
             if sandstone and source == "andesite_louvered_shutter":
                 model["textures"]["bottom"] = model["textures"]["top"]
             write_json(root, f"assets/{NS}/models/{dest}.json", model)
@@ -249,18 +274,21 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
                 tags.setdefault(path[5:-5], []).extend(additions)
     dest = root / f"assets/{NS}/textures/block/{material}_louvered_shutter.png"
     if stone_artwork is None:
-        shade_shutter(provider, client, dest, material + "_top" if sandstone else substrate)
+        shade_shutter(provider, client, dest, material + "_top" if sandstone else side, base=shutter_base)
     else:
         remap_stone_shutter(stone_artwork, client, dest, material)
 
 
 def generate_stone_forms(root, provider, client, tags, names, material):
-    for archive, namespace, source, form in (
+    forms = (
         (client, "minecraft", "stone_button", "button"),
         (client, "minecraft", "stone_pressure_plate", "pressure_plate"),
         (provider, "mcwwindows", "stone_brick_gothic", "gothic_window"),
         (provider, "mcwwindows", "stone_brick_arrow_slit", "arrow_slit"),
-    ):
+    )
+    for archive, namespace, source, form in forms:
+        if material == "nether_bricks" and namespace != "minecraft":
+            continue
         generate_direct_form(root, archive, namespace, source, form, material)
         names[f"block.{NS}.{material}_{form}"] = f"{material}_{form}".replace("_", " ").title()
     button, plate, window, slit = [f"{NS}:{material}_{form}" for form in
@@ -272,7 +300,10 @@ def generate_stone_forms(root, provider, client, tags, names, material):
                         ("minecraft/tags/block/walls", [window, slit]),
                         ("mcwwindows/tags/block/gothic", [window]),
                         ("mcwwindows/tags/block/arrow_slit", [slit])):
-        tags.setdefault(tag, []).extend(values)
+        if material == "nether_bricks":
+            values = [v for v in values if v in (plate, button)]
+        if values:
+            tags.setdefault(tag, []).extend(values)
 
 
 def generate(provider, client, bbb, path_provider, stone_shutter, root):
@@ -333,6 +364,21 @@ def generate(provider, client, bbb, path_provider, stone_shutter, root):
         for form in FORMS:
             name = f"{material}_{form}"
             names[f"block.{NS}.{name}"] = name.replace("_", " ").title()
+    for material, ingredient, slab in (("deepslate", "deepslate", "deepslate_brick_slab"),
+                                      ("quartz", "quartz_block", "quartz_slab"),
+                                      ("nether_bricks", "nether_bricks", "nether_brick_slab")):
+        generate_stone_forms(root, provider, client, tags, names, material)
+        windows = FORMS
+        base = None
+        if material == "nether_bricks":
+            windows = ("window", "window2", "four_window", "pane_window", *FORMS)
+            base = nether_moulding_underside(bbb)
+        generate_macaw(root, provider, client, tags, material, ingredient, slab, windows, shutter_base=base)
+        for form in windows:
+            name = f"{material}_{form}"
+            names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
+        if material != "deepslate":
+            paths.generate(root, path_provider, client, tags, names, write_json, recipe_unlock, material)
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     for tag, values in tags.items():
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})

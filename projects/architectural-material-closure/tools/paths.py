@@ -1,4 +1,4 @@
-"""Generate the fifteen Prismarine Bricks patterns from Macaw's Dark Prismarine family."""
+"""Generate fifteen material patterns from Macaw's Dark Prismarine family."""
 from masonry import NS, image, load_json, rank, rank_mapping
 
 REFERENCE_SHA256 = "39128a12cb64fd61286b631714da742d7b6ea0fa8d4573c103081d01e4993bc2"
@@ -7,18 +7,20 @@ FORMS = (*FULL, *(name + "_path" for name in FULL), "strewn_rocky_path",
          "diamond_paving", "basket_weave_paving", "square_paving", "honeycomb_paving", "clover_paving", "dumble_paving")
 
 
-def generate(root, provider, client, tags, names, write_json, recipe_unlock):
-    tile = image(client, "assets/minecraft/textures/block/prismarine_bricks.png")
+def generate(root, provider, client, tags, names, write_json, recipe_unlock, material="prismarine_bricks"):
+    ingredient = "quartz_block" if material == "quartz" else material
+    sprite = "quartz_block_side" if material == "quartz" else material
+    tile = image(client, f"assets/minecraft/textures/block/{sprite}.png")
     palette = sorted({p[:3] for p in tile.getdata() if p[3] == 255}, key=rank)
     sheets = {}
     models = {}
-    ids = {f"mcwpaths:dark_prismarine_{form}": f"{NS}:prismarine_bricks_{form}" for form in FORMS}
+    ids = {f"mcwpaths:dark_prismarine_{form}": f"{NS}:{material}_{form}" for form in FORMS}
 
     def bind_model(choice):
         ref = choice["model"]
         assert ref.startswith("mcwpaths:block/") and "/dark_prismarine_" in ref
         path = ref.split(":")[1]
-        dest = path.replace("/dark_prismarine_", "/prismarine_bricks_")
+        dest = path.replace("/dark_prismarine_", f"/{material}_")
         models[path] = dest
         choice["model"] = f"{NS}:{dest}"
 
@@ -35,10 +37,10 @@ def generate(root, provider, client, tags, names, write_json, recipe_unlock):
         write_json(root, f"assets/{NS}/items/{name}.json", item)
         recipe = load_json(provider, f"data/mcwpaths/recipe/{source}.json")
         assert recipe["ingredient"] == "minecraft:dark_prismarine" and recipe["result"]["id"] == ref
-        recipe["ingredient"] = "minecraft:prismarine_bricks"
+        recipe["ingredient"] = f"minecraft:{ingredient}"
         recipe["result"]["id"] = own
         write_json(root, f"data/{NS}/recipe/{name}.json", recipe)
-        recipe_unlock(root, name, "prismarine_bricks", "building_blocks")
+        recipe_unlock(root, name, ingredient, "building_blocks")
         loot = load_json(provider, f"data/mcwpaths/loot_table/blocks/{source}.json")
         entry, = loot["pools"][0]["entries"]
         assert entry["name"] == ref
@@ -50,10 +52,10 @@ def generate(root, provider, client, tags, names, write_json, recipe_unlock):
         for slot, sprite in model["textures"].items():
             if sprite == "minecraft:block/dark_prismarine":
                 # Strewn geometry samples the vanilla source tile on all three models.
-                output = "block/prismarine_bricks_strewn_rocky"
+                output = f"block/{material}_strewn_rocky"
             else:
                 assert sprite.startswith("mcwpaths:block/dark_prismarine_")
-                output = sprite.split(":")[1].replace("dark_prismarine_", "prismarine_bricks_")
+                output = sprite.split(":")[1].replace("dark_prismarine_", f"{material}_")
             sheets[sprite] = output
             model["textures"][slot] = f"{NS}:{output}"
         write_json(root, f"assets/{NS}/models/{dest}.json", model)
