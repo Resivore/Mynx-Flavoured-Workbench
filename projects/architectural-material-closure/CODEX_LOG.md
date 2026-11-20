@@ -85,3 +85,14 @@
 - Artifact: Local-only `AMC C7.jar` (`0.1.0-canary7`, 16,206 bytes), SHA-256 `311d0b201e342e556309b8babf84f84abb77cfebd77df4763c5015681f2a73c3`, finalized at `2026-11-20T17:00:06.9216629Z` from the preceding source checkpoint.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. C7 is unaccepted.
 - Next state: Compare the retained C7 shutter with vanilla Stone under the owner's lighting, including the upper recess and both hinge sides.
+
+## 2026-11-20T17:06:55Z — Halve the Stone Louvered Shutter's structural darkening for Canary 8
+
+- Revision: 9
+- Source checkpoint: `9695ee304040b722999d6c6470faf94a3b924229`
+- Changes: Moved each subunit shading gain halfway toward unit gain on the underlying Stone texel. The bevel, recess and short end return use their C7 masks. Raised faces retain their original gain.
+- Build/static: `build runGameTest --rerun-tasks` passed archive and resource checks and all three controlled Fabric GameTests. Against the retained C7 sprite, all 45 darkened pixels reached the substrate midpoint within 0.5 grey levels, and the other 211 RGBA pixels matched exactly. Summed grey-level deficits fell from 2,182 to 1,087 (50.18% reduction). Only the shutter PNG and embedded version differed among all 24 JAR entries, including a byte-identical Stone Parapet.
+- Runtime: The owner reported C7's material identity, structure and shading placement were visually correct and its dark regions were approximately 50% too dark. C8 awaits owner observation in game.
+- Artifact: Local-only `AMC C8.jar` (`0.1.0-canary8`, 16,193 bytes), SHA-256 `24b6ba8963c33a822a1800c2655e993a6d9aa0037816a062c73a1bdb46eb6469`, finalized at `2026-11-20T17:06:02.1449339Z` from the preceding source checkpoint.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. C8 is unaccepted.
+- Next state: Compare the retained C8 shutter with C7 in the same lighting and record the owner's visual result.
