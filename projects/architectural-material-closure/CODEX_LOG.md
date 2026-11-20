@@ -215,3 +215,16 @@
 - Runtime: Owner gameplay verification and acceptance are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Inspect the two shutters beside the vanilla top surfaces using TESTING.md and record the owner's observations.
+
+## 2026-11-20T19:43:27Z — Complete Deepslate, Quartz and Nether Bricks forms in Canary 19
+
+- Revision: 20
+- Source checkpoint: `a2ad7d24677e115f7adb416d0760c04a0e7f4945`
+- Changes: Added six Deepslate, 21 Quartz and 23 Nether Bricks block/item pairs. Vanilla Stone controls and Macaw's Windows classes use their original properties and state graphs. Deepslate and Block of Quartz use their vanilla side and end assignments. Deepslate slab recipes follow BBB's Deepslate Frame and use Deepslate Brick Slabs. The eight engraved full blocks are independent registry entries.
+- The unrotated east-facing straight lower BBB Nether Brick Moulding, dentil off, resolves from bbb:block/moulding/nether_brick to bbb:block/template/moulding. Its base element [0,0,0] to [16,4,16] binds the down face to #texture on assets/bbb/textures/block/moulding/nether_brick.png (80 by 80, SHA-256 00f53e46279ea7fd4fd5f049ac3c7f6ff2a396699c80cea45545c7b805ee2e73). Face UV [0,6.4,3.2,9.6], rotation 270 degrees, selects x 0-15 and y 32-47. The oriented 16-by-16 RGBA tile has SHA-256 8d2c4cb4facc8d674acbd6b062b34ac98ac7810fa7c66d5af53e1deabf5c5647. Verified all 256 shutter pixels from independent coordinate addressing, Macaw alpha and C9 five-slat structural shading.
+- Build/static: Offline Java 25 / Gradle 9.5.1 build passed all 99 controlled Fabric GameTests and all 1,427 package-entry checks. Compared each of 30 added Paths forms with Macaw's Paths 1.1.1 Dark Prismarine references, including 42 model bindings, weighted choices, inventory models, shared artwork and every pixel on 22 sheets. Used all six vanilla Quartz and seven Nether Bricks palette entries as the target ramps. Compared block classes, states, placement, rotations, shape, collision, recipes, drops, tags, creative tabs, controls, windows, shutters and engraving.
+- Compared finalized C19 against C18 SHA-256 e2df867fee36a05caa0217740f9418a8c554f99876e2af42de594ff9b5b94b82. Preserved all 85 previous pairs and all 1,040 previous entry names. Exactly 1,022 entries matched byte-for-byte, including every old class, model and sprite. The other 18 contain the new entrypoint/version, translations and additions to 16 tag lists. C19 adds 387 entries and zero Cobbled Deepslate forms.
+- Artifact: Local-only `AMC C19.jar`, version `0.1.0-canary19`, 732,177 bytes, SHA-256 `861f184482b9113d83057c473073ce4baa0c396e531c98a03a9b5170410bb775`, finalized at `2026-11-20T19:41:28.3644579Z`.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Follow TESTING.md with the finalized C19 artifact and record owner observations.
