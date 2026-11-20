@@ -52,6 +52,12 @@ public final class DirectFormTests {
             "crystal_floor");
 
     private static Map<String, Block> references(String material) {
+        if (material.equals("sandstone") || material.equals("red_sandstone")) {
+            var result = new LinkedHashMap<>(REFERENCES);
+            result.put("parapet", BlockInit.ANDESITE_PARAPET);
+            result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
+            return result;
+        }
         if (material.equals("mud_bricks")) return MUD_REFERENCES;
         if (!material.equals("dark_prismarine") && !material.equals("prismarine_bricks")) return REFERENCES;
         var result = new LinkedHashMap<>(Map.of("button", Blocks.STONE_BUTTON, "pressure_plate", Blocks.STONE_PRESSURE_PLATE,
@@ -85,6 +91,16 @@ public final class DirectFormTests {
     @GameTest
     public void graniteReferenceStatesAndData(GameTestHelper helper) {
         referenceStatesAndData(helper, "granite");
+    }
+
+    @GameTest
+    public void sandstoneReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "sandstone");
+    }
+
+    @GameTest
+    public void redSandstoneReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "red_sandstone");
     }
 
     @GameTest
@@ -161,6 +177,16 @@ public final class DirectFormTests {
     }
 
     @GameTest
+    public void sandstonePlacement(GameTestHelper helper) {
+        placement(helper, "sandstone");
+    }
+
+    @GameTest
+    public void redSandstonePlacement(GameTestHelper helper) {
+        placement(helper, "red_sandstone");
+    }
+
+    @GameTest
     public void mudBricksPlacement(GameTestHelper helper) {
         placement(helper, "mud_bricks");
     }
@@ -201,6 +227,24 @@ public final class DirectFormTests {
     }
 
     @GameTest
+    public void sandstoneControlSupports(GameTestHelper helper) {
+        for (String material : List.of("sandstone", "red_sandstone")) {
+            for (String form : List.of("button", "pressure_plate")) {
+                for (Block control : List.of(block(material, form), REFERENCES.get(form))) {
+                    helper.setBlock(LEFT.below(), Blocks.STONE);
+                    var state = control.defaultBlockState();
+                    if (form.equals("button")) state = state.setValue(BlockStateProperties.ATTACH_FACE, AttachFace.FLOOR);
+                    helper.setBlock(LEFT, state);
+                    helper.assertTrue(helper.getBlockState(LEFT).is(control), "Control on support");
+                    helper.setBlock(LEFT.below(), Blocks.AIR);
+                    helper.assertTrue(helper.getBlockState(LEFT).isAir(), "Control after support removal");
+                }
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest
     public void andesiteButtonPulse(GameTestHelper helper) {
         buttonPulse(helper, "andesite");
     }
@@ -213,6 +257,16 @@ public final class DirectFormTests {
     @GameTest
     public void graniteButtonPulse(GameTestHelper helper) {
         buttonPulse(helper, "granite");
+    }
+
+    @GameTest
+    public void sandstoneButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "sandstone");
+    }
+
+    @GameTest
+    public void redSandstoneButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "red_sandstone");
     }
 
     @GameTest
@@ -260,6 +314,16 @@ public final class DirectFormTests {
     @GameTest(maxTicks = 40)
     public void granitePressurePlateSensitivity(GameTestHelper helper) {
         pressurePlateSensitivity(helper, "granite");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void sandstonePressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "sandstone");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void redSandstonePressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "red_sandstone");
     }
 
     @GameTest(maxTicks = 40)
@@ -364,6 +428,16 @@ public final class DirectFormTests {
     @GameTest
     public void graniteStackedMasonry(GameTestHelper helper) {
         stackedMasonry(helper, "granite");
+    }
+
+    @GameTest
+    public void sandstoneStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "sandstone");
+    }
+
+    @GameTest
+    public void redSandstoneStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "red_sandstone");
     }
 
     private static void stackedMasonry(GameTestHelper helper, String material) {

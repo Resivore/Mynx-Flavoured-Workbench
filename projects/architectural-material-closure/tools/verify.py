@@ -8,7 +8,7 @@ from zipfile import ZipFile
 
 from PIL import Image
 
-from verify_mud import MACAW_FORMS, check_windows
+from verify_mud import MACAW_FORMS, check_sandstone_caps, check_windows
 from verify_paths import FORMS as PATH_FORMS, check_paths
 
 from verify_masonry import COVERAGE, check_masonry
@@ -127,7 +127,7 @@ def check_direct(jar, provider, client, material, expected):
     controls = {"button": ("stone_button", 3), "pressure_plate": ("stone_pressure_plate", 2)}
     masonry = {"gothic_window": ("stone_brick_gothic", 4), "arrow_slit": ("stone_brick_arrow_slit", 4)}
     substrate = "packed_mud" if material == "mud_bricks" else material
-    forms = controls | masonry if material in MATERIALS else controls
+    forms = controls | masonry if material in (*MATERIALS, "sandstone", "red_sandstone") else controls
     for form, (source, model_count) in forms.items():
         archive, namespace = (client, "minecraft") if form in controls else (provider, "mcwwindows")
         name = material + "_" + form
@@ -172,6 +172,7 @@ def check_direct(jar, provider, client, material, expected):
                 "0": f"minecraft:block/{substrate}", "particle": f"minecraft:block/{substrate}"}
             if form == "gothic_window":
                 slots["3"] = "minecraft:block/glass"
+            check_sandstone_caps(child, archive, client, material, "#texture" if form in controls else "#0")
             assert child == {"parent": reference["parent"], "textures": slots}
             assert reference["textures"].keys() == slots.keys()
             # Follow the original geometry and display ancestry all the way to its root.
@@ -242,6 +243,17 @@ def check_tags(jar, bbb, provider, paths, expected):
                 form = member.removeprefix("mcwpaths:dark_prismarine_")
                 if member.startswith("mcwpaths:dark_prismarine_") and form in PATH_FORMS:
                     tags.setdefault(path[5:-5], []).append("prismarine_bricks_" + form)
+    for material in ("sandstone", "red_sandstone"):
+        for archive, namespace, refs in (
+                (client, "minecraft", {"stone_button": "button", "stone_pressure_plate": "pressure_plate"}),
+                (provider, "mcwwindows", {"stone_brick_gothic": "gothic_window", "stone_brick_arrow_slit": "arrow_slit",
+                                          "andesite_parapet": "parapet", "andesite_louvered_shutter": "louvered_shutter"})):
+            for path in archive.namelist():
+                if path.startswith("data/") and "/tags/" in path and path.endswith(".json"):
+                    members = read_json(archive, path)["values"]
+                    additions = [f"{material}_{form}" for source, form in refs.items() if f"{namespace}:{source}" in members]
+                    if additions:
+                        tags.setdefault(path[5:-5], []).extend(additions)
     for tag, values in tags.items():
         path = f"data/{tag}.json"
         expected.add(path)
@@ -264,7 +276,10 @@ def verify(jar, provider, client, bbb, paths):
     for material in ("prismarine_bricks", "dark_prismarine"):
         forms.extend(f"{material}_{form}" for form in ("button", "pressure_plate", "louvered_shutter", *COVERAGE))
     forms.extend("prismarine_bricks_" + form for form in PATH_FORMS)
-    assert len(forms) == len(set(forms)) == 73
+    expected.add("dev/resivore/amc/SandstoneBlocks.class")
+    for material in ("sandstone", "red_sandstone"):
+        forms.extend(f"{material}_{form}" for form in (*DIRECT, "parapet", "louvered_shutter"))
+    assert len(forms) == len(set(forms)) == 85
     assert names == {f"block.{NS}.{name}": name.replace("window2", "window 2").replace("_", " ").title() for name in forms}
     models = set()
     for form in FORMS:
@@ -294,13 +309,16 @@ def verify(jar, provider, client, bbb, paths):
     check_windows(jar, provider, client, expected, "mud_bricks", "packed_mud", "mud_brick_slab")
     check_windows(jar, provider, client, expected, "prismarine_bricks", "prismarine_bricks", "prismarine_brick_slab")
     check_windows(jar, provider, client, expected, "dark_prismarine", "dark_prismarine", "dark_prismarine_slab")
+    for material in ("sandstone", "red_sandstone"):
+        check_direct(jar, provider, client, material, expected)
+        check_windows(jar, provider, client, expected, material, material, material + "_slab")
     check_paths(jar, paths, client, expected)
     check_tags(jar, bbb, provider, paths, expected)
     assert set(files) == expected, set(files).symmetric_difference(expected)
     check_texture(jar, provider, client)
     sprite = jar.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
     assert hashlib.sha256(sprite).hexdigest() == "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878"
-    print(f"Verified 73 block/item sets, state and sprite closure, recipes, drops, tags, "
+    print(f"Verified 85 block/item sets, state and sprite closure, recipes, drops, tags, "
           f"the exact C9 shutter sprite and all {len(files)} production entries.")
 
 

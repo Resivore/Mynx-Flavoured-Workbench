@@ -100,6 +100,22 @@ def recipe_unlock(root, name, material, category):
     })
 
 
+def bind_sandstone_caps(model, archive, material, material_slot):
+    if material not in ("sandstone", "red_sandstone"):
+        return
+    ns, path = model["parent"].split(":")
+    parent = masonry.load_json(archive, f"assets/{ns}/models/{path}.json")
+    # These parents share one material slot across directions. Retain the parent for
+    # transforms and lighting, and override its elements with the original UVs intact.
+    model["elements"] = parent["elements"]
+    for direction, slot in (("up", "top"), ("down", "bottom")):
+        model["textures"][slot] = f"minecraft:block/{material}_{slot}"
+        for element in model["elements"]:
+            face = element["faces"].get(direction)
+            if face and face["texture"] == material_slot:
+                face["texture"] = "#" + slot
+
+
 def generate_direct_form(root, archive, namespace, source, form, material, *, substrate=None):
     substrate = substrate or material
     name = f"{material}_{form}"
@@ -141,6 +157,7 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
                 model["textures"][slot] = f"minecraft:block/{substrate}"
             else:
                 assert slot == "3" and sprite == "minecraft:block/glass"
+        bind_sandstone_caps(model, archive, material, "#texture" if namespace == "minecraft" else "#0")
         write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
     recipe = load(f"data/{namespace}/recipe/{source}.json")
@@ -194,6 +211,7 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
                     model["textures"][slot] = f"{NS}:block/{material}_louvered_shutter"
                 else:
                     assert sprite in ("minecraft:block/glass", "mcwwindows:block/glass")
+            bind_sandstone_caps(model, provider, material, "#1" if source.endswith("_parapet") else "#0")
             write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
         recipe = masonry.load_json(provider, f"data/mcwwindows/recipe/{source}.json")
@@ -217,6 +235,27 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
             if additions:
                 tags.setdefault(path[5:-5], []).extend(additions)
     shade_shutter(provider, client, root / f"assets/{NS}/textures/block/{material}_louvered_shutter.png", substrate)
+
+
+def generate_stone_forms(root, provider, client, tags, names, material):
+    for archive, namespace, source, form in (
+        (client, "minecraft", "stone_button", "button"),
+        (client, "minecraft", "stone_pressure_plate", "pressure_plate"),
+        (provider, "mcwwindows", "stone_brick_gothic", "gothic_window"),
+        (provider, "mcwwindows", "stone_brick_arrow_slit", "arrow_slit"),
+    ):
+        generate_direct_form(root, archive, namespace, source, form, material)
+        names[f"block.{NS}.{material}_{form}"] = f"{material}_{form}".replace("_", " ").title()
+    button, plate, window, slit = [f"{NS}:{material}_{form}" for form in
+                                   ("button", "pressure_plate", "gothic_window", "arrow_slit")]
+    for tag, values in (("minecraft/tags/block/mineable/pickaxe", [plate, window, slit]),
+                        ("minecraft/tags/block/stone_buttons", [button]),
+                        ("minecraft/tags/item/stone_buttons", [button]),
+                        ("minecraft/tags/block/stone_pressure_plates", [plate]),
+                        ("minecraft/tags/block/walls", [window, slit]),
+                        ("mcwwindows/tags/block/gothic", [window]),
+                        ("mcwwindows/tags/block/arrow_slit", [slit])):
+        tags.setdefault(tag, []).extend(values)
 
 
 def generate(provider, client, bbb, path_provider, root):
@@ -247,26 +286,9 @@ def generate(provider, client, bbb, path_provider, root):
     tags = {"mcwwindows/tags/block/parapets": stone_ids[:1], "mcwwindows/tags/block/shutters": stone_ids[1:],
             "minecraft/tags/block/mineable/pickaxe": stone_ids.copy()}
     for material in ("andesite", "diorite", "granite"):
-        for archive, namespace, source, form in (
-            (client, "minecraft", "stone_button", "button"),
-            (client, "minecraft", "stone_pressure_plate", "pressure_plate"),
-            (provider, "mcwwindows", "stone_brick_gothic", "gothic_window"),
-            (provider, "mcwwindows", "stone_brick_arrow_slit", "arrow_slit"),
-        ):
-            generate_direct_form(root, archive, namespace, source, form, material)
-            names[f"block.{NS}.{material}_{form}"] = f"{material}_{form}".replace("_", " ").title()
+        generate_stone_forms(root, provider, client, tags, names, material)
         for form in masonry.FORMS:
             names[f"block.{NS}.{material}_{form}"] = f"{material} {form}".title()
-        button, plate, window, slit = [f"{NS}:{material}_{form}" for form in
-                                       ("button", "pressure_plate", "gothic_window", "arrow_slit")]
-        for tag, values in (("minecraft/tags/block/mineable/pickaxe", [plate, window, slit]),
-                            ("minecraft/tags/block/stone_buttons", [button]),
-                            ("minecraft/tags/item/stone_buttons", [button]),
-                            ("minecraft/tags/block/stone_pressure_plates", [plate]),
-                            ("minecraft/tags/block/walls", [window, slit]),
-                            ("mcwwindows/tags/block/gothic", [window]),
-                            ("mcwwindows/tags/block/arrow_slit", [slit])):
-            tags.setdefault(tag, []).extend(values)
         masonry.generate(root, bbb, client, material, tags, write_json, recipe_unlock)
 
     for material, substrate, slab in (("mud_bricks", "packed_mud", "mud_brick_slab"),
@@ -287,6 +309,12 @@ def generate(provider, client, bbb, path_provider, root):
             name = f"{material}_{form}"
             names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
     paths.generate(root, path_provider, client, tags, names, write_json, recipe_unlock)
+    for material in ("sandstone", "red_sandstone"):
+        generate_stone_forms(root, provider, client, tags, names, material)
+        generate_macaw(root, provider, client, tags, material, material, material + "_slab", FORMS)
+        for form in FORMS:
+            name = f"{material}_{form}"
+            names[f"block.{NS}.{name}"] = name.replace("_", " ").title()
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     for tag, values in tags.items():
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})

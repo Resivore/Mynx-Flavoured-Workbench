@@ -1,8 +1,18 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 15
+## Owner verification for Canary 16
 
-Match the SHA-256 of `AMC C15.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 73 AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C16.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 85 AMC IDs use the namespace `architectural_material_closure`.
+
+### Sandstone and Red Sandstone
+
+Run these checks for both materials. Place the corresponding vanilla block alongside the test pieces under the same light so its banded sides, top and bottom are visible.
+
+1. Find the Button and Pressure Plate in Redstone Blocks and the Parapet, Gothic Window, Arrow Slit and Louvered Shutter in Building Blocks. Inspect the held and inventory models. Place the button on the floor, wall and ceiling. Its outward cap rotates with the button. Inspect the plate from above and along its edge. Compare activation, release and support removal with the vanilla Stone controls.
+2. Face each Parapet in four directions and place and remove a flower pot above it. Inspect the top, underside and edge of both the ledge and support. Compare their shape and orientation with Macaw's Andesite Parapet.
+3. Compare both windows with the Macaw Stone Brick Gothic Window and Arrow Slit. Inspect the masonry cap and underside, the narrow faces of the opening, and the visible side bands. Form stacks, remove the middle block, then toggle the Gothic Window and check its glass and conditional iron bars in the reference states.
+4. Face the shutter in each direction, use both hinges and toggle a vertical pair. Compare its five shaded slats with the C9 Stone shutter. Check the co-located side grain on the broad faces and the vanilla top and bottom on the narrow caps.
+5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C16 hash, orientation, state and screenshots for any visual differences.
 
 ### Prismarine Bricks and Dark Prismarine
 
@@ -50,7 +60,7 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C15 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C16 are pending.
 
 ## Controlled build checks
 
@@ -60,4 +70,4 @@ From the AMC directory, use Java 25, Gradle 9.5.1 and Python with Pillow. The ge
 gradle build runGameTest --rerun-tasks -Ppython=<interpreter>
 ```
 
-`verifyAmcJar` checks the production file list, translations, recipes, loot, tags, inventory models, exact reference state choices and model parents, sprite bindings, and the C9 shutter PNG. For each material’s five BBB forms, it compares every state branch and follows each placed and item model through its parents. It checks all model fields, resolves face slots, verifies each sheet pixel against its ranked palette and compares recipes, drops and direct tag membership to the provider. Controlled server GameTests exercise each material independently and compare creative tabs, registered entries, loaded data, block states, collision, redstone behavior, placement and masonry interactions. For C15 the archive check follows every Paths blockstate and item model, including weighted choices and engraved models, and compares every texel across eleven source sheets. The generated resources, isolated GameTest world and retained JAR are local-only.
+`verifyAmcJar` checks the production file list, translations, recipes, loot, tags, inventory models, exact reference state choices and model parents, sprite bindings, and the C9 shutter PNG. For each material’s five BBB forms, it compares every state branch and follows each placed and item model through its parents. It checks all model fields, resolves face slots, verifies each sheet pixel against its ranked palette and compares recipes, drops and direct tag membership to the provider. Controlled server GameTests exercise each material independently and compare creative tabs, registered entries, loaded data, block states, collision, redstone behavior, placement and masonry interactions. For C15 the archive check follows every Paths blockstate and item model, including weighted choices and engraved models, and compares every texel across eleven source sheets. For C16 the archive check compares every material face and reference element for both sandstone families, including cap sprite selection, UVs, culling, model parents and item transforms. The generated resources, isolated GameTest world and retained JAR are local-only.

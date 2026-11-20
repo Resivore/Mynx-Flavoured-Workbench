@@ -10,6 +10,33 @@ MACAW_FORMS = {"window": (32, 9), "window2": (16, 2), "four_window": (16, 2),
                "pane_window": (64, 8), "parapet": (8, 2), "louvered_shutter": (16, 4)}
 
 
+def check_sandstone_caps(child, archive, client, material, material_slot):
+    if material not in ("sandstone", "red_sandstone"):
+        return
+    ns, parent = child["parent"].split(":")
+    reference = json.loads(archive.read(f"assets/{ns}/models/{parent}.json"))
+    material_faces = json.loads(client.read(f"assets/minecraft/models/block/{material}.json"))["textures"]
+    slots = child["textures"]
+    assert slots["top"] == material_faces["top"] and slots["bottom"] == material_faces["bottom"]
+    for cap in ("top", "bottom"):
+        client.getinfo(f"assets/minecraft/textures/{slots[cap].split(':')[1]}.png")
+    # Compare the full geometry and every binding, including material versus glass.
+    # Consume only the verified overrides before the caller compares the original hierarchy.
+    elements = child.pop("elements")
+    directions = set()
+    for actual, original in zip(elements, reference["elements"], strict=True):
+        for direction, source in original["faces"].items():
+            face = actual["faces"][direction]
+            if source["texture"] == material_slot and direction in ("up", "down"):
+                role = "top" if direction == "up" else "bottom"
+                assert slots[face["texture"][1:]] == material_faces[role] and face["texture"] == "#" + role
+                directions.add(role)
+                face["texture"] = material_slot
+        assert actual == original, (parent, "geometry, UVs or non-material face changed")
+    assert directions == {"top", "bottom"}
+    del slots["top"], slots["bottom"]
+
+
 def check_shutter(jar, provider, client, expected, material, substrate):
     def image(archive, path):
         return Image.open(BytesIO(archive.read(path))).convert("RGBA")
@@ -20,6 +47,9 @@ def check_shutter(jar, provider, client, expected, material, substrate):
     base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
     reference = image(provider, "assets/mcwwindows/textures/block/andesite_louvered_shutter.png")
     assert base.size == reference.size == result.size == (16, 16)
+    if material in ("sandstone", "red_sandstone"):
+        # Both caps sample this unshaded, fully opaque edge on all four shutter poses.
+        assert reference.crop((14, 0, 16, 11)).getchannel("A").getextrema() == (255, 255)
     luminance = reference.convert("L")
 
     # Independently classify the five repeated slats by source UV coordinate.
@@ -73,6 +103,7 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         else:
             assert namespace == NS and actual.replace(NS + ":", "mcwwindows:").replace(material + "_", "andesite_") == ref
         generated = read(archives[namespace], f"assets/{namespace}/models/{model}.json")
+        check_sandstone_caps(generated, provider, client, material, "#1" if form == "parapet" else "#0")
         bindings = original.pop("textures")
         slots = generated.pop("textures")
         assert original == generated, (form, ref, "model or parent changed")
@@ -108,7 +139,8 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
             assert visible <= {"mcwwindows:block/glass", "minecraft:block/glass", f"minecraft:block/{substrate}"}
 
     for form, (state_count, model_count) in MACAW_FORMS.items():
-        if material != "mud_bricks" and form != "louvered_shutter":
+        if material != "mud_bricks" and form != "louvered_shutter" and not (
+                material in ("sandstone", "red_sandstone") and form == "parapet"):
             continue
         src, own = "andesite_" + form, material + "_" + form
         ref_id, own_id = "mcwwindows:" + src, NS + ":" + own
