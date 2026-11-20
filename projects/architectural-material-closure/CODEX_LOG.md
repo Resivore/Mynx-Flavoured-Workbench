@@ -107,3 +107,14 @@
 - Artifact: Local-only `AMC C9.jar` (`0.1.0-canary9`, 16,191 bytes), SHA-256 `f32b382563252e8a73a0bfd0b9ca0abacb02dd3c81a2a074b9d200fb5f147e8b`, finalized at `2026-11-20T17:09:39.4236259Z` from the preceding source checkpoint.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify C9's shadow strength in game beside C7 and C8 captures under matching lighting.
+
+## 2026-11-20T17:23:51Z — Add four Andesite forms in Canary 10
+
+- Revision: 11
+- Source checkpoint: `8988d78ed4c2f3863230bd4cf5b18fb511aac17b`
+- Changes: Registered `andesite_button`, `andesite_pressure_plate`, `andesite_gothic_window` and `andesite_arrow_slit` as AMC block/item pairs. The controls use the 26.2 Stone control classes and properties, including the 20-tick button. The masonry uses Macaw's Windows 2.4.2 `stone_brick_gothic` and `stone_brick_arrow_slit` classes, parents, UVs and state rules. The controls bind `texture` and masonry binds `0` and `particle` directly to `minecraft:block/andesite`. The Gothic window retains glass on slot `3` and its conditional provider iron-bars model. All four use external sprites.
+- Build/static: Java 25 and Gradle 9.5.1 passed `build runGameTest --rerun-tasks`. Eight controlled Fabric GameTests passed, including reference class, state, shape, signal, placement, loaded data, plate sensitivity and release, button timing, and masonry interaction checks. The verifier checked 19 material models and all 64 production files. Only AMC's two initializer classes are packaged. Compared against the retained, hash-verified C9 JAR. All 21 entries outside the mod metadata, shared language file and pickaxe tag matched byte for byte. Both Stone definitions, assets, names and tag memberships are preserved, including the owner's selected shutter shading at 75% of C7 depth.
+- Artifact: Local-only `AMC C10.jar`, version `0.1.0-canary10`, 34,522 bytes, SHA-256 `80ee9e08bf36685b0d3e610e602d930c30e7f38072770214b1845c4edbc20d84`, finalized at `2026-11-20T17:22:26.6745531Z`.
+- Runtime: C10 has no owner gameplay observations.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify the retained C10 artifact in game and record the owner’s observations and explicit acceptance decision.

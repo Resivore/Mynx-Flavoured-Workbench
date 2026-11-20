@@ -19,14 +19,15 @@
     ],
     "scope": [
       "Provide the Stone Parapet and Stone Louvered Shutter as two AMC blocks with matching items for Minecraft Java 26.2 Fabric.",
-      "Use the Macaw masonry block classes and model parents. The parapet maps vanilla Stone directly. The shutter uses the same Stone grain at matching UV coordinates, with structural lighting measured across the reference shutter's five repeated slats."
+      "Use the Macaw masonry block classes and model parents. The parapet maps vanilla Stone directly. The shutter uses the same Stone grain at matching UV coordinates, with structural lighting measured across the reference shutter's five repeated slats.",
+      "Provide an Andesite Button and Pressure Plate using the vanilla Stone controls, and an Andesite Gothic Window and Arrow Slit using the Macaw Stone Brick forms. Each has a matching AMC item. All four bind the vanilla Andesite sprite directly to the material faces."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/architectural-material-closure"
       ],
       "exclusions": [
-        "Other materials and architectural forms, provider replacement, and IBF family integration are outside AMC.",
+        "Additional forms and materials, provider replacement, and IBF or BGE integration are outside this release.",
         "Provider-derived resources and the release JAR remain in ignored local output. C1–C5 are historical provenance."
       ]
     },
@@ -35,7 +36,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Target game and source of the Stone sprite and palette."
+        "reason": "Target game, Stone redstone controls, and source of vanilla Stone, Andesite, glass and iron-bar sprites."
       },
       {
         "type": "MOD",
@@ -47,34 +48,34 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "*",
-        "reason": "Supplies creative tab events."
+        "reason": "Supplies creative tab events and access to the vanilla control constructors."
       },
       {
         "type": "MOD",
         "identifier": "mcwwindows",
         "requirement": "*",
-        "reason": "Supplies the Parapet and Shutter implementations, model parents, tags and shutter sound. The controlled build used Macaw's Windows 2.4.2 for 26.2 Fabric."
+        "reason": "Supplies the masonry behavior classes, model parents, conditional iron bars, tags and shutter sound. Controlled reference build used Macaw's Windows 2.4.2 for 26.2 Fabric."
       }
     ]
   },
   "state": {
-    "milestone": "C9 sets the Stone Louvered Shutter's shadow depth midway between C7 and C8. Comparison against both retained sprites, packaged resource checks and three controlled Fabric GameTests passed. Owner visual verification of C9 is pending.",
+    "milestone": "C10 adds four Andesite forms. All eight controlled GameTests and package checks passed. The owner selected C9's Stone shutter appearance, retained in C10. Owner runtime verification and explicit acceptance of C10 are pending.",
     "releases": {
       "current": {
-        "version": "C9 (0.1.0-canary9)",
-        "canary": 9,
-        "embedded_version": "0.1.0-canary9",
+        "version": "C10 (0.1.0-canary10)",
+        "canary": 10,
+        "embedded_version": "0.1.0-canary10",
         "artifact": {
-          "filename": "AMC C9.jar",
-          "sha256": "f32b382563252e8a73a0bfd0b9ca0abacb02dd3c81a2a074b9d200fb5f147e8b"
+          "filename": "AMC C10.jar",
+          "sha256": "80ee9e08bf36685b0d3e610e602d930c30e7f38072770214b1845c4edbc20d84"
         },
-        "built_at": "2026-11-20T17:09:39.4236259Z",
-        "source_commit": "a795c3ca3844366fcfbe18ddb359d661e7477225",
+        "built_at": "2026-11-20T17:22:26.6745531Z",
+        "source_commit": "8988d78ed4c2f3863230bd4cf5b18fb511aac17b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Sets the Stone Louvered Shutter’s recess and bevel shadows halfway between C7 and C8."
+        "summary": "Adds an Andesite Button, Pressure Plate, Gothic Window and Arrow Slit using the vanilla Andesite texture."
       },
       "accepted": null,
       "rollback": null,
@@ -88,10 +89,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-11-20T17:10:29Z",
-    "updated_at": "2026-11-20T17:10:29Z",
-    "last_codex_at": "2026-11-20T17:10:29Z",
-    "source_commit": "a795c3ca3844366fcfbe18ddb359d661e7477225"
+    "revision": 11,
+    "activity_at": "2026-11-20T17:23:51Z",
+    "updated_at": "2026-11-20T17:23:51Z",
+    "last_codex_at": "2026-11-20T17:23:51Z",
+    "source_commit": "8988d78ed4c2f3863230bd4cf5b18fb511aac17b"
   }
 }
