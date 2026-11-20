@@ -15,18 +15,18 @@ def read(archive, path):
     return json.loads(archive.read(path))
 
 
-def amc(reference):
-    return reference.replace("bbb:", NS + ":").replace("stone", "andesite")
+def amc(reference, material):
+    return reference.replace("bbb:", NS + ":").replace("stone", material)
 
 
-def check_geometry(jar, bbb, client, form, expected, sheets):
+def check_geometry(jar, bbb, client, material, form, expected, sheets):
     visited = set()
     local_models = 0
 
     def model_pair(ref, actual):
         nonlocal local_models
         shared = ref.startswith("bbb:block/template/") or ref == "bbb:block/urn/soiled"
-        assert actual == (ref if shared else amc(ref)), (form, ref, actual)
+        assert actual == (ref if shared else amc(ref, material)), (form, ref, actual)
         if ref in visited:
             return
         visited.add(ref)
@@ -53,9 +53,9 @@ def check_geometry(jar, bbb, client, form, expected, sheets):
                     assert sprite == "block/dirt"
                     client.getinfo("assets/minecraft/textures/block/dirt.png")
             elif sprite == "block/stone":
-                assert slot == "particle" and bound[slot] == "minecraft:block/andesite"
+                assert slot == "particle" and bound[slot] == f"minecraft:block/{material}"
             else:
-                assert sprite.startswith("bbb:block/") and bound[slot] == amc(sprite)
+                assert sprite.startswith("bbb:block/") and bound[slot] == amc(sprite, material)
                 sheets.add(sprite.split(":")[1])
 
     def check_visible_faces(model):
@@ -84,7 +84,7 @@ def check_geometry(jar, bbb, client, form, expected, sheets):
     rendered = set()
     for folder in ("blockstates", "items"):
         ref = read(bbb, f"assets/bbb/{folder}/stone_{form}.json")
-        path = f"assets/{NS}/{folder}/andesite_{form}.json"
+        path = f"assets/{NS}/{folder}/{material}_{form}.json"
         expected.add(path)
         result = read(jar, path)
 
@@ -105,11 +105,11 @@ def check_geometry(jar, bbb, client, form, expected, sheets):
     for model in rendered:
         check_visible_faces(model)
     assert len(visited) == COVERAGE[form][1], (form, visited)
-    print(f"{form}: {COVERAGE[form][0]} state entries, {local_models} AMC and "
+    print(f"{material} {form}: {COVERAGE[form][0]} state entries, {local_models} AMC and "
           f"{len(visited) - local_models} shared BBB model nodes")
 
 
-def check_sheets(jar, bbb, client, expected, sheets):
+def check_sheets(jar, bbb, client, material, expected, sheets):
     def pixels(archive, path):
         im = Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
         return im.size, list(im.getdata())
@@ -117,7 +117,7 @@ def check_sheets(jar, bbb, client, expected, sheets):
     def palette(colors):
         return sorted(set(colors), key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
 
-    _, tile = pixels(client, "assets/minecraft/textures/block/andesite.png")
+    _, tile = pixels(client, f"assets/minecraft/textures/block/{material}.png")
     target = palette(pixel[:3] for pixel in tile if pixel[3] == 255)
     groups = {}
     for name in sheets:
@@ -135,7 +135,7 @@ def check_sheets(jar, bbb, client, expected, sheets):
             assert len(backing) == 884 and all(other[i] in keep for i in backing)
         ramp = palette(p[:3] for _, data in source.values() for p in data if p[3] and p not in keep)
         for name, (size, original) in source.items():
-            path = f"assets/{NS}/textures/{amc(name)}.png"
+            path = f"assets/{NS}/textures/{amc(name, material)}.png"
             expected.add(path)
             result_size, result = pixels(jar, path)
             assert size == result_size
@@ -146,14 +146,14 @@ def check_sheets(jar, bbb, client, expected, sheets):
                     rank = Fraction(ramp.index(before[:3]), len(ramp) - 1)
                     index = floor(rank * (len(target) - 1) + Fraction(1, 2))
                     assert after == (*target[index], before[3]), (name, i)
-    print(f"Verified every pixel of {len(sheets)} sheets against {len(target)} vanilla Andesite colors.")
+    print(f"Verified every pixel of {len(sheets)} sheets against {len(target)} vanilla {material.title()} colors.")
 
 
-def check_masonry(jar, bbb, client, expected):
+def check_masonry(jar, bbb, client, material, expected):
     sheets = set()
     for form in COVERAGE:
-        check_geometry(jar, bbb, client, form, expected, sheets)
-        name, source = "andesite_" + form, "stone_" + form
+        check_geometry(jar, bbb, client, material, form, expected, sheets)
+        name, source = material + "_" + form, "stone_" + form
         own, ref = NS + ":" + name, "bbb:" + source
         assert f"assets/bbb/blockstates/{name}.json" not in bbb.namelist()
         for folder, suffix in [("loot_table/blocks", ""), ("recipe", ""), ("recipe", "_from_stonecutting")]:
@@ -164,23 +164,14 @@ def check_masonry(jar, bbb, client, expected):
             path = f"data/{NS}/{folder}/{name}{suffix}.json"
             expected.add(path)
             content = json.dumps(read(bbb, original)).replace(ref, own)
-            assert read(jar, path) == json.loads(content.replace('"minecraft:stone"', '"minecraft:andesite"')
-                                                 .replace('"minecraft:stone_slab"', '"minecraft:andesite_slab"'))
+            assert read(jar, path) == json.loads(content.replace('"minecraft:stone"', f'"minecraft:{material}"')
+                                                 .replace('"minecraft:stone_slab"', f'"minecraft:{material}_slab"'))
             if folder == "recipe":
                 path = f"data/{NS}/advancement/recipes/building_blocks/{name}{suffix}.json"
                 expected.add(path)
                 unlock = read(jar, path)
-                material = "andesite_slab" if form == "frame" else "andesite"
+                ingredient = material + "_slab" if form == "frame" else material
                 assert unlock["rewards"]["recipes"] == [own + suffix]
                 assert unlock["criteria"]["recipe"]["conditions"]["recipe"] == own + suffix
-                assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": "minecraft:" + material}]
-    for path in bbb.namelist():
-        if "/tags/" not in path or not path.endswith(".json"):
-            continue
-        values = read(bbb, path)["values"]
-        forms = [amc("bbb:stone_" + f) for f in COVERAGE if "bbb:stone_" + f in values]
-        if forms:
-            expected.add(path)
-            existing = [NS + ":andesite_" + f for f in ("gothic_window", "arrow_slit")] if path == "data/minecraft/tags/block/walls.json" else []
-            assert read(jar, path) == {"replace": False, "values": existing + forms}
-    check_sheets(jar, bbb, client, expected, sheets)
+                assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": "minecraft:" + ingredient}]
+    check_sheets(jar, bbb, client, material, expected, sheets)

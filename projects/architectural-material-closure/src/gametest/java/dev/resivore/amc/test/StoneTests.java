@@ -15,6 +15,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
@@ -38,17 +39,39 @@ public final class StoneTests {
     }
 
     @GameTest
+    public void familyCreativeTabs(GameTestHelper helper) {
+        var level = helper.getLevel();
+        CreativeModeTabs.tryRebuildTabContents(level.enabledFeatures(), false, level.registryAccess());
+        var tabs = BuiltInRegistries.CREATIVE_MODE_TAB;
+        var building = tabs.getValueOrThrow(CreativeModeTabs.BUILDING_BLOCKS);
+        var redstone = tabs.getValueOrThrow(CreativeModeTabs.REDSTONE_BLOCKS);
+        for (var key : BuiltInRegistries.ITEM.keySet()) {
+            if (!key.getNamespace().equals(NAMESPACE)) continue;
+            var item = BuiltInRegistries.ITEM.getValue(key);
+            boolean control = key.getPath().endsWith("_button") || key.getPath().endsWith("_pressure_plate");
+            var target = control ? redstone : building;
+            var other = control ? building : redstone;
+            helper.assertTrue(target.getDisplayItems().stream().filter(stack -> stack.is(item)).count() == 1
+                    && other.getDisplayItems().stream().noneMatch(stack -> stack.is(item)), key + " creative tab");
+        }
+        helper.succeed();
+    }
+
+    @GameTest
     public void registryAndResources(GameTestHelper helper) {
-        var ids = Set.of(id("parapet"), id("louvered_shutter"),
-                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_button"),
-                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_pressure_plate"),
-                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_gothic_window"),
-                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_arrow_slit"),
-                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_column"),
-                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_urn"),
-                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_moulding"),
-                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_fence"),
-                Identifier.fromNamespaceAndPath(NAMESPACE, "andesite_frame"));
+        var ids = new java.util.HashSet<>(Set.of(id("parapet"), id("louvered_shutter")));
+        for (String material : java.util.List.of("andesite", "diorite", "granite")) {
+            for (String form : java.util.List.of("button", "pressure_plate", "gothic_window", "arrow_slit",
+                    "column", "urn", "moulding", "fence", "frame")) {
+                var name = material + "_" + form;
+                ids.add(Identifier.fromNamespaceAndPath(NAMESPACE, name));
+                for (String ns : java.util.List.of("minecraft", "mcwwindows", "bbb")) {
+                    var other = Identifier.fromNamespaceAndPath(ns, name);
+                    helper.assertTrue(!BuiltInRegistries.BLOCK.containsKey(other)
+                            && !BuiltInRegistries.ITEM.containsKey(other), "Provider already owns " + other);
+                }
+            }
+        }
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());

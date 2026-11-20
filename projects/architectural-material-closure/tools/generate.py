@@ -99,7 +99,9 @@ def recipe_unlock(root, name, material, category):
     })
 
 
-def generate_andesite(root, archive, namespace, source, name):
+def generate_direct_form(root, archive, namespace, source, form, material):
+    name = f"{material}_{form}"
+
     def load(path):
         return json.loads(archive.read(path))
 
@@ -134,14 +136,14 @@ def generate_andesite(root, archive, namespace, source, name):
         assert model.keys() == {"parent", "textures"}
         for slot, sprite in model["textures"].items():
             if sprite in ("minecraft:block/stone", "minecraft:block/stone_bricks"):
-                model["textures"][slot] = "minecraft:block/andesite"
+                model["textures"][slot] = f"minecraft:block/{material}"
             else:
                 assert slot == "3" and sprite == "minecraft:block/glass"
         write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
     recipe = load(f"data/{namespace}/recipe/{source}.json")
-    materials = {"minecraft:stone": "minecraft:andesite", "minecraft:stone_bricks": "minecraft:andesite",
-                 "minecraft:stone_brick_slab": "minecraft:andesite_slab", "minecraft:glass_pane": "minecraft:glass_pane"}
+    materials = {"minecraft:stone": f"minecraft:{material}", "minecraft:stone_bricks": f"minecraft:{material}",
+                 "minecraft:stone_brick_slab": f"minecraft:{material}_slab", "minecraft:glass_pane": "minecraft:glass_pane"}
     if "key" in recipe:
         recipe["key"] = {key: materials[value] for key, value in recipe["key"].items()}
     else:
@@ -150,7 +152,7 @@ def generate_andesite(root, archive, namespace, source, name):
     recipe["result"]["id"] = own_id
     write(f"data/{NS}/recipe", recipe)
     category = "redstone" if namespace == "minecraft" else "building_blocks"
-    recipe_unlock(root, name, "andesite", category)
+    recipe_unlock(root, name, material, category)
     loot = load(f"data/{namespace}/loot_table/blocks/{source}.json")
     entry, = loot["pools"][0]["entries"]
     assert entry["name"] == source_id
@@ -184,32 +186,35 @@ def generate(provider, client, bbb, root):
         f"block.{NS}.stone_parapet": "Stone Parapet",
         f"block.{NS}.stone_louvered_shutter": "Stone Louvered Shutter",
     }
-    for archive, namespace, source, name in (
-        (client, "minecraft", "stone_button", "andesite_button"),
-        (client, "minecraft", "stone_pressure_plate", "andesite_pressure_plate"),
-        (provider, "mcwwindows", "stone_brick_gothic", "andesite_gothic_window"),
-        (provider, "mcwwindows", "stone_brick_arrow_slit", "andesite_arrow_slit"),
-    ):
-        generate_andesite(root, archive, namespace, source, name)
-        names[f"block.{NS}.{name}"] = name.replace("_", " ").title()
-    for form in masonry.FORMS:
-        names[f"block.{NS}.andesite_{form}"] = "Andesite " + form.title()
-    write_json(root, f"assets/{NS}/lang/en_us.json", names)
-    ids = [f"{NS}:stone_{form}" for form in FORMS]
-    button, plate, window, slit = [f"{NS}:andesite_{form}" for form in
-                                  ("button", "pressure_plate", "gothic_window", "arrow_slit")]
-    for tag, values in (("minecraft/tags/block/mineable/pickaxe", [*ids, plate, window, slit]),
-                        ("minecraft/tags/block/stone_buttons", [button]),
-                        ("minecraft/tags/item/stone_buttons", [button]),
-                        ("minecraft/tags/block/stone_pressure_plates", [plate]),
-                        ("minecraft/tags/block/walls", [window, slit]),
-                        ("mcwwindows/tags/block/gothic", [window]),
-                        ("mcwwindows/tags/block/arrow_slit", [slit]),
-                        ("mcwwindows/tags/block/parapets", ids[:1]),
-                        ("mcwwindows/tags/block/shutters", ids[1:])):
-        write_json(root, f"data/{tag}.json", {"replace": False, "values": values})
+    stone_ids = [f"{NS}:stone_{form}" for form in FORMS]
+    tags = {"mcwwindows/tags/block/parapets": stone_ids[:1], "mcwwindows/tags/block/shutters": stone_ids[1:],
+            "minecraft/tags/block/mineable/pickaxe": stone_ids.copy()}
+    for material in ("andesite", "diorite", "granite"):
+        for archive, namespace, source, form in (
+            (client, "minecraft", "stone_button", "button"),
+            (client, "minecraft", "stone_pressure_plate", "pressure_plate"),
+            (provider, "mcwwindows", "stone_brick_gothic", "gothic_window"),
+            (provider, "mcwwindows", "stone_brick_arrow_slit", "arrow_slit"),
+        ):
+            generate_direct_form(root, archive, namespace, source, form, material)
+            names[f"block.{NS}.{material}_{form}"] = f"{material}_{form}".replace("_", " ").title()
+        for form in masonry.FORMS:
+            names[f"block.{NS}.{material}_{form}"] = f"{material} {form}".title()
+        button, plate, window, slit = [f"{NS}:{material}_{form}" for form in
+                                       ("button", "pressure_plate", "gothic_window", "arrow_slit")]
+        for tag, values in (("minecraft/tags/block/mineable/pickaxe", [plate, window, slit]),
+                            ("minecraft/tags/block/stone_buttons", [button]),
+                            ("minecraft/tags/item/stone_buttons", [button]),
+                            ("minecraft/tags/block/stone_pressure_plates", [plate]),
+                            ("minecraft/tags/block/walls", [window, slit]),
+                            ("mcwwindows/tags/block/gothic", [window]),
+                            ("mcwwindows/tags/block/arrow_slit", [slit])):
+            tags.setdefault(tag, []).extend(values)
+        masonry.generate(root, bbb, client, material, tags, write_json, recipe_unlock)
 
-    masonry.generate(root, bbb, client, write_json, recipe_unlock)
+    write_json(root, f"assets/{NS}/lang/en_us.json", names)
+    for tag, values in tags.items():
+        write_json(root, f"data/{tag}.json", {"replace": False, "values": values})
 
 
 if __name__ == "__main__":

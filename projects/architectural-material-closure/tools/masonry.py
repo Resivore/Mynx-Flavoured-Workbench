@@ -17,8 +17,8 @@ RAMPS = (
 )
 
 
-def material_id(reference):
-    return reference.replace("bbb:", NS + ":").replace("stone", "andesite")
+def material_id(reference, material):
+    return reference.replace("bbb:", NS + ":").replace("stone", material)
 
 
 def load_json(archive, path):
@@ -34,9 +34,9 @@ def rank(rgb):
     return (299 * r + 587 * g + 114 * b, rgb)
 
 
-def stage_textures(root, bbb, client):
-    andesite = image(client, "assets/minecraft/textures/block/andesite.png")
-    target = sorted({rgb[:3] for rgb in andesite.getdata() if rgb[3] == 255}, key=rank)
+def stage_textures(root, bbb, client, material):
+    tile = image(client, f"assets/minecraft/textures/block/{material}.png")
+    target = sorted({rgb[:3] for rgb in tile.getdata() if rgb[3] == 255}, key=rank)
     for group in RAMPS:
         sheets = {name: image(bbb, f"assets/bbb/textures/block/{name}.png") for name in group}
         colors = {pixel[:3] for sheet in sheets.values() for pixel in sheet.getdata() if pixel[3]}
@@ -50,13 +50,13 @@ def stage_textures(root, bbb, client):
         for name, sheet in sheets.items():
             sheet.putdata([(*mapping.get(pixel[:3], pixel[:3]), pixel[3]) if pixel[3] else pixel
                            for pixel in sheet.getdata()])
-            dest = root / f"assets/{NS}/textures/block/{material_id(name)}.png"
+            dest = root / f"assets/{NS}/textures/block/{material_id(name, material)}.png"
             dest.parent.mkdir(parents=True, exist_ok=True)
             sheet.save(dest)
 
 
-def generate(root, bbb, client, write_json, recipe_unlock):
-    stage_textures(root, bbb, client)
+def generate(root, bbb, client, material, tags, write_json, recipe_unlock):
+    stage_textures(root, bbb, client, material)
     sprites = {"bbb:block/" + sheet for group in RAMPS for sheet in group}
     staged = set()
 
@@ -64,7 +64,7 @@ def generate(root, bbb, client, write_json, recipe_unlock):
         if reference == "bbb:block/urn/soiled" or reference.startswith("bbb:block/template/"):
             return reference
         assert reference.startswith("bbb:") and "stone" in reference, reference
-        dest = material_id(reference)
+        dest = material_id(reference, material)
         if reference not in staged:
             staged.add(reference)
             model = load_json(bbb, f"assets/bbb/models/{reference.split(':')[1]}.json")
@@ -72,17 +72,16 @@ def generate(root, bbb, client, write_json, recipe_unlock):
                 model["parent"] = stage_model(model["parent"])
             for slot, sprite in model.get("textures", {}).items():
                 if sprite in sprites:
-                    model["textures"][slot] = material_id(sprite)
+                    model["textures"][slot] = material_id(sprite, material)
                 elif slot == "particle" and sprite == "block/stone":
-                    model["textures"][slot] = "minecraft:block/andesite"
+                    model["textures"][slot] = f"minecraft:block/{material}"
                 else:
                     raise ValueError(f"Unaudited {reference} sprite {slot}: {sprite}")
             write_json(root, f"assets/{NS}/models/{dest.split(':')[1]}.json", model)
         return dest
 
-    tags = {}
     for form in FORMS:
-        source, name = "stone_" + form, "andesite_" + form
+        source, name = "stone_" + form, material + "_" + form
         own, ref = NS + ":" + name, "bbb:" + source
         states = load_json(bbb, f"assets/bbb/blockstates/{source}.json")
         item = load_json(bbb, f"assets/bbb/items/{source}.json")
@@ -97,20 +96,14 @@ def generate(root, bbb, client, write_json, recipe_unlock):
             sources.append(("recipe", "_from_stonecutting"))
         for folder, suffix in sources:
             content = bbb.read(f"data/bbb/{folder}/{source}{suffix}.json").decode()
-            adapted = content.replace(f'"{ref}"', f'"{own}"').replace('"minecraft:stone"', '"minecraft:andesite"')
-            adapted = adapted.replace('"minecraft:stone_slab"', '"minecraft:andesite_slab"')
+            adapted = content.replace(f'"{ref}"', f'"{own}"').replace('"minecraft:stone"', f'"minecraft:{material}"')
+            adapted = adapted.replace('"minecraft:stone_slab"', f'"minecraft:{material}_slab"')
             write_json(root, f"data/{NS}/{folder}/{name}{suffix}.json", json.loads(adapted))
             if folder == "recipe":
-                material = "andesite_slab" if form == "frame" else "andesite"
-                recipe_unlock(root, name + suffix, material, "building_blocks")
+                ingredient = material + "_slab" if form == "frame" else material
+                recipe_unlock(root, name + suffix, ingredient, "building_blocks")
         for path in bbb.namelist():
             if path.startswith("data/") and "/tags/" in path and path.endswith(".json"):
                 if ref in load_json(bbb, path)["values"]:
-                    tags.setdefault(path, []).append(own)
-
-    for path, values in tags.items():
-        dest = root / path
-        # The C10 Macaw windows also contribute to minecraft:walls.
-        existing = json.loads(dest.read_text()) if dest.exists() else {"replace": False, "values": []}
-        existing["values"].extend(value for value in values if value not in existing["values"])
-        write_json(root, path, existing)
+                    tag = path.removeprefix("data/").removesuffix(".json")
+                    tags.setdefault(tag, []).append(own)

@@ -29,32 +29,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public final class AndesiteTests {
+public final class DirectFormTests {
     private static final BlockPos LEFT = new BlockPos(0, 1, 1);
     private static final BlockPos RIGHT = new BlockPos(2, 1, 1);
     private static final Map<String, Block> REFERENCES = Map.of(
             "button", Blocks.STONE_BUTTON, "pressure_plate", Blocks.STONE_PRESSURE_PLATE,
             "gothic_window", BlockInit.STONE_BRICK_GOTHIC, "arrow_slit", BlockInit.STONE_BRICK_ARROW_SLIT);
 
-    private static Identifier id(String form) {
-        return Identifier.fromNamespaceAndPath("architectural_material_closure", "andesite_" + form);
+    private static Identifier id(String material, String form) {
+        return Identifier.fromNamespaceAndPath("architectural_material_closure", material + "_" + form);
     }
 
-    private static Block block(String form) {
-        return BuiltInRegistries.BLOCK.getValue(id(form));
+    private static Block block(String material, String form) {
+        return BuiltInRegistries.BLOCK.getValue(id(material, form));
     }
 
     @GameTest
-    public void referenceStatesAndData(GameTestHelper helper) {
+    public void andesiteReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "andesite");
+    }
+
+    @GameTest
+    public void dioriteReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "diorite");
+    }
+
+    @GameTest
+    public void graniteReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "granite");
+    }
+
+    private static void referenceStatesAndData(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(LEFT);
         REFERENCES.forEach((form, ref) -> {
-            var own = block(form);
-            var item = BuiltInRegistries.ITEM.getValue(id(form));
+            var own = block(material, form);
+            var item = BuiltInRegistries.ITEM.getValue(id(material, form));
             helper.assertTrue(own != ref && own.getClass() == ref.getClass(), form + " implementation");
             helper.assertTrue(item instanceof BlockItem bi && bi.getBlock() == own && own.asItem() == item,
                     form + " item binding");
-            helper.assertTrue(level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, id(form))).isPresent(),
+            helper.assertTrue(level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, id(material, form))).isPresent(),
                     form + " recipe missing");
             var drops = Block.getDrops(own.defaultBlockState(), level, pos, null);
             helper.assertTrue(drops.size() == 1 && drops.getFirst().is(item) && drops.getFirst().getCount() == 1,
@@ -84,7 +98,21 @@ public final class AndesiteTests {
     }
 
     @GameTest
-    public void placement(GameTestHelper helper) {
+    public void andesitePlacement(GameTestHelper helper) {
+        placement(helper, "andesite");
+    }
+
+    @GameTest
+    public void dioritePlacement(GameTestHelper helper) {
+        placement(helper, "diorite");
+    }
+
+    @GameTest
+    public void granitePlacement(GameTestHelper helper) {
+        placement(helper, "granite");
+    }
+
+    private static void placement(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var center = new BlockPos(1, 1, 1);
         for (var face : Direction.values()) {
@@ -95,7 +123,7 @@ public final class AndesiteTests {
             for (int yaw : new int[]{0, 90, 180, 270}) {
                 player.setYRot(yaw);
                 REFERENCES.forEach((form, ref) -> {
-                    var own = block(form);
+                    var own = block(material, form);
                     var expected = ref.getStateForPlacement(new BlockPlaceContext(player, InteractionHand.MAIN_HAND,
                             ref.asItem().getDefaultInstance(), hit));
                     var actual = own.getStateForPlacement(new BlockPlaceContext(player, InteractionHand.MAIN_HAND,
@@ -110,9 +138,23 @@ public final class AndesiteTests {
     }
 
     @GameTest
-    public void buttonPulse(GameTestHelper helper) {
+    public void andesiteButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "andesite");
+    }
+
+    @GameTest
+    public void dioriteButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "diorite");
+    }
+
+    @GameTest
+    public void graniteButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "granite");
+    }
+
+    private static void buttonPulse(GameTestHelper helper, String material) {
         for (var pos : List.of(LEFT, RIGHT)) {
-            var button = pos.equals(LEFT) ? block("button") : Blocks.STONE_BUTTON;
+            var button = pos.equals(LEFT) ? block(material, "button") : Blocks.STONE_BUTTON;
             helper.setBlock(pos.below(), Blocks.STONE);
             helper.setBlock(pos, button.defaultBlockState().setValue(BlockStateProperties.ATTACH_FACE, AttachFace.FLOOR));
             helper.useBlock(pos);
@@ -128,10 +170,24 @@ public final class AndesiteTests {
     }
 
     @GameTest(maxTicks = 40)
-    public void pressurePlateSensitivity(GameTestHelper helper) {
+    public void andesitePressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "andesite");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void dioritePressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "diorite");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void granitePressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "granite");
+    }
+
+    private static void pressurePlateSensitivity(GameTestHelper helper, String material) {
         for (var pos : List.of(LEFT, RIGHT)) {
             helper.setBlock(pos.below(), Blocks.STONE);
-            helper.setBlock(pos, pos.equals(LEFT) ? block("pressure_plate") : Blocks.STONE_PRESSURE_PLATE);
+            helper.setBlock(pos, pos.equals(LEFT) ? block(material, "pressure_plate") : Blocks.STONE_PRESSURE_PLATE);
             helper.spawnItem(Items.ANDESITE, Vec3.atBottomCenterOf(pos));
         }
         helper.runAfterDelay(4, () -> {
@@ -151,14 +207,28 @@ public final class AndesiteTests {
     }
 
     @GameTest
-    public void stackedMasonry(GameTestHelper helper) {
+    public void andesiteStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "andesite");
+    }
+
+    @GameTest
+    public void dioriteStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "diorite");
+    }
+
+    @GameTest
+    public void graniteStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "granite");
+    }
+
+    private static void stackedMasonry(GameTestHelper helper, String material) {
         for (String form : List.of("gothic_window", "arrow_slit")) {
             for (var base : List.of(LEFT, RIGHT)) {
-                var material = base.equals(LEFT) ? block(form) : REFERENCES.get(form);
-                helper.setBlock(base, material);
+                var block = base.equals(LEFT) ? block(material, form) : REFERENCES.get(form);
+                helper.setBlock(base, block);
                 helper.assertBlockProperty(base, WindowBase.PART, WindowPart.BASE);
-                helper.setBlock(base.above(), material);
-                helper.setBlock(base.above(2), material);
+                helper.setBlock(base.above(), block);
+                helper.setBlock(base.above(2), block);
                 helper.assertBlockProperty(base, WindowBase.PART, WindowPart.BOTTOM);
                 helper.assertBlockProperty(base.above(), WindowBase.PART, WindowPart.MIDDLE);
                 helper.assertBlockProperty(base.above(2), WindowBase.PART, WindowPart.TOP);

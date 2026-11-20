@@ -12,6 +12,8 @@ from verify_masonry import COVERAGE, check_masonry
 
 NS = "architectural_material_closure"
 FORMS = ("stone_parapet", "stone_louvered_shutter")
+MATERIALS = ("andesite", "diorite", "granite")
+DIRECT = ("button", "pressure_plate", "gothic_window", "arrow_slit")
 
 
 def read_json(jar, path):
@@ -118,14 +120,14 @@ def check_texture(jar, provider, client):
         assert low * 127 <= target + 0.5 and high * 127 >= target - 0.5, region
 
 
-def check_andesite(jar, provider, client, expected):
+def check_direct(jar, provider, client, material, expected):
     controls = {"button": ("stone_button", 3), "pressure_plate": ("stone_pressure_plate", 2)}
     masonry = {"gothic_window": ("stone_brick_gothic", 4), "arrow_slit": ("stone_brick_arrow_slit", 4)}
     for form, (source, model_count) in (controls | masonry).items():
         archive, namespace = (client, "minecraft") if form in controls else (provider, "mcwwindows")
-        name = "andesite_" + form
+        name = material + "_" + form
         own, ref = f"{NS}:{name}", f"{namespace}:{source}"
-        provider_name = "andesite_gothic" if form == "gothic_window" else name
+        provider_name = material + "_gothic" if form == "gothic_window" else name
         for alias in {name, provider_name}:
             assert f"assets/mcwwindows/blockstates/{alias}.json" not in provider.namelist()
         assert f"assets/minecraft/blockstates/{name}.json" not in client.namelist()
@@ -161,8 +163,8 @@ def check_andesite(jar, provider, client, expected):
         for path in models:
             child = resource(f"assets/{NS}/models/{path}.json")
             reference = read_json(archive, f"assets/{namespace}/models/{path.replace(name, source)}.json")
-            slots = {"texture": "minecraft:block/andesite"} if form in controls else {
-                "0": "minecraft:block/andesite", "particle": "minecraft:block/andesite"}
+            slots = {"texture": f"minecraft:block/{material}"} if form in controls else {
+                "0": f"minecraft:block/{material}", "particle": f"minecraft:block/{material}"}
             if form == "gothic_window":
                 slots["3"] = "minecraft:block/glass"
             assert child == {"parent": reference["parent"], "textures": slots}
@@ -185,9 +187,9 @@ def check_andesite(jar, provider, client, expected):
         recipe = resource(f"data/{NS}/recipe/{name}.json")
         original = read_json(archive, f"data/{namespace}/recipe/{source}.json")
         # Compare the entire original recipe and loot structure with just the identity/material swapped.
-        adapted = json.dumps(original).replace(ref, own).replace('"minecraft:stone"', '"minecraft:andesite"')
-        adapted = adapted.replace("minecraft:stone_brick_slab", "minecraft:andesite_slab")
-        assert recipe == json.loads(adapted.replace("minecraft:stone_bricks", "minecraft:andesite"))
+        adapted = json.dumps(original).replace(ref, own).replace('"minecraft:stone"', f'"minecraft:{material}"')
+        adapted = adapted.replace("minecraft:stone_brick_slab", f"minecraft:{material}_slab")
+        assert recipe == json.loads(adapted.replace("minecraft:stone_bricks", f"minecraft:{material}"))
         loot = resource(f"data/{NS}/loot_table/blocks/{name}.json")
         original = read_json(archive, f"data/{namespace}/loot_table/blocks/{source}.json")
         assert loot == json.loads(json.dumps(original).replace(ref, own)
@@ -195,7 +197,31 @@ def check_andesite(jar, provider, client, expected):
         category = "redstone" if form in controls else "building_blocks"
         unlock = resource(f"data/{NS}/advancement/recipes/{category}/{name}.json")
         assert unlock["rewards"]["recipes"] == [own] and unlock["criteria"]["recipe"]["conditions"]["recipe"] == own
-        assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": "minecraft:andesite"}]
+        assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": f"minecraft:{material}"}]
+
+
+def check_tags(jar, bbb, expected):
+    # Compare direct provider entries here. GameTests also compare resolved memberships.
+    tags = {"mcwwindows/tags/block/parapets": [FORMS[0]], "mcwwindows/tags/block/shutters": [FORMS[1]],
+            "minecraft/tags/block/mineable/pickaxe": list(FORMS)}
+    families = {"minecraft/tags/block/mineable/pickaxe": DIRECT[1:],
+                "minecraft/tags/block/stone_buttons": ("button",), "minecraft/tags/item/stone_buttons": ("button",),
+                "minecraft/tags/block/stone_pressure_plates": ("pressure_plate",),
+                "minecraft/tags/block/walls": ("gothic_window", "arrow_slit"),
+                "mcwwindows/tags/block/gothic": ("gothic_window",), "mcwwindows/tags/block/arrow_slit": ("arrow_slit",)}
+    for path in bbb.namelist():
+        if "/tags/" in path and path.endswith(".json"):
+            tag = path.removeprefix("data/").removesuffix(".json")
+            members = read_json(bbb, path)["values"]
+            forms = tuple(form for form in COVERAGE if "bbb:stone_" + form in members)
+            if forms:
+                families[tag] = families.get(tag, ()) + forms
+    for tag, forms in families.items():
+        tags.setdefault(tag, []).extend(f"{m}_{f}" for m in MATERIALS for f in forms)
+    for tag, values in tags.items():
+        path = f"data/{tag}.json"
+        expected.add(path)
+        assert read_json(jar, path) == {"replace": False, "values": [NS + ":" + v for v in values]}, tag
 
 
 def verify(jar, provider, client, bbb):
@@ -206,8 +232,9 @@ def verify(jar, provider, client, bbb):
     expected.add("dev/resivore/amc/AndesiteBlocks.class")
     expected.add("dev/resivore/amc/MasonryBlocks.class")
     names = read_json(jar, f"assets/{NS}/lang/en_us.json")
-    new_forms = ("andesite_button", "andesite_pressure_plate", "andesite_gothic_window", "andesite_arrow_slit")
-    assert names == {f"block.{NS}.{form}": form.replace("_", " ").title() for form in (*FORMS, *new_forms, *("andesite_" + f for f in COVERAGE))}
+    expected.add("dev/resivore/amc/MaterialFamilies.class")
+    forms = [*FORMS, *(f"{material}_{form}" for material in MATERIALS for form in (*DIRECT, *COVERAGE))]
+    assert names == {f"block.{NS}.{name}": name.replace("_", " ").title() for name in forms}
     models = set()
     for form in FORMS:
         own = f"{NS}:{form}"
@@ -230,24 +257,15 @@ def verify(jar, provider, client, bbb):
     for model in models:
         compare_model(jar, provider, client, model)
         expected.add(f"assets/{NS}/models/{model}.json")
-    check_andesite(jar, provider, client, expected)
-    for tag, forms in (("minecraft/tags/block/mineable/pickaxe", FORMS + new_forms[1:]),
-                       ("minecraft/tags/block/stone_buttons", new_forms[:1]),
-                       ("minecraft/tags/item/stone_buttons", new_forms[:1]),
-                       ("minecraft/tags/block/stone_pressure_plates", new_forms[1:2]),
-                       ("minecraft/tags/block/walls", (*new_forms[2:], "andesite_fence")),
-                       ("mcwwindows/tags/block/gothic", new_forms[2:3]),
-                       ("mcwwindows/tags/block/arrow_slit", new_forms[3:]),
-                       ("mcwwindows/tags/block/parapets", FORMS[:1]), ("mcwwindows/tags/block/shutters", FORMS[1:])):
-        path = f"data/{tag}.json"
-        expected.add(path)
-        assert read_json(jar, path) == {"replace": False, "values": [f"{NS}:{form}" for form in forms]}
-    check_masonry(jar, bbb, client, expected)
+    for material in MATERIALS:
+        check_direct(jar, provider, client, material, expected)
+        check_masonry(jar, bbb, client, material, expected)
+    check_tags(jar, bbb, expected)
     assert set(files) == expected, set(files).symmetric_difference(expected)
     check_texture(jar, provider, client)
     sprite = jar.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
     assert hashlib.sha256(sprite).hexdigest() == "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878"
-    print(f"Verified 11 block/item sets, state and sprite closure, recipes, drops, tags, "
+    print(f"Verified 29 block/item sets, state and sprite closure, recipes, drops, tags, "
           f"the exact C9 shutter sprite and all {len(files)} production entries.")
 
 

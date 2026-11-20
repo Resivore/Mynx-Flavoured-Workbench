@@ -43,13 +43,13 @@ public final class MasonryTests {
     private static final BlockPos CENTER = new BlockPos(1, 1, 1);
     private static final InteractionHand HAND = InteractionHand.MAIN_HAND;
 
-    private static Identifier id(String form, boolean reference) {
+    private static Identifier id(String material, String form, boolean reference) {
         return Identifier.fromNamespaceAndPath(reference ? "bbb" : "architectural_material_closure",
-                (reference ? "stone_" : "andesite_") + form);
+                (reference ? "stone_" : material + "_") + form);
     }
 
-    private static Block block(String form, boolean reference) {
-        return BuiltInRegistries.BLOCK.getValue(id(form, reference));
+    private static Block block(String material, String form, boolean reference) {
+        return BuiltInRegistries.BLOCK.getValue(id(material, form, reference));
     }
 
     private static void sameState(GameTestHelper helper, BlockState own, BlockState ref) {
@@ -58,17 +58,31 @@ public final class MasonryTests {
     }
 
     @GameTest
-    public void completeStateAndShapeParity(GameTestHelper helper) {
+    public void andesiteCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "andesite");
+    }
+
+    @GameTest
+    public void dioriteCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "diorite");
+    }
+
+    @GameTest
+    public void graniteCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "granite");
+    }
+
+    private static void completeStateAndShapeParity(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(CENTER);
         for (String form : FORMS) {
-            var own = block(form, false);
-            var ref = block(form, true);
+            var own = block(material, form, false);
+            var ref = block(material, form, true);
             helper.assertTrue(own != ref && own.getClass() == ref.getClass(), form + " implementation");
-            var item = BuiltInRegistries.ITEM.getValue(id(form, false));
+            var item = BuiltInRegistries.ITEM.getValue(id(material, form, false));
             helper.assertTrue(item instanceof BlockItem bi && bi.getBlock() == own
                     && item == own.asItem() && item.getClass() == ref.asItem().getClass(), form + " item class/binding");
-            var other = Identifier.fromNamespaceAndPath("bbb", "andesite_" + form);
+            var other = Identifier.fromNamespaceAndPath("bbb", material + "_" + form);
             helper.assertTrue(!BuiltInRegistries.BLOCK.containsKey(other) && !BuiltInRegistries.ITEM.containsKey(other),
                     form + " already registered by BBB");
             helper.assertTrue(own.builtInRegistryHolder().tags().collect(Collectors.toSet()).equals(
@@ -77,7 +91,7 @@ public final class MasonryTests {
                     ref.asItem().builtInRegistryHolder().tags().collect(Collectors.toSet())), form + " loaded item tags");
             for (String suffix : form.equals("frame") ? List.of("") : List.of("", "_from_stonecutting")) {
                 helper.assertTrue(level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE,
-                        id(form + suffix, false))).isPresent(), form + suffix + " recipe");
+                        id(material, form + suffix, false))).isPresent(), form + suffix + " recipe");
             }
             var drops = Block.getDrops(own.defaultBlockState(), level, pos, null);
             helper.assertTrue(drops.size() == 1 && drops.getFirst().is(item) && drops.getFirst().getCount() == 1,
@@ -100,7 +114,21 @@ public final class MasonryTests {
     }
 
     @GameTest
-    public void wetAndDryPlacement(GameTestHelper helper) {
+    public void andesiteWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "andesite");
+    }
+
+    @GameTest
+    public void dioriteWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "diorite");
+    }
+
+    @GameTest
+    public void graniteWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "granite");
+    }
+
+    private static void wetAndDryPlacement(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         for (boolean wet : List.of(false, true)) {
             helper.setBlock(CENTER, wet ? Blocks.WATER : Blocks.AIR);
@@ -115,8 +143,8 @@ public final class MasonryTests {
                                 .add(0, face.getAxis().isHorizontal() ? height - 0.5 : 0, 0);
                         var hit = new BlockHitResult(location, face, pos, false);
                         for (String form : FORMS) {
-                            var own = block(form, false);
-                            var ref = block(form, true);
+                            var own = block(material, form, false);
+                            var ref = block(material, form, true);
                             var actual = own.getStateForPlacement(new BlockPlaceContext(player, HAND,
                                     own.asItem().getDefaultInstance(), hit));
                             var expected = ref.getStateForPlacement(new BlockPlaceContext(player, HAND,
@@ -145,10 +173,24 @@ public final class MasonryTests {
     }
 
     @GameTest
-    public void columnAndMouldingChanges(GameTestHelper helper) {
+    public void andesiteColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "andesite");
+    }
+
+    @GameTest
+    public void dioriteColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "diorite");
+    }
+
+    @GameTest
+    public void graniteColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "granite");
+    }
+
+    private static void columnAndMouldingChanges(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         for (boolean reference : List.of(true, false)) {
-            var column = (ColumnBlock) block("column", reference);
+            var column = (ColumnBlock) block(material, "column", reference);
             helper.setBlock(CENTER, column);
             helper.setBlock(CENTER.above(), column);
             helper.assertBlockProperty(CENTER, ColumnBlock.TYPE, ColumnType.BOTTOM);
@@ -161,7 +203,7 @@ public final class MasonryTests {
             hammer(helper, player);
             helper.assertBlockProperty(CENTER, ColumnBlock.WATERLOGGED, false);
 
-            var moulding = block("moulding", reference).defaultBlockState();
+            var moulding = block(material, "moulding", reference).defaultBlockState();
             helper.setBlock(CENTER, moulding.setValue(StairBlock.FACING, Direction.NORTH));
             helper.setBlock(CENTER.north(), moulding.setValue(StairBlock.FACING, Direction.EAST));
             helper.assertBlockProperty(CENTER, StairBlock.SHAPE, StairsShape.OUTER_RIGHT);
@@ -175,11 +217,25 @@ public final class MasonryTests {
     }
 
     @GameTest
-    public void fenceAndFrameChanges(GameTestHelper helper) {
+    public void andesiteFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "andesite");
+    }
+
+    @GameTest
+    public void dioriteFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "diorite");
+    }
+
+    @GameTest
+    public void graniteFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "granite");
+    }
+
+    private static void fenceAndFrameChanges(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         for (boolean reference : List.of(true, false)) {
-            helper.setBlock(CENTER, block("fence", reference));
-            helper.setBlock(CENTER.east(), block("fence", true));
+            helper.setBlock(CENTER, block(material, "fence", reference));
+            helper.setBlock(CENTER.east(), block(material, "fence", true));
             helper.setBlock(CENTER.west(), Blocks.COBBLESTONE_WALL);
             helper.assertBlockProperty(CENTER, StoneFenceBlock.EAST, true);
             helper.assertBlockProperty(CENTER, StoneFenceBlock.WEST, true);
@@ -194,8 +250,8 @@ public final class MasonryTests {
             helper.assertBlockProperty(CENTER, StoneFenceBlock.PILLAR, true);
             helper.assertBlockProperty(CENTER, StoneFenceBlock.SIDE_FILL, false);
 
-            helper.setBlock(CENTER, block("frame", reference));
-            helper.setBlock(CENTER.above(), block("frame", true));
+            helper.setBlock(CENTER, block(material, "frame", reference));
+            helper.setBlock(CENTER.above(), block(material, "frame", true));
             helper.assertBlockProperty(CENTER, FrameBlock.TOP, false);
             helper.setBlock(CENTER.above(), Blocks.AIR);
             helper.assertBlockProperty(CENTER, FrameBlock.TOP, true);
@@ -211,11 +267,25 @@ public final class MasonryTests {
     }
 
     @GameTest
-    public void urnSoilAndPlant(GameTestHelper helper) {
+    public void andesiteUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "andesite");
+    }
+
+    @GameTest
+    public void dioriteUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "diorite");
+    }
+
+    @GameTest
+    public void graniteUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "granite");
+    }
+
+    private static void urnSoilAndPlant(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var pos = helper.absolutePos(CENTER);
         for (boolean reference : List.of(true, false)) {
-            var urn = block("urn", reference);
+            var urn = block(material, "urn", reference);
             helper.setBlock(CENTER, urn);
             var dirt = Items.DIRT.getDefaultInstance();
             helper.getBlockState(CENTER).useItemOn(dirt, helper.getLevel(), player, HAND, hit(helper));
