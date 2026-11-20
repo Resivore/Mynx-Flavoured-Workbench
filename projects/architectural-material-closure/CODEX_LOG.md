@@ -191,3 +191,15 @@
 - Runtime: Owner gameplay verification and acceptance are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Check both sandstone families using TESTING.md and record the owner's observations and acceptance decision.
+
+## 2026-11-20T19:20:03Z — Recolor the two prismarine shutters in Canary 17
+
+- Revision: 18
+- Source checkpoint: `520be10090d0d49db0731b9be5a3d4083ab988c2`
+- Changes: Read the 16 by 16 Stone Louvered Shutter PNG directly from the retained, SHA-256-verified AMC C9 artifact. Its PNG SHA-256 is `c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878`, identical in C9, C16 and C17. Mapped its 16 opaque grayscale ranks proportionally into the complete eight-color Prismarine Bricks and six-color Dark Prismarine palettes.
+- Build/static: The offline Java 25 / Gradle 9.5.1 build passed all 79 controlled Fabric GameTests and all 1,040 package-entry checks for 85 block/item pairs. Independent per-coordinate validation matched all 207 opaque material pixels and all 49 transparent RGBA pixels on each shutter. Every target shade is used. Compared with C16, 187 Prismarine Bricks pixels and 193 Dark Prismarine pixels changed.
+- Compared finalized C17 with C16 SHA-256 `d47cfb71e03030738d447d1a567f7d04fdc27fe54055b06345033bafd4b49c2f`. All 1,040 entry names matched. The two target shutter PNGs and the version in fabric.mod.json account for all three changed entries. All 1,037 other entries matched byte-for-byte.
+- Artifact: Local-only `AMC C17.jar`, version `0.1.0-canary17`, 550,653 bytes, SHA-256 `89273323f7eb38a379b7e1b5a6377f4114520ae9a334310220f8cd52265c6050`, finalized at `2026-11-20T19:18:56.2208408Z`.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare both revised shutters beside the Stone shutter using TESTING.md and record owner observations.

@@ -23,7 +23,7 @@
       "Provide Andesite, Diorite and Granite Buttons and Pressure Plates using the vanilla Stone controls, and Gothic Windows and Arrow Slits using the Macaw Stone Brick forms. Bind each material's vanilla sprite directly and preserve Macaw's glass and iron bars.",
       "Provide Andesite, Diorite and Granite variants of BBB's Stone Column, Urn, Moulding, Fence and Frame using the provider classes, description items and original model hierarchies. Remap ten authored sheets independently for each material using its vanilla palette. Granite BBB textures use the eight interior colors of the luminance-ranked vanilla Granite palette.",
       "Provide 13 Mud Bricks block/item pairs. Use Packed Mud directly for the two controls, four standard Macaw windows and parapet. Use Packed Mud grain with structural shading for the louvered shutter and its full palette for the five BBB masonry forms.",
-      "Provide 23 Prismarine Bricks and eight Dark Prismarine forms. Each material has vanilla controls, a Macaw louvered shutter and five BBB masonry forms. Prismarine Bricks also has five thin paths, six pavings and four engravable full blocks based on Macaw's Paths.",
+      "Provide 23 Prismarine Bricks and eight Dark Prismarine forms. Each material has vanilla controls, a Macaw louvered shutter and five BBB masonry forms. Prismarine Bricks also has five thin paths, six pavings and four engravable full blocks based on Macaw's Paths. Both louvered shutters use the finalized C9 Stone shutter artwork remapped by luminance rank to the full vanilla palette of the respective material.",
       "Provide a Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter for Sandstone and Red Sandstone. Bind vanilla top, bottom and side sprites at the original model UVs, with C9 structural shading on each shutter's side substrate."
     ],
     "boundaries": {
@@ -75,23 +75,23 @@
     ]
   },
   "state": {
-    "milestone": "C16 adds 12 Sandstone and Red Sandstone block/item pairs for 85 total. All 79 controlled GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C17 revises the Prismarine Bricks and Dark Prismarine shutter artwork. All 79 controlled GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C16 (0.1.0-canary16)",
-        "canary": 16,
-        "embedded_version": "0.1.0-canary16",
+        "version": "C17 (0.1.0-canary17)",
+        "canary": 17,
+        "embedded_version": "0.1.0-canary17",
         "artifact": {
-          "filename": "AMC C16.jar",
-          "sha256": "d47cfb71e03030738d447d1a567f7d04fdc27fe54055b06345033bafd4b49c2f"
+          "filename": "AMC C17.jar",
+          "sha256": "89273323f7eb38a379b7e1b5a6377f4114520ae9a334310220f8cd52265c6050"
         },
-        "built_at": "2026-11-20T19:13:58.1066818Z",
-        "source_commit": "0355957f1f0072bd11757b7a7b42ba66bd1099a6",
+        "built_at": "2026-11-20T19:18:56.2208408Z",
+        "source_commit": "520be10090d0d49db0731b9be5a3d4083ab988c2",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds six forms each for Sandstone and Red Sandstone, with directional vanilla textures and structurally shaded louvered shutters."
+        "summary": "Recolors the Prismarine Bricks and Dark Prismarine Louvered Shutters from the finalized Stone shutter using each material's full vanilla palette."
       },
       "accepted": null,
       "rollback": null,
@@ -105,10 +105,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 17,
-    "activity_at": "2026-11-20T19:15:34Z",
-    "updated_at": "2026-11-20T19:15:34Z",
-    "last_codex_at": "2026-11-20T19:15:34Z",
-    "source_commit": "0355957f1f0072bd11757b7a7b42ba66bd1099a6"
+    "revision": 18,
+    "activity_at": "2026-11-20T19:20:03Z",
+    "updated_at": "2026-11-20T19:20:03Z",
+    "last_codex_at": "2026-11-20T19:20:03Z",
+    "source_commit": "520be10090d0d49db0731b9be5a3d4083ab988c2"
   }
 }
