@@ -158,3 +158,14 @@
 - Artifact: `IBF C15.jar`, 57,017 bytes, SHA-256 `e3764ad9463c9b3eb210b2889bcd22fed20f6e7d49a1302c86466d979adb2c1c`, finalized at `2026-09-28T15:06:34.0328687Z` from the preceding coherent implementation/artifact checkpoint above. Provider artifacts remain external and originals inputs were read-only.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Manifest revision 14 to 15; exact accepted C7 and rollback C3 identities and retained bytes remain unchanged.
 - Next state: Under owner-directed verification, exercise the C15 Button, Path/Paving, BBB masonry, and Gothic-window families against these exact bytes; acceptance remains an explicit owner decision.
+
+## 2026-11-20T17:20:29.9150057Z — IBF C16 adds the AMC Stone accessories
+
+- Revision: 16
+- Source checkpoint: `459efd9c47e1c778df7d4d0807793f52c33626e3`
+- Changes: Extended the Stone Button family in place, in order, with AMC Stone Parapet and Stone Louvered Shutter after the vanilla pressure plate. Both IDs were verified against AMC C9 registrations. Absent AMC, the original two-member selector resolves.
+- Build/static: Compared the ordered catalog with C15. Only the Stone Button row changed, with 181 families, 1,398 unique members when AMC is present, and a maximum size of 22. Full catalog SHA-256 `099c8eaf1ec9049a487f69139fb5e4ab42bdfbd76ec8b82acca97e289cea044a`. All 54 JUnit checks and production archive isolation passed. All 27 controlled Fabric GameTests passed with AMC C9 and again without AMC, including canonical recipe retention, alternate cleanup, collision checks, and a named-stack selector round trip.
+- Runtime: Manual Minecraft runtime untested.
+- Artifact: `IBF C16.jar`, embedded version `0.1.0-canary16`, 57,290 bytes, SHA-256 `da10a26e33c1f8c560ef866799afbdc84185de0313b95a4aa25749fd62d606b3`, finalized at `2026-11-20T17:20:29.9150057Z`. Required retention verified the exact filename and SHA-256 in the primary checkout.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner-directed selector and reload checks in TESTING.md.
