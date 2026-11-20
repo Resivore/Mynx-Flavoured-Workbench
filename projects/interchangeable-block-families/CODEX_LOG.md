@@ -191,3 +191,14 @@
 - Artifact: `IBF C18.jar`, embedded version `0.1.0-canary18`, 58,461 bytes, SHA-256 `3054759b8358fea4449a1cf2de91d665c7a915c103589b03844e22a1c0f02083`, finalized at `2026-11-20T18:56:55.1148578Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner-directed Mud Bricks selector, recipe and reload checks in TESTING.md.
+
+## 2026-11-20T19:14:27.0959986Z — IBF C19 integrates the AMC C15 Prismarine families
+
+- Revision: 19
+- Source checkpoint: `09733780ce98035fdbf23942be2d3b6af1d8455b`
+- Changes: Added Button and Column families for Prismarine Bricks and Dark Prismarine, and the eleven-member Prismarine Bricks Running Bond Path family. Exactly 27 AMC items join four Macaw parapets and arrow slits. Excluding the five new keys reproduces the complete ordered C18 catalog.
+- Build/static: Java 25, Gradle 9.5.1 and Loom 1.17.19 passed 55 JUnit checks and 30 controlled GameTests in each configuration. AMC C15 resolved 195 families and 1,478 items. Without AMC, 181 families and 1,397 items resolved and the four Macaw items kept their recipes. Transfers preserved stack counts and components. The recipe corpus removed 1,199 alternate recipes with AMC and 1,114 without, with zero canonical removals. The four excluded patterned full blocks placed independently and retained their stonecutting recipes. Production isolation and build passed. Catalog SHA-256 `b1c74a1432ecf8ac0c229ad1a964f0c67d7dc4eae80fb04eed2d6094cacd2c05`.
+- Runtime: Manual Minecraft runtime verification is pending owner testing.
+- Artifact: `IBF C19.jar`, embedded version `0.1.0-canary19`, 58,915 bytes, SHA-256 `875708c20ce13b77a87adbeb5ecac8c963a8691015c3ed16b4bcd48eceecb1d5`, finalized at `2026-11-20T19:14:27.0959986Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner-directed Prismarine selector, stonecutting and reload checks in TESTING.md.

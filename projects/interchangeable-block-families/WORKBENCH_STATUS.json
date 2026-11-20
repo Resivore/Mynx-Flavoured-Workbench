@@ -21,13 +21,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Use AMC registrations for the Stone accessories and the Andesite, Diorite, and Granite accessory, masonry detail, and Gothic window forms. Integrate the thirteen AMC Mud Bricks forms with the Macaw Mud Brick Gothic Window and Arrow Slit."
+      "Use AMC registrations for the Stone accessories and the Andesite, Diorite, and Granite accessory, masonry detail, and Gothic window forms. Integrate the thirteen AMC Mud Bricks forms with the Macaw Mud Brick Gothic Window and Arrow Slit. Integrate the Prismarine Bricks and Dark Prismarine accessories and masonry details, and the eleven thin Prismarine Bricks paths and pavings."
     ],
     "scope": [
-      "With AMC C14 the catalog resolves 190 families and 1,447 distinct items. Without AMC it resolves 181 families and 1,397 items. The largest family has 22 members. The three Mud Bricks selectors extend the ordered C17 catalog, including its separate Mud Brick Path/Paving family.",
+      "With AMC C15 the catalog resolves 195 families and 1,478 distinct items. Without AMC it resolves 181 families and 1,397 items. The maximum size is 22. The five Prismarine additions preserve the ordered C18 catalog. The four AMC patterned full blocks remain independent.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain the accepted C7 and historical rollback C3 artifacts while C18 undergoes owner-directed verification."
+      "Retain the accepted C7 and historical rollback C3 artifacts while C19 undergoes owner-directed verification."
     ],
     "boundaries": {
       "owned_paths": [
@@ -38,7 +38,7 @@
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
         "Required providers supply every audited item. An absent AMC parent omits its whole family. Existing vanilla and Macaw parents retain their registered alternates when AMC is absent.",
-        "C18 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
+        "C19 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -47,7 +47,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version targeted by C18; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
+        "reason": "Exact game version targeted by C19; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
       },
       {
         "type": "MOD",
@@ -137,35 +137,35 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "=25",
-        "reason": "Required Java release for Minecraft 26.2 and the controlled C18 build."
+        "reason": "Required Java release for Minecraft 26.2 and the controlled C19 build."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1 with Fabric Loom 1.17.19",
-        "reason": "Exact build-tool baseline used for the controlled C18 build and GameTest validation."
+        "reason": "Exact build-tool baseline used for the controlled C19 build and GameTest validation."
       },
       {
         "type": "PROJECT",
         "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
-        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C14.jar, SHA-256 303b955fbaa86d05e8a7c62414a2ea8e3abfbc2b8507b94b5c4eea242336be35.",
-        "reason": "Provides the Stone accessories and the Button, Pressure Plate, Column, Urn, Moulding, Fence, Frame, Arrow Slit, and Gothic Window for each of Andesite, Diorite, and Granite. C14 also supplies the thirteen Mud Bricks accessory, masonry, and window items."
+        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C15.jar, SHA-256 369afabf9491af60f2852631ca5ab821c55fe9d4bf5fd25a9f5eb646ed5b4788.",
+        "reason": "Provides the Stone accessories and the Button, Pressure Plate, Column, Urn, Moulding, Fence, Frame, Arrow Slit, and Gothic Window for each of Andesite, Diorite, and Granite. C14 also supplies the thirteen Mud Bricks accessory, masonry, and window items. C15 supplies the 27 Prismarine accessory, masonry, path and paving items admitted by C19."
       }
     ]
   },
   "state": {
-    "milestone": "C18 adds three Mud Bricks families with AMC Button, Column, and Window as canonical parents. The C17 catalog digest is preserved when the three additions are excluded. Both provider configurations passed 55 JUnit checks, 29 controlled Fabric GameTests, production build, and archive isolation. Owner runtime verification is pending.",
+    "milestone": "Five selectors cover 27 new AMC items and four Macaw items. The original 190-family C18 digest still matches. With AMC present and absent, 55 JUnit checks and 30 controlled Fabric GameTests passed, along with archive isolation and build. Owner runtime verification is pending.",
     "releases": {
       "current": {
-        "version": "C18 (0.1.0-canary18)",
-        "canary": 18,
-        "embedded_version": "0.1.0-canary18",
+        "version": "C19 (0.1.0-canary19)",
+        "canary": 19,
+        "embedded_version": "0.1.0-canary19",
         "artifact": {
-          "filename": "IBF C18.jar",
-          "sha256": "3054759b8358fea4449a1cf2de91d665c7a915c103589b03844e22a1c0f02083"
+          "filename": "IBF C19.jar",
+          "sha256": "875708c20ce13b77a87adbeb5ecac8c963a8691015c3ed16b4bcd48eceecb1d5"
         },
-        "built_at": "2026-11-20T18:56:55.1148578Z",
-        "source_commit": "1330559eb7de6a15066c320794f6ce72667fe5be",
+        "built_at": "2026-11-20T19:14:27.0959986Z",
+        "source_commit": "09733780ce98035fdbf23942be2d3b6af1d8455b",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -176,14 +176,14 @@
               "predicate": "=2.0pre4+26.2-enderscape-dev.7",
               "reason": "BBB dev.7 supplies the audited Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package. Its provider version does not support Fabric semantic version ordering. The dev.6 provider lacks the required package.",
               "regression_evidence": [
-                "Fresh C18 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
+                "Fresh C19 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
                 "The Fabric VersionPredicate equality check accepts dev.7 and rejects the incompatible pre-C9 pale-oak dev.6 package before ShapeMap resolution.",
-                "Runs with AMC C14 present and absent passed all 55 C18 JUnit checks, including the BBB provider contracts, and all 29 controlled GameTests."
+                "Runs with AMC C15 present and absent passed all 55 C19 JUnit checks, including the BBB provider contracts, and all 30 controlled GameTests."
               ]
             }
           ]
         },
-        "summary": "Adds Mud Bricks accessory, masonry, and window selectors that pair AMC C14 forms with the Macaw Mud Brick Arrow Slit and Gothic Window."
+        "summary": "Adds Prismarine Bricks and Dark Prismarine accessory and masonry selectors, plus a separate selector for eleven thin Prismarine Bricks paths and pavings."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -220,10 +220,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 18,
-    "activity_at": "2026-11-20T18:56:55.1148578Z",
-    "updated_at": "2026-11-20T18:56:55.1148578Z",
-    "last_codex_at": "2026-11-20T18:56:55.1148578Z",
-    "source_commit": "1330559eb7de6a15066c320794f6ce72667fe5be"
+    "revision": 19,
+    "activity_at": "2026-11-20T19:14:27.0959986Z",
+    "updated_at": "2026-11-20T19:14:27.0959986Z",
+    "last_codex_at": "2026-11-20T19:14:27.0959986Z",
+    "source_commit": "09733780ce98035fdbf23942be2d3b6af1d8455b"
   }
 }
