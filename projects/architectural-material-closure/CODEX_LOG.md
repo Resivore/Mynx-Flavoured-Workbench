@@ -228,3 +228,15 @@
 - Runtime: Owner gameplay verification and acceptance are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Follow TESTING.md with the finalized C19 artifact and record owner observations.
+
+## 2026-11-20T22:02:42Z — Recolor Deepslate and Nether Bricks shutters in Canary 20
+
+- Revision: 21
+- Source checkpoint: `c7115a4ea1d471d09e13ee064c1dc28f15473ad5`
+- Changes: Used C17's proportional luminance-rank mapping on the 16 gray ranks of the retained C9 Stone Louvered Shutter PNG, SHA-256 `c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878`. The full minecraft:block/deepslate palette is #2F2F37, #3D3D43, #515151, #646464, #797979. The full minecraft:block/nether_bricks palette is #190D10, #211114, #291519, #30181C, #38181E, #3E1E24, #44242A.
+- Build/static: Offline Java 25 / Gradle 9.5.1 build, package validation and all 99 controlled Fabric GameTests passed. Verified all 135 original block/item pairs. For each shutter, all 207 material pixels matched their expected source rank and every one of the 49 transparent pixels matched the original RGBA. Every target color appears. The existing Deepslate cap bindings still use deepslate_top.
+- Compared finalized C20 with C19 SHA-256 `861f184482b9113d83057c473073ce4baa0c396e531c98a03a9b5170410bb775`. All 1,427 entry names matched. Under assets/architectural_material_closure/textures/block/, deepslate_louvered_shutter.png changed at 178 coordinates and nether_bricks_louvered_shutter.png at 185. Only the version changed in fabric.mod.json. The other 1,424 entries were byte-identical, including all eight production classes and every model, state, recipe, Stone, Prismarine and Sandstone shutter resource.
+- Artifact: Local-only `AMC C20.jar`, version `0.1.0-canary20`, 731,821 bytes, SHA-256 `b397b6c1c70d50e921d6a6a449b794bd178399cf4f33150d17598efaab7895e8`, finalized at `2026-11-20T22:01:42.8318214Z`.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare the revised shutters with Stone under matching light and record owner observations using TESTING.md.

@@ -25,7 +25,7 @@
       "Provide 13 Mud Bricks block/item pairs. Use Packed Mud directly for the two controls, four standard Macaw windows and parapet. Use Packed Mud grain with structural shading for the louvered shutter and its full palette for the five BBB masonry forms.",
       "Provide 23 Prismarine Bricks and eight Dark Prismarine forms. Each material has vanilla controls, a Macaw louvered shutter and five BBB masonry forms. Prismarine Bricks also has five thin paths, six pavings and four engravable full blocks based on Macaw's Paths. Both louvered shutters use the finalized C9 Stone shutter artwork remapped by luminance rank to the full vanilla palette of the respective material.",
       "Provide a Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter for Sandstone and Red Sandstone. The controls, parapets and windows use directional vanilla textures. Each shutter uses the matching vanilla top sprite on every face at the original UVs, with C9 structural shading on the five slats and frame.",
-      "Provide six Deepslate, 21 Quartz and 23 Nether Bricks forms. Use vanilla controls, Macaw's Windows geometry and interactions, directional Deepslate and Quartz textures, and the BBB Nether Brick Moulding underside for the Nether Bricks shutter. Quartz and Nether Bricks each have eleven thin Macaw paths and pavings and four independent engravable full blocks with full vanilla palette transfers."
+      "Provide six Deepslate, 21 Quartz and 23 Nether Bricks forms. Use vanilla controls, Macaw's Windows geometry and interactions, and directional Deepslate and Quartz textures. The Deepslate and Nether Bricks shutter artwork uses the finalized C9 Stone shutter remapped to the full corresponding vanilla palette. Quartz and Nether Bricks each have eleven thin Macaw paths and pavings and four independent engravable full blocks with full vanilla palette transfers."
     ],
     "boundaries": {
       "owned_paths": [
@@ -76,23 +76,23 @@
     ]
   },
   "state": {
-    "milestone": "C19 adds 50 block/item pairs for 135 total. All 99 controlled Fabric GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C20 corrects two shutter textures across the existing 135 block/item pairs. All 99 controlled Fabric GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C19 (0.1.0-canary19)",
-        "canary": 19,
-        "embedded_version": "0.1.0-canary19",
+        "version": "C20 (0.1.0-canary20)",
+        "canary": 20,
+        "embedded_version": "0.1.0-canary20",
         "artifact": {
-          "filename": "AMC C19.jar",
-          "sha256": "861f184482b9113d83057c473073ce4baa0c396e531c98a03a9b5170410bb775"
+          "filename": "AMC C20.jar",
+          "sha256": "b397b6c1c70d50e921d6a6a449b794bd178399cf4f33150d17598efaab7895e8"
         },
-        "built_at": "2026-11-20T19:41:28.3644579Z",
-        "source_commit": "a2ad7d24677e115f7adb416d0760c04a0e7f4945",
+        "built_at": "2026-11-20T22:01:42.8318214Z",
+        "source_commit": "c7115a4ea1d471d09e13ee064c1dc28f15473ad5",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 50 Deepslate, Quartz and Nether Bricks forms, including two fifteen-form Paths families and a Nether Bricks shutter shaded from BBB's moulding underside."
+        "summary": "Recolors the Deepslate and Nether Bricks Louvered Shutters from the finalized Stone artwork using their full vanilla palettes."
       },
       "accepted": null,
       "rollback": null,
@@ -106,10 +106,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 20,
-    "activity_at": "2026-11-20T19:43:27Z",
-    "updated_at": "2026-11-20T19:43:27Z",
-    "last_codex_at": "2026-11-20T19:43:27Z",
-    "source_commit": "a2ad7d24677e115f7adb416d0760c04a0e7f4945"
+    "revision": 21,
+    "activity_at": "2026-11-20T22:02:42Z",
+    "updated_at": "2026-11-20T22:02:42Z",
+    "last_codex_at": "2026-11-20T22:02:42Z",
+    "source_commit": "c7115a4ea1d471d09e13ee064c1dc28f15473ad5"
   }
 }
