@@ -22,7 +22,8 @@
       "Use the Macaw masonry block classes and model parents. The parapet maps vanilla Stone directly. The shutter uses the same Stone grain at matching UV coordinates, with structural lighting measured across the reference shutter's five repeated slats.",
       "Provide Andesite, Diorite and Granite Buttons and Pressure Plates using the vanilla Stone controls, and Gothic Windows and Arrow Slits using the Macaw Stone Brick forms. Bind each material's vanilla sprite directly and preserve Macaw's glass and iron bars.",
       "Provide Andesite, Diorite and Granite variants of BBB's Stone Column, Urn, Moulding, Fence and Frame using the provider classes, description items and original model hierarchies. Remap ten authored sheets independently for each material using its vanilla palette. Granite BBB textures use the eight interior colors of the luminance-ranked vanilla Granite palette.",
-      "Provide 13 Mud Bricks block/item pairs. Use Packed Mud directly for the two controls, four standard Macaw windows and parapet. Use Packed Mud grain with structural shading for the louvered shutter and its full palette for the five BBB masonry forms."
+      "Provide 13 Mud Bricks block/item pairs. Use Packed Mud directly for the two controls, four standard Macaw windows and parapet. Use Packed Mud grain with structural shading for the louvered shutter and its full palette for the five BBB masonry forms.",
+      "Provide 23 Prismarine Bricks and eight Dark Prismarine forms. Each material has vanilla controls, a Macaw louvered shutter and five BBB masonry forms. Prismarine Bricks also has five thin paths, six pavings and four engravable full blocks based on Macaw's Paths."
     ],
     "boundaries": {
       "owned_paths": [
@@ -38,7 +39,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Target game, Stone redstone controls and source of Stone, Andesite, Diorite, Granite, Packed Mud, glass and iron-bar sprites."
+        "reason": "Target game, Stone redstone controls and source of Stone, Andesite, Diorite, Granite, Packed Mud, Prismarine Bricks, Dark Prismarine, glass and iron-bar sprites."
       },
       {
         "type": "MOD",
@@ -63,27 +64,33 @@
         "identifier": "bbb",
         "requirement": "*",
         "reason": "Provides the five masonry implementations, description items, hammer and planting behavior, family tags and shared models. The controlled build uses the retained BBB C9 for 26.2 Fabric."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwpaths",
+        "requirement": "*",
+        "reason": "Provides the path, directional paving and engraved block implementations and shared model parents. The controlled build uses Macaw's Paths and Pavings 1.1.1 for 26.2 Fabric."
       }
     ]
   },
   "state": {
-    "milestone": "C14 adds the 13 Mud Bricks forms. All 45 controlled GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C15 adds 31 block/item pairs for 73 total. All 66 controlled GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C14 (0.1.0-canary14)",
-        "canary": 14,
-        "embedded_version": "0.1.0-canary14",
+        "version": "C15 (0.1.0-canary15)",
+        "canary": 15,
+        "embedded_version": "0.1.0-canary15",
         "artifact": {
-          "filename": "AMC C14.jar",
-          "sha256": "303b955fbaa86d05e8a7c62414a2ea8e3abfbc2b8507b94b5c4eea242336be35"
+          "filename": "AMC C15.jar",
+          "sha256": "369afabf9491af60f2852631ca5ab821c55fe9d4bf5fd25a9f5eb646ed5b4788"
         },
-        "built_at": "2026-11-20T18:45:26.7561778Z",
-        "source_commit": "1bb0cf8144bfcd35e5d7a73078f5d06322234934",
+        "built_at": "2026-11-20T19:07:52.4554334Z",
+        "source_commit": "7f17ebe916f243b021e1c5e4e28d6701f58e2d30",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 13 Mud Bricks architectural forms using Packed Mud for controls, standard windows, a parapet, a louvered shutter and five BBB masonry forms."
+        "summary": "Adds 23 Prismarine Bricks and eight Dark Prismarine forms, including fifteen Prismarine Bricks paths, pavings and engravable full blocks."
       },
       "accepted": null,
       "rollback": null,
@@ -97,10 +104,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 15,
-    "activity_at": "2026-11-20T18:47:01Z",
-    "updated_at": "2026-11-20T18:47:01Z",
-    "last_codex_at": "2026-11-20T18:47:01Z",
-    "source_commit": "1bb0cf8144bfcd35e5d7a73078f5d06322234934"
+    "revision": 16,
+    "activity_at": "2026-11-20T19:09:17Z",
+    "updated_at": "2026-11-20T19:09:17Z",
+    "last_codex_at": "2026-11-20T19:09:17Z",
+    "source_commit": "7f17ebe916f243b021e1c5e4e28d6701f58e2d30"
   }
 }

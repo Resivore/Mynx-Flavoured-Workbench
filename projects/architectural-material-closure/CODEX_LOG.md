@@ -167,3 +167,15 @@
 - Runtime: Owner gameplay observations for C14 are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify the Mud Bricks family using TESTING.md and record owner observations and the acceptance decision.
+
+## 2026-11-20T19:09:17Z — Add the two prismarine families in Canary 15
+
+- Revision: 16
+- Source checkpoint: `7f17ebe916f243b021e1c5e4e28d6701f58e2d30`
+- Changes: Added 23 Prismarine Bricks and eight Dark Prismarine block/item pairs. Both use the vanilla Stone controls with direct material mapping, the five BBB C9 Stone masonry implementations, and the Macaw's Windows 2.4.2 Andesite shutter. Fifteen Prismarine Bricks forms use their individual Dark Prismarine references from Macaw's Paths 1.1.1, including the four full EngravedBlocks. All fifteen use the provider's ordinary BlockItem.
+- Build/static: Java 25 and Gradle 9.5.1 passed the offline build, packaged resource checks and all 66 controlled Fabric GameTests. Verified the exact 73 block and item IDs and 939 production entries. Per new material, matched 199 BBB state entries and 69 model nodes and checked every pixel on ten sheets against the full vanilla palette (eight Prismarine Bricks or six Dark Prismarine colors). Compared each shutter's 16 states, four models and 256 pixels to the provider geometry and C9 structural shading at 75% shadow depth. The 15 Paths forms matched 21 child models, inherited geometry, face bindings, weighted variants, shared textures, and all pixels on eleven sheets. Controlled tests covered placement, collision, rotation, pickaxe engraving, redstone, stacked shutters, BBB interactions, recipes, drops, tags and creative tabs.
+- Compared the retained C15 artifact against C14 SHA-256 `303b955fbaa86d05e8a7c62414a2ea8e3abfbc2b8507b94b5c4eea242336be35`. Retained all 591 prior entries, 572 byte-identical. Only Fabric metadata, English names and 17 additive tags changed. Added 348 entries. Existing production classes, individual assets, recipes and loot match C14.
+- Artifact: Local-only `AMC C15.jar`, version `0.1.0-canary15`, 493,015 bytes, SHA-256 `369afabf9491af60f2852631ca5ab821c55fe9d4bf5fd25a9f5eb646ed5b4788`, finalized at `2026-11-20T19:07:52.4554334Z`.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify the two new families with TESTING.md and record owner observations and the acceptance decision.
