@@ -60,21 +60,25 @@ public final class StoneTests {
     @GameTest
     public void registryAndResources(GameTestHelper helper) {
         var ids = new java.util.HashSet<>(Set.of(id("parapet"), id("louvered_shutter")));
-        for (String material : java.util.List.of("andesite", "diorite", "granite", "mud_bricks")) {
+        for (String material : java.util.List.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine")) {
             var forms = new java.util.ArrayList<>(java.util.List.of("button", "pressure_plate", "column", "urn",
                     "moulding", "fence", "frame"));
-            forms.addAll(material.equals("mud_bricks") ? java.util.List.of("window", "window2", "four_window",
+            if (material.equals("prismarine_bricks") || material.equals("dark_prismarine")) {
+                forms.add("louvered_shutter");
+                if (material.equals("prismarine_bricks")) forms.addAll(DirectFormTests.PATH_FORMS);
+            } else forms.addAll(material.equals("mud_bricks") ? java.util.List.of("window", "window2", "four_window",
                     "pane_window", "parapet", "louvered_shutter") : java.util.List.of("gothic_window", "arrow_slit"));
             for (String form : forms) {
                 var name = material + "_" + form;
                 ids.add(Identifier.fromNamespaceAndPath(NAMESPACE, name));
-                for (String ns : java.util.List.of("minecraft", "mcwwindows", "bbb")) {
+                for (String ns : java.util.List.of("minecraft", "mcwwindows", "bbb", "mcwpaths")) {
                     var other = Identifier.fromNamespaceAndPath(ns, name);
                     helper.assertTrue(!BuiltInRegistries.BLOCK.containsKey(other)
                             && !BuiltInRegistries.ITEM.containsKey(other), "Provider already owns " + other);
                 }
             }
         }
+        helper.assertTrue(ids.size() == 73, "Expected 73 block/item pairs");
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());
@@ -156,6 +160,22 @@ public final class StoneTests {
         helper.setBlock(POSITION.above(), Blocks.AIR);
         helper.assertTrue(helper.getBlockState(POSITION).getValue(Parapet.FLOWER) == Parapet.Flower.EMPTY,
                 "Removing pot did not clear the support");
+        shutterInteraction(helper, shutterBlock);
+    }
+
+    @GameTest
+    public void prismarineShutterInteraction(GameTestHelper helper) {
+        shutterInteraction(helper, BuiltInRegistries.BLOCK.getValue(
+                Identifier.fromNamespaceAndPath(NAMESPACE, "prismarine_bricks_louvered_shutter")));
+    }
+
+    @GameTest
+    public void darkPrismarineShutterInteraction(GameTestHelper helper) {
+        shutterInteraction(helper, BuiltInRegistries.BLOCK.getValue(
+                Identifier.fromNamespaceAndPath(NAMESPACE, "dark_prismarine_louvered_shutter")));
+    }
+
+    private static void shutterInteraction(GameTestHelper helper, Block shutterBlock) {
         var shutter = shutterBlock.defaultBlockState().setValue(Shutter.OPEN, false);
         helper.setBlock(POSITION, shutter);
         helper.setBlock(POSITION.above(), shutter);

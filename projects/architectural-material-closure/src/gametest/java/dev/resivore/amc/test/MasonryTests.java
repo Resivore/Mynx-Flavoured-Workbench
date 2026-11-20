@@ -77,6 +77,16 @@ public final class MasonryTests {
         completeStateAndShapeParity(helper, "mud_bricks");
     }
 
+    @GameTest
+    public void prismarineBricksCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "prismarine_bricks");
+    }
+
+    @GameTest
+    public void darkPrismarineCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "dark_prismarine");
+    }
+
     private static void completeStateAndShapeParity(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(CENTER);
@@ -136,6 +146,16 @@ public final class MasonryTests {
     @GameTest
     public void mudBricksWetAndDryPlacement(GameTestHelper helper) {
         wetAndDryPlacement(helper, "mud_bricks");
+    }
+
+    @GameTest
+    public void prismarineBricksWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "prismarine_bricks");
+    }
+
+    @GameTest
+    public void darkPrismarineWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "dark_prismarine");
     }
 
     private static void wetAndDryPlacement(GameTestHelper helper, String material) {
@@ -202,6 +222,16 @@ public final class MasonryTests {
         columnAndMouldingChanges(helper, "mud_bricks");
     }
 
+    @GameTest
+    public void prismarineBricksColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "prismarine_bricks");
+    }
+
+    @GameTest
+    public void darkPrismarineColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "dark_prismarine");
+    }
+
     private static void columnAndMouldingChanges(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         for (boolean reference : List.of(true, false)) {
@@ -249,6 +279,16 @@ public final class MasonryTests {
     @GameTest
     public void mudBricksFenceAndFrameChanges(GameTestHelper helper) {
         fenceAndFrameChanges(helper, "mud_bricks");
+    }
+
+    @GameTest
+    public void prismarineBricksFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "prismarine_bricks");
+    }
+
+    @GameTest
+    public void darkPrismarineFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "dark_prismarine");
     }
 
     private static void fenceAndFrameChanges(GameTestHelper helper, String material) {
@@ -304,6 +344,16 @@ public final class MasonryTests {
     @GameTest
     public void mudBricksUrnSoilAndPlant(GameTestHelper helper) {
         urnSoilAndPlant(helper, "mud_bricks");
+    }
+
+    @GameTest
+    public void prismarineBricksUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "prismarine_bricks");
+    }
+
+    @GameTest
+    public void darkPrismarineUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "dark_prismarine");
     }
 
     private static void urnSoilAndPlant(GameTestHelper helper, String material) {

@@ -2,15 +2,16 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary14'
+version = '0.1.0-canary15'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c14')
+layout.buildDirectory = layout.projectDirectory.dir('build/c15')
 
 repositories {
     mavenCentral()
 }
 
 def providerJar = file('../../originals/mods/mcw-windows-2.4.2-mc26.2fabric.jar')
+def pathsJar = file('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar')
 def bbbJar = file(providers.gradleProperty('bbbJar').getOrElse(
         '../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar'))
 def clientJar = file(providers.gradleProperty('vanillaClient').getOrElse(
@@ -22,7 +23,7 @@ dependencies {
     minecraft 'com.mojang:minecraft:26.2'
     implementation 'net.fabricmc:fabric-loader:0.19.3'
     implementation 'net.fabricmc.fabric-api:fabric-api:0.157.0+26.2'
-    implementation files(providerJar, bbbJar)
+    implementation files(providerJar, bbbJar, pathsJar)
 }
 
 java {
@@ -30,9 +31,9 @@ java {
 }
 
 tasks.register('generateAmcResources', Exec) {
-    inputs.files('tools/generate.py', 'tools/masonry.py', providerJar, clientJar, bbbJar)
+    inputs.files('tools/generate.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar)
     outputs.dir(privateResources)
-    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, privateResources.get().asFile
+    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, privateResources.get().asFile
 }
 
 sourceSets.main.resources.srcDir(privateResources)
@@ -43,13 +44,13 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C14.jar'
+    archiveFileName = 'AMC C15.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
     dependsOn jar
-    inputs.files('tools/verify.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', providerJar, clientJar, bbbJar, jar.archiveFile)
-    commandLine python, 'tools/verify.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar
+    inputs.files('tools/verify.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
+    commandLine python, 'tools/verify.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar
 }
 
 check.dependsOn 'verifyAmcJar'
@@ -65,6 +66,6 @@ fabricApi {
 }
 
 loom.runs.named('gameTest') {
-    runDir 'build/c14/gametest'
+    runDir 'build/c15/gametest'
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

@@ -34,6 +34,13 @@ def rank(rgb):
     return (299 * r + 587 * g + 114 * b, rgb)
 
 
+def rank_mapping(colors, target):
+    source = sorted(colors, key=rank)
+    scale = len(source) - 1
+    return {rgb: target[(2 * i * (len(target) - 1) + scale) // (2 * scale)]
+            for i, rgb in enumerate(source)}
+
+
 def stage_textures(root, bbb, client, material, substrate):
     tile = image(client, f"assets/minecraft/textures/block/{substrate}.png")
     target = sorted({rgb[:3] for rgb in tile.getdata() if rgb[3] == 255}, key=rank)
@@ -45,10 +52,7 @@ def stage_textures(root, bbb, client, material, substrate):
         if group == ("moulding/stone",):
             # Opaque black backing is identical in BBB's Stone and Sandstone moulding atlases.
             colors.remove((0, 0, 0))
-        source = sorted(colors, key=rank)
-        scale = len(source) - 1
-        mapping = {rgb: target[(2 * i * (len(target) - 1) + scale) // (2 * scale)]
-                   for i, rgb in enumerate(source)}
+        mapping = rank_mapping(colors, target)
         for name, sheet in sheets.items():
             sheet.putdata([(*mapping.get(pixel[:3], pixel[:3]), pixel[3]) if pixel[3] else pixel
                            for pixel in sheet.getdata()])

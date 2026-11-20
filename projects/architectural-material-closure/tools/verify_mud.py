@@ -8,17 +8,16 @@ from PIL import Image
 NS = "architectural_material_closure"
 MACAW_FORMS = {"window": (32, 9), "window2": (16, 2), "four_window": (16, 2),
                "pane_window": (64, 8), "parapet": (8, 2), "louvered_shutter": (16, 4)}
-SHUTTER = NS + ":block/mud_bricks_louvered_shutter"
 
 
-def check_shutter(jar, provider, client, expected):
+def check_shutter(jar, provider, client, expected, material, substrate):
     def image(archive, path):
         return Image.open(BytesIO(archive.read(path))).convert("RGBA")
 
-    path = f"assets/{NS}/textures/block/mud_bricks_louvered_shutter.png"
+    path = f"assets/{NS}/textures/block/{material}_louvered_shutter.png"
     expected.add(path)
     result = image(jar, path)
-    base = image(client, "assets/minecraft/textures/block/packed_mud.png")
+    base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
     reference = image(provider, "assets/mcwwindows/textures/block/andesite_louvered_shutter.png")
     assert base.size == reference.size == result.size == (16, 16)
     luminance = reference.convert("L")
@@ -50,11 +49,13 @@ def check_shutter(jar, provider, client, expected):
             gain = gains[region(x, y)]
             rgb = base.getpixel((x, y))[:3]
             target = (*[min(255, round(c * gain)) for c in rgb], src[3]) if src[3] else src
-            assert result.getpixel((x, y)) == target, (x, y, "Packed Mud shutter")
-    print("Verified all 256 shutter pixels against Packed Mud and the five reference slats.")
+            assert result.getpixel((x, y)) == target, (x, y, material)
+    print(f"Verified all 256 shutter pixels against {substrate} and the five reference slats.")
 
 
-def check_mud_windows(jar, provider, client, expected):
+def check_windows(jar, provider, client, expected, material, substrate, slab):
+    shutter = f"{NS}:block/{material}_louvered_shutter"
+
     def read(archive, path):
         if archive is jar:
             expected.add(path)
@@ -70,14 +71,14 @@ def check_mud_windows(jar, provider, client, expected):
             assert form == "window" and actual == ref
             assert original["textures"] == {"0": "mcwwindows:block/glass", "particle": "mcwwindows:block/glass"}
         else:
-            assert namespace == NS and actual.replace(NS + ":", "mcwwindows:").replace("mud_bricks_", "andesite_") == ref
+            assert namespace == NS and actual.replace(NS + ":", "mcwwindows:").replace(material + "_", "andesite_") == ref
         generated = read(archives[namespace], f"assets/{namespace}/models/{model}.json")
         bindings = original.pop("textures")
         slots = generated.pop("textures")
         assert original == generated, (form, ref, "model or parent changed")
-        targets = {"minecraft:block/andesite": "minecraft:block/packed_mud",
-                   "minecraft:block/polished_andesite": "minecraft:block/packed_mud",
-                   "mcwwindows:block/andesite_louvered_shutter": SHUTTER}
+        targets = {"minecraft:block/andesite": f"minecraft:block/{substrate}",
+                   "minecraft:block/polished_andesite": f"minecraft:block/{substrate}",
+                   "mcwwindows:block/andesite_louvered_shutter": shutter}
         assert slots == {k: targets.get(v, v) for k, v in bindings.items()}
         node = generated
         elements = node.get("elements")
@@ -99,15 +100,17 @@ def check_mud_windows(jar, provider, client, expected):
                 archives[ns].getinfo(f"assets/{ns}/textures/{path}.png")
                 visible.add(sprite)
         if form == "louvered_shutter":
-            assert visible == {SHUTTER}
+            assert visible == {shutter}
         elif ref.endswith("/mid_m"):
             assert visible == {"mcwwindows:block/glass"}
         else:
-            assert "minecraft:block/packed_mud" in visible
-            assert visible <= {"mcwwindows:block/glass", "minecraft:block/glass", "minecraft:block/packed_mud"}
+            assert f"minecraft:block/{substrate}" in visible
+            assert visible <= {"mcwwindows:block/glass", "minecraft:block/glass", f"minecraft:block/{substrate}"}
 
     for form, (state_count, model_count) in MACAW_FORMS.items():
-        src, own = "andesite_" + form, "mud_bricks_" + form
+        if material != "mud_bricks" and form != "louvered_shutter":
+            continue
+        src, own = "andesite_" + form, material + "_" + form
         ref_id, own_id = "mcwwindows:" + src, NS + ":" + own
         pairs = set()
         for folder in ("blockstates", "items"):
@@ -134,11 +137,11 @@ def check_mud_windows(jar, provider, client, expected):
         for folder in ("recipe", "loot_table/blocks"):
             ref = read(provider, f"data/mcwwindows/{folder}/{src}.json")
             actual = read(jar, f"data/{NS}/{folder}/{own}.json")
-            content = json.dumps(ref).replace(ref_id, own_id).replace('"minecraft:andesite"', '"minecraft:packed_mud"')
-            assert actual == json.loads(content.replace("minecraft:andesite_slab", "minecraft:mud_brick_slab"))
+            content = json.dumps(ref).replace(ref_id, own_id).replace('"minecraft:andesite"', f'"minecraft:{substrate}"')
+            assert actual == json.loads(content.replace("minecraft:andesite_slab", f"minecraft:{slab}"))
         unlock = read(jar, f"data/{NS}/advancement/recipes/building_blocks/{own}.json")
-        ingredient = "minecraft:mud_brick_slab" if form == "louvered_shutter" else "minecraft:packed_mud"
+        ingredient = f"minecraft:{slab}" if form == "louvered_shutter" else f"minecraft:{substrate}"
         assert unlock["rewards"]["recipes"] == [own_id] and unlock["criteria"]["recipe"]["conditions"]["recipe"] == own_id
         assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": ingredient}]
         print(f"{own}: matched {state_count} blockstate entries and {model_count} model choices.")
-    check_shutter(jar, provider, client, expected)
+    check_shutter(jar, provider, client, expected, material, substrate)

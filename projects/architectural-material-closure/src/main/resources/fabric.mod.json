@@ -5,7 +5,7 @@
   "name": "Architectural Material Closure",
   "environment": "*",
   "entrypoints": {
-    "main": ["dev.resivore.amc.StoneBlocks", "dev.resivore.amc.AndesiteBlocks", "dev.resivore.amc.MasonryBlocks", "dev.resivore.amc.MaterialFamilies", "dev.resivore.amc.MudBricksBlocks"]
+    "main": ["dev.resivore.amc.StoneBlocks", "dev.resivore.amc.AndesiteBlocks", "dev.resivore.amc.MasonryBlocks", "dev.resivore.amc.MaterialFamilies", "dev.resivore.amc.MudBricksBlocks", "dev.resivore.amc.PrismarineBlocks"]
   },
   "depends": {
     "minecraft": "~26.2",
@@ -13,6 +13,7 @@
     "java": ">=25",
     "fabric-api": "*",
     "mcwwindows": "*",
-    "bbb": "*"
+    "bbb": "*",
+    "mcwpaths": "*"
   }
 }

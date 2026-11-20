@@ -30,6 +30,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 public final class DirectFormTests {
@@ -44,6 +45,24 @@ public final class DirectFormTests {
             "window", BlockInit.ANDESITE_WINDOW, "window2", BlockInit.ANDESITE_WINDOW2,
             "four_window", BlockInit.ANDESITE_FOUR_WINDOW, "pane_window", BlockInit.ANDESITE_PANE_WINDOW,
             "parapet", BlockInit.ANDESITE_PARAPET, "louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
+
+    static final List<String> PATH_FORMS = List.of("running_bond_path", "strewn_rocky_path", "windmill_weave_path",
+            "flagstone_path", "crystal_floor_path", "diamond_paving", "basket_weave_paving", "square_paving",
+            "honeycomb_paving", "clover_paving", "dumble_paving", "running_bond", "flagstone", "windmill_weave",
+            "crystal_floor");
+
+    private static Map<String, Block> references(String material) {
+        if (material.equals("mud_bricks")) return MUD_REFERENCES;
+        if (!material.equals("dark_prismarine") && !material.equals("prismarine_bricks")) return REFERENCES;
+        var result = new LinkedHashMap<>(Map.of("button", Blocks.STONE_BUTTON, "pressure_plate", Blocks.STONE_PRESSURE_PLATE,
+                "louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER));
+        if (material.equals("prismarine_bricks")) {
+            for (var form : PATH_FORMS) {
+                result.put(form, BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("mcwpaths", "dark_prismarine_" + form)));
+            }
+        }
+        return result;
+    }
 
     private static Identifier id(String material, String form) {
         return Identifier.fromNamespaceAndPath("architectural_material_closure", material + "_" + form);
@@ -73,14 +92,25 @@ public final class DirectFormTests {
         referenceStatesAndData(helper, "mud_bricks");
     }
 
+    @GameTest
+    public void prismarineBricksReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "prismarine_bricks");
+    }
+
+    @GameTest
+    public void darkPrismarineReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "dark_prismarine");
+    }
+
     private static void referenceStatesAndData(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(LEFT);
-        (material.equals("mud_bricks") ? MUD_REFERENCES : REFERENCES).forEach((form, ref) -> {
+        references(material).forEach((form, ref) -> {
             var own = block(material, form);
             var item = BuiltInRegistries.ITEM.getValue(id(material, form));
             helper.assertTrue(own != ref && own.getClass() == ref.getClass(), form + " implementation");
-            helper.assertTrue(item instanceof BlockItem bi && bi.getBlock() == own && own.asItem() == item,
+            helper.assertTrue(item instanceof BlockItem bi && bi.getBlock() == own && own.asItem() == item
+                    && item.getClass() == ref.asItem().getClass(),
                     form + " item binding");
             helper.assertTrue(level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, id(material, form))).isPresent(),
                     form + " recipe missing");
@@ -101,6 +131,10 @@ public final class DirectFormTests {
                 helper.assertTrue(actual.getShape(level, pos).toAabbs().equals(expected.getShape(level, pos).toAabbs())
                         && actual.getCollisionShape(level, pos).toAabbs().equals(expected.getCollisionShape(level, pos).toAabbs()),
                         form + " outline/collision " + expected);
+                for (var rotation : net.minecraft.world.level.block.Rotation.values()) {
+                    helper.assertTrue(actual.rotate(rotation).getValues().toList().equals(
+                            expected.rotate(rotation).getValues().toList()), form + " rotation");
+                }
                 for (var dir : Direction.values()) {
                     helper.assertTrue(actual.getSignal(level, pos, dir) == expected.getSignal(level, pos, dir)
                             && actual.getDirectSignal(level, pos, dir) == expected.getDirectSignal(level, pos, dir),
@@ -131,6 +165,16 @@ public final class DirectFormTests {
         placement(helper, "mud_bricks");
     }
 
+    @GameTest
+    public void prismarineBricksPlacement(GameTestHelper helper) {
+        placement(helper, "prismarine_bricks");
+    }
+
+    @GameTest
+    public void darkPrismarinePlacement(GameTestHelper helper) {
+        placement(helper, "dark_prismarine");
+    }
+
     private static void placement(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var center = new BlockPos(1, 1, 1);
@@ -141,7 +185,7 @@ public final class DirectFormTests {
             var hit = new BlockHitResult(Vec3.atCenterOf(pos).relative(face, 0.5), face, pos, false);
             for (int yaw : new int[]{0, 90, 180, 270}) {
                 player.setYRot(yaw);
-                (material.equals("mud_bricks") ? MUD_REFERENCES : REFERENCES).forEach((form, ref) -> {
+                references(material).forEach((form, ref) -> {
                     var own = block(material, form);
                     var expected = ref.getStateForPlacement(new BlockPlaceContext(player, InteractionHand.MAIN_HAND,
                             ref.asItem().getDefaultInstance(), hit));
@@ -174,6 +218,16 @@ public final class DirectFormTests {
     @GameTest
     public void mudBricksButtonPulse(GameTestHelper helper) {
         buttonPulse(helper, "mud_bricks");
+    }
+
+    @GameTest
+    public void prismarineBricksButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "prismarine_bricks");
+    }
+
+    @GameTest
+    public void darkPrismarineButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "dark_prismarine");
     }
 
     private static void buttonPulse(GameTestHelper helper, String material) {
@@ -213,6 +267,16 @@ public final class DirectFormTests {
         pressurePlateSensitivity(helper, "mud_bricks");
     }
 
+    @GameTest(maxTicks = 40)
+    public void prismarineBricksPressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "prismarine_bricks");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void darkPrismarinePressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "dark_prismarine");
+    }
+
     private static void pressurePlateSensitivity(GameTestHelper helper, String material) {
         for (var pos : List.of(LEFT, RIGHT)) {
             helper.setBlock(pos.below(), Blocks.STONE);
@@ -233,6 +297,26 @@ public final class DirectFormTests {
             for (var pos : List.of(LEFT, RIGHT)) helper.assertBlockProperty(pos, BlockStateProperties.POWERED, false);
             helper.succeed();
         });
+    }
+
+    @GameTest
+    public void prismarineEngraving(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var pos = helper.absolutePos(LEFT);
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        for (String form : List.of("running_bond", "flagstone", "windmill_weave", "crystal_floor")) {
+            for (Block block : List.of(block("prismarine_bricks", form), references("prismarine_bricks").get(form))) {
+                helper.setBlock(LEFT, block);
+                var tool = Items.IRON_PICKAXE.getDefaultInstance();
+                player.setItemInHand(InteractionHand.MAIN_HAND, tool);
+                for (boolean engraved : List.of(true, false)) {
+                    helper.getBlockState(LEFT).useItemOn(tool, level, player, InteractionHand.MAIN_HAND, hit);
+                    helper.assertBlockProperty(LEFT, com.mcwpaths.kikoz.objects.EngravedBlock.ENGRAVED, engraved);
+                }
+            }
+        }
+        helper.succeed();
     }
 
     @GameTest

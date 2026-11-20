@@ -10,6 +10,7 @@ from zipfile import ZipFile
 from PIL import Image
 
 import masonry
+import paths
 
 NS = "architectural_material_closure"
 FORMS = ("parapet", "louvered_shutter")
@@ -163,9 +164,8 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
     write(f"data/{NS}/loot_table/blocks", loot)
 
 
-def generate_mud_macaw(root, provider, client, tags):
-    forms = ("window", "window2", "four_window", "pane_window", "parapet", "louvered_shutter")
-    ids = {f"mcwwindows:andesite_{form}": f"{NS}:mud_bricks_{form}" for form in forms}
+def generate_macaw(root, provider, client, tags, material, substrate, slab, forms):
+    ids = {f"mcwwindows:andesite_{form}": f"{NS}:{material}_{form}" for form in forms}
     for source_id, own_id in ids.items():
         source = source_id.split(":")[1]
         name = own_id.split(":")[1]
@@ -180,7 +180,7 @@ def generate_mud_macaw(root, provider, client, tags):
                 continue  # Glass-only center shared by the connected windows.
             assert reference.startswith("mcwwindows:block/") and "/andesite_" in reference
             path = reference.split(":")[1]
-            models[path] = path.replace("/andesite_", "/mud_bricks_")
+            models[path] = path.replace("/andesite_", f"/{material}_")
             choice["model"] = f"{NS}:{models[path]}"
         write_json(root, f"assets/{NS}/blockstates/{name}.json", states)
         write_json(root, f"assets/{NS}/items/{name}.json", item)
@@ -189,20 +189,20 @@ def generate_mud_macaw(root, provider, client, tags):
             model = masonry.load_json(provider, f"assets/mcwwindows/models/{path}.json")
             for slot, sprite in model["textures"].items():
                 if sprite in ("minecraft:block/andesite", "minecraft:block/polished_andesite"):
-                    model["textures"][slot] = "minecraft:block/packed_mud"
+                    model["textures"][slot] = f"minecraft:block/{substrate}"
                 elif sprite == "mcwwindows:block/andesite_louvered_shutter":
-                    model["textures"][slot] = NS + ":block/mud_bricks_louvered_shutter"
+                    model["textures"][slot] = f"{NS}:block/{material}_louvered_shutter"
                 else:
                     assert sprite in ("minecraft:block/glass", "mcwwindows:block/glass")
             write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
         recipe = masonry.load_json(provider, f"data/mcwwindows/recipe/{source}.json")
-        materials = {"minecraft:andesite": "minecraft:packed_mud", "minecraft:andesite_slab": "minecraft:mud_brick_slab"}
+        materials = {"minecraft:andesite": f"minecraft:{substrate}", "minecraft:andesite_slab": f"minecraft:{slab}"}
         recipe["key"] = {k: materials.get(v, v) for k, v in recipe["key"].items()}
         assert recipe["result"]["id"] == source_id
         recipe["result"]["id"] = own_id
         write_json(root, f"data/{NS}/recipe/{name}.json", recipe)
-        ingredient = "mud_brick_slab" if name.endswith("_shutter") else "packed_mud"
+        ingredient = slab if name.endswith("_shutter") else substrate
         recipe_unlock(root, name, ingredient, "building_blocks")
         loot = masonry.load_json(provider, f"data/mcwwindows/loot_table/blocks/{source}.json")
         entry, = loot["pools"][0]["entries"]
@@ -216,11 +216,10 @@ def generate_mud_macaw(root, provider, client, tags):
             additions = [own for ref, own in ids.items() if ref in members]
             if additions:
                 tags.setdefault(path[5:-5], []).extend(additions)
-    shade_shutter(provider, client, root / f"assets/{NS}/textures/block/mud_bricks_louvered_shutter.png", "packed_mud")
-    return forms
+    shade_shutter(provider, client, root / f"assets/{NS}/textures/block/{material}_louvered_shutter.png", substrate)
 
 
-def generate(provider, client, bbb, root):
+def generate(provider, client, bbb, path_provider, root):
     def adapt_resource(template):
         src = template.format(ns="mcwwindows", material="andesite")
         dst = template.format(ns=NS, material="stone")
@@ -270,25 +269,31 @@ def generate(provider, client, bbb, root):
             tags.setdefault(tag, []).extend(values)
         masonry.generate(root, bbb, client, material, tags, write_json, recipe_unlock)
 
-    for form in ("button", "pressure_plate"):
-        generate_direct_form(root, client, "minecraft", "stone_" + form, form, "mud_bricks", substrate="packed_mud")
-    for tag in ("minecraft/tags/block/stone_buttons", "minecraft/tags/item/stone_buttons"):
-        tags[tag].append(NS + ":mud_bricks_button")
-    for tag in ("minecraft/tags/block/mineable/pickaxe", "minecraft/tags/block/stone_pressure_plates"):
-        tags[tag].append(NS + ":mud_bricks_pressure_plate")
-    windows = generate_mud_macaw(root, provider, client, tags)
-    masonry.generate(root, bbb, client, "mud_bricks", tags, write_json, recipe_unlock,
-                     substrate="packed_mud", slab="mud_brick_slab")
-    for form in ("button", "pressure_plate", *windows, *masonry.FORMS):
-        label = form.replace("window2", "window 2").replace("_", " ").title()
-        names[f"block.{NS}.mud_bricks_{form}"] = "Mud Bricks " + label
+    for material, substrate, slab in (("mud_bricks", "packed_mud", "mud_brick_slab"),
+                                      ("prismarine_bricks", "prismarine_bricks", "prismarine_brick_slab"),
+                                      ("dark_prismarine", "dark_prismarine", "dark_prismarine_slab")):
+        for form in ("button", "pressure_plate"):
+            generate_direct_form(root, client, "minecraft", "stone_" + form, form, material, substrate=substrate)
+        for tag in ("minecraft/tags/block/stone_buttons", "minecraft/tags/item/stone_buttons"):
+            tags[tag].append(f"{NS}:{material}_button")
+        for tag in ("minecraft/tags/block/mineable/pickaxe", "minecraft/tags/block/stone_pressure_plates"):
+            tags[tag].append(f"{NS}:{material}_pressure_plate")
+        windows = ("louvered_shutter",)
+        if material == "mud_bricks":
+            windows = ("window", "window2", "four_window", "pane_window", "parapet", *windows)
+        generate_macaw(root, provider, client, tags, material, substrate, slab, windows)
+        masonry.generate(root, bbb, client, material, tags, write_json, recipe_unlock, substrate=substrate, slab=slab)
+        for form in ("button", "pressure_plate", *windows, *masonry.FORMS):
+            name = f"{material}_{form}"
+            names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
+    paths.generate(root, path_provider, client, tags, names, write_json, recipe_unlock)
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     for tag, values in tags.items():
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})
 
 
 if __name__ == "__main__":
-    provider_path, client_path, bbb_path, root = map(Path, sys.argv[1:])
+    provider_path, client_path, bbb_path, paths_path, root = map(Path, sys.argv[1:])
     if not root.resolve().is_relative_to(Path(__file__).resolve().parents[1] / "build"):
         sys.exit("Private derived assets must be generated under AMC's ignored build directory")
     if hashlib.sha256(provider_path.read_bytes()).hexdigest() != PROVIDER_SHA256:
@@ -297,5 +302,7 @@ if __name__ == "__main__":
         sys.exit("Expected the official Minecraft 26.2 client JAR")
     if hashlib.sha256(bbb_path.read_bytes()).hexdigest() != masonry.REFERENCE_SHA256:
         sys.exit("Unexpected BBB 26.2 reference bytes")
-    with ZipFile(provider_path) as provider, ZipFile(client_path) as client, ZipFile(bbb_path) as bbb:
-        generate(provider, client, bbb, root)
+    if hashlib.sha256(paths_path.read_bytes()).hexdigest() != paths.REFERENCE_SHA256:
+        sys.exit("Unexpected Macaw's Paths reference bytes")
+    with ZipFile(provider_path) as provider, ZipFile(client_path) as client, ZipFile(bbb_path) as bbb, ZipFile(paths_path) as path_provider:
+        generate(provider, client, bbb, path_provider, root)

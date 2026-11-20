@@ -1,8 +1,19 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 14
+## Owner verification for Canary 15
 
-Match the SHA-256 of `AMC C14.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows and Building But Better. The controlled reference versions were Macaw 2.4.2 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 42 AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C15.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 73 AMC IDs use the namespace `architectural_material_closure`.
+
+### Prismarine Bricks and Dark Prismarine
+
+1. For each material, find the Button and Pressure Plate in Redstone Blocks and the other additions in Building Blocks. Compare the controls with vanilla Stone controls on the same supports and redstone circuit. Inspect their faces alongside vanilla Prismarine Bricks or Dark Prismarine.
+2. Build the five BBB forms for each material and perform the Column, Urn, Moulding, Fence and Frame checks below. Inspect connected bands, carved edges, soil and inventory views. Compare with the matching BBB Stone forms under the same light.
+3. Place left and right shutter hinges, open and close a vertical stack, and inspect the back and slat recesses. Compare the grain with the adjacent vanilla material and the structural shadows with the Stone shutter.
+4. In a stonecutter, use Prismarine Bricks to obtain four of each thin path or paving, or one of each patterned full block. Compare all fifteen side by side with their Dark Prismarine counterparts from Macaw's Paths. Check inventory, held, placed and dropped appearances. Inspect these patterns:
+   - Thin paths: Running Bond, Strewn Rocky, Windmill Weave, Flagstone and Crystal Floor. Place several Strewn Rocky paths to see the weighted arrangements.
+   - Pavings: Diamond, Basket Weave, Square, Honeycomb, Clover and Dumble. Inspect gaps, edge thickness and side faces. Place Dumble from all four directions.
+   - Full blocks: Running Bond, Flagstone, Windmill Weave and Crystal Floor. Tile a floor and a wall, inspect the joins, then use a pickaxe twice on each. Check the engraved face, outline, collision and restored state beside the provider block. Save and rejoin with one block engraved.
+5. Check recipes, matching slab ingredients and self-drops for both new families. Confirm the existing Macaw windows, parapets and Dark Prismarine paths still carry the provider namespace. Repeat the C14 and earlier checks below as needed.
 
 ### Mud Bricks family
 
@@ -39,14 +50,14 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C14 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C15 are pending.
 
 ## Controlled build checks
 
-From the AMC directory, use Java 25, Gradle 9.5.1 and Python with Pillow. The generator checks the read-only Macaw provider JAR in `originals/mods`, the retained BBB C9 JAR in the sibling BBB project's `artifacts/` directory, and the official 26.2 client in Loom's cache. Set `-PvanillaClient=<path>` for another copy of that exact client and `-PbbbJar=<path>` for another copy of the verified BBB reference.
+From the AMC directory, use Java 25, Gradle 9.5.1 and Python with Pillow. The generator checks the read-only Macaw provider JARs in `originals/mods`, the retained BBB C9 JAR in the sibling BBB project's `artifacts/` directory, and the official 26.2 client in Loom's cache. Set `-PvanillaClient=<path>` for another copy of that exact client and `-PbbbJar=<path>` for another copy of the verified BBB reference.
 
 ```text
 gradle build runGameTest --rerun-tasks -Ppython=<interpreter>
 ```
 
-`verifyAmcJar` checks the production file list, translations, recipes, loot, tags, inventory models, exact reference state choices and model parents, sprite bindings, and the C9 shutter PNG. For each material’s five BBB forms, it compares every state branch and follows each placed and item model through its parents. It checks all model fields, resolves face slots, verifies each sheet pixel against its ranked palette and compares recipes, drops and direct tag membership to the provider. Controlled server GameTests exercise each material independently and compare creative tabs, registered entries, loaded data, block states, collision, redstone behavior, placement and masonry interactions. The generated resources, isolated GameTest world and retained JAR are local-only.
+`verifyAmcJar` checks the production file list, translations, recipes, loot, tags, inventory models, exact reference state choices and model parents, sprite bindings, and the C9 shutter PNG. For each material’s five BBB forms, it compares every state branch and follows each placed and item model through its parents. It checks all model fields, resolves face slots, verifies each sheet pixel against its ranked palette and compares recipes, drops and direct tag membership to the provider. Controlled server GameTests exercise each material independently and compare creative tabs, registered entries, loaded data, block states, collision, redstone behavior, placement and masonry interactions. For C15 the archive check follows every Paths blockstate and item model, including weighted choices and engraved models, and compares every texel across eleven source sheets. The generated resources, isolated GameTest world and retained JAR are local-only.
