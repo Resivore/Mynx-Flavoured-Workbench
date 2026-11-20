@@ -169,3 +169,14 @@
 - Artifact: `IBF C16.jar`, embedded version `0.1.0-canary16`, 57,290 bytes, SHA-256 `da10a26e33c1f8c560ef866799afbdc84185de0313b95a4aa25749fd62d606b3`, finalized at `2026-11-20T17:20:29.9150057Z`. Required retention verified the exact filename and SHA-256 in the primary checkout.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner-directed selector and reload checks in TESTING.md.
+
+## 2026-11-20T18:24:24.6574017Z — IBF C17 integrates AMC C12 and Macaw Stone Brick Arrow Slit
+
+- Revision: 17
+- Source checkpoint: `947a2743c089d83c29f9c67b1a6dc95370e0a028`
+- Changes: Added three AMC Button-parent accessories and three AMC Column-parent masonry selectors, appended the matching AMC Gothic Window to each Macaw window selector, and appended Macaw Stone Brick Arrow Slit to BBB Stone Column. All C16 keys and parents retain their relative order. The three path families and all unrelated catalog rows match C16.
+- Build/static: Java 25, Gradle 9.5.1 and Loom 1.17.19 passed 54 JUnit checks and 28 controlled GameTests in each configuration. With AMC C12, IBF resolved 187 families / 1,432 items. Without AMC, 181 families / 1,397 items resolved, and all six standalone Macaw parapets and shutters kept their recipes. The cleanup corpus removed 1,152 and 1,114 alternate recipes respectively, with zero canonical removals. Selector transfers preserved stack counts and component patches. Full catalog SHA-256 `65afd8ca3b6a59d59fa039a4b971d160ca47455af94631b80a64d59fc695e6e9`. Production archive isolation and staging passed.
+- Runtime: Manual Minecraft runtime verification is pending owner testing.
+- Artifact: `IBF C17.jar`, embedded version `0.1.0-canary17`, 58,219 bytes, SHA-256 `415ec62d9b13578affc1b25f432bd738e82d67aa787ad384920be09d1b0e3547`, finalized at `2026-11-20T18:24:24.6574017Z`. Retention verified the filename and SHA-256 in the primary checkout.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner-directed selector, recipe and reload verification using TESTING.md.

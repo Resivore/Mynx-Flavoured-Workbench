@@ -21,13 +21,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Extend the existing Stone Button selector with the two Stone accessory items registered by Architectural Material Closure when that provider is loaded."
+      "Use AMC registrations for the Stone accessories and the Andesite, Diorite, and Granite accessory, masonry detail, and Gothic window forms."
     ],
     "scope": [
-      "The literal catalog has 181 families and a maximum size of 22. With AMC, 1,398 distinct items resolve. Without AMC, the original 1,396 resolve. Stone Button, Stone Path, and all other families keep their C15 canonical parents.",
+      "With AMC C12 the catalog resolves 187 families and 1,432 unique items. Without AMC it resolves 181 families and 1,397 items. The largest family has 22 members. The three Macaw material path families keep their original ordered membership.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain the accepted C7 and historical rollback C3 artifacts while C16 undergoes owner-directed verification."
+      "Retain the accepted C7 and historical rollback C3 artifacts while C17 undergoes owner-directed verification."
     ],
     "boundaries": {
       "owned_paths": [
@@ -37,8 +37,8 @@
         "Clutter No More owns ShapeMap, selection controls, 1:1 transmuteCopy switching, recipe equivalence and cleanup, and the graph consumed by Quick Stack Nearby; IBF does not add a second registry, switcher, keybind, networking protocol, recipe engine, or storage-equivalence system.",
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
-        "Required providers must supply every audited item. AMC contributes only its two literal Stone accessories when loaded. Dynamic discovery, material inference, and cross-material merging remain outside the catalog.",
-        "C16 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
+        "Required providers supply every audited item. An absent AMC parent omits its whole family. Existing vanilla and Macaw parents retain their registered alternates when AMC is absent.",
+        "C17 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -47,7 +47,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version targeted by C16; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
+        "reason": "Exact game version targeted by C17; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
       },
       {
         "type": "MOD",
@@ -137,35 +137,35 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "=25",
-        "reason": "Required Java release for Minecraft 26.2 and the controlled C16 build."
+        "reason": "Required Java release for Minecraft 26.2 and the controlled C17 build."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1 with Fabric Loom 1.17.19",
-        "reason": "Exact build-tool baseline used for the controlled C16 build and GameTest validation."
+        "reason": "Exact build-tool baseline used for the controlled C17 build and GameTest validation."
       },
       {
         "type": "PROJECT",
         "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
-        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C9.jar, SHA-256 f32b382563252e8a73a0bfd0b9ca0abacb02dd3c81a2a074b9d200fb5f147e8b.",
-        "reason": "Registers the Stone Parapet and Stone Louvered Shutter block items used by the Stone Button family."
+        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C12.jar, SHA-256 bb285091a6043df96f54fe83a94ca41f851c4d5ddfaea713ffb9b7786ad15732.",
+        "reason": "Provides the Stone accessories and the Button, Pressure Plate, Column, Urn, Moulding, Fence, Frame, Arrow Slit, and Gothic Window for each of Andesite, Diorite, and Granite."
       }
     ]
   },
   "state": {
-    "milestone": "C16 extends the Stone Button selector with the two AMC Stone accessories. All 54 JUnit checks passed. All 27 required controlled GameTests passed with AMC C9 and again without AMC, including ordered switching, alternate recipe cleanup, and component-preserving transfers. Production isolation and artifact staging passed. Manual runtime verification is pending.",
+    "milestone": "C17 adds six AMC-parented accessory and masonry families, extends three existing Macaw window selectors, and appends the Stone Brick Arrow Slit to BBB Stone details. Both provider configurations passed 54 JUnit checks and 28 controlled Fabric GameTests, including component-preserving transfers and canonical recipe retention. Production build and isolation passed. Owner runtime verification is pending.",
     "releases": {
       "current": {
-        "version": "C16 (0.1.0-canary16)",
-        "canary": 16,
-        "embedded_version": "0.1.0-canary16",
+        "version": "C17 (0.1.0-canary17)",
+        "canary": 17,
+        "embedded_version": "0.1.0-canary17",
         "artifact": {
-          "filename": "IBF C16.jar",
-          "sha256": "da10a26e33c1f8c560ef866799afbdc84185de0313b95a4aa25749fd62d606b3"
+          "filename": "IBF C17.jar",
+          "sha256": "415ec62d9b13578affc1b25f432bd738e82d67aa787ad384920be09d1b0e3547"
         },
-        "built_at": "2026-11-20T17:20:29.9150057Z",
-        "source_commit": "459efd9c47e1c778df7d4d0807793f52c33626e3",
+        "built_at": "2026-11-20T18:24:24.6574017Z",
+        "source_commit": "947a2743c089d83c29f9c67b1a6dc95370e0a028",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -176,14 +176,14 @@
               "predicate": "=2.0pre4+26.2-enderscape-dev.7",
               "reason": "BBB dev.7 supplies the audited Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package. Its provider version does not support Fabric semantic version ordering. The dev.6 provider lacks the required package.",
               "regression_evidence": [
-                "Fresh C16 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
+                "Fresh C17 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
                 "The Fabric VersionPredicate equality check accepts dev.7 and rejects the incompatible pre-C9 pale-oak dev.6 package before ShapeMap resolution.",
-                "All 54 C16 JUnit checks passed, including the BBB provider contracts. The 27 controlled GameTests passed with and without AMC."
+                "Runs with AMC C12 present and absent passed all 54 C17 JUnit checks, including the BBB provider contracts, and all 28 controlled GameTests."
               ]
             }
           ]
         },
-        "summary": "Adds AMC Stone Parapet and Stone Louvered Shutter to the existing Stone Button selector when AMC is loaded."
+        "summary": "Adds AMC accessories, masonry details, and Gothic windows for Andesite, Diorite, and Granite, plus the Macaw Stone Brick Arrow Slit for BBB Stone."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -220,10 +220,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 16,
-    "activity_at": "2026-11-20T17:20:29.9150057Z",
-    "updated_at": "2026-11-20T17:20:29.9150057Z",
-    "last_codex_at": "2026-11-20T17:20:29.9150057Z",
-    "source_commit": "459efd9c47e1c778df7d4d0807793f52c33626e3"
+    "revision": 17,
+    "activity_at": "2026-11-20T18:24:24.6574017Z",
+    "updated_at": "2026-11-20T18:24:24.6574017Z",
+    "last_codex_at": "2026-11-20T18:24:24.6574017Z",
+    "source_commit": "947a2743c089d83c29f9c67b1a6dc95370e0a028"
   }
 }
