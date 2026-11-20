@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 206;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_558;
+    public static final int EXPECTED_FAMILY_COUNT = 209;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_573;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -840,6 +840,9 @@ public final class AuditedShapeFamilies {
             family("cnm/window/end_stone_bricks", WINDOW, amc("end_stone_bricks_window"),
                     amc("end_stone_bricks_window2"), amc("end_stone_bricks_four_window"), amc("end_stone_bricks_pane_window"),
                     mcwWindows("end_brick_gothic")),
+            family("cnm/window/mossy_stone_bricks", WINDOW, amc("mossy_stone_bricks_window"),
+                    amc("mossy_stone_bricks_window2"), amc("mossy_stone_bricks_four_window"),
+                    amc("mossy_stone_bricks_pane_window"), amc("mossy_stone_bricks_gothic_window")),
             family("cnm/window/mud_bricks", WINDOW, amc("mud_bricks_window"),
                     amc("mud_bricks_window2"), amc("mud_bricks_four_window"), amc("mud_bricks_pane_window"),
                     mcwWindows("mud_brick_gothic")),
@@ -1081,6 +1084,10 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/stone/end_stone_bricks", BBB_DETAIL, amc("end_stone_bricks_column"),
                     amc("end_stone_bricks_urn"), amc("end_stone_bricks_moulding"), amc("end_stone_bricks_fence"),
                     amc("end_stone_bricks_frame"), mcwWindows("ender_brick_arrow_slit")),
+            family("cnm/bbb_detail/stone/mossy_stone_bricks", BBB_DETAIL, amc("mossy_stone_bricks_column"),
+                    amc("mossy_stone_bricks_urn"), amc("mossy_stone_bricks_moulding"),
+                    amc("mossy_stone_bricks_fence"), amc("mossy_stone_bricks_frame"),
+                    amc("mossy_stone_bricks_arrow_slit")),
             family("cnm/bbb_detail/stone/mud_bricks", BBB_DETAIL, amc("mud_bricks_column"),
                     amc("mud_bricks_urn"), amc("mud_bricks_moulding"), amc("mud_bricks_fence"),
                     amc("mud_bricks_frame"), mcwWindows("mud_brick_arrow_slit")),
@@ -1312,6 +1319,9 @@ public final class AuditedShapeFamilies {
                     mcwPaths("brick_honeycomb_paving"),
                     mcwPaths("brick_clover_paving"),
                     mcwPaths("brick_dumble_paving")),
+            family("cnm/building_accessory/mossy_stone_bricks_button", BUILDING_ACCESSORY, amc("mossy_stone_bricks_button"),
+                    amc("mossy_stone_bricks_pressure_plate"), amc("mossy_stone_bricks_parapet"),
+                    amc("mossy_stone_bricks_louvered_shutter")),
             family("cnm/building_accessory/mossy_stone", BUILDING_ACCESSORY,
                     mcwPaths("mossy_stone_running_bond_path"),
                     mcwPaths("mossy_stone_strewn_rocky_path"),

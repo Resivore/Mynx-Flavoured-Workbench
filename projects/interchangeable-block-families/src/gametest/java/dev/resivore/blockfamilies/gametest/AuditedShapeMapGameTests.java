@@ -265,7 +265,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 206 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 209 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -292,7 +292,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_558 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_573 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1199,6 +1199,42 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
+    public void mossyStoneBricksSelectorsStaySeparateFromMacawPaths(GameTestHelper helper) {
+        String path = "mcwpaths:mossy_stone_";
+        String paving = "mcwpaths:mossy_cobblestone_";
+        assertSelectorRoundTrip(helper, List.of(path + "running_bond_path", path + "strewn_rocky_path",
+                path + "windmill_weave_path", path + "flagstone_path", path + "crystal_floor_path",
+                paving + "diamond_paving", paving + "basket_weave_paving", paving + "square_paving",
+                paving + "honeycomb_paving", paving + "clover_paving", paving + "dumble_paving"));
+
+        String prefix = "architectural_material_closure:mossy_stone_bricks_";
+        List<List<String>> selectors = List.of(
+                List.of(prefix + "button", prefix + "pressure_plate", prefix + "parapet", prefix + "louvered_shutter"),
+                List.of(prefix + "column", prefix + "urn", prefix + "moulding", prefix + "fence",
+                        prefix + "frame", prefix + "arrow_slit"),
+                List.of(prefix + "window", prefix + "window2", prefix + "four_window",
+                        prefix + "pane_window", prefix + "gothic_window"));
+        for (List<String> members : selectors) {
+            if (Boolean.getBoolean("ibf.test.amcExpected")) {
+                assertSelectorRoundTrip(helper, members);
+                assertSeparate(helper, members.getFirst(), path + "running_bond_path", "Mossy Stone selectors merged");
+            } else {
+                for (String member : members) {
+                    helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(id(member)), "Unexpected AMC item " + member);
+                }
+            }
+        }
+        if (Boolean.getBoolean("ibf.test.amcExpected")) {
+            helper.assertTrue(hasRecipe(helper, prefix + "column_from_stonecutting"), "Missing Mossy Stone Bricks Column recipe");
+            for (String alternate : List.of("urn", "moulding", "fence")) {
+                helper.assertTrue(!hasRecipe(helper, prefix + alternate + "_from_stonecutting"),
+                        "Retained alternate stonecutting recipe for " + alternate);
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void endStoneBricksAndPolishedBlackstoneFollowTheirProviders(GameTestHelper helper) {
         String prefix = "architectural_material_closure:end_stone_bricks_";
         String gothic = "mcwwindows:end_brick_gothic";
@@ -1266,6 +1302,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         for (int index = 1; index < members.size(); index++) {
             ItemStack next = ShapeMap.transferStack(stack, index);
             assertTransferred(helper, stack, next, requiredItem(members.get(index)), members.get(index));
+            assertTransferred(helper, next, ShapeMap.transferStack(next, index - 1), stack.getItem(),
+                    "Reverse transfer to " + members.get(index - 1));
             helper.assertTrue(!hasRecipe(helper, members.get(index)),
                     "CNM retained an alternate recipe for " + members.get(index));
             stack = next;

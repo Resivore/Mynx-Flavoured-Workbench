@@ -30,8 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
-        assertEquals(206, AuditedShapeFamilies.families().size());
-        assertEquals(1_558, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(209, AuditedShapeFamilies.families().size());
+        assertEquals(1_573, AuditedShapeFamilies.uniqueMemberCount());
         assertEquals(22, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
@@ -46,22 +46,22 @@ class AuditedShapeFamiliesTest {
                 TWO_HIGH_DOOR, 13,
                 THREE_HIGH_DOOR, 12,
                 TRAPDOOR, 13,
-                WINDOW, 49,
+                WINDOW, 50,
                 DISPLAY_FIXTURE, 15,
                 FENCE_GATE, 16,
                 BAR_CHAIN, 10,
-                BBB_DETAIL, 29,
-                BUILDING_ACCESSORY, 49);
+                BBB_DETAIL, 30,
+                BUILDING_ACCESSORY, 50);
         Map<AuditedShapeFamily.Category, Integer> expectedMembers = Map.of(
                 TWO_HIGH_DOOR, 273,
                 THREE_HIGH_DOOR, 229,
                 TRAPDOOR, 208,
-                WINDOW, 210,
+                WINDOW, 215,
                 DISPLAY_FIXTURE, 45,
                 FENCE_GATE, 62,
                 BAR_CHAIN, 30,
-                BBB_DETAIL, 143,
-                BUILDING_ACCESSORY, 358);
+                BBB_DETAIL, 149,
+                BUILDING_ACCESSORY, 362);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
             List<AuditedShapeFamily> families = AuditedShapeFamilies.families(category);
@@ -88,8 +88,8 @@ class AuditedShapeFamiliesTest {
 
         assertFalse(keys.contains(id("interchangeable_block_families", "cnm/building_accessory/end_stone_bricks_button")));
         assertTrue(members.stream().noneMatch(member -> member.getNamespace().equals("extshape")));
-        assertEquals(206, keys.size());
-        assertEquals(1_558, members.size());
+        assertEquals(209, keys.size());
+        assertEquals(1_573, members.size());
     }
 
     @Test
@@ -100,13 +100,13 @@ class AuditedShapeFamiliesTest {
         assertEquals(id("interchangeable_block_families", "cnm/window/dark_oak_log"),
                 families.get(48).key());
         assertEquals(id("interchangeable_block_families", "cnm/fence_gate/warped"),
-                families.get(113).key());
-        assertEquals(id("interchangeable_block_families", "cnm/fence_gate/ribbits_mossy_oak_planks"),
                 families.get(114).key());
+        assertEquals(id("interchangeable_block_families", "cnm/fence_gate/ribbits_mossy_oak_planks"),
+                families.get(115).key());
         assertEquals(id("interchangeable_block_families", "cnm/bar_chain/iron"),
-                families.get(118).key());
+                families.get(119).key());
         assertEquals(id("interchangeable_block_families", "cnm/bbb_detail/wood/oak"),
-                families.get(128).key());
+                families.get(129).key());
         assertEquals(id("interchangeable_block_families",
                         "cnm/building_accessory/enderscape_polished_kurodite"),
                 families.getLast().key());
@@ -131,12 +131,12 @@ class AuditedShapeFamiliesTest {
         assertEquals(Map.of(9, 1L, 22, 12L), sizeDistribution(TWO_HIGH_DOOR));
         assertEquals(Map.of(9, 1L, 20, 11L), sizeDistribution(THREE_HIGH_DOOR));
         assertEquals(Map.of(4, 1L, 17, 12L), sizeDistribution(TRAPDOOR));
-        assertEquals(Map.of(4, 35L, 5, 14L), sizeDistribution(WINDOW));
+        assertEquals(Map.of(4, 35L, 5, 15L), sizeDistribution(WINDOW));
         assertEquals(Map.of(3, 15L), sizeDistribution(DISPLAY_FIXTURE));
         assertEquals(Map.of(2, 1L, 4, 15L), sizeDistribution(FENCE_GATE));
         assertEquals(Map.of(2, 1L, 3, 8L, 4, 1L), sizeDistribution(BAR_CHAIN));
-        assertEquals(Map.of(4, 15L, 5, 1L, 6, 13L), sizeDistribution(BBB_DETAIL));
-        assertEquals(Map.of(2, 6L, 4, 15L, 9, 11L, 11, 17L),
+        assertEquals(Map.of(4, 15L, 5, 1L, 6, 14L), sizeDistribution(BBB_DETAIL));
+        assertEquals(Map.of(2, 6L, 4, 16L, 9, 11L, 11, 17L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }
 
@@ -233,13 +233,19 @@ class AuditedShapeFamiliesTest {
 
     @Test
     void canonicalExpandedCatalogHasStableDigest() throws NoSuchAlgorithmException {
-        assertEquals("01B6DD6FF7B4466963DDD5B6962A4EB3ED0A3BB25153B5229378EEFE5920231E",
+        assertEquals("71E85A472C26C030E24439FEDCE4ECBDBE538667FE126F91C9D1B86F89B0198B",
                 digest(AuditedShapeFamilies.families()));
     }
 
     @Test
     void earlierCanaryCatalogsKeepTheirExactOrderAndMembership() throws NoSuchAlgorithmException {
-        List<AuditedShapeFamily> c21 = previousCatalog(AuditedShapeFamilies.families(),
+        List<AuditedShapeFamily> c22 = previousCatalog(AuditedShapeFamilies.families(),
+                Set.of("cnm/building_accessory/mossy_stone_bricks_button", "cnm/bbb_detail/stone/mossy_stone_bricks",
+                        "cnm/window/mossy_stone_bricks"), Map.of());
+        assertEquals(206, c22.size());
+        assertEquals("01B6DD6FF7B4466963DDD5B6962A4EB3ED0A3BB25153B5229378EEFE5920231E", digest(c22));
+
+        List<AuditedShapeFamily> c21 = previousCatalog(c22,
                 Set.of("cnm/building_accessory/end_stone_bricks",
                         "cnm/bbb_detail/stone/end_stone_bricks", "cnm/window/end_stone_bricks"),
                 Map.of("cnm/building_accessory/polished_blackstone", 1,
