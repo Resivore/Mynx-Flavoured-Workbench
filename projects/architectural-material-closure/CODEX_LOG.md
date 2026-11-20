@@ -179,3 +179,15 @@
 - Runtime: Owner gameplay verification and acceptance are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify the two new families with TESTING.md and record owner observations and the acceptance decision.
+
+## 2026-11-20T19:15:34Z — Add Sandstone and Red Sandstone in Canary 16
+
+- Revision: 17
+- Source checkpoint: `0355957f1f0072bd11757b7a7b42ba66bd1099a6`
+- Changes: Added six forms per material using the Minecraft 26.2 Stone controls, Macaw's Windows 2.4.2 Andesite Parapet and Shutter, and Stone Brick GothicWindow and ArrowSill. Top and bottom material faces sample their respective vanilla cap sprites. Sides retain their reference UVs and use vanilla side grain, with C9 structural lighting on the shutter. The Gothic Window preserves its glass and conditional iron bars. The Arrow Slit retains its provider masonry-only graph.
+- Build/static: The offline Java 25 / Gradle 9.5.1 build passed with all 79 Fabric GameTests, 85 block/item pairs and 1,040 production entries checked. Per material, compared 19 child models and reference parents, including 40 top, 39 bottom, 232 material side faces and ten glass faces. Compared state predicates, geometry, UVs, rotations, culling, item transforms, recipes, loot, tags, translations and creative placement. Both shutters matched all 256 reference-alpha and substrate-shading samples, four pose models and 16 state entries. Controlled interaction tests covered placement, redstone timing and activation, support removal, stacked windows, parapet pot supports and shutter toggling.
+- Compared finalized C16 with SHA-256-verified C15 (`369afabf9491af60f2852631ca5ab821c55fe9d4bf5fd25a9f5eb646ed5b4788`). All 939 previous entries remain, 928 byte-identical. English names, Fabric metadata and nine additive tags changed. Added 101 entries. All prior classes, individual models, sprites, recipes and loot matched byte-for-byte.
+- Artifact: Local-only `AMC C16.jar`, version `0.1.0-canary16`, 551,067 bytes, SHA-256 `d47cfb71e03030738d447d1a567f7d04fdc27fe54055b06345033bafd4b49c2f`, finalized at `2026-11-20T19:13:58.1066818Z`.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Check both sandstone families using TESTING.md and record the owner's observations and acceptance decision.
