@@ -180,3 +180,14 @@
 - Artifact: `IBF C17.jar`, embedded version `0.1.0-canary17`, 58,219 bytes, SHA-256 `415ec62d9b13578affc1b25f432bd738e82d67aa787ad384920be09d1b0e3547`, finalized at `2026-11-20T18:24:24.6574017Z`. Retention verified the filename and SHA-256 in the primary checkout.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner-directed selector, recipe and reload verification using TESTING.md.
+
+## 2026-11-20T18:56:55.1148578Z — IBF C18 adds the three Mud Bricks selectors
+
+- Revision: 18
+- Source checkpoint: `1330559eb7de6a15066c320794f6ce72667fe5be`
+- Changes: Registered the 13 AMC C14 Mud Bricks items in Button, Column, and Window families. Macaw's `mud_brick_arrow_slit` completes the Column family and `mud_brick_gothic` completes the Window family. The ordered catalog excluding those three keys reproduces the C17 digest, including the separate Mud Brick Paths and Pavings.
+- Build/static: Java 25, Gradle 9.5.1 and Loom 1.17.19 passed 55 JUnit checks, 29 controlled Fabric GameTests, production archive isolation and build with AMC C14 and again without AMC. The provider-present run resolved 190 families and 1,447 items. The absent run resolved 181 families and 1,397 items, with both Macaw items independently craftable. Named stacks preserved count and component patches through all three selectors. The assembled recipe corpus removed 1,167 alternate recipes with AMC and 1,114 without, with zero canonical removals. Full catalog SHA-256 `d92138f9362a8cbb8bf7b9d220390072b7639866da1c9bf50d7010ff4abb9575`.
+- Runtime: Manual Minecraft runtime verification is pending owner testing.
+- Artifact: `IBF C18.jar`, embedded version `0.1.0-canary18`, 58,461 bytes, SHA-256 `3054759b8358fea4449a1cf2de91d665c7a915c103589b03844e22a1c0f02083`, finalized at `2026-11-20T18:56:55.1148578Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner-directed Mud Bricks selector, recipe and reload checks in TESTING.md.
