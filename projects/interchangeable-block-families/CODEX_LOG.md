@@ -202,3 +202,14 @@
 - Artifact: `IBF C19.jar`, embedded version `0.1.0-canary19`, 58,915 bytes, SHA-256 `875708c20ce13b77a87adbeb5ecac8c963a8691015c3ed16b4bcd48eceecb1d5`, finalized at `2026-11-20T19:14:27.0959986Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner-directed Prismarine selector, stonecutting and reload checks in TESTING.md.
+
+## 2026-11-20T19:25:24.4245247Z — IBF C20 integrates AMC C16 Sandstone and Red Sandstone
+
+- Revision: 20
+- Source checkpoint: `c616755f6760467931149f56c123958a57d390a2`
+- Changes: Added two four-member AMC Button selectors and appended one AMC Gothic Window and one AMC Arrow Slit per material to the existing Macaw Window and BBB Column selectors. All twelve AMC items have unique membership. Both Macaw Path definitions match the C19 source bytes. Removing only the C20 additions reproduces the ordered C19 catalog digest.
+- Build/static: Java 25, Gradle 9.5.1 and Loom 1.17.19 passed 55 JUnit tests and 31 controlled Fabric GameTests in each configuration. Exact AMC C16 resolved 197 families and 1,490 items. Without AMC, 181 families and 1,397 items resolved, with the original Window and Column selectors functional. Named seven-item stacks retained their components through selector round trips. The audited recipe corpus removed 1,209 alternate recipes with AMC and 1,114 without, with zero canonical removals. Production JAR isolation and build passed. Catalog SHA-256 `288dc62fce86619038830c050bd5d6530aff4c3a2525bafe93ca16215d9bf8f9`.
+- Runtime: Manual Minecraft runtime verification is pending owner testing.
+- Artifact: `IBF C20.jar`, embedded version `0.1.0-canary20`, 59,076 bytes, SHA-256 `90a423755d4a0bb31ca636ffa04c2bacf76a627362003fc1134a4e5262203bb3`, finalized at `2026-11-20T19:25:24.4245247Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner-directed Sandstone selector, recipe and reload checks in TESTING.md.
