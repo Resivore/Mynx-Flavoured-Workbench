@@ -25,7 +25,8 @@
       "Provide 13 Mud Bricks block/item pairs. Use Packed Mud directly for the two controls, four standard Macaw windows and parapet. Use Packed Mud grain with structural shading for the louvered shutter and its full palette for the five BBB masonry forms.",
       "Provide 23 Prismarine Bricks and eight Dark Prismarine forms. Each material has vanilla controls, a Macaw louvered shutter and five BBB masonry forms. Prismarine Bricks also has five thin paths, six pavings and four engravable full blocks based on Macaw's Paths. Both louvered shutters use the finalized C9 Stone shutter artwork remapped by luminance rank to the full vanilla palette of the respective material.",
       "Provide a Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter for Sandstone and Red Sandstone. The controls, parapets and windows use directional vanilla textures. Each shutter uses the matching vanilla top sprite on every face at the original UVs, with C9 structural shading on the five slats and frame.",
-      "Provide six Deepslate, 21 Quartz and 23 Nether Bricks forms. Use vanilla controls, Macaw's Windows geometry and interactions, and directional Deepslate and Quartz textures. The Deepslate and Nether Bricks shutter artwork uses the finalized C9 Stone shutter remapped to the full corresponding vanilla palette. Quartz and Nether Bricks each have eleven thin Macaw paths and pavings and four independent engravable full blocks with full vanilla palette transfers."
+      "Provide six Deepslate, 21 Quartz and 23 Nether Bricks forms. Use vanilla controls, Macaw's Windows geometry and interactions, and directional Deepslate and Quartz textures. The Deepslate and Nether Bricks shutter artwork uses the finalized C9 Stone shutter remapped to the full corresponding vanilla palette. Quartz and Nether Bricks each have eleven thin Macaw paths and pavings and four independent engravable full blocks with full vanilla palette transfers.",
+      "Provide 26 End Stone Bricks forms: five BBB masonry forms, fifteen Macaw paths and pavings including four independent engravable full blocks, four standard windows, a parapet and a louvered shutter. Provide one Polished Blackstone Louvered Shutter. Both shutters transfer the finalized Stone artwork to their full vanilla palettes."
     ],
     "boundaries": {
       "owned_paths": [
@@ -41,7 +42,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Target game, Stone redstone controls and source of Stone, Andesite, Diorite, Granite, Packed Mud, Prismarine Bricks, Dark Prismarine, Sandstone, Red Sandstone, Deepslate, Quartz, Nether Bricks, glass and iron-bar sprites."
+        "reason": "Target game, Stone redstone controls and source of Stone, Andesite, Diorite, Granite, Packed Mud, Prismarine Bricks, Dark Prismarine, Sandstone, Red Sandstone, Deepslate, Quartz, Nether Bricks, End Stone Bricks, Polished Blackstone, glass and iron-bar sprites."
       },
       {
         "type": "MOD",
@@ -76,23 +77,23 @@
     ]
   },
   "state": {
-    "milestone": "C20 corrects two shutter textures across the existing 135 block/item pairs. All 99 controlled Fabric GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C21 adds 27 block/item pairs. All 113 controlled Fabric GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C20 (0.1.0-canary20)",
-        "canary": 20,
-        "embedded_version": "0.1.0-canary20",
+        "version": "C21 (0.1.0-canary21)",
+        "canary": 21,
+        "embedded_version": "0.1.0-canary21",
         "artifact": {
-          "filename": "AMC C20.jar",
-          "sha256": "b397b6c1c70d50e921d6a6a449b794bd178399cf4f33150d17598efaab7895e8"
+          "filename": "AMC C21.jar",
+          "sha256": "0a39d8f6f1e83cf1b2d5bdf85552e190386e56d8873c9db6e122b0097de81c66"
         },
-        "built_at": "2026-11-20T22:01:42.8318214Z",
-        "source_commit": "c7115a4ea1d471d09e13ee064c1dc28f15473ad5",
+        "built_at": "2026-11-20T22:08:02.0511293Z",
+        "source_commit": "55082ff898f28e9ca3d613369fb206648d7e41e8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Recolors the Deepslate and Nether Bricks Louvered Shutters from the finalized Stone artwork using their full vanilla palettes."
+        "summary": "Adds 26 End Stone Bricks forms and a Polished Blackstone Louvered Shutter, bringing AMC to 162 block/item pairs."
       },
       "accepted": null,
       "rollback": null,
@@ -106,10 +107,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 21,
-    "activity_at": "2026-11-20T22:02:42Z",
-    "updated_at": "2026-11-20T22:02:42Z",
-    "last_codex_at": "2026-11-20T22:02:42Z",
-    "source_commit": "c7115a4ea1d471d09e13ee064c1dc28f15473ad5"
+    "revision": 22,
+    "activity_at": "2026-11-20T22:09:39Z",
+    "updated_at": "2026-11-20T22:09:39Z",
+    "last_codex_at": "2026-11-20T22:09:39Z",
+    "source_commit": "55082ff898f28e9ca3d613369fb206648d7e41e8"
   }
 }

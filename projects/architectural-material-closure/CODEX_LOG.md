@@ -240,3 +240,16 @@
 - Runtime: Owner gameplay verification and acceptance are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare the revised shutters with Stone under matching light and record owner observations using TESTING.md.
+
+## 2026-11-20T22:09:39Z — Complete End Stone Bricks forms and add the Polished Blackstone shutter in Canary 21
+
+- Revision: 22
+- Source checkpoint: `55082ff898f28e9ca3d613369fb206648d7e41e8`
+- Changes: Added 26 End Stone Bricks pairs and one Polished Blackstone shutter. Five BBB variants use the full End Stone Bricks palette and the original Stone masonry models and behaviors. Fifteen Macaw Paths forms include four independent engravable full blocks. The four standard windows and parapet bind vanilla End Stone Bricks directly. Both shutters remap the verified C9 Stone PNG (SHA-256 c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878) across their complete vanilla palettes.
+- A controlled registry test loaded Extended Block Shapes 3.1.6 and Macaw's Windows 2.4.2 and checked both block and item ownership at extshape:end_stone_brick_button, extshape:end_stone_brick_pressure_plate, mcwwindows:end_brick_gothic and mcwwindows:ender_brick_arrow_slit. Extended Block Shapes is a GameTest-only dependency.
+- Build/static: Offline Java 25 / Gradle 9.5.1 build passed all 113 controlled Fabric GameTests and 1,695 production-entry checks. Verified 199 BBB state entries, all ten masonry sheets, the shared column ramp, urn soil and moulding backing. Matched all fifteen Paths state and item graphs, 21 model bindings and every pixel across eleven sheets. Checked window joining, locks, parapet supports, shutter hinges and stacking, placement, collision, waterlogging, masonry interactions and engraving. For each shutter, all 207 opaque pixels matched the expected C9 rank and all 49 transparent pixels retained their exact RGBA. The eight End Stone Bricks colors and six Polished Blackstone colors were all used.
+- Compared finalized C21 against C20 SHA-256 b397b6c1c70d50e921d6a6a449b794bd178399cf4f33150d17598efaab7895e8. All 135 previous pairs and all 1,427 entry names were preserved, with 1,403 byte-identical entries, including every existing class, model, recipe and sprite. The other 24 contain the version and additional entrypoint, 27 translations and additions to 22 tag lists. C21 adds 268 entries.
+- Artifact: Local-only `AMC C21.jar`, version `0.1.0-canary21`, 867,904 bytes, SHA-256 `0a39d8f6f1e83cf1b2d5bdf85552e190386e56d8873c9db6e122b0097de81c66`, finalized at `2026-11-20T22:08:02.0511293Z`.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Follow TESTING.md with the retained C21 artifact and record owner observations.
