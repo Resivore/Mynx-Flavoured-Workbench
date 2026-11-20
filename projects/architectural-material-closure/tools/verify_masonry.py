@@ -19,7 +19,7 @@ def amc(reference, material):
     return reference.replace("bbb:", NS + ":").replace("stone", material)
 
 
-def check_geometry(jar, bbb, client, material, form, expected, sheets):
+def check_geometry(jar, bbb, client, material, substrate, form, expected, sheets):
     visited = set()
     local_models = 0
 
@@ -53,7 +53,7 @@ def check_geometry(jar, bbb, client, material, form, expected, sheets):
                     assert sprite == "block/dirt"
                     client.getinfo("assets/minecraft/textures/block/dirt.png")
             elif sprite == "block/stone":
-                assert slot == "particle" and bound[slot] == f"minecraft:block/{material}"
+                assert slot == "particle" and bound[slot] == f"minecraft:block/{substrate}"
             else:
                 assert sprite.startswith("bbb:block/") and bound[slot] == amc(sprite, material)
                 sheets.add(sprite.split(":")[1])
@@ -109,7 +109,7 @@ def check_geometry(jar, bbb, client, material, form, expected, sheets):
           f"{len(visited) - local_models} shared BBB model nodes")
 
 
-def check_sheets(jar, bbb, client, material, expected, sheets):
+def check_sheets(jar, bbb, client, material, substrate, expected, sheets):
     def pixels(archive, path):
         im = Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
         return im.size, list(im.getdata())
@@ -117,7 +117,7 @@ def check_sheets(jar, bbb, client, material, expected, sheets):
     def palette(colors):
         return sorted(set(colors), key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
 
-    _, tile = pixels(client, f"assets/minecraft/textures/block/{material}.png")
+    _, tile = pixels(client, f"assets/minecraft/textures/block/{substrate}.png")
     target = palette(pixel[:3] for pixel in tile if pixel[3] == 255)
     if material == "granite":
         darkest, *target, lightest = target
@@ -149,13 +149,15 @@ def check_sheets(jar, bbb, client, material, expected, sheets):
                     rank = Fraction(ramp.index(before[:3]), len(ramp) - 1)
                     index = floor(rank * (len(target) - 1) + Fraction(1, 2))
                     assert after == (*target[index], before[3]), (name, i)
-    print(f"Verified every pixel of {len(sheets)} sheets against {len(target)} vanilla {material.title()} colors.")
+    print(f"Verified every pixel of {len(sheets)} sheets against {len(target)} vanilla {substrate} colors.")
 
 
 def check_masonry(jar, bbb, client, material, expected):
+    substrate = "packed_mud" if material == "mud_bricks" else material
+    slab = "mud_brick_slab" if material == "mud_bricks" else material + "_slab"
     sheets = set()
     for form in COVERAGE:
-        check_geometry(jar, bbb, client, material, form, expected, sheets)
+        check_geometry(jar, bbb, client, material, substrate, form, expected, sheets)
         name, source = material + "_" + form, "stone_" + form
         own, ref = NS + ":" + name, "bbb:" + source
         assert f"assets/bbb/blockstates/{name}.json" not in bbb.namelist()
@@ -167,14 +169,14 @@ def check_masonry(jar, bbb, client, material, expected):
             path = f"data/{NS}/{folder}/{name}{suffix}.json"
             expected.add(path)
             content = json.dumps(read(bbb, original)).replace(ref, own)
-            assert read(jar, path) == json.loads(content.replace('"minecraft:stone"', f'"minecraft:{material}"')
-                                                 .replace('"minecraft:stone_slab"', f'"minecraft:{material}_slab"'))
+            assert read(jar, path) == json.loads(content.replace('"minecraft:stone"', f'"minecraft:{substrate}"')
+                                                 .replace('"minecraft:stone_slab"', f'"minecraft:{slab}"'))
             if folder == "recipe":
                 path = f"data/{NS}/advancement/recipes/building_blocks/{name}{suffix}.json"
                 expected.add(path)
                 unlock = read(jar, path)
-                ingredient = material + "_slab" if form == "frame" else material
+                ingredient = slab if form == "frame" else substrate
                 assert unlock["rewards"]["recipes"] == [own + suffix]
                 assert unlock["criteria"]["recipe"]["conditions"]["recipe"] == own + suffix
                 assert unlock["criteria"]["material"]["conditions"]["items"] == [{"items": "minecraft:" + ingredient}]
-    check_sheets(jar, bbb, client, material, expected, sheets)
+    check_sheets(jar, bbb, client, material, substrate, expected, sheets)

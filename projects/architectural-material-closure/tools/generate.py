@@ -41,12 +41,12 @@ def adapt(value):
     return stone_reference(value) if isinstance(value, str) else value
 
 
-def shade_stone_shutter(provider, client, dest):
+def shade_shutter(provider, client, dest, substrate):
     def image(archive, path):
         return Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
 
     shutter = image(provider, "assets/mcwwindows/textures/block/andesite_louvered_shutter.png")
-    stone = image(client, "assets/minecraft/textures/block/stone.png")
+    base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
     light = shutter.convert("L")
 
     # The broad-face UV is [0,1,11,16]. Measure equivalent regions across
@@ -66,7 +66,7 @@ def shade_stone_shutter(provider, client, dest):
     recess = gain(range(3, 10), 3)
     end_return = gain([9], 2)
 
-    result = stone.copy()
+    result = base.copy()
     result.putalpha(shutter.getchannel("A"))
     for top in range(1, 16, 3):
         for row, columns, factor in (
@@ -99,7 +99,8 @@ def recipe_unlock(root, name, material, category):
     })
 
 
-def generate_direct_form(root, archive, namespace, source, form, material):
+def generate_direct_form(root, archive, namespace, source, form, material, *, substrate=None):
+    substrate = substrate or material
     name = f"{material}_{form}"
 
     def load(path):
@@ -136,13 +137,13 @@ def generate_direct_form(root, archive, namespace, source, form, material):
         assert model.keys() == {"parent", "textures"}
         for slot, sprite in model["textures"].items():
             if sprite in ("minecraft:block/stone", "minecraft:block/stone_bricks"):
-                model["textures"][slot] = f"minecraft:block/{material}"
+                model["textures"][slot] = f"minecraft:block/{substrate}"
             else:
                 assert slot == "3" and sprite == "minecraft:block/glass"
         write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
     recipe = load(f"data/{namespace}/recipe/{source}.json")
-    materials = {"minecraft:stone": f"minecraft:{material}", "minecraft:stone_bricks": f"minecraft:{material}",
+    materials = {"minecraft:stone": f"minecraft:{substrate}", "minecraft:stone_bricks": f"minecraft:{substrate}",
                  "minecraft:stone_brick_slab": f"minecraft:{material}_slab", "minecraft:glass_pane": "minecraft:glass_pane"}
     if "key" in recipe:
         recipe["key"] = {key: materials[value] for key, value in recipe["key"].items()}
@@ -152,7 +153,7 @@ def generate_direct_form(root, archive, namespace, source, form, material):
     recipe["result"]["id"] = own_id
     write(f"data/{NS}/recipe", recipe)
     category = "redstone" if namespace == "minecraft" else "building_blocks"
-    recipe_unlock(root, name, material, category)
+    recipe_unlock(root, name, substrate, category)
     loot = load(f"data/{namespace}/loot_table/blocks/{source}.json")
     entry, = loot["pools"][0]["entries"]
     assert entry["name"] == source_id
@@ -160,6 +161,63 @@ def generate_direct_form(root, archive, namespace, source, form, material):
     if "random_sequence" in loot:
         loot["random_sequence"] = f"{NS}:blocks/{name}"
     write(f"data/{NS}/loot_table/blocks", loot)
+
+
+def generate_mud_macaw(root, provider, client, tags):
+    forms = ("window", "window2", "four_window", "pane_window", "parapet", "louvered_shutter")
+    ids = {f"mcwwindows:andesite_{form}": f"{NS}:mud_bricks_{form}" for form in forms}
+    for source_id, own_id in ids.items():
+        source = source_id.split(":")[1]
+        name = own_id.split(":")[1]
+        states = masonry.load_json(provider, f"assets/mcwwindows/blockstates/{source}.json")
+        item = masonry.load_json(provider, f"assets/mcwwindows/items/{source}.json")
+        choices = (states["variants"].values() if "variants" in states
+                   else [part["apply"] for part in states["multipart"]])
+        models = {}
+        for choice in [*choices, item["model"]]:
+            reference = choice["model"]
+            if reference == "mcwwindows:block/parent/resizeable/mid_m":
+                continue  # Glass-only center shared by the connected windows.
+            assert reference.startswith("mcwwindows:block/") and "/andesite_" in reference
+            path = reference.split(":")[1]
+            models[path] = path.replace("/andesite_", "/mud_bricks_")
+            choice["model"] = f"{NS}:{models[path]}"
+        write_json(root, f"assets/{NS}/blockstates/{name}.json", states)
+        write_json(root, f"assets/{NS}/items/{name}.json", item)
+
+        for path, dest in models.items():
+            model = masonry.load_json(provider, f"assets/mcwwindows/models/{path}.json")
+            for slot, sprite in model["textures"].items():
+                if sprite in ("minecraft:block/andesite", "minecraft:block/polished_andesite"):
+                    model["textures"][slot] = "minecraft:block/packed_mud"
+                elif sprite == "mcwwindows:block/andesite_louvered_shutter":
+                    model["textures"][slot] = NS + ":block/mud_bricks_louvered_shutter"
+                else:
+                    assert sprite in ("minecraft:block/glass", "mcwwindows:block/glass")
+            write_json(root, f"assets/{NS}/models/{dest}.json", model)
+
+        recipe = masonry.load_json(provider, f"data/mcwwindows/recipe/{source}.json")
+        materials = {"minecraft:andesite": "minecraft:packed_mud", "minecraft:andesite_slab": "minecraft:mud_brick_slab"}
+        recipe["key"] = {k: materials.get(v, v) for k, v in recipe["key"].items()}
+        assert recipe["result"]["id"] == source_id
+        recipe["result"]["id"] = own_id
+        write_json(root, f"data/{NS}/recipe/{name}.json", recipe)
+        ingredient = "mud_brick_slab" if name.endswith("_shutter") else "packed_mud"
+        recipe_unlock(root, name, ingredient, "building_blocks")
+        loot = masonry.load_json(provider, f"data/mcwwindows/loot_table/blocks/{source}.json")
+        entry, = loot["pools"][0]["entries"]
+        assert entry["name"] == source_id
+        entry["name"] = own_id
+        write_json(root, f"data/{NS}/loot_table/blocks/{name}.json", loot)
+
+    for path in provider.namelist():
+        if path.startswith("data/") and "/tags/" in path and path.endswith(".json"):
+            members = masonry.load_json(provider, path)["values"]
+            additions = [own for ref, own in ids.items() if ref in members]
+            if additions:
+                tags.setdefault(path[5:-5], []).extend(additions)
+    shade_shutter(provider, client, root / f"assets/{NS}/textures/block/mud_bricks_louvered_shutter.png", "packed_mud")
+    return forms
 
 
 def generate(provider, client, bbb, root):
@@ -181,7 +239,7 @@ def generate(provider, client, bbb, root):
     for model in models:
         adapt_resource("assets/{ns}/models/block/" + model + ".json")
 
-    shade_stone_shutter(provider, client, root / f"assets/{NS}/textures/block/stone_louvered_shutter.png")
+    shade_shutter(provider, client, root / f"assets/{NS}/textures/block/stone_louvered_shutter.png", "stone")
     names = {
         f"block.{NS}.stone_parapet": "Stone Parapet",
         f"block.{NS}.stone_louvered_shutter": "Stone Louvered Shutter",
@@ -212,6 +270,18 @@ def generate(provider, client, bbb, root):
             tags.setdefault(tag, []).extend(values)
         masonry.generate(root, bbb, client, material, tags, write_json, recipe_unlock)
 
+    for form in ("button", "pressure_plate"):
+        generate_direct_form(root, client, "minecraft", "stone_" + form, form, "mud_bricks", substrate="packed_mud")
+    for tag in ("minecraft/tags/block/stone_buttons", "minecraft/tags/item/stone_buttons"):
+        tags[tag].append(NS + ":mud_bricks_button")
+    for tag in ("minecraft/tags/block/mineable/pickaxe", "minecraft/tags/block/stone_pressure_plates"):
+        tags[tag].append(NS + ":mud_bricks_pressure_plate")
+    windows = generate_mud_macaw(root, provider, client, tags)
+    masonry.generate(root, bbb, client, "mud_bricks", tags, write_json, recipe_unlock,
+                     substrate="packed_mud", slab="mud_brick_slab")
+    for form in ("button", "pressure_plate", *windows, *masonry.FORMS):
+        label = form.replace("window2", "window 2").replace("_", " ").title()
+        names[f"block.{NS}.mud_bricks_{form}"] = "Mud Bricks " + label
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     for tag, values in tags.items():
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})

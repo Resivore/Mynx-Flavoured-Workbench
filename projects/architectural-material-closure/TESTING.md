@@ -1,8 +1,18 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 13
+## Owner verification for Canary 14
 
-Match the SHA-256 of `AMC C13.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows and Building But Better. The controlled reference versions were Macaw 2.4.2 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 29 AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C14.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows and Building But Better. The controlled reference versions were Macaw 2.4.2 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). All 42 AMC IDs use the namespace `architectural_material_closure`.
+
+### Mud Bricks family
+
+1. Find the Button and Pressure Plate in Redstone Blocks and the other eleven items in Building Blocks. Compare each item in inventory, in hand and after placement. Place vanilla Packed Mud beside the controls, four windows and parapet under the same lighting to compare the grain and color.
+2. Try the Button on a floor, wall and ceiling. Compare its 20-tick pulse and the Pressure Plate's response to living entities and dropped items with vanilla Stone controls.
+3. Build a three-by-three Window panel alongside Macaw's Andesite Window. Check the glass-only center, edges and corners. For Window 2, Four Window and Pane Window, compare both opening directions and locking with Macaw's key. Stack Pane Windows and remove the middle one. Place and remove a flower pot on the Parapet to check its support.
+4. Place both shutter hinges and open and close a pair stacked vertically. Inspect the slats and recesses beside the Stone Louvered Shutter. Check that each slat retains the Packed Mud grain at its original position. Compare the outline and held model with Macaw's Andesite shutter.
+5. Run the five BBB checks in the table below for Mud Bricks. Compare the carved column bands, urn rim, dentils, filled fence and frame diagonals against BBB Stone at the same angle. Check the dirt surface in a soiled urn. Craft with Packed Mud for full blocks, use Mud Brick Slabs for the shutter and frame, and check the four BBB stonecutting outputs from Packed Mud.
+
+### Existing families
 
 Compare the Granite Column, Urn, Moulding, Fence and Frame with C12 captures at the same distance and lighting. Check whether the darkest and lightest speckles are reduced while bevels, recesses and connected column bands remain distinct. Inspect the soiled Urn for its dirt surface. Use a Granite Gothic Window and adjacent vanilla Granite as controls for the original full-palette texture.
 
@@ -29,7 +39,7 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C13 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C14 are pending.
 
 ## Controlled build checks
 

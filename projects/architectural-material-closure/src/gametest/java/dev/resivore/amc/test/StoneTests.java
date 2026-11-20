@@ -60,9 +60,12 @@ public final class StoneTests {
     @GameTest
     public void registryAndResources(GameTestHelper helper) {
         var ids = new java.util.HashSet<>(Set.of(id("parapet"), id("louvered_shutter")));
-        for (String material : java.util.List.of("andesite", "diorite", "granite")) {
-            for (String form : java.util.List.of("button", "pressure_plate", "gothic_window", "arrow_slit",
-                    "column", "urn", "moulding", "fence", "frame")) {
+        for (String material : java.util.List.of("andesite", "diorite", "granite", "mud_bricks")) {
+            var forms = new java.util.ArrayList<>(java.util.List.of("button", "pressure_plate", "column", "urn",
+                    "moulding", "fence", "frame"));
+            forms.addAll(material.equals("mud_bricks") ? java.util.List.of("window", "window2", "four_window",
+                    "pane_window", "parapet", "louvered_shutter") : java.util.List.of("gothic_window", "arrow_slit"));
+            for (String form : forms) {
                 var name = material + "_" + form;
                 ids.add(Identifier.fromNamespaceAndPath(NAMESPACE, name));
                 for (String ns : java.util.List.of("minecraft", "mcwwindows", "bbb")) {
@@ -135,14 +138,25 @@ public final class StoneTests {
 
     @GameTest
     public void supportsAndShutterInteraction(GameTestHelper helper) {
-        helper.setBlock(POSITION, block("parapet"));
+        supportsAndShutterInteraction(helper, block("parapet"), block("louvered_shutter"));
+    }
+
+    @GameTest
+    public void mudBricksSupportsAndShutterInteraction(GameTestHelper helper) {
+        var blocks = BuiltInRegistries.BLOCK;
+        supportsAndShutterInteraction(helper, blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "mud_bricks_parapet")),
+                blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "mud_bricks_louvered_shutter")));
+    }
+
+    private static void supportsAndShutterInteraction(GameTestHelper helper, Block parapet, Block shutterBlock) {
+        helper.setBlock(POSITION, parapet);
         helper.setBlock(POSITION.above(), Blocks.FLOWER_POT);
         helper.assertTrue(helper.getBlockState(POSITION).getValue(Parapet.FLOWER) == Parapet.Flower.FLOWER,
                 "Flower pot did not enable the support");
         helper.setBlock(POSITION.above(), Blocks.AIR);
         helper.assertTrue(helper.getBlockState(POSITION).getValue(Parapet.FLOWER) == Parapet.Flower.EMPTY,
                 "Removing pot did not clear the support");
-        var shutter = block("louvered_shutter").defaultBlockState().setValue(Shutter.OPEN, false);
+        var shutter = shutterBlock.defaultBlockState().setValue(Shutter.OPEN, false);
         helper.setBlock(POSITION, shutter);
         helper.setBlock(POSITION.above(), shutter);
         helper.setBlock(POSITION.east(), BlockInit.ANDESITE_LOUVERED_SHUTTER.defaultBlockState().setValue(Shutter.OPEN, false));

@@ -72,6 +72,11 @@ public final class MasonryTests {
         completeStateAndShapeParity(helper, "granite");
     }
 
+    @GameTest
+    public void mudBricksCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "mud_bricks");
+    }
+
     private static void completeStateAndShapeParity(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(CENTER);
@@ -126,6 +131,11 @@ public final class MasonryTests {
     @GameTest
     public void graniteWetAndDryPlacement(GameTestHelper helper) {
         wetAndDryPlacement(helper, "granite");
+    }
+
+    @GameTest
+    public void mudBricksWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "mud_bricks");
     }
 
     private static void wetAndDryPlacement(GameTestHelper helper, String material) {
@@ -187,6 +197,11 @@ public final class MasonryTests {
         columnAndMouldingChanges(helper, "granite");
     }
 
+    @GameTest
+    public void mudBricksColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "mud_bricks");
+    }
+
     private static void columnAndMouldingChanges(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         for (boolean reference : List.of(true, false)) {
@@ -229,6 +244,11 @@ public final class MasonryTests {
     @GameTest
     public void graniteFenceAndFrameChanges(GameTestHelper helper) {
         fenceAndFrameChanges(helper, "granite");
+    }
+
+    @GameTest
+    public void mudBricksFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "mud_bricks");
     }
 
     private static void fenceAndFrameChanges(GameTestHelper helper, String material) {
@@ -279,6 +299,11 @@ public final class MasonryTests {
     @GameTest
     public void graniteUrnSoilAndPlant(GameTestHelper helper) {
         urnSoilAndPlant(helper, "granite");
+    }
+
+    @GameTest
+    public void mudBricksUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "mud_bricks");
     }
 
     private static void urnSoilAndPlant(GameTestHelper helper, String material) {

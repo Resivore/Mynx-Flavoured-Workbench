@@ -2,6 +2,9 @@ package dev.resivore.amc.test;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.kikoz.mcwwindows.init.BlockInit;
+import net.kikoz.mcwwindows.init.ItemInit;
+import net.kikoz.mcwwindows.objects.ConnectedWindow;
+import net.kikoz.mcwwindows.objects.WindowBarred;
 import net.kikoz.mcwwindows.objects.GothicWindow;
 import net.kikoz.mcwwindows.objects.WindowBase;
 import net.kikoz.mcwwindows.util.WindowPart;
@@ -36,6 +39,12 @@ public final class DirectFormTests {
             "button", Blocks.STONE_BUTTON, "pressure_plate", Blocks.STONE_PRESSURE_PLATE,
             "gothic_window", BlockInit.STONE_BRICK_GOTHIC, "arrow_slit", BlockInit.STONE_BRICK_ARROW_SLIT);
 
+    private static final Map<String, Block> MUD_REFERENCES = Map.of(
+            "button", Blocks.STONE_BUTTON, "pressure_plate", Blocks.STONE_PRESSURE_PLATE,
+            "window", BlockInit.ANDESITE_WINDOW, "window2", BlockInit.ANDESITE_WINDOW2,
+            "four_window", BlockInit.ANDESITE_FOUR_WINDOW, "pane_window", BlockInit.ANDESITE_PANE_WINDOW,
+            "parapet", BlockInit.ANDESITE_PARAPET, "louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
+
     private static Identifier id(String material, String form) {
         return Identifier.fromNamespaceAndPath("architectural_material_closure", material + "_" + form);
     }
@@ -59,10 +68,15 @@ public final class DirectFormTests {
         referenceStatesAndData(helper, "granite");
     }
 
+    @GameTest
+    public void mudBricksReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "mud_bricks");
+    }
+
     private static void referenceStatesAndData(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(LEFT);
-        REFERENCES.forEach((form, ref) -> {
+        (material.equals("mud_bricks") ? MUD_REFERENCES : REFERENCES).forEach((form, ref) -> {
             var own = block(material, form);
             var item = BuiltInRegistries.ITEM.getValue(id(material, form));
             helper.assertTrue(own != ref && own.getClass() == ref.getClass(), form + " implementation");
@@ -112,6 +126,11 @@ public final class DirectFormTests {
         placement(helper, "granite");
     }
 
+    @GameTest
+    public void mudBricksPlacement(GameTestHelper helper) {
+        placement(helper, "mud_bricks");
+    }
+
     private static void placement(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var center = new BlockPos(1, 1, 1);
@@ -122,7 +141,7 @@ public final class DirectFormTests {
             var hit = new BlockHitResult(Vec3.atCenterOf(pos).relative(face, 0.5), face, pos, false);
             for (int yaw : new int[]{0, 90, 180, 270}) {
                 player.setYRot(yaw);
-                REFERENCES.forEach((form, ref) -> {
+                (material.equals("mud_bricks") ? MUD_REFERENCES : REFERENCES).forEach((form, ref) -> {
                     var own = block(material, form);
                     var expected = ref.getStateForPlacement(new BlockPlaceContext(player, InteractionHand.MAIN_HAND,
                             ref.asItem().getDefaultInstance(), hit));
@@ -150,6 +169,11 @@ public final class DirectFormTests {
     @GameTest
     public void graniteButtonPulse(GameTestHelper helper) {
         buttonPulse(helper, "granite");
+    }
+
+    @GameTest
+    public void mudBricksButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "mud_bricks");
     }
 
     private static void buttonPulse(GameTestHelper helper, String material) {
@@ -184,6 +208,11 @@ public final class DirectFormTests {
         pressurePlateSensitivity(helper, "granite");
     }
 
+    @GameTest(maxTicks = 40)
+    public void mudBricksPressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "mud_bricks");
+    }
+
     private static void pressurePlateSensitivity(GameTestHelper helper, String material) {
         for (var pos : List.of(LEFT, RIGHT)) {
             helper.setBlock(pos.below(), Blocks.STONE);
@@ -204,6 +233,38 @@ public final class DirectFormTests {
             for (var pos : List.of(LEFT, RIGHT)) helper.assertBlockProperty(pos, BlockStateProperties.POWERED, false);
             helper.succeed();
         });
+    }
+
+    @GameTest
+    public void mudBricksWindowInteractions(GameTestHelper helper) {
+        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var absolute = helper.absolutePos(LEFT);
+        var hit = new BlockHitResult(Vec3.atCenterOf(absolute), Direction.NORTH, absolute, false);
+        for (String form : List.of("window", "window2", "four_window", "pane_window")) {
+            for (Block window : List.of(MUD_REFERENCES.get(form), block("mud_bricks", form))) {
+                helper.setBlock(LEFT, window);
+                if (form.equals("window")) {
+                    helper.setBlock(LEFT.above(), window);
+                    helper.assertBlockProperty(LEFT, ConnectedWindow.PART, ConnectedWindow.ConnectionStatus.BOTTOM);
+                    helper.setBlock(LEFT.above(), Blocks.AIR);
+                    helper.assertBlockProperty(LEFT, ConnectedWindow.PART, ConnectedWindow.ConnectionStatus.BASE);
+                } else {
+                    helper.useBlock(LEFT);
+                    var open = helper.getBlockState(LEFT).getValue(WindowBarred.WINDOWSTATE);
+                    helper.assertTrue(open == WindowBarred.WindowState.OPEN_LEFT || open == WindowBarred.WindowState.OPEN_RIGHT,
+                            form + " failed to open");
+                    helper.useBlock(LEFT);
+                    helper.assertBlockProperty(LEFT, WindowBarred.WINDOWSTATE, WindowBarred.WindowState.CLOSED);
+                    helper.getBlockState(LEFT).useItemOn(ItemInit.KEY.getDefaultInstance(), helper.getLevel(), player,
+                            InteractionHand.MAIN_HAND, hit);
+                    helper.assertBlockProperty(LEFT, WindowBarred.WINDOWSTATE, WindowBarred.WindowState.LOCKED);
+                    helper.useBlock(LEFT);
+                    helper.assertBlockProperty(LEFT, WindowBarred.WINDOWSTATE, WindowBarred.WindowState.LOCKED);
+                }
+                helper.setBlock(LEFT, Blocks.AIR);
+            }
+        }
+        helper.succeed();
     }
 
     @GameTest

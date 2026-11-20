@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary13'
+version = '0.1.0-canary14'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c13')
+layout.buildDirectory = layout.projectDirectory.dir('build/c14')
 
 repositories {
     mavenCentral()
@@ -43,12 +43,12 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C13.jar'
+    archiveFileName = 'AMC C14.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
     dependsOn jar
-    inputs.files('tools/verify.py', 'tools/verify_masonry.py', providerJar, clientJar, bbbJar, jar.archiveFile)
+    inputs.files('tools/verify.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', providerJar, clientJar, bbbJar, jar.archiveFile)
     commandLine python, 'tools/verify.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar
 }
 
@@ -65,6 +65,6 @@ fabricApi {
 }
 
 loom.runs.named('gameTest') {
-    runDir 'build/c13/gametest'
+    runDir 'build/c14/gametest'
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }
