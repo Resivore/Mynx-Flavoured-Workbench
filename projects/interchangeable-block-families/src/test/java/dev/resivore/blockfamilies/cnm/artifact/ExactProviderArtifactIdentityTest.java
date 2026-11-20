@@ -21,6 +21,9 @@ final class ExactProviderArtifactIdentityTest {
             "E29FDDD54A12FDBB7A0CCC899AD7CE6B5167F5CBCEF7C305EE3069ED7A4CC1EF";
 
     private static final Map<String, ArtifactContract> CONTRACTS = Map.ofEntries(
+            Map.entry("amcReferenceJar", new ArtifactContract(
+                    "BB285091A6043DF96F54FE83A94CA41F851C4D5DDFAEA713FFB9B7786AD15732",
+                    "architectural_material_closure", "0.1.0-canary12")),
             Map.entry("cnmUpstreamReferenceJar", new ArtifactContract(
                     "41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE",
                     "clutternomore", "2.0.7+26.2")),
@@ -78,6 +81,7 @@ final class ExactProviderArtifactIdentityTest {
     void resolvedRuntimeReferencesMatchTheAuditedAndAcceptedBytes() throws Exception {
         for (Map.Entry<String, ArtifactContract> entry : CONTRACTS.entrySet()) {
             String property = entry.getKey();
+            if (property.equals("amcReferenceJar") && System.getProperty(property) == null) continue;
             Path artifact = Path.of(requiredProperty(property));
             ArtifactContract contract = entry.getValue();
 

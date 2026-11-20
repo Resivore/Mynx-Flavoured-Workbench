@@ -171,11 +171,10 @@ public final class AuditedShapeRuntime {
         IdentityHashMap<Item, ResolvedFamily> byMember = new IdentityHashMap<>();
         boolean amcLoaded = FabricLoader.getInstance().isModLoaded("architectural_material_closure");
         for (AuditedShapeFamily definition : definitions) {
-            ArrayList<Item> members = new ArrayList<>(definition.members().size());
-            for (Identifier id : definition.members()) {
-                if (!amcLoaded && id.getNamespace().equals("architectural_material_closure")) {
-                    continue;
-                }
+            List<Identifier> available = definition.availableMembers(amcLoaded);
+            if (available.isEmpty()) continue;
+            ArrayList<Item> members = new ArrayList<>(available.size());
+            for (Identifier id : available) {
                 if (!BuiltInRegistries.ITEM.containsKey(id)) {
                     throw new IllegalStateException("Missing audited IBF item: " + id
                             + " (family " + definition.key() + ")");

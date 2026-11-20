@@ -320,6 +320,11 @@ test {
             configurations.qsnCompatReference,
             minecraftReferenceJar
     )
+    if (amcReferenceJar.isPresent()) {
+        def archive = file(amcReferenceJar.get())
+        inputs.file(archive)
+        systemProperty 'amcReferenceJar', archive.absolutePath
+    }
     systemProperty 'projectRoot', projectDir.absolutePath
     doFirst {
         systemProperty 'cnmUpstreamReferenceJar', configurations.cnmUpstreamReference.singleFile.absolutePath

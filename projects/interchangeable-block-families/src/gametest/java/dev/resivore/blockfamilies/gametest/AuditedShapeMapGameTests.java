@@ -214,13 +214,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "dramaticdoors:tall_waxed_exposed_copper_door",
             "dramaticdoors:tall_waxed_weathered_copper_door",
             "dramaticdoors:tall_waxed_oxidized_copper_door",
-            "mcwwindows:andesite_louvered_shutter",
-            "mcwwindows:diorite_louvered_shutter",
-            "mcwwindows:granite_louvered_shutter",
             "mcwwindows:end_brick_gothic",
             "mcwwindows:nether_brick_gothic",
             "mcwwindows:mud_brick_gothic",
-            "mcwwindows:stone_brick_arrow_slit",
             "mcwwindows:cobblestone_arrow_slit",
             "mcwwindows:ender_brick_arrow_slit",
             "mcwwindows:mud_brick_arrow_slit",
@@ -249,9 +245,6 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "mcwpaths:andesite_running_bond_stairs",
             "mcwpaths:andesite_running_bond",
             "mcwpaths:dirt_path_block",
-            "mcwwindows:andesite_parapet",
-            "mcwwindows:diorite_parapet",
-            "mcwwindows:granite_parapet",
             "mcwwindows:dark_prismarine_parapet",
             "mcwwindows:iron_shutter",
             "mcwwindows:golden_curtain_rod",
@@ -278,10 +271,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
 
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
-        List<AuditedShapeFamily> families = AuditedShapeFamilies.families();
-        helper.assertTrue(families.size() == AuditedShapeFamilies.EXPECTED_FAMILY_COUNT,
-                "Expected " + AuditedShapeFamilies.EXPECTED_FAMILY_COUNT
-                        + " audited families, found " + families.size());
+        List<AuditedShapeFamily> families = expectedActiveFamilies();
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 187 : 181;
+        helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
         int largest = 0;
@@ -291,9 +283,10 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
 
             Item parent = requiredItem(family.canonicalParent());
             List<Identifier> actual = ids(ShapeMap.getShapes(parent));
-            List<Identifier> expected = family.canonicalParent().equals(id("minecraft:stone_button"))
-                    ? stoneAccessoryMembers().stream().map(AuditedShapeMapGameTests::id).toList()
-                    : family.members();
+            List<Identifier> expected = family.members().stream()
+                    .filter(id -> Boolean.getBoolean("ibf.test.amcExpected")
+                            || !id.getNamespace().equals("architectural_material_closure"))
+                    .toList();
             helper.assertTrue(actual.equals(expected),
                     "Resolved order differs for " + family.key() + ": expected="
                             + expected + ", actual=" + actual);
@@ -306,7 +299,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_398 : 1_396;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_432 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -586,6 +579,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             List<String> expected = new java.util.ArrayList<>(List.of(
                     "bbb:" + stone + "_column", "bbb:" + stone + "_urn",
                     "bbb:" + stone + "_moulding", "bbb:" + stone + "_fence", "bbb:" + stone + "_frame"));
+            if (stone.equals("stone")) expected.add("mcwwindows:stone_brick_arrow_slit");
             if (stone.equals("nether_brick")) expected.add("mcwwindows:nether_brick_arrow_slit");
             assertExactShapeSet(helper, "bbb:" + stone + "_column", expected);
         }
@@ -670,7 +664,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
 
     @GameTest(maxTicks = 40)
     public void categoriesMaterialsAndAuditedExclusionsRemainIsolated(GameTestHelper helper) {
-        List<AuditedShapeFamily> families = AuditedShapeFamilies.families();
+        List<AuditedShapeFamily> families = expectedActiveFamilies();
         Set<Identifier> approved = approvedIds();
         Set<Item> resolvedParents = new HashSet<>();
 
@@ -1019,6 +1013,13 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 label + ": " + first + " / " + second);
     }
 
+    private static List<AuditedShapeFamily> expectedActiveFamilies() {
+        return AuditedShapeFamilies.families().stream()
+                .filter(family -> Boolean.getBoolean("ibf.test.amcExpected")
+                        || !family.canonicalParent().getNamespace().equals("architectural_material_closure"))
+                .toList();
+    }
+
     private static List<String> stoneAccessoryMembers() {
         return Boolean.getBoolean("ibf.test.amcExpected")
                 ? List.of("minecraft:stone_button", "minecraft:stone_pressure_plate",
@@ -1032,11 +1033,55 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         helper.assertTrue(FabricLoader.getInstance().isModLoaded("architectural_material_closure")
                         == Boolean.getBoolean("ibf.test.amcExpected"),
                 "AMC presence differs from the requested GameTest configuration");
-        List<String> members = stoneAccessoryMembers();
-        assertExactShapeSet(helper, "minecraft:stone_button", members);
-        Item button = requiredItem("minecraft:stone_button");
-        ItemStack stack = new ItemStack(button, 7);
-        stack.set(DataComponents.CUSTOM_NAME, Component.literal("Stone selector"));
+        assertSelectorRoundTrip(helper, stoneAccessoryMembers());
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void masonryAccessoriesAndWindowsFollowTheirProviders(GameTestHelper helper) {
+        assertSelectorRoundTrip(helper, List.of("bbb:stone_column", "bbb:stone_urn", "bbb:stone_moulding",
+                "bbb:stone_fence", "bbb:stone_frame", "mcwwindows:stone_brick_arrow_slit"));
+        helper.assertTrue(hasRecipe(helper, "mcwwindows:cobblestone_arrow_slit"), "Lost Cobblestone Arrow Slit recipe");
+
+        for (String material : List.of("andesite", "diorite", "granite")) {
+            String amc = "architectural_material_closure:" + material + "_";
+            String macaw = "mcwwindows:" + material + "_";
+            List<String> windows = new ArrayList<>(List.of(macaw + "window", macaw + "window2",
+                    macaw + "four_window", macaw + "pane_window"));
+            if (Boolean.getBoolean("ibf.test.amcExpected")) {
+                assertSelectorRoundTrip(helper, List.of(amc + "button", amc + "pressure_plate",
+                        macaw + "parapet", macaw + "louvered_shutter"));
+                assertSelectorRoundTrip(helper, List.of(amc + "column", amc + "urn", amc + "moulding",
+                        amc + "fence", amc + "frame", amc + "arrow_slit"));
+                helper.assertTrue(hasRecipe(helper, amc + "column_from_stonecutting"), "Lost column stonecutting");
+                for (String alternate : List.of("urn", "moulding", "fence")) {
+                    helper.assertTrue(!hasRecipe(helper, amc + alternate + "_from_stonecutting"),
+                            "Retained alternate stonecutting recipe for " + amc + alternate);
+                }
+                windows.add(amc + "gothic_window");
+                assertSeparate(helper, amc + "button", "mcwpaths:" + material + "_running_bond_path",
+                        "Accessory and path selectors merged");
+            } else {
+                for (String standalone : List.of(macaw + "parapet", macaw + "louvered_shutter")) {
+                    Item item = requiredItem(standalone);
+                    helper.assertTrue(!AuditedShapeRuntime.isAudited(item) && !ShapeMap.isShape(item)
+                                    && hasRecipe(helper, standalone),
+                            "Missing AMC parent changed standalone item " + standalone);
+                }
+                assertSeparate(helper, macaw + "parapet", macaw + "louvered_shutter",
+                        "Missing AMC parent produced a partial selector");
+            }
+            assertSelectorRoundTrip(helper, windows);
+        }
+        helper.succeed();
+    }
+
+    private static void assertSelectorRoundTrip(GameTestHelper helper, List<String> members) {
+        String parentId = members.getFirst();
+        assertExactShapeSet(helper, parentId, members);
+        Item parent = requiredItem(parentId);
+        ItemStack stack = new ItemStack(parent, 7);
+        stack.set(DataComponents.CUSTOM_NAME, Component.literal("Selector round trip"));
         for (int index = 1; index < members.size(); index++) {
             ItemStack next = ShapeMap.transferStack(stack, index);
             assertTransferred(helper, stack, next, requiredItem(members.get(index)), members.get(index));
@@ -1044,9 +1089,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     "CNM retained an alternate recipe for " + members.get(index));
             stack = next;
         }
-        assertTransferred(helper, stack, ShapeMap.transferStack(stack, 0), button, "Return to Stone Button");
-        helper.assertTrue(hasRecipe(helper, "minecraft:stone_button"), "Stone Button recipe missing");
-        helper.succeed();
+        assertTransferred(helper, stack, ShapeMap.transferStack(stack, 0), parent, "Return to " + parentId);
+        helper.assertTrue(hasRecipe(helper, parentId), "Canonical recipe missing for " + parentId);
     }
 
     private static void assertExactShapeSet(

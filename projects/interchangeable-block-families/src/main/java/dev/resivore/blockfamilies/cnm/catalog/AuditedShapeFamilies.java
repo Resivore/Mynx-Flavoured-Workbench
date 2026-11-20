@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 181;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_398;
+    public static final int EXPECTED_FAMILY_COUNT = 187;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_432;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -762,7 +762,7 @@ public final class AuditedShapeFamilies {
             family("cnm/window/andesite", WINDOW, mcwWindows("andesite_window"),
                     mcwWindows("andesite_window2"),
                     mcwWindows("andesite_four_window"),
-                    mcwWindows("andesite_pane_window")),
+                    mcwWindows("andesite_pane_window"), amc("andesite_gothic_window")),
             family("cnm/window/birch_log", WINDOW, mcwWindows("birch_window"),
                     mcwWindows("birch_window2"),
                     mcwWindows("birch_four_window"),
@@ -811,11 +811,11 @@ public final class AuditedShapeFamilies {
             family("cnm/window/diorite", WINDOW, mcwWindows("diorite_window"),
                     mcwWindows("diorite_window2"),
                     mcwWindows("diorite_four_window"),
-                    mcwWindows("diorite_pane_window")),
+                    mcwWindows("diorite_pane_window"), amc("diorite_gothic_window")),
             family("cnm/window/granite", WINDOW, mcwWindows("granite_window"),
                     mcwWindows("granite_window2"),
                     mcwWindows("granite_four_window"),
-                    mcwWindows("granite_pane_window")),
+                    mcwWindows("granite_pane_window"), amc("granite_gothic_window")),
             family("cnm/window/iron_block", WINDOW, mcwWindows("metal_window"),
                     mcwWindows("metal_window2"),
                     mcwWindows("metal_four_window"),
@@ -1055,7 +1055,16 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/wood/enderscape_veiled", BBB_DETAIL, bbb("veiled_trim"), bbb("veiled_balustrade"), bbb("veiled_support"), bbb("veiled_pallet")),
             family("cnm/bbb_detail/wood/enderscape_celestial", BBB_DETAIL, bbb("celestial_trim"), bbb("celestial_balustrade"), bbb("celestial_support"), bbb("celestial_pallet")),
             family("cnm/bbb_detail/wood/enderscape_murublight", BBB_DETAIL, bbb("murublight_trim"), bbb("murublight_balustrade"), bbb("murublight_support"), bbb("murublight_pallet")),
-            family("cnm/bbb_detail/stone/stone", BBB_DETAIL, bbb("stone_column"), bbb("stone_urn"), bbb("stone_moulding"), bbb("stone_fence"), bbb("stone_frame")),
+            family("cnm/bbb_detail/stone/stone", BBB_DETAIL, bbb("stone_column"), bbb("stone_urn"), bbb("stone_moulding"), bbb("stone_fence"), bbb("stone_frame"), mcwWindows("stone_brick_arrow_slit")),
+            family("cnm/bbb_detail/stone/andesite", BBB_DETAIL, amc("andesite_column"),
+                    amc("andesite_urn"), amc("andesite_moulding"), amc("andesite_fence"),
+                    amc("andesite_frame"), amc("andesite_arrow_slit")),
+            family("cnm/bbb_detail/stone/diorite", BBB_DETAIL, amc("diorite_column"),
+                    amc("diorite_urn"), amc("diorite_moulding"), amc("diorite_fence"),
+                    amc("diorite_frame"), amc("diorite_arrow_slit")),
+            family("cnm/bbb_detail/stone/granite", BBB_DETAIL, amc("granite_column"),
+                    amc("granite_urn"), amc("granite_moulding"), amc("granite_fence"),
+                    amc("granite_frame"), amc("granite_arrow_slit")),
             family("cnm/bbb_detail/stone/blackstone", BBB_DETAIL, bbb("blackstone_column"), bbb("blackstone_urn"), bbb("blackstone_moulding"), bbb("blackstone_fence"), bbb("blackstone_frame")),
             family("cnm/bbb_detail/stone/deepslate", BBB_DETAIL, bbb("deepslate_column"), bbb("deepslate_urn"), bbb("deepslate_moulding"), bbb("deepslate_fence"), bbb("deepslate_frame")),
             family("cnm/bbb_detail/stone/nether_brick", BBB_DETAIL, bbb("nether_brick_column"), bbb("nether_brick_urn"), bbb("nether_brick_moulding"), bbb("nether_brick_fence"), bbb("nether_brick_frame"), mcwWindows("nether_brick_arrow_slit")),
@@ -1187,6 +1196,9 @@ public final class AuditedShapeFamilies {
                     minecraft("polished_blackstone_button"),
                     minecraft("polished_blackstone_pressure_plate"),
                     mcwWindows("blackstone_parapet")),
+            family("cnm/building_accessory/andesite_button", BUILDING_ACCESSORY, amc("andesite_button"),
+                    amc("andesite_pressure_plate"), mcwWindows("andesite_parapet"),
+                    mcwWindows("andesite_louvered_shutter")),
             family("cnm/building_accessory/andesite", BUILDING_ACCESSORY,
                     mcwPaths("andesite_running_bond_path"),
                     mcwPaths("andesite_strewn_rocky_path"),
@@ -1199,6 +1211,9 @@ public final class AuditedShapeFamilies {
                     mcwPaths("andesite_honeycomb_paving"),
                     mcwPaths("andesite_clover_paving"),
                     mcwPaths("andesite_dumble_paving")),
+            family("cnm/building_accessory/diorite_button", BUILDING_ACCESSORY, amc("diorite_button"),
+                    amc("diorite_pressure_plate"), mcwWindows("diorite_parapet"),
+                    mcwWindows("diorite_louvered_shutter")),
             family("cnm/building_accessory/diorite", BUILDING_ACCESSORY,
                     mcwPaths("diorite_running_bond_path"),
                     mcwPaths("diorite_strewn_rocky_path"),
@@ -1211,6 +1226,9 @@ public final class AuditedShapeFamilies {
                     mcwPaths("diorite_honeycomb_paving"),
                     mcwPaths("diorite_clover_paving"),
                     mcwPaths("diorite_dumble_paving")),
+            family("cnm/building_accessory/granite_button", BUILDING_ACCESSORY, amc("granite_button"),
+                    amc("granite_pressure_plate"), mcwWindows("granite_parapet"),
+                    mcwWindows("granite_louvered_shutter")),
             family("cnm/building_accessory/granite", BUILDING_ACCESSORY,
                     mcwPaths("granite_running_bond_path"),
                     mcwPaths("granite_strewn_rocky_path"),

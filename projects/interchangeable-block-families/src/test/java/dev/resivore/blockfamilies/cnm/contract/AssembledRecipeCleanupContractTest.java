@@ -27,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AssembledRecipeCleanupContractTest {
+    private static final boolean AMC_PRESENT = System.getProperty("amcReferenceJar") != null;
+
     private static final Set<String> MINECRAFT_DISPLAY_RESULTS = Set.of(
             "minecraft:oak_sign", "minecraft:oak_hanging_sign", "minecraft:oak_shelf",
             "minecraft:spruce_sign", "minecraft:spruce_hanging_sign", "minecraft:spruce_shelf",
@@ -142,9 +144,12 @@ class AssembledRecipeCleanupContractTest {
                 "enderscapeReferenceJar", "enderscape", "enderscape_approved_families",
                 ENDERSCAPE_APPROVED_RESULTS));
         recipes.addAll(recipesFromBbbEnderscapePackResults());
+        if (AMC_PRESENT) {
+            recipes.addAll(recipesFromJar("amcReferenceJar", "architectural_material_closure", "amc_families"));
+        }
         recipes.addAll(dynamicAndModeledRecipes());
 
-        assertEquals(Map.ofEntries(
+        Map<String, Long> expectedCorpus = new LinkedHashMap<>(Map.ofEntries(
                         Map.entry("two_high_doors", 278L),
                         Map.entry("macaws_paths", 316L),
                         Map.entry("trapdoors", 207L),
@@ -155,9 +160,10 @@ class AssembledRecipeCleanupContractTest {
                         Map.entry("bbb_enderscape_families", 18L),
                         Map.entry("three_high_doors", 217L),
                         Map.entry("fence_gates", 24L),
-                        Map.entry("vanilla_building_accessories", 42L)),
-                countByCorpus(recipes));
-        assertEquals(1_572, recipes.size());
+                        Map.entry("vanilla_building_accessories", 42L)));
+        if (AMC_PRESENT) expectedCorpus.put("amc_families", 41L);
+        assertEquals(expectedCorpus, countByCorpus(recipes));
+        assertEquals(AMC_PRESENT ? 1_613 : 1_572, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -179,10 +185,11 @@ class AssembledRecipeCleanupContractTest {
         }
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
+        if (AMC_PRESENT) expectedRemoved.put("amc_families", 32L);
         expectedRemoved.put("two_high_doors", 260L);
         expectedRemoved.put("macaws_paths", 142L);
         expectedRemoved.put("trapdoors", 195L);
-        expectedRemoved.put("windows_and_shutters", 211L);
+        expectedRemoved.put("windows_and_shutters", AMC_PRESENT ? 218L : 212L);
         expectedRemoved.put("minecraft_display_fixtures", 24L);
         expectedRemoved.put("enderscape_approved_families", 17L);
         expectedRemoved.put("bbb_enderscape_families", 15L);
@@ -190,9 +197,7 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(260 + 217 + 195 + 211 + 142 + 12 + 20 + 24 + 17 + 15,
-                removedNonParents.values().stream().mapToLong(Long::longValue).sum());
-        assertEquals(1_113L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(AMC_PRESENT ? 1_152L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -210,6 +215,9 @@ class AssembledRecipeCleanupContractTest {
                 "enderscapeReferenceJar", "enderscape", "enderscape_approved_families",
                 ENDERSCAPE_APPROVED_RESULTS));
         recipes.addAll(recipesFromBbbEnderscapePackResults());
+        if (AMC_PRESENT) {
+            recipes.addAll(recipesFromJar("amcReferenceJar", "architectural_material_closure", "amc_families"));
+        }
         recipes.addAll(dynamicAndModeledRecipes());
 
         ShapeFamilies shapes = ShapeFamilies.fromCatalog();
@@ -225,10 +233,12 @@ class AssembledRecipeCleanupContractTest {
                 .filter(family -> family.key().getPath().startsWith("cnm/fence_gate/enderscape_"))
                 .forEach(newFamilies::add);
         AuditedShapeFamilies.families(AuditedShapeFamily.Category.BBB_DETAIL).stream()
-                .filter(family -> family.key().getPath().startsWith("cnm/bbb_detail/wood/enderscape_"))
+                .filter(family -> family.key().getPath().startsWith("cnm/bbb_detail/wood/enderscape_")
+                        || family.canonicalParent().getNamespace().equals("architectural_material_closure"))
                 .forEach(newFamilies::add);
+        newFamilies.removeIf(family -> family.availableMembers(AMC_PRESENT).isEmpty());
         for (AuditedShapeFamily family : newFamilies) {
-            family.members().forEach(member -> newMembers.add(member.toString()));
+            family.availableMembers(AMC_PRESENT).forEach(member -> newMembers.add(member.toString()));
         }
 
         Set<String> retainedResults = new LinkedHashSet<>();
@@ -245,7 +255,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(AMC_PRESENT ? 321 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",
@@ -600,10 +610,12 @@ class AssembledRecipeCleanupContractTest {
             Set<String> parents = new LinkedHashSet<>();
             Set<String> nonParents = new LinkedHashSet<>();
             for (AuditedShapeFamily family : AuditedShapeFamilies.families()) {
+                var members = family.availableMembers(AMC_PRESENT);
+                if (members.isEmpty()) continue;
                 String parent = family.canonicalParent().toString();
                 parents.add(parent);
-                for (int index = 0; index < family.members().size(); index++) {
-                    String member = family.members().get(index).toString();
+                for (int index = 0; index < members.size(); index++) {
+                    String member = members.get(index).toString();
                     assertTrue(parentByMember.put(member, parent) == null, member);
                     if (index > 0) nonParents.add(member);
                 }

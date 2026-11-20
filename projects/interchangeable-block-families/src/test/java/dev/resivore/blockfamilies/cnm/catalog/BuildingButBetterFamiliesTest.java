@@ -27,7 +27,7 @@ final class BuildingButBetterFamiliesTest {
     @Test
     void everyRegisteredWoodHasOneExactTrimDetailFamilyIncludingPaleOak() {
         Map<String, AuditedShapeFamily> details = detailsByPath();
-        assertEquals(22, details.size());
+        assertEquals(25, details.size());
         for (String wood : WOODS) {
             assertEquals(List.of(bbb(wood + "_trim"), bbb(wood + "_balustrade"),
                     bbb(wood + "_support"), bbb(wood + "_pallet")),
@@ -98,12 +98,20 @@ final class BuildingButBetterFamiliesTest {
             List<Identifier> expected = new java.util.ArrayList<>(List.of(
                     bbb(stone + "_column"), bbb(stone + "_urn"), bbb(stone + "_moulding"),
                     bbb(stone + "_fence"), bbb(stone + "_frame")));
+            if (stone.equals("stone")) expected.add(id("mcwwindows:stone_brick_arrow_slit"));
             if (stone.equals("nether_brick")) expected.add(id("mcwwindows:nether_brick_arrow_slit"));
             AuditedShapeFamily family = details.get("cnm/bbb_detail/stone/" + stone);
             assertEquals(expected, family.members(), stone);
             assertEquals(bbb(stone + "_column"), family.canonicalParent(), stone);
         }
-        assertEquals(STONES.size(), details.keySet().stream().filter(path -> path.startsWith("cnm/bbb_detail/stone/")).count());
+        for (String material : List.of("andesite", "diorite", "granite")) {
+            String prefix = "architectural_material_closure:" + material;
+            AuditedShapeFamily family = details.get("cnm/bbb_detail/stone/" + material);
+            assertEquals(id(prefix + "_column"), family.canonicalParent());
+            assertEquals(List.of(id(prefix + "_column"), id(prefix + "_urn"), id(prefix + "_moulding"),
+                    id(prefix + "_fence"), id(prefix + "_frame"), id(prefix + "_arrow_slit")), family.members());
+        }
+        assertEquals(STONES.size() + 3, details.keySet().stream().filter(path -> path.startsWith("cnm/bbb_detail/stone/")).count());
     }
 
     @Test

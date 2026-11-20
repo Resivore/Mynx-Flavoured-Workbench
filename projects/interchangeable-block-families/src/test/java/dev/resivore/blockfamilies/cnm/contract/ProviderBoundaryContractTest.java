@@ -228,7 +228,6 @@ final class ProviderBoundaryContractTest {
 
         Set<String> expectedCatalogAccessories = new LinkedHashSet<>(expectedProviderAccessories);
         expectedCatalogAccessories.removeAll(Set.of(
-                "andesite_parapet", "diorite_parapet", "granite_parapet",
                 "prismarine_parapet", "dark_prismarine_parapet",
                 "golden_curtain_rod", "metal_curtain_rod"));
         expectedCatalogAccessories.addAll(expectedShutters());
@@ -285,6 +284,7 @@ final class ProviderBoundaryContractTest {
             expected.add(wood + "_louvered_shutter");
         }
         expected.add("bamboo_shutter");
+        expected.addAll(List.of("andesite_louvered_shutter", "diorite_louvered_shutter", "granite_louvered_shutter"));
         return Set.copyOf(expected);
     }
 

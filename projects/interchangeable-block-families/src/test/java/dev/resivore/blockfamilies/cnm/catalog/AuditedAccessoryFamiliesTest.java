@@ -136,8 +136,8 @@ final class AuditedAccessoryFamiliesTest {
                 "Unapproved singleton parapet entered the catalog");
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(34, accessories.size());
-        assertEquals(267, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(37, accessories.size());
+        assertEquals(279, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }
@@ -253,16 +253,22 @@ final class AuditedAccessoryFamiliesTest {
         assertTrue(stonePath.members().stream().allMatch(value -> value.getNamespace().equals("mcwpaths")));
         assertTrue(stoneButton.members().stream().noneMatch(value -> value.getNamespace().equals("mcwpaths")));
 
-        for (String missingButtonMaterial : List.of("gold", "iron", "andesite", "diorite", "granite",
+        for (String material : List.of("andesite", "diorite", "granite")) {
+            AuditedShapeFamily button = family(material + "_button");
+            String amc = "architectural_material_closure:" + material;
+            String windows = "mcwwindows:" + material;
+            assertEquals(id(amc + "_button"), button.canonicalParent());
+            assertEquals(List.of(id(amc + "_button"), id(amc + "_pressure_plate"),
+                    id(windows + "_parapet"), id(windows + "_louvered_shutter")), button.members());
+        }
+
+        for (String missingButtonMaterial : List.of("gold", "iron",
                 "sandstone", "red_sandstone", "brick", "mossy_stone", "cobbled_deepslate", "deepslate",
                 "mud_brick", "blackstone", "dark_prismarine")) {
             assertFalse(accessories.stream().anyMatch(value -> value.key().getPath()
                     .equals("cnm/building_accessory/" + missingButtonMaterial + "_button")));
         }
         assertFalse(all.contains(id("mcwwindows:iron_shutter")));
-        assertFalse(all.contains(id("mcwwindows:andesite_parapet")));
-        assertFalse(all.contains(id("mcwwindows:diorite_parapet")));
-        assertFalse(all.contains(id("mcwwindows:granite_parapet")));
         assertFalse(all.contains(id("mcwwindows:dark_prismarine_parapet")));
     }
 

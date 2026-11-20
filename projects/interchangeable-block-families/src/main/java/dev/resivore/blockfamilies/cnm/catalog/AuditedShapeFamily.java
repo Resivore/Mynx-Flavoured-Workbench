@@ -42,6 +42,15 @@ public record AuditedShapeFamily(
         }
     }
 
+    /** Omit the entire family if its canonical parent has no provider. */
+    public List<Identifier> availableMembers(boolean amcLoaded) {
+        if (amcLoaded) return members;
+        if (canonicalParent.getNamespace().equals("architectural_material_closure")) return List.of();
+        return members.stream()
+                .filter(id -> !id.getNamespace().equals("architectural_material_closure"))
+                .toList();
+    }
+
     public enum Category {
         TWO_HIGH_DOOR("two_high_door"),
         THREE_HIGH_DOOR("three_high_door"),

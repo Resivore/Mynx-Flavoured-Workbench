@@ -11,7 +11,7 @@ public final class InterchangeableBlockFamilies implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("Loaded {} audited CNM ShapeMap families ({} unique items; largest family {})",
+        LOGGER.info("IBF catalog declares {} CNM ShapeMap families across supported providers ({} distinct item IDs, largest family {})",
                 AuditedShapeFamilies.families().size(),
                 AuditedShapeFamilies.uniqueMemberCount(),
                 AuditedShapeFamilies.largestFamilySize());
