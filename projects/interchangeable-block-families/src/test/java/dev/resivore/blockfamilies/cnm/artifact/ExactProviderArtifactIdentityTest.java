@@ -22,8 +22,8 @@ final class ExactProviderArtifactIdentityTest {
 
     private static final Map<String, ArtifactContract> CONTRACTS = Map.ofEntries(
             Map.entry("amcReferenceJar", new ArtifactContract(
-                    "D47CFB71E03030738D447D1A567F7D04FDC27FE54055B06345033BAFD4B49C2F",
-                    "architectural_material_closure", "0.1.0-canary16")),
+                    "861F184482B9113D83057C473073CE4BAA0C396E531C98A03A9B5170410BB775",
+                    "architectural_material_closure", "0.1.0-canary19")),
             Map.entry("cnmUpstreamReferenceJar", new ArtifactContract(
                     "41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE",
                     "clutternomore", "2.0.7+26.2")),

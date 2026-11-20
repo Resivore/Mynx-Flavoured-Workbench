@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 197;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_490;
+    public static final int EXPECTED_FAMILY_COUNT = 203;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_533;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -807,7 +807,8 @@ public final class AuditedShapeFamilies {
             family("cnm/window/deepslate", WINDOW, mcwWindows("deepslate_window"),
                     mcwWindows("deepslate_window2"),
                     mcwWindows("deepslate_four_window"),
-                    mcwWindows("deepslate_pane_window")),
+                    mcwWindows("deepslate_pane_window"),
+                    amc("deepslate_gothic_window")),
             family("cnm/window/diorite", WINDOW, mcwWindows("diorite_window"),
                     mcwWindows("diorite_window2"),
                     mcwWindows("diorite_four_window"),
@@ -839,6 +840,9 @@ public final class AuditedShapeFamilies {
             family("cnm/window/mud_bricks", WINDOW, amc("mud_bricks_window"),
                     amc("mud_bricks_window2"), amc("mud_bricks_four_window"), amc("mud_bricks_pane_window"),
                     mcwWindows("mud_brick_gothic")),
+            family("cnm/window/nether_bricks", WINDOW, amc("nether_bricks_window"),
+                    amc("nether_bricks_window2"), amc("nether_bricks_four_window"), amc("nether_bricks_pane_window"),
+                    mcwWindows("nether_brick_gothic")),
             family("cnm/window/oak_log", WINDOW, mcwWindows("oak_window"),
                     mcwWindows("oak_window2"),
                     mcwWindows("oak_four_window"),
@@ -868,7 +872,8 @@ public final class AuditedShapeFamilies {
             family("cnm/window/quartz_block", WINDOW, mcwWindows("quartz_window"),
                     mcwWindows("quartz_window2"),
                     mcwWindows("quartz_four_window"),
-                    mcwWindows("quartz_pane_window")),
+                    mcwWindows("quartz_pane_window"),
+                    amc("quartz_gothic_window")),
             family("cnm/window/red_sandstone", WINDOW, mcwWindows("red_sandstone_window"),
                     mcwWindows("red_sandstone_window2"),
                     mcwWindows("red_sandstone_four_window"),
@@ -1082,13 +1087,15 @@ public final class AuditedShapeFamilies {
                     amc("dark_prismarine_fence"), amc("dark_prismarine_frame"),
                     mcwWindows("dark_prismarine_brick_arrow_slit")),
             family("cnm/bbb_detail/stone/blackstone", BBB_DETAIL, bbb("blackstone_column"), bbb("blackstone_urn"), bbb("blackstone_moulding"), bbb("blackstone_fence"), bbb("blackstone_frame")),
-            family("cnm/bbb_detail/stone/deepslate", BBB_DETAIL, bbb("deepslate_column"), bbb("deepslate_urn"), bbb("deepslate_moulding"), bbb("deepslate_fence"), bbb("deepslate_frame")),
+            family("cnm/bbb_detail/stone/deepslate", BBB_DETAIL, bbb("deepslate_column"), bbb("deepslate_urn"), bbb("deepslate_moulding"), bbb("deepslate_fence"), bbb("deepslate_frame"),
+                    amc("deepslate_arrow_slit")),
             family("cnm/bbb_detail/stone/nether_brick", BBB_DETAIL, bbb("nether_brick_column"), bbb("nether_brick_urn"), bbb("nether_brick_moulding"), bbb("nether_brick_fence"), bbb("nether_brick_frame"), mcwWindows("nether_brick_arrow_slit")),
             family("cnm/bbb_detail/stone/sandstone", BBB_DETAIL, bbb("sandstone_column"), bbb("sandstone_urn"), bbb("sandstone_moulding"), bbb("sandstone_fence"), bbb("sandstone_frame"),
                     amc("sandstone_arrow_slit")),
             family("cnm/bbb_detail/stone/red_sandstone", BBB_DETAIL, bbb("red_sandstone_column"), bbb("red_sandstone_urn"), bbb("red_sandstone_moulding"), bbb("red_sandstone_fence"), bbb("red_sandstone_frame"),
                     amc("red_sandstone_arrow_slit")),
-            family("cnm/bbb_detail/stone/quartz", BBB_DETAIL, bbb("quartz_column"), bbb("quartz_urn"), bbb("quartz_moulding"), bbb("quartz_fence"), bbb("quartz_frame"))
+            family("cnm/bbb_detail/stone/quartz", BBB_DETAIL, bbb("quartz_column"), bbb("quartz_urn"), bbb("quartz_moulding"), bbb("quartz_fence"), bbb("quartz_frame"),
+                    amc("quartz_arrow_slit"))
     );
 
     private static final List<AuditedShapeFamily> BUILDING_ACCESSORIES = List.of(
@@ -1323,6 +1330,8 @@ public final class AuditedShapeFamilies {
                     mcwPaths("cobbled_deepslate_honeycomb_paving"),
                     mcwPaths("cobbled_deepslate_clover_paving"),
                     mcwPaths("cobbled_deepslate_dumble_paving")),
+            family("cnm/building_accessory/deepslate_button", BUILDING_ACCESSORY, amc("deepslate_button"),
+                    amc("deepslate_pressure_plate"), amc("deepslate_parapet"), amc("deepslate_louvered_shutter")),
             family("cnm/building_accessory/deepslate", BUILDING_ACCESSORY,
                     mcwPaths("deepslate_running_bond_path"),
                     mcwPaths("deepslate_strewn_rocky_path"),
@@ -1361,6 +1370,22 @@ public final class AuditedShapeFamilies {
                     mcwPaths("blackstone_honeycomb_paving"),
                     mcwPaths("blackstone_clover_paving"),
                     mcwPaths("blackstone_dumble_paving")),
+            family("cnm/building_accessory/quartz_button", BUILDING_ACCESSORY, amc("quartz_button"),
+                    amc("quartz_pressure_plate"), amc("quartz_parapet"), amc("quartz_louvered_shutter")),
+            family("cnm/building_accessory/quartz", BUILDING_ACCESSORY, amc("quartz_running_bond_path"),
+                    amc("quartz_strewn_rocky_path"), amc("quartz_windmill_weave_path"),
+                    amc("quartz_flagstone_path"), amc("quartz_crystal_floor_path"),
+                    amc("quartz_diamond_paving"), amc("quartz_basket_weave_paving"),
+                    amc("quartz_square_paving"), amc("quartz_honeycomb_paving"),
+                    amc("quartz_clover_paving"), amc("quartz_dumble_paving")),
+            family("cnm/building_accessory/nether_bricks_button", BUILDING_ACCESSORY, amc("nether_bricks_button"),
+                    amc("nether_bricks_pressure_plate"), amc("nether_bricks_parapet"), amc("nether_bricks_louvered_shutter")),
+            family("cnm/building_accessory/nether_bricks", BUILDING_ACCESSORY, amc("nether_bricks_running_bond_path"),
+                    amc("nether_bricks_strewn_rocky_path"), amc("nether_bricks_windmill_weave_path"),
+                    amc("nether_bricks_flagstone_path"), amc("nether_bricks_crystal_floor_path"),
+                    amc("nether_bricks_diamond_paving"), amc("nether_bricks_basket_weave_paving"),
+                    amc("nether_bricks_square_paving"), amc("nether_bricks_honeycomb_paving"),
+                    amc("nether_bricks_clover_paving"), amc("nether_bricks_dumble_paving")),
             family("cnm/building_accessory/prismarine_bricks_button", BUILDING_ACCESSORY, amc("prismarine_bricks_button"),
                     amc("prismarine_bricks_pressure_plate"), mcwWindows("prismarine_parapet"),
                     amc("prismarine_bricks_louvered_shutter")),
