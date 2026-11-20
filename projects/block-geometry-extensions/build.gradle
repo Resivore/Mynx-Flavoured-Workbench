@@ -177,11 +177,38 @@ tasks.named('runGameTest') {
     systemProperty 'bge.minecraftClientJar', minecraftClientArchive.absolutePath
 }
 
+// Run the production AMC entrypoints and their actual dependencies in a separate controlled
+// server. The normal regression fixture provides several of the same mod IDs and classes.
+def amcTest = providers.gradleProperty('amcGameTest').isPresent()
+if (amcTest) {
+    def amc = file('../architectural-material-closure/artifacts/AMC C21.jar')
+    def paths = file('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar')
+    def windows = file('../../originals/mods/mcw-windows-2.4.2-mc26.2fabric.jar')
+    def bbb = file('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')
+    sourceSets.gametest.java.setSrcDirs(['src/amcGametest/java'])
+    sourceSets.gametest.resources.setSrcDirs(['src/amcGametest/resources'])
+    dependencies { gametestRuntimeOnly files(amc, paths, windows, bbb) }
+    loom.runs.named('gameTest') { runDir 'build/run/amcGameTest' }
+    def resourceJars = files(minecraftClientArchive, paths, bbb, amc,
+            file('../../originals/mods/clutternomore-2.0.7+26.2-fabric.jar'), jar.archiveFile)
+    def audit = layout.buildDirectory.file('amc-model-audit.json')
+    tasks.register('verifyAmcModels', Exec) {
+        dependsOn 'runGameTest'
+        commandLine(['python', '-B', 'tools/verify_amc_models.py', audit.get().asFile] + resourceJars.files.toList())
+    }
+    tasks.named('runGameTest') {
+        dependsOn jar
+        systemProperty 'bge.testResourceJars', resourceJars.asPath
+        systemProperty 'bge.amcJar', amc.absolutePath
+        systemProperty 'bge.amcAudit', audit.get().asFile.absolutePath
+    }
+}
+
 // The provider fixture uses the retained 3.0.2 classes only to test the optional bridge.  It is
 // not published or bundled with BGE.
 dependencies {
-    gametestImplementation files('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
-    gametestRuntimeOnly files('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
+    if (!amcTest) gametestImplementation files('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
+    if (!amcTest) gametestRuntimeOnly files('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
 }
 
 processResources {

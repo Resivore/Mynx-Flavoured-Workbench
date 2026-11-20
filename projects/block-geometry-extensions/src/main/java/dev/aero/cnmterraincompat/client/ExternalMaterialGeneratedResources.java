@@ -300,13 +300,12 @@ public final class ExternalMaterialGeneratedResources {
             rotation += 90;
         }
         write(blockState(id), variants(variants));
-        if (structuralReference(profile) != null) {
+        if (structuralReference(profile) != null || isAmcPattern(profile)) {
             // There is no dedicated native Crimson Nylium/Dirt Path Vertical Slab asset.  Use
             // the same cuboid projection as BGE's Corner/Quarter geometry so its face frame,
             // side overlay, and lowered Path surface stay structural rather than merely using
             // the generic TOP/SIDE/BOTTOM template.
-            write(modelResource(id), projectedModel(profile,
-                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, 16, 8)))));
+            write(modelResource(id), projectedHalfModel(profile, "vertical_slab", new Bounds(0, 0, 0, 16, 16, 8)));
             write(modelResource(id, "_double"), projectedModel(profile,
                     List.of(Cuboid.world(new Bounds(0, 0, 0, 16, 16, 16)))));
         } else if (profile.visualProfile() == games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile.HUGE_MUSHROOM) {
@@ -337,11 +336,10 @@ public final class ExternalMaterialGeneratedResources {
             writePathStepTemplate(manager, "path_step.json", id, "", profile);
             writePathStepTemplate(manager, "path_step_top.json", id, "_top", profile);
             writePathStepTemplate(manager, "path_step_double.json", id, "_double", profile);
-        } else if (structuralReference(profile) != null) {
+        } else if (structuralReference(profile) != null || isAmcPattern(profile)) {
             // A Step is one half-depth member, never a full-depth Slab or a two-tier Stair.
             // Its double form combines the upper facing half with the lower opposite half.
-            write(modelResource(id), projectedModel(profile,
-                    List.of(Cuboid.world(new Bounds(0, 0, 0, 16, 8, 8)))));
+            write(modelResource(id), projectedHalfModel(profile, "step", new Bounds(0, 0, 0, 16, 8, 8)));
             write(modelResource(id, "_top"), projectedModel(profile,
                     List.of(Cuboid.world(new Bounds(0, 8, 0, 16, 16, 8)))));
             write(modelResource(id, "_double"), projectedModel(profile,
@@ -358,6 +356,18 @@ public final class ExternalMaterialGeneratedResources {
             write(modelResource(id, "_double"), template("clutternomore:block/templates/step_double" + tint, profile));
         }
         return 3;
+    }
+
+    // The CNM Step template offsets the inside riser and its Vertical Slab reverses the
+    // underside. Use the canonical block-space UV projection for these patterned materials.
+    private static boolean isAmcPattern(NibaruMaterialProfile profile) {
+        return profile.canonicalParentId().getNamespace().equals("architectural_material_closure");
+    }
+
+    private static JsonObject projectedHalfModel(NibaruMaterialProfile profile, String template, Bounds bounds) {
+        JsonObject model = projectedModel(profile, List.of(Cuboid.world(bounds)));
+        if (isAmcPattern(profile)) model.addProperty("parent", "clutternomore:block/templates/" + template);
+        return model;
     }
 
     private static JsonObject projectedModel(NibaruMaterialProfile profile, List<Cuboid> cuboids) {

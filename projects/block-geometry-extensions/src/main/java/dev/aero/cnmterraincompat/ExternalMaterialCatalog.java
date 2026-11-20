@@ -59,6 +59,14 @@ public final class ExternalMaterialCatalog {
                 // This provider has a live custom color function, not vanilla birch foliage.
                 leaves("mynx_trees:silver_birch_leaves", TintProfile.SOURCE_PROVIDER)));
         result.addAll(pathSpecs());
+        // AMC's normal and engraved models both resolve #all to block/<material>_<pattern>.
+        // Each engraved full block is independent and supplies none of its eight derived roles.
+        for (String material : List.of("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks")) {
+            for (String pattern : List.of("running_bond", "flagstone", "windmill_weave", "crystal_floor")) {
+                result.add(uniform("architectural_material_closure:" + material + "_" + pattern,
+                        Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Map.of()));
+            }
+        }
         result.addAll(bbbBeamSpecs());
         result.addAll(enderscapeSpecs());
         return List.copyOf(result);

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "zz_bge_external_fixtures",
+  "version": "1.0.0",
+  "name": "BGE controlled AMC integration",
+  "entrypoints": {"fabric-gametest": ["dev.aero.cnmterraincompat.AmcPatternGameTests"]},
+  "depends": {"architectural_material_closure": "*", "cnm_terrain_slabs_compat": "=${version}"}
+}
