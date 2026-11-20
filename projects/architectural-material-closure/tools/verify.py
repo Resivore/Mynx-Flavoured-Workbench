@@ -107,12 +107,13 @@ def check_texture(jar, provider, client):
     assert 0 < gains["return"][1] < gains["lip"][0] < 1 < gains["raised"][0]
     assert 0 < gains["recess"][1] < gains["lip"][0]
 
-    # The five dark bands and their raised ends must read against the actual
-    # adjacent Stone even where vanilla grain would reverse the contrast.
-    for y in (3, 6, 9, 12, 15):
-        for x in range(3, 9):
-            assert result.getpixel((x, y))[0] + 12 <= result.getpixel((x, y - 1))[0]
-        assert result.getpixel((9, y - 1))[0] + 12 <= result.getpixel((10, y - 1))[0]
+    # Each region samples the same 127-grey Stone somewhere in the C7 sprite.
+    # Verify its observed C7 level against the gain range for every C8 texel.
+    c7_at_127 = {"return": 72, "recess": 78, "lip": 100, "raised": 146}
+    for region, old in c7_at_127.items():
+        target = (127 + old) / 2 if old < 127 else old
+        low, high = gains[region]
+        assert low * 127 <= target + 0.5 and high * 127 >= target - 0.5, region
 
 
 def verify(jar, provider, client):

@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary7'
+version = '0.1.0-canary8'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c7')
+layout.buildDirectory = layout.projectDirectory.dir('build/c8')
 
 repositories {
     mavenCentral()
@@ -41,7 +41,7 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C7.jar'
+    archiveFileName = 'AMC C8.jar'
 }
 
 tasks.register('verifyStoneJar', Exec) {
@@ -63,6 +63,6 @@ fabricApi {
 }
 
 loom.runs.named('gameTest') {
-    runDir 'build/c7/gametest'
+    runDir 'build/c8/gametest'
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

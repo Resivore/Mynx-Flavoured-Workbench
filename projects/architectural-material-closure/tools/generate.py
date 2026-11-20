@@ -55,9 +55,9 @@ def shade_stone_shutter(provider, client, dest):
     face = region_light(range(3, 9), 2)
 
     def gain(columns, row):
-        # Deepen the measured relief to keep the recess legible even on the
-        # lightest Stone texels. A neutral region retains unit gain.
-        return (region_light(columns, row) / face) ** 2.25
+        full_gain = (region_light(columns, row) / face) ** 2.25
+        # Unit gain is the original Stone texel. Halve only the shadow deficit.
+        return (1.0 + full_gain) / 2 if full_gain < 1.0 else full_gain
 
     raised = gain(range(2, 10), 1)
     lip = gain([2], 3)
