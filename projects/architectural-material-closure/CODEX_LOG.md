@@ -118,3 +118,16 @@
 - Runtime: C10 has no owner gameplay observations.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify the retained C10 artifact in game and record the owner’s observations and explicit acceptance decision.
+
+## 2026-11-20T17:47:25Z — Add five BBB Andesite masonry forms in Canary 11
+
+- Revision: 12
+- Source checkpoint: `d03766e43e016296eb7208561a5dc805da72c6d5`
+- Changes: Registered the Andesite Column, Urn, Moulding, Fence and Frame using BBB's corresponding Stone block classes and `DescriptionBlockItem`. BBB C9, `2.0pre4+26.2-enderscape-dev.7` (SHA-256 `57ddb5dfe62f2eb9f4a2ce22fbeeb5cce4386bbd93aab3f7df0dd8e6d19ddaf0`), supplies the reference state definitions, model graphs, art, recipes, drops and tags. The release depends on the BBB provider.
+- Build/static: Compared 199 state entries and 69 placed, parent and inventory model nodes in the production archive and BBB. Column 60/22, Urn 2/3, Moulding 80/13, Fence 9/5, Frame 48/26. Compared geometry, UVs, face rotations and culling, state conditions, transforms and resolved face slots. Verified 10 sheets pixel by pixel against the six-color vanilla Andesite palette, retaining alpha, the common moulding backing and BBB's dirt overlay. Shared column surfaces use a common rank mapping across joins.
+- Java 25 / Gradle 9.5.1 passed the build and 13 controlled Fabric GameTests, including all six C10 forms. Checked all legal states against BBB for outline, collision, fluid, rotations and mirrors. Exercised placement, mixed-material connections, hammer, soil, shovel and planting. Verified all 169 production entries, loaded recipes, tag parity and drops.
+- Compared C11 with the hash-verified C10 archive. 61 of its 64 entries matched byte for byte, including both original initializer classes and the shutter sprite at 75% shadow depth. The three shared files contain only the release metadata, five names and fence wall membership changes.
+- Artifact: Local-only `AMC C11.jar`, version `0.1.0-canary11`, 92,319 bytes, SHA-256 `6e0306dfdbd758b5e8e2f810dde3fcafa67e69b48141b96b6eb3ba53ec496fc3`, finalized at `2026-11-20T17:45:18.3879137Z`.
+- Runtime: Owner gameplay verification of C11 is pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare the retained C11 forms with BBB in game using TESTING.md and record the owner's observations.

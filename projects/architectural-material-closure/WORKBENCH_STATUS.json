@@ -20,7 +20,8 @@
     "scope": [
       "Provide the Stone Parapet and Stone Louvered Shutter as two AMC blocks with matching items for Minecraft Java 26.2 Fabric.",
       "Use the Macaw masonry block classes and model parents. The parapet maps vanilla Stone directly. The shutter uses the same Stone grain at matching UV coordinates, with structural lighting measured across the reference shutter's five repeated slats.",
-      "Provide an Andesite Button and Pressure Plate using the vanilla Stone controls, and an Andesite Gothic Window and Arrow Slit using the Macaw Stone Brick forms. Each has a matching AMC item. All four bind the vanilla Andesite sprite directly to the material faces."
+      "Provide an Andesite Button and Pressure Plate using the vanilla Stone controls, and an Andesite Gothic Window and Arrow Slit using the Macaw Stone Brick forms. Each has a matching AMC item. All four bind the vanilla Andesite sprite directly to the material faces.",
+      "Provide Andesite variants of BBB's Stone Column, Urn, Moulding, Fence and Frame using the provider classes, item behavior and exact model hierarchies. Adapt the ten BBB material sheets using ranked vanilla Andesite colors."
     ],
     "boundaries": {
       "owned_paths": [
@@ -28,7 +29,7 @@
       ],
       "exclusions": [
         "Additional forms and materials, provider replacement, and IBF or BGE integration are outside this release.",
-        "Provider-derived resources and the release JAR remain in ignored local output. C1–C5 are historical provenance."
+        "Provider-derived resources and the release JAR remain in ignored local output. C1â€“C5 are historical provenance."
       ]
     },
     "dependencies": [
@@ -55,27 +56,33 @@
         "identifier": "mcwwindows",
         "requirement": "*",
         "reason": "Supplies the masonry behavior classes, model parents, conditional iron bars, tags and shutter sound. Controlled reference build used Macaw's Windows 2.4.2 for 26.2 Fabric."
+      },
+      {
+        "type": "MOD",
+        "identifier": "bbb",
+        "requirement": "*",
+        "reason": "Provides the five masonry implementations, description items, hammer and planting behavior, family tags and shared models. The controlled build uses the retained BBB C9 for 26.2 Fabric."
       }
     ]
   },
   "state": {
-    "milestone": "C10 adds four Andesite forms. All eight controlled GameTests and package checks passed. The owner selected C9's Stone shutter appearance, retained in C10. Owner runtime verification and explicit acceptance of C10 are pending.",
+    "milestone": "C11 adds five BBB Andesite masonry forms. The package passed reference geometry and texture checks, and all 13 controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C10 (0.1.0-canary10)",
-        "canary": 10,
-        "embedded_version": "0.1.0-canary10",
+        "version": "C11 (0.1.0-canary11)",
+        "canary": 11,
+        "embedded_version": "0.1.0-canary11",
         "artifact": {
-          "filename": "AMC C10.jar",
-          "sha256": "80ee9e08bf36685b0d3e610e602d930c30e7f38072770214b1845c4edbc20d84"
+          "filename": "AMC C11.jar",
+          "sha256": "6e0306dfdbd758b5e8e2f810dde3fcafa67e69b48141b96b6eb3ba53ec496fc3"
         },
-        "built_at": "2026-11-20T17:22:26.6745531Z",
-        "source_commit": "8988d78ed4c2f3863230bd4cf5b18fb511aac17b",
+        "built_at": "2026-11-20T17:45:18.3879137Z",
+        "source_commit": "d03766e43e016296eb7208561a5dc805da72c6d5",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds an Andesite Button, Pressure Plate, Gothic Window and Arrow Slit using the vanilla Andesite texture."
+        "summary": "Adds an Andesite Column, Urn, Moulding, Fence and Frame with BBB's masonry geometry, interactions and shading."
       },
       "accepted": null,
       "rollback": null,
@@ -89,10 +96,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-11-20T17:23:51Z",
-    "updated_at": "2026-11-20T17:23:51Z",
-    "last_codex_at": "2026-11-20T17:23:51Z",
-    "source_commit": "8988d78ed4c2f3863230bd4cf5b18fb511aac17b"
+    "revision": 12,
+    "activity_at": "2026-11-20T17:47:25Z",
+    "updated_at": "2026-11-20T17:47:25Z",
+    "last_codex_at": "2026-11-20T17:47:25Z",
+    "source_commit": "d03766e43e016296eb7208561a5dc805da72c6d5"
   }
 }
