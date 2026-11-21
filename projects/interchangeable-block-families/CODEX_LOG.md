@@ -279,3 +279,14 @@
 - Artifact: `IBF C26.jar`, embedded version `0.1.0-canary26`, 63,979 bytes, SHA-256 `e5d919c43278f4329bef54dd3360fe6e990e262398c49c70e898bb607f062bb0`, finalized at `2026-11-21T02:59:08.0890460Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of selector transfers, independent patterned blocks and recipes in TESTING.md.
+
+## 2026-11-21T18:51:54.5313930Z — IBF C27 integrates Calcite and Shadoline Block
+
+- Revision: 27
+- Source checkpoint: `7e0dac1aae79d1f0e9f063f4eaf3252524c73e3f`
+- Changes: Added four AMC-parented selectors per material with 52 unique members. Enderscape is optional with its existing minimum supported version. Families supplied by Enderscape or its AMC and BBB packs resolve only when the provider is present. Removing the eight new keys from the compiled C27 catalog reproduced the complete ordered C26 digest `755bd84010e39e36a61eaa10ab715c953607396834b054f2285a5faa82a02539`. C27 catalog SHA-256 `20056131e05bcbdde38cac00d13ed49023d626619ddef26fb8831fee8db872b6`.
+- Build/static: The 55 JUnit checks and production archive validation passed. With Enderscape 3.0.2, the exact AMC C28 and AMC-absent builds each passed 38 controlled GameTests, resolving 254 families / 1,879 items and 181 / 1,397 respectively. The assembled recipe audit removed 1,583 alternates with AMC and 1,114 without it, with zero canonical removals. The 68 new provider recipes comprise 50 suppressed alternates, 10 retained parent recipes and eight independent full-block recipes. With Enderscape omitted, the dedicated registry and ShapeMap GameTest passed with AMC (220 / 1,704) and without AMC (164 / 1,348). It checked the complete active graph, forward and reverse transfers of named stacks of seven, independent pattern recipes, creative entries and placement for each available material, and the orphaned End Stone Bricks accessories' independent recipes with AMC alone.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Artifact: `IBF C27.jar`, embedded version `0.1.0-canary27`, 65,137 bytes, SHA-256 `5336cc6faf594fcf7262d19ea75bac10440223bc179008f9e9631d255eeb0d3a`, finalized at `2026-11-21T18:51:54.5313930Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of selector transfers, independent patterns and optional-provider behavior in TESTING.md.
