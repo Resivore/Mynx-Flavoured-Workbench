@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 225;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_677;
+    public static final int EXPECTED_FAMILY_COUNT = 234;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_749;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -852,6 +852,15 @@ public final class AuditedShapeFamilies {
             family("cnm/window/smooth_basalt", WINDOW, amc("smooth_basalt_window"),
                     amc("smooth_basalt_window2"), amc("smooth_basalt_four_window"),
                     amc("smooth_basalt_pane_window"), amc("smooth_basalt_gothic_window")),
+            family("cnm/window/veradite", WINDOW, amc("veradite_window"),
+                    amc("veradite_window2"), amc("veradite_four_window"),
+                    amc("veradite_pane_window"), amc("veradite_gothic_window")),
+            family("cnm/window/mirestone", WINDOW, amc("mirestone_window"),
+                    amc("mirestone_window2"), amc("mirestone_four_window"),
+                    amc("mirestone_pane_window"), amc("mirestone_gothic_window")),
+            family("cnm/window/kurodite", WINDOW, amc("kurodite_window"),
+                    amc("kurodite_window2"), amc("kurodite_four_window"),
+                    amc("kurodite_pane_window"), amc("kurodite_gothic_window")),
             family("cnm/window/mossy_stone_bricks", WINDOW, amc("mossy_stone_bricks_window"),
                     amc("mossy_stone_bricks_window2"), amc("mossy_stone_bricks_four_window"),
                     amc("mossy_stone_bricks_pane_window"), amc("mossy_stone_bricks_gothic_window")),
@@ -1112,6 +1121,18 @@ public final class AuditedShapeFamilies {
                     amc("smooth_basalt_urn"), amc("smooth_basalt_moulding"),
                     amc("smooth_basalt_fence"), amc("smooth_basalt_frame"),
                     amc("smooth_basalt_arrow_slit")),
+            family("cnm/bbb_detail/stone/veradite", BBB_DETAIL, amc("veradite_column"),
+                    amc("veradite_urn"), amc("veradite_moulding"),
+                    amc("veradite_fence"), amc("veradite_frame"),
+                    amc("veradite_arrow_slit")),
+            family("cnm/bbb_detail/stone/mirestone", BBB_DETAIL, amc("mirestone_column"),
+                    amc("mirestone_urn"), amc("mirestone_moulding"),
+                    amc("mirestone_fence"), amc("mirestone_frame"),
+                    amc("mirestone_arrow_slit")),
+            family("cnm/bbb_detail/stone/kurodite", BBB_DETAIL, amc("kurodite_column"),
+                    amc("kurodite_urn"), amc("kurodite_moulding"),
+                    amc("kurodite_fence"), amc("kurodite_frame"),
+                    amc("kurodite_arrow_slit")),
             family("cnm/bbb_detail/stone/mossy_stone_bricks", BBB_DETAIL, amc("mossy_stone_bricks_column"),
                     amc("mossy_stone_bricks_urn"), amc("mossy_stone_bricks_moulding"),
                     amc("mossy_stone_bricks_fence"), amc("mossy_stone_bricks_frame"),
@@ -1386,6 +1407,24 @@ public final class AuditedShapeFamilies {
                     amc("smooth_basalt_diamond_paving"), amc("smooth_basalt_basket_weave_paving"),
                     amc("smooth_basalt_square_paving"), amc("smooth_basalt_honeycomb_paving"),
                     amc("smooth_basalt_clover_paving"), amc("smooth_basalt_dumble_paving")),
+            family("cnm/building_accessory/veradite", BUILDING_ACCESSORY, amc("veradite_running_bond_path"),
+                    amc("veradite_strewn_rocky_path"), amc("veradite_windmill_weave_path"),
+                    amc("veradite_flagstone_path"), amc("veradite_crystal_floor_path"),
+                    amc("veradite_diamond_paving"), amc("veradite_basket_weave_paving"),
+                    amc("veradite_square_paving"), amc("veradite_honeycomb_paving"),
+                    amc("veradite_clover_paving"), amc("veradite_dumble_paving")),
+            family("cnm/building_accessory/mirestone", BUILDING_ACCESSORY, amc("mirestone_running_bond_path"),
+                    amc("mirestone_strewn_rocky_path"), amc("mirestone_windmill_weave_path"),
+                    amc("mirestone_flagstone_path"), amc("mirestone_crystal_floor_path"),
+                    amc("mirestone_diamond_paving"), amc("mirestone_basket_weave_paving"),
+                    amc("mirestone_square_paving"), amc("mirestone_honeycomb_paving"),
+                    amc("mirestone_clover_paving"), amc("mirestone_dumble_paving")),
+            family("cnm/building_accessory/kurodite", BUILDING_ACCESSORY, amc("kurodite_running_bond_path"),
+                    amc("kurodite_strewn_rocky_path"), amc("kurodite_windmill_weave_path"),
+                    amc("kurodite_flagstone_path"), amc("kurodite_crystal_floor_path"),
+                    amc("kurodite_diamond_paving"), amc("kurodite_basket_weave_paving"),
+                    amc("kurodite_square_paving"), amc("kurodite_honeycomb_paving"),
+                    amc("kurodite_clover_paving"), amc("kurodite_dumble_paving")),
             family("cnm/building_accessory/mossy_stone", BUILDING_ACCESSORY,
                     mcwPaths("mossy_stone_running_bond_path"),
                     mcwPaths("mossy_stone_strewn_rocky_path"),
@@ -1506,11 +1545,14 @@ public final class AuditedShapeFamilies {
                     enderscape("polished_end_stone_button"), enderscape("polished_end_stone_pressure_plate"),
                     amc("end_stone_bricks_parapet"), amc("end_stone_bricks_louvered_shutter")),
             family("cnm/building_accessory/enderscape_polished_mirestone", BUILDING_ACCESSORY,
-                    enderscape("polished_mirestone_button"), enderscape("polished_mirestone_pressure_plate")),
+                    enderscape("polished_mirestone_button"), enderscape("polished_mirestone_pressure_plate"),
+                    amc("mirestone_parapet"), amc("mirestone_louvered_shutter")),
             family("cnm/building_accessory/enderscape_polished_veradite", BUILDING_ACCESSORY,
-                    enderscape("polished_veradite_button"), enderscape("polished_veradite_pressure_plate")),
+                    enderscape("polished_veradite_button"), enderscape("polished_veradite_pressure_plate"),
+                    amc("veradite_parapet"), amc("veradite_louvered_shutter")),
             family("cnm/building_accessory/enderscape_polished_kurodite", BUILDING_ACCESSORY,
-                    enderscape("polished_kurodite_button"), enderscape("polished_kurodite_pressure_plate"))
+                    enderscape("polished_kurodite_button"), enderscape("polished_kurodite_pressure_plate"),
+                    amc("kurodite_parapet"), amc("kurodite_louvered_shutter"))
     );
 
     private static final List<AuditedShapeFamily> FAMILIES = allFamilies();

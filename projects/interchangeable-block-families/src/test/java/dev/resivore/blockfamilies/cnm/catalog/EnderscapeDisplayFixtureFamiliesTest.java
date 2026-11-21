@@ -107,13 +107,19 @@ final class EnderscapeDisplayFixtureFamiliesTest {
                     "architectural_material_closure:end_stone_bricks_louvered_shutter"),
             family("cnm/building_accessory/enderscape_polished_mirestone", BUILDING_ACCESSORY,
                     "enderscape:polished_mirestone_button",
-                    "enderscape:polished_mirestone_pressure_plate"),
+                    "enderscape:polished_mirestone_pressure_plate",
+                    "architectural_material_closure:mirestone_parapet",
+                    "architectural_material_closure:mirestone_louvered_shutter"),
             family("cnm/building_accessory/enderscape_polished_veradite", BUILDING_ACCESSORY,
                     "enderscape:polished_veradite_button",
-                    "enderscape:polished_veradite_pressure_plate"),
+                    "enderscape:polished_veradite_pressure_plate",
+                    "architectural_material_closure:veradite_parapet",
+                    "architectural_material_closure:veradite_louvered_shutter"),
             family("cnm/building_accessory/enderscape_polished_kurodite", BUILDING_ACCESSORY,
                     "enderscape:polished_kurodite_button",
-                    "enderscape:polished_kurodite_pressure_plate"));
+                    "enderscape:polished_kurodite_pressure_plate",
+                    "architectural_material_closure:kurodite_parapet",
+                    "architectural_material_closure:kurodite_louvered_shutter"));
 
     private static final List<ExpectedFamily> ENDERSCAPE_BAR_CHAINS = List.of(
             family("cnm/bar_chain/enderscape_shadoline", BAR_CHAIN,

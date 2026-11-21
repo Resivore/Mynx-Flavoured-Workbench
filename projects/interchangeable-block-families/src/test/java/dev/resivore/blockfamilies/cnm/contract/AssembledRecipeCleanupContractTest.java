@@ -146,6 +146,8 @@ class AssembledRecipeCleanupContractTest {
         recipes.addAll(recipesFromBbbEnderscapePackResults());
         if (AMC_PRESENT) {
             recipes.addAll(recipesFromJar("amcReferenceJar", "architectural_material_closure", "amc_families"));
+            recipes.addAll(recipesFromJarResults("amcReferenceJar", "architectural_material_closure", "amc_families",
+                    null, "resourcepacks/enderscape/data/architectural_material_closure/recipe/"));
         }
         recipes.addAll(dynamicAndModeledRecipes());
 
@@ -161,9 +163,9 @@ class AssembledRecipeCleanupContractTest {
                         Map.entry("three_high_doors", 217L),
                         Map.entry("fence_gates", 24L),
                         Map.entry("vanilla_building_accessories", 42L)));
-        if (AMC_PRESENT) expectedCorpus.put("amc_families", 345L);
+        if (AMC_PRESENT) expectedCorpus.put("amc_families", 441L);
         assertEquals(expectedCorpus, countByCorpus(recipes));
-        assertEquals(AMC_PRESENT ? 1_917 : 1_572, recipes.size());
+        assertEquals(AMC_PRESENT ? 2_013 : 1_572, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -185,7 +187,7 @@ class AssembledRecipeCleanupContractTest {
         }
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
-        if (AMC_PRESENT) expectedRemoved.put("amc_families", 257L);
+        if (AMC_PRESENT) expectedRemoved.put("amc_families", 329L);
         expectedRemoved.put("two_high_doors", 260L);
         expectedRemoved.put("macaws_paths", 142L);
         expectedRemoved.put("trapdoors", 195L);
@@ -197,7 +199,7 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(AMC_PRESENT ? 1_386L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(AMC_PRESENT ? 1_458L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -217,6 +219,8 @@ class AssembledRecipeCleanupContractTest {
         recipes.addAll(recipesFromBbbEnderscapePackResults());
         if (AMC_PRESENT) {
             recipes.addAll(recipesFromJar("amcReferenceJar", "architectural_material_closure", "amc_families"));
+            recipes.addAll(recipesFromJarResults("amcReferenceJar", "architectural_material_closure", "amc_families",
+                    null, "resourcepacks/enderscape/data/architectural_material_closure/recipe/"));
         }
         recipes.addAll(dynamicAndModeledRecipes());
 
@@ -258,7 +262,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(AMC_PRESENT ? 547 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(AMC_PRESENT ? 619 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",

@@ -87,11 +87,17 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     "architectural_material_closure:end_stone_bricks_parapet",
                     "architectural_material_closure:end_stone_bricks_louvered_shutter"),
             List.of("enderscape:polished_mirestone_button",
-                    "enderscape:polished_mirestone_pressure_plate"),
+                    "enderscape:polished_mirestone_pressure_plate",
+                    "architectural_material_closure:mirestone_parapet",
+                    "architectural_material_closure:mirestone_louvered_shutter"),
             List.of("enderscape:polished_veradite_button",
-                    "enderscape:polished_veradite_pressure_plate"),
+                    "enderscape:polished_veradite_pressure_plate",
+                    "architectural_material_closure:veradite_parapet",
+                    "architectural_material_closure:veradite_louvered_shutter"),
             List.of("enderscape:polished_kurodite_button",
-                    "enderscape:polished_kurodite_pressure_plate")
+                    "enderscape:polished_kurodite_pressure_plate",
+                    "architectural_material_closure:kurodite_parapet",
+                    "architectural_material_closure:kurodite_louvered_shutter")
     );
 
     private static final List<List<String>> C8_ENDERSCAPE_BAR_CHAIN_FAMILIES = List.of(
@@ -266,7 +272,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 225 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 234 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -293,7 +299,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_677 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_749 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1202,10 +1208,6 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void baseStoneMaterialsKeepFourSelectorsAndIndependentPatternedBlocks(GameTestHelper helper) {
         boolean amcPresent = Boolean.getBoolean("ibf.test.amcExpected");
-        if (amcPresent) {
-            var level = helper.getLevel();
-            CreativeModeTabs.tryRebuildTabContents(level.enabledFeatures(), false, level.registryAccess());
-        }
         for (String material : List.of("tuff", "cinnabar", "sulfur", "smooth_basalt")) {
             String prefix = "architectural_material_closure:" + material + "_";
             if (!amcPresent) {
@@ -1216,25 +1218,52 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
 
             assertSelectorRoundTrip(helper, List.of(prefix + "button", prefix + "pressure_plate",
                     prefix + "parapet", prefix + "louvered_shutter"));
-            assertSelectorRoundTrip(helper, List.of(prefix + "column", prefix + "urn", prefix + "moulding",
-                    prefix + "fence", prefix + "frame", prefix + "arrow_slit"));
-            assertSelectorRoundTrip(helper, List.of(prefix + "window", prefix + "window2", prefix + "four_window",
-                    prefix + "pane_window", prefix + "gothic_window"));
-            assertPathsAndIndependentFullBlocks(helper, prefix, prefix + "button");
-
-            helper.assertTrue(hasRecipe(helper, prefix + "column_from_stonecutting"), "Lost column recipe for " + material);
-            for (String form : List.of("urn", "moulding", "fence")) {
-                helper.assertTrue(!hasRecipe(helper, prefix + form + "_from_stonecutting"),
-                        "Retained alternate stonecutting recipe for " + prefix + form);
-            }
-            var buildingTab = BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(CreativeModeTabs.BUILDING_BLOCKS);
-            for (String form : List.of("running_bond", "flagstone", "windmill_weave", "crystal_floor")) {
-                Item item = requiredItem(prefix + form);
-                helper.assertTrue(buildingTab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)),
-                        "Missing patterned full block in Building Blocks: " + prefix + form);
-            }
+            assertMasonryWindowsPathsAndPatterns(helper, material, prefix, prefix + "button");
         }
         helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void enderscapeMaterialsKeepTheirPolishedControls(GameTestHelper helper) {
+        boolean amcPresent = Boolean.getBoolean("ibf.test.amcExpected");
+        for (String material : List.of("veradite", "mirestone", "kurodite")) {
+            String prefix = "architectural_material_closure:" + material + "_";
+            String polished = "enderscape:polished_" + material + "_";
+            List<String> controls = new ArrayList<>(List.of(polished + "button", polished + "pressure_plate"));
+            if (amcPresent) {
+                controls.add(prefix + "parapet");
+                controls.add(prefix + "louvered_shutter");
+                assertMasonryWindowsPathsAndPatterns(helper, material, prefix, controls.getFirst());
+            } else {
+                helper.assertTrue(BuiltInRegistries.ITEM.keySet().stream()
+                        .noneMatch(key -> key.toString().startsWith(prefix)), "Unexpected AMC items for " + material);
+            }
+            assertSelectorRoundTrip(helper, controls);
+        }
+        helper.succeed();
+    }
+
+    private static void assertMasonryWindowsPathsAndPatterns(GameTestHelper helper, String material, String prefix,
+                                                             String accessoryParent) {
+        var level = helper.getLevel();
+        CreativeModeTabs.tryRebuildTabContents(level.enabledFeatures(), false, level.registryAccess());
+        assertSelectorRoundTrip(helper, List.of(prefix + "column", prefix + "urn", prefix + "moulding",
+                prefix + "fence", prefix + "frame", prefix + "arrow_slit"));
+        assertSelectorRoundTrip(helper, List.of(prefix + "window", prefix + "window2", prefix + "four_window",
+                prefix + "pane_window", prefix + "gothic_window"));
+        assertPathsAndIndependentFullBlocks(helper, prefix, accessoryParent);
+
+        helper.assertTrue(hasRecipe(helper, prefix + "column_from_stonecutting"), "Lost column recipe for " + material);
+        for (String form : List.of("urn", "moulding", "fence")) {
+            helper.assertTrue(!hasRecipe(helper, prefix + form + "_from_stonecutting"),
+                    "Retained alternate stonecutting recipe for " + prefix + form);
+        }
+        var buildingTab = BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(CreativeModeTabs.BUILDING_BLOCKS);
+        for (String form : List.of("running_bond", "flagstone", "windmill_weave", "crystal_floor")) {
+            Item item = requiredItem(prefix + form);
+            helper.assertTrue(buildingTab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)),
+                    "Missing patterned full block in Building Blocks: " + prefix + form);
+        }
     }
 
     @GameTest(maxTicks = 40)
