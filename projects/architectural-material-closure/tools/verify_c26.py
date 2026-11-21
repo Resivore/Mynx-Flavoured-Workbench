@@ -16,15 +16,23 @@ from verify_paths import FULL, check_paths
 
 
 def verify_families(current, previous, client, enderscape, bbb, paths):
+    families = (
+            ("purpur", "minecraft", "purpur_block", "purpur_slab", "purpur_block", "3e6a2fe3f74a47f110e7870ad2a55814129bd0c1908391c4e5465345a8402dbd"),
+            ("resin", "minecraft", "resin_block", "resin_block", "resin_bricks", "ab7b68d7fd987c8d82e9225a33b783419a86ff4a2e77e5b1cc22cd63f546445c"),
+            ("dusk_purpur", "enderscape", "dusk_purpur_block", "dusk_purpur_slab", "dusk_purpur_block", "5f8793fdad0995b213e1091e9ca06b35ee4b0920dde139197c86a45655a60d74"))
+    compare_family_additions(current, previous, client, enderscape, bbb, paths, families, 26, 3896)
+
+
+def compare_family_additions(current, previous, client, enderscape, bbb, paths, families, canary, previous_count):
     old, new = entries(previous), entries(current)
-    assert len(old) == 3896 and old <= new
+    assert len(old) == previous_count and old <= new
     assert len(new) == sum(not member.is_dir() for member in current.infolist())
     lang = f"assets/{NS}/lang/en_us.json"
     labels, groups = defaultdict(dict), defaultdict(list)
     expected = set()
     changed = {"fabric.mod.json", "dev/resivore/amc/BaseStoneFamilies.class", "dev/resivore/amc/EnderscapeFamilies.class"}
     meta = json.loads(previous.read("fabric.mod.json"))
-    meta["version"] = "0.1.0-canary26"
+    meta["version"] = f"0.1.0-canary{canary}"
     assert meta == json.loads(current.read("fabric.mod.json"))
     stone_path = f"assets/{NS}/textures/block/stone_louvered_shutter.png"
     assert hashlib.sha256(previous.read(stone_path)).hexdigest() == "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878"
@@ -32,13 +40,8 @@ def verify_families(current, previous, client, enderscape, bbb, paths):
     sheets = {"block/column/stone_" + part for part in ("lower", "middle", "none", "top", "upper")}
     sheets.update(("block/polished_stone", "block/urn/stone", "block/moulding/stone",
                    "block/fence/stone_fence", "block/frame/stone/stone"))
-    for material, slab, sprite, digest in (
-            ("purpur", "purpur_slab", "purpur_block", "3e6a2fe3f74a47f110e7870ad2a55814129bd0c1908391c4e5465345a8402dbd"),
-            ("resin", "resin_block", "resin_bricks", "ab7b68d7fd987c8d82e9225a33b783419a86ff4a2e77e5b1cc22cd63f546445c"),
-            ("dusk_purpur", "dusk_purpur_slab", "dusk_purpur_block", "5f8793fdad0995b213e1091e9ca06b35ee4b0920dde139197c86a45655a60d74")):
-        optional = material == "dusk_purpur"
-        ns, authority, prefix, pack = ("enderscape", enderscape, PREFIX, Pack(current)) if optional else ("minecraft", client, "", current)
-        base = material + "_block"
+    for material, ns, base, slab, sprite, digest in families:
+        authority, prefix, pack = (enderscape, PREFIX, Pack(current)) if ns == "enderscape" else (client, "", current)
         tile_path = f"assets/{ns}/textures/block/{sprite}.png"
         assert hashlib.sha256(authority.read(tile_path)).hexdigest() == digest
         for block in (base, slab):
@@ -55,10 +58,10 @@ def verify_families(current, previous, client, enderscape, bbb, paths):
                 ref = json.loads(source.replace("minecraft:block/tuff", f"{ns}:block/{sprite}")
                                  .replace("minecraft:tuff_slab", f"{ns}:{slab}")
                                  .replace("minecraft:tuff", f"{ns}:{base}").replace("tuff", material))
-                if material == "resin" and name == f"data/{NS}/recipe/tuff_button.json":
+                if material in ("resin", "shadoline_block") and name == f"data/{NS}/recipe/tuff_button.json":
                     ref.pop("ingredients")
-                    ref.update(type="minecraft:crafting_shaped", key={"R": "minecraft:resin_block"}, pattern=["R ", " R"])
-                if material == "resin" and name == f"data/{NS}/recipe/tuff_louvered_shutter.json":
+                    ref.update(type="minecraft:crafting_shaped", key={"R": f"{ns}:{base}"}, pattern=["R ", " R"])
+                if base == slab and name == f"data/{NS}/recipe/tuff_louvered_shutter.json":
                     ref["pattern"] = ["B  ", " B ", "  B"]
                 assert json.loads(pack.read(dest)) == ref, dest
             if "/tags/" in name:
@@ -89,7 +92,7 @@ def verify_families(current, previous, client, enderscape, bbb, paths):
         (changed if name in old else expected).add(name)
     assert new - old == expected, (new - old) ^ expected
     assert {name for name in old if previous.read(name) != current.read(name)} == changed
-    print(f"C26: 90 new pairs, {len(expected)} added entries, {len(old)-len(changed)} identical C25 entries, "
+    print(f"C{canary}: {30 * len(families)} new pairs, {len(expected)} added entries, {len(old)-len(changed)} identical previous entries, "
           f"{len(changed)} updated shared entries, {len(new)} total.")
 
 

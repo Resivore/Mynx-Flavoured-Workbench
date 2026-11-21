@@ -298,4 +298,78 @@ public final class EnderscapeTests {
     public void duskPurpurPressurePlateSensitivity(GameTestHelper helper) {
         DirectFormTests.pressurePlateSensitivity(helper, "dusk_purpur");
     }
+
+    @GameTest
+    public void shadolineBlockRecipes(GameTestHelper helper) {
+        DirectFormTests.familyRecipes(helper, "shadoline_block", "enderscape:shadoline_block", "enderscape:shadoline_block_slab");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void shadolineBlockReferenceStatesAndData(GameTestHelper helper) {
+        DirectFormTests.referenceStatesAndData(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockPlacement(GameTestHelper helper) {
+        DirectFormTests.placement(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockEngraving(GameTestHelper helper) {
+        DirectFormTests.engraving(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockWindowInteractions(GameTestHelper helper) {
+        DirectFormTests.windowInteractions(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockStackedMasonry(GameTestHelper helper) {
+        DirectFormTests.stackedMasonry(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockCompleteStateAndShapeParity(GameTestHelper helper) {
+        MasonryTests.completeStateAndShapeParity(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockWetAndDryPlacement(GameTestHelper helper) {
+        MasonryTests.wetAndDryPlacement(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockColumnAndMouldingChanges(GameTestHelper helper) {
+        MasonryTests.columnAndMouldingChanges(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockFenceAndFrameChanges(GameTestHelper helper) {
+        MasonryTests.fenceAndFrameChanges(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockUrnSoilAndPlant(GameTestHelper helper) {
+        MasonryTests.urnSoilAndPlant(helper, "shadoline_block");
+    }
+
+    @GameTest
+    public void shadolineBlockSupportsAndShutter(GameTestHelper helper) {
+        var registry = BuiltInRegistries.BLOCK;
+        StoneTests.supportsAndShutterInteraction(helper,
+                registry.getValue(Identifier.parse("architectural_material_closure:shadoline_block_parapet")),
+                registry.getValue(Identifier.parse("architectural_material_closure:shadoline_block_louvered_shutter")));
+    }
+
+    @GameTest
+    public void shadolineBlockButtonPulse(GameTestHelper helper) {
+        DirectFormTests.buttonPulse(helper, "shadoline_block");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void shadolineBlockPressurePlateSensitivity(GameTestHelper helper) {
+        DirectFormTests.pressurePlateSensitivity(helper, "shadoline_block");
+    }
 }

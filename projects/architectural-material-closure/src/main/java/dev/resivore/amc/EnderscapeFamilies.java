@@ -62,10 +62,13 @@ public record EnderscapeFamilies(String material, Block base) {
                 container, PackActivationType.ALWAYS_ENABLED)) {
             throw new IllegalStateException("Missing AMC Enderscape resource pack");
         }
-        requireBlockItem("dusk_purpur_slab");
-        var dusk = new EnderscapeFamilies("dusk_purpur", requireBlockItem("dusk_purpur_block"));
-        dusk.registerControls();
-        families.add(dusk);
+        for (String material : List.of("dusk_purpur", "shadoline_block")) {
+            requireBlockItem(material + "_slab");
+            String substrate = material.equals("dusk_purpur") ? "dusk_purpur_block" : material;
+            var family = new EnderscapeFamilies(material, requireBlockItem(substrate));
+            family.registerControls();
+            families.add(family);
+        }
         families.forEach(EnderscapeFamilies::registerForms);
     }
 

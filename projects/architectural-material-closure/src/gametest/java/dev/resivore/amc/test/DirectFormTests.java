@@ -64,7 +64,7 @@ public final class DirectFormTests {
                 result.put("parapet", BlockInit.ANDESITE_PARAPET);
                 result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
             }
-            case "veradite", "mirestone", "kurodite", "tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin", "dusk_purpur" -> {
+            case "veradite", "mirestone", "kurodite", "tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin", "dusk_purpur", "calcite", "shadoline_block" -> {
                 result.putAll(MUD_REFERENCES);
                 result.put("gothic_window", BlockInit.STONE_BRICK_GOTHIC);
                 result.put("arrow_slit", BlockInit.STONE_BRICK_ARROW_SLIT);
@@ -98,7 +98,7 @@ public final class DirectFormTests {
                 result.put(form, BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("mcwpaths", "dark_prismarine_" + form)));
             }
         }
-        if (StoneTests.END_MATERIALS.contains(material) && !material.equals("dusk_purpur")) {
+        if (StoneTests.END_MATERIALS.contains(material) && !StoneTests.END_WITH_CONTROLS.contains(material)) {
             result.remove("button");
             result.remove("pressure_plate");
         }
@@ -134,10 +134,10 @@ public final class DirectFormTests {
         var level = helper.getLevel();
         var keys = Map.of('B', base, 'S', slab, 'G', "minecraft:glass_pane", 'T', "minecraft:stick",
                 'W', "mcwwindows:window_base", 'H', "mcwwindows:window_half_bar_base", 'C', "mcwwindows:window_centre_bar_base");
-        boolean resin = material.equals("resin");
+        boolean unpacks = material.equals("resin") || material.equals("shadoline_block");
         record Grid(String output, int count, String... rows) {}
         var grids = new java.util.ArrayList<>(List.of(
-                new Grid("button", 1, resin ? new String[]{"B ", " B"} : new String[]{"B"}),
+                new Grid("button", 1, unpacks ? new String[]{"B ", " B"} : new String[]{"B"}),
                 new Grid("pressure_plate", 1, "BB"), new Grid("column", 3, "B", "B", "B"),
                 new Grid("urn", 2, "B B", " B "), new Grid("moulding", 8, "B  ", "BBB", "BBB"),
                 new Grid("fence", 5, "BBB", "B B"), new Grid("frame", 12, "SSS", "S S", "SSS"),
@@ -145,8 +145,9 @@ public final class DirectFormTests {
                 new Grid("pane_window", 8, "WWW", "WBW", "WWW"), new Grid("window2", 8, "HHH", "HBH", "HHH"),
                 new Grid("gothic_window", 4, " B ", "BGB", " B "), new Grid("parapet", 5, "TTT", "TBT"),
                 new Grid("arrow_slit", 3, "BB", "SS", "BB"),
-                new Grid("louvered_shutter", 3, resin ? new String[]{"S  ", " S ", "  S"} : new String[]{"S", "S", "S"})));
-        if (resin) grids.add(new Grid("minecraft:resin_clump", 9, "B"));
+                new Grid("louvered_shutter", 3, base.equals(slab) ? new String[]{"S  ", " S ", "  S"} : new String[]{"S", "S", "S"})));
+        if (material.equals("resin")) grids.add(new Grid("minecraft:resin_clump", 9, "B"));
+        if (material.equals("shadoline_block")) grids.add(new Grid("enderscape:shadoline_ingot", 9, "B"));
         for (var grid : grids) {
             var stacks = new java.util.ArrayList<ItemStack>();
             for (var row : grid.rows()) {
@@ -999,5 +1000,79 @@ public final class DirectFormTests {
     @GameTest(maxTicks = 40)
     public void resinPressurePlateSensitivity(GameTestHelper helper) {
         DirectFormTests.pressurePlateSensitivity(helper, "resin");
+    }
+
+    @GameTest
+    public void calciteRecipes(GameTestHelper helper) {
+        DirectFormTests.familyRecipes(helper, "calcite", "minecraft:calcite", "minecraft:calcite");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void calciteReferenceStatesAndData(GameTestHelper helper) {
+        DirectFormTests.referenceStatesAndData(helper, "calcite");
+    }
+
+    @GameTest
+    public void calcitePlacement(GameTestHelper helper) {
+        DirectFormTests.placement(helper, "calcite");
+    }
+
+    @GameTest
+    public void calciteEngraving(GameTestHelper helper) {
+        DirectFormTests.engraving(helper, "calcite");
+    }
+
+    @GameTest
+    public void calciteWindowInteractions(GameTestHelper helper) {
+        DirectFormTests.windowInteractions(helper, "calcite");
+    }
+
+    @GameTest
+    public void calciteStackedMasonry(GameTestHelper helper) {
+        DirectFormTests.stackedMasonry(helper, "calcite");
+    }
+
+    @GameTest
+    public void calciteCompleteStateAndShapeParity(GameTestHelper helper) {
+        MasonryTests.completeStateAndShapeParity(helper, "calcite");
+    }
+
+    @GameTest
+    public void calciteWetAndDryPlacement(GameTestHelper helper) {
+        MasonryTests.wetAndDryPlacement(helper, "calcite");
+    }
+
+    @GameTest
+    public void calciteColumnAndMouldingChanges(GameTestHelper helper) {
+        MasonryTests.columnAndMouldingChanges(helper, "calcite");
+    }
+
+    @GameTest
+    public void calciteFenceAndFrameChanges(GameTestHelper helper) {
+        MasonryTests.fenceAndFrameChanges(helper, "calcite");
+    }
+
+    @GameTest
+    public void calciteUrnSoilAndPlant(GameTestHelper helper) {
+        MasonryTests.urnSoilAndPlant(helper, "calcite");
+    }
+
+    @GameTest
+    public void calciteSupportsAndShutter(GameTestHelper helper) {
+        var registry = BuiltInRegistries.BLOCK;
+        StoneTests.supportsAndShutterInteraction(helper,
+                registry.getValue(Identifier.parse("architectural_material_closure:calcite_parapet")),
+                registry.getValue(Identifier.parse("architectural_material_closure:calcite_louvered_shutter")));
+    }
+
+    @GameTest
+    public void calciteButtonPulse(GameTestHelper helper) {
+        DirectFormTests.buttonPulse(helper, "calcite");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void calcitePressurePlateSensitivity(GameTestHelper helper) {
+        DirectFormTests.pressurePlateSensitivity(helper, "calcite");
     }
 }

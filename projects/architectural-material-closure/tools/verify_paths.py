@@ -94,7 +94,7 @@ def check_paths(jar, provider, client, expected, material="prismarine_bricks", *
     colors = palette(image(material_archive or client, f"assets/{material_ns}/textures/block/{palette_tile}.png"))
     assert len(colors) == {"quartz_block_side": 6, "nether_bricks": 7, "prismarine_bricks": 8, "end_stone_bricks": 8,
                            "tuff": 5, "cinnabar": 11, "cinnabar_bricks": 15, "sulfur": 6, "smooth_basalt": 6, "veradite": 6, "mirestone": 6, "kurodite": 6,
-                           "purpur_block": 7, "dusk_purpur_block": 7, "resin_bricks": 7}[palette_tile] and len(sheets) == 11 and len(set(sheets.values())) == 11
+                           "purpur_block": 7, "dusk_purpur_block": 7, "resin_bricks": 7, "calcite": 6, "shadoline_block": 9}[palette_tile] and len(sheets) == 11 and len(set(sheets.values())) == 11
     for source, target in sheets.items():
         ns, sprite = source.split(":")
         original = image(provider if ns == "mcwpaths" else client, f"assets/{ns}/textures/{sprite}.png")

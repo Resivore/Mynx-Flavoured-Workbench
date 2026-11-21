@@ -54,7 +54,7 @@ def check_ranked_shutter(stone, tile, result, material):
     assert len(colors) == {"prismarine_bricks": 8, "dark_prismarine": 6, "deepslate": 5, "nether_bricks": 7,
                            "end_stone_bricks": 8, "polished_blackstone": 6, "tuff": 5, "cinnabar": 11, "cinnabar_bricks": 15,
                            "sulfur": 6, "smooth_basalt": 6, "veradite": 6, "mirestone": 6, "kurodite": 6,
-                           "purpur_block": 7, "dusk_purpur_block": 7, "resin_bricks": 7}[material]
+                           "purpur_block": 7, "dusk_purpur_block": 7, "resin_bricks": 7, "calcite": 6, "shadoline_block": 9}[material]
     for before, after in zip(source, result.getdata(), strict=True):
         if before[3] == 255:
             assert before[0] == before[1] == before[2]

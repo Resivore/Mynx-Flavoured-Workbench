@@ -75,7 +75,7 @@ public final class StoneTests {
         helper.succeed();
     }
 
-    static final java.util.List<String> BASE_MATERIALS = java.util.List.of("tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin");
+    static final java.util.List<String> BASE_MATERIALS = java.util.List.of("tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin", "calcite");
 
     @GameTest
     public void baseMaterialProviderOwnership(GameTestHelper helper) {
@@ -99,14 +99,15 @@ public final class StoneTests {
         helper.succeed();
     }
 
-    static final java.util.List<String> END_MATERIALS = java.util.List.of("veradite", "mirestone", "kurodite", "dusk_purpur");
+    static final java.util.List<String> END_MATERIALS = java.util.List.of("veradite", "mirestone", "kurodite", "dusk_purpur", "shadoline_block");
+    static final Set<String> END_WITH_CONTROLS = Set.of("dusk_purpur", "shadoline_block");
 
     @GameTest
     public void registryAndResources(GameTestHelper helper) {
         var ids = new java.util.HashSet<>(Set.of(id("parapet"), id("louvered_shutter")));
         for (String material : java.util.List.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine",
                 "sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks", "end_stone_bricks", "polished_blackstone", "mossy_stone_bricks",
-                "tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin")) {
+                "tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin", "calcite")) {
             var forms = new java.util.ArrayList<>(DirectFormTests.references(material).keySet());
             if (Set.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine", "end_stone_bricks", "mossy_stone_bricks").contains(material)
                     || BASE_MATERIALS.contains(material)) {
@@ -122,14 +123,14 @@ public final class StoneTests {
                 }
             }
         }
-        helper.assertTrue(ids.size() == 357, "Expected 357 block/item pairs");
+        helper.assertTrue(ids.size() == 387, "Expected 387 block/item pairs");
         boolean present = net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("enderscape");
         helper.assertTrue(present == Boolean.getBoolean("amc.test.enderscape"), "Wrong controlled provider set");
         var level = helper.getLevel();
         for (String material : END_MATERIALS) {
             var forms = new java.util.ArrayList<>(DirectFormTests.references(material).keySet());
             forms.addAll(java.util.List.of("column", "urn", "moulding", "fence", "frame"));
-            helper.assertTrue(Set.copyOf(forms).size() == (material.equals("dusk_purpur") ? 30 : 28), material + " form count");
+            helper.assertTrue(Set.copyOf(forms).size() == (END_WITH_CONTROLS.contains(material) ? 30 : 28), material + " form count");
             for (String form : forms) {
                 var key = Identifier.fromNamespaceAndPath(NAMESPACE, material + "_" + form);
                 var recipe = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, key));
@@ -150,7 +151,7 @@ public final class StoneTests {
                             && block.defaultBlockState().requiresCorrectToolForDrops() == requiresTool, key + " material properties");
                 }
             }
-            if (present && !material.equals("dusk_purpur")) {
+            if (present && !END_WITH_CONTROLS.contains(material)) {
                 for (String control : java.util.List.of("button", "pressure_plate")) {
                     var key = Identifier.fromNamespaceAndPath("enderscape", "polished_" + material + "_" + control);
                     helper.assertTrue(BuiltInRegistries.ITEM.getValue(key) instanceof BlockItem item
@@ -160,7 +161,7 @@ public final class StoneTests {
                 }
             }
         }
-        helper.assertTrue(ids.size() == (present ? 471 : 357), "Unexpected active AMC count");
+        helper.assertTrue(ids.size() == (present ? 531 : 387), "Unexpected active AMC count");
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());
