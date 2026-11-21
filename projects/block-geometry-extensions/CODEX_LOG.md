@@ -658,3 +658,14 @@
 - Artifact: PRIVATE_LOCAL_ONLY `BGE C105.jar`, 6,424,532 bytes, SHA-256 `2a2505cee80cfe2c81bd8d320a0df9cba760c29ee04e489603222cb95ca8d29b`, finalized at `2026-11-20T22:52:27.4469340Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
 - Next state: Verify pattern continuity, item previews and survival behavior against the retained C105 bytes using TESTING.md.
+
+## 2026-11-21T01:53:45.244793Z — Finalize BGE C106 AMC base stone patterns
+
+- Revision: 68
+- Source checkpoint: `c67bce3d1769cb0fc4253b176e62437b01a9c288`
+- Changes: Added the 16 AMC C23 base stone patterns after the provider's BaseStoneFamilies registration. AMC owns the four patterns for each of Tuff, Cinnabar, Sulfur and Smooth Basalt. BGE supplies eight derived roles per parent through the C105 registration and model writers.
+- Build/static: All 4 AMC-present and 163 AMC-absent controlled Fabric tests passed. Checked every derived blockstate's outline, collision and fluid, all 2,592 selector transfers, stonecutting, engraving, drops, survival funding and completion. The 32-family audit verified 3,456 placed selectors, 288 previews, 1,536 models and 11,808 faces. All 16 C105 memberships and 992 generated resource definitions matched. All 52 native Macaw patterned Slab/Stair pairs passed. Architecture, glass, native semantics and archive checks passed. Against exact C105, one hook class was added, five entries changed, and 11,248 entries were byte-identical, including every packaged asset and data file.
+- Runtime: Owner Minecraft verification and acceptance are pending.
+- Artifact: PRIVATE_LOCAL_ONLY `BGE C106.jar`, 6,425,709 bytes, SHA-256 `8723e77187dc65cadba534df447b735f8c4d8c17973e6e0ecf7ebb160c2490e2`, finalized at `2026-11-21T01:50:06.8417228Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
+- Next state: Owner verification of pattern alignment, item previews, and survival behavior using TESTING.md and the retained C106 bytes.

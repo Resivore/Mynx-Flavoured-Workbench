@@ -24,7 +24,7 @@
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
       "Expose one deterministic ordered geometry catalog for Vertical Slab, Step, Corner, Quarter Column, and Layer without changing established placement, economy, or material-frame semantics.",
-      "Offer complete nine-role BGE geometry families for the exact 164 explicitly cataloged optional-provider sources when Ribbits, Mynx Trees, Macaw's Paths, Building But Better, Enderscape, Mossy Stone, or Architectural Material Closure supplies the corresponding source block, without discovering or completing arbitrary CNM families.",
+      "Offer complete nine-role BGE geometry families for the exact 180 explicitly cataloged optional-provider sources when Ribbits, Mynx Trees, Macaw's Paths, Building But Better, Enderscape, Mossy Stone, or Architectural Material Closure supplies the corresponding source block, without discovering or completing arbitrary CNM families.",
       "Treat adding a normal catalog material as full membership in the canonical block, horizontal slab, stair, wall, Vertical Slab, Step, Layer, Corner, and Quarter Column roles unless an exact technical exclusion is recorded.",
       "Keep canonical material identity separate from geometry generation so limited special forms such as Farmland Slab remain explicitly canonical-bound without implying a full generated family.",
       "Require every BGE-owned registered block to have one explicit canonical classification or a documented exemption, with bootstrap validation preventing anonymous material-semantic holes.",
@@ -36,8 +36,8 @@
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
       "C92 restores C78's explicit material/profile architecture and removes C79-C91 arbitrary-CNM discovery. C93 and C94 preserve the explicit provider catalog, role ownership, placed resources, and item presentation. C99 removes the C95-C98 spruce tint interception and tracing experiment, restores the exact C94 spruce/client contract, and retains C96's generated Veiled Leaves and Silver Birch Leaves Stair frames. C99 also makes Bookshelf Corner, Quarter Column, and Layer top/bottom faces select the existing Matcha bookshelf-top resource only while the active pack supplies it, keeps valid oak-planks fallback and Bookshelf side faces, and locks Bookshelf Stair wood UVs to the Minecraft 26.2 non-directional Stair frame without changing physical shape or placement.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.49-bge.canary105.amc-patterns+26.2`.",
-      "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks plus five distinct Macaw soil Path blocks, six Mynx Trees log/wood/leaf sources, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, all 12 BBB beam parents including Pale Oak, 68 exact Enderscape sources, the provider-owned Mossy Stone root, and 16 AMC patterned full blocks. C93 adopts exact vanilla or Enderscape Slab/Stairs/Wall blocks wherever supplied, suppresses overlapping fallback registrations while Enderscape is loaded, supplies only genuinely absent standard roles plus the five BGE-specific roles, and validates exactly one visible nine-role ShapeMap variation for each explicit family. The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` remains a declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's thin Beam Wall topology remains canonical for all 12 Beam families, and the three Enderscape private Beam variants preserve that topology with their own palettes."
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.50-bge.canary106.amc-base-stone+26.2`.",
+      "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks plus five distinct Macaw soil Path blocks, six Mynx Trees log/wood/leaf sources, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, all 12 BBB beam parents including Pale Oak, 68 exact Enderscape sources, the provider-owned Mossy Stone root, and 32 AMC patterned full blocks. AMC registers the original 16 before the EndStoneBricksBlocks return hook and the 16 Tuff, Cinnabar, Sulfur and Smooth Basalt patterns before the BaseStoneFamilies return hook. C93 adopts exact vanilla or Enderscape Slab/Stairs/Wall blocks wherever supplied, suppresses overlapping fallback registrations while Enderscape is loaded, supplies only genuinely absent standard roles plus the five BGE-specific roles, and validates exactly one visible nine-role ShapeMap variation for each explicit family. The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` remains a declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's thin Beam Wall topology remains canonical for all 12 Beam families, and the three Enderscape private Beam variants preserve that topology with their own palettes."
     ],
     "boundaries": {
       "owned_paths": [
@@ -71,7 +71,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C105 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C106 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -94,18 +94,18 @@
     ]
   },
   "state": {
-    "milestone": "Adds eight derived shapes to each of 16 optional AMC patterned full blocks, using the exact provider sprite for each family. Controlled validation passed with AMC C21 present and absent. Owner runtime verification and acceptance are pending.",
+    "milestone": "Adds eight derived shapes to each of 16 AMC Tuff, Cinnabar, Sulfur and Smooth Basalt patterns, bringing the optional AMC catalog to 32 independent families. Controlled validation passed with AMC C23 present and with AMC absent. Owner runtime verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C105 (AMC Patterned Geometry; embedded 4.2.49-bge.canary105.amc-patterns+26.2)",
-        "canary": 105,
-        "embedded_version": "4.2.49-bge.canary105.amc-patterns+26.2",
+        "version": "C106 (AMC Base Stone Patterns; embedded 4.2.50-bge.canary106.amc-base-stone+26.2)",
+        "canary": 106,
+        "embedded_version": "4.2.50-bge.canary106.amc-base-stone+26.2",
         "artifact": {
-          "filename": "BGE C105.jar",
-          "sha256": "2a2505cee80cfe2c81bd8d320a0df9cba760c29ee04e489603222cb95ca8d29b"
+          "filename": "BGE C106.jar",
+          "sha256": "8723e77187dc65cadba534df447b735f8c4d8c17973e6e0ecf7ebb160c2490e2"
         },
-        "built_at": "2026-11-20T22:52:27.4469340Z",
-        "source_commit": "a7da287bc2de6fcf37d532803f54b88f2c964199",
+        "built_at": "2026-11-21T01:50:06.8417228Z",
+        "source_commit": "c67bce3d1769cb0fc4253b176e62437b01a9c288",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -114,17 +114,17 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The target-specific Minecraft predicate covers the 26.2 registry, model, placement and recipe contracts exercised with these finalized C105 bytes.",
+              "reason": "The target-specific Minecraft predicate covers the 26.2 registry, model, placement and recipe contracts exercised with these finalized C106 bytes.",
               "regression_evidence": [
-                "Java 25 / Minecraft 26.2 Fabric build, 6,424,532 bytes, SHA-256 2a2505cee80cfe2c81bd8d320a0df9cba760c29ee04e489603222cb95ca8d29b, finalized at 2026-11-20T22:52:27.4469340Z from source checkpoint a7da287bc2de6fcf37d532803f54b88f2c964199.",
-                "AMC C21 reference SHA-256 0a39d8f6f1e83cf1b2d5bdf85552e190386e56d8873c9db6e122b0097de81c66. All three controlled tests passed with the real provider stack. Verified 16 independent parent blocks, 128 derived roles, 1,296 directed selector transfers, pickaxe engraving, stonecutting, survival placement, blockspace funding and canonical completion. All 52 actual Macaw patterned parents retained their native Slabs and Stairs.",
-                "Resolved 1,728 placed selections and 144 previews through 768 models, checking 5,904 faces against the 16 distinct provider sprites and exact block-space UV rectangles. C104 archive comparison found one new mixin class, eight changed entries, zero removed entries and byte-identical packaged assets and data.",
-                "All 163 AMC-absent controlled regression tests passed. The 148 legacy external families retained 1,332 role relations and 982 generated roles. Material-profile architecture, glass, native semantic/resource checks and unified archive verification passed."
+                "Java 25 / Minecraft 26.2 Fabric build, 6,425,709 bytes, SHA-256 8723e77187dc65cadba534df447b735f8c4d8c17973e6e0ecf7ebb160c2490e2, finalized at 2026-11-21T01:50:06.8417228Z from source checkpoint c67bce3d1769cb0fc4253b176e62437b01a9c288.",
+                "All 4 controlled tests passed with AMC C23 (SHA-256 8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5). Verified 32 independent parents, 256 derived roles, 2,592 directed component-preserving selector transfers, stonecutting, two-way engraving, survival placement, funded completion and drops. Every derived state matched the established geometry for outline, collision and fluid. All 52 Macaw patterned parents retained their native Slabs and Stairs.",
+                "Resolved 3,456 placed selections and 288 previews through 1,536 models, checking 11,808 faces against the 32 distinct AMC sprites and block-space UVs. Each new material accounted for 432 placed selections, 36 previews, 192 models and 1,476 faces. The original 16 memberships and their 992 generated resource definitions matched the C105 capture.",
+                "All 163 AMC-absent controlled tests passed, including absence of all AMC block and item registrations. The 148 legacy external families retained 1,332 role relations and 982 generated roles. Architecture, authored glass, native resource and semantic checks, Bookshelf references and archive validation passed. Compared with finalized C105, the archive added one optional hook, changed five entries and preserved the exact bytes of 11,248 entries including all packaged assets and data."
               ]
             }
           ]
         },
-        "summary": "Adds eight derived shapes to each of 16 optional AMC patterned full blocks, using the exact provider sprite for each family. PRIVATE_LOCAL_ONLY."
+        "summary": "Adds eight derived shapes to each of 16 AMC Tuff, Cinnabar, Sulfur and Smooth Basalt patterns, bringing the optional AMC catalog to 32 independent families."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -194,10 +194,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 67,
-    "activity_at": "2026-11-20T22:53:27.347479Z",
-    "updated_at": "2026-11-20T22:53:27.347479Z",
-    "last_codex_at": "2026-11-20T22:53:27.347479Z",
-    "source_commit": "a7da287bc2de6fcf37d532803f54b88f2c964199"
+    "revision": 68,
+    "activity_at": "2026-11-21T01:53:45.244793Z",
+    "updated_at": "2026-11-21T01:53:45.244793Z",
+    "last_codex_at": "2026-11-21T01:53:45.244793Z",
+    "source_commit": "c67bce3d1769cb0fc4253b176e62437b01a9c288"
   }
 }
