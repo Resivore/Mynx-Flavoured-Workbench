@@ -266,3 +266,17 @@
 - Runtime: Owner gameplay verification and acceptance are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare the new forms with their Stone references at matching orientation and light using TESTING.md.
+
+## 2026-11-21T01:42:56Z — Complete four base material families in Canary 23
+
+- Revision: 24
+- Source checkpoint: `f0d48a30949b4eb88b31a9f6a95567455797a43e`
+- Audited 86 reference and release archives and checked loaded block/item registries before production registration. Minecraft 26.2 supplies all four base blocks. BBB C9, Macaw's Windows 2.4.2 and Macaw's Paths and Pavings 1.1.1 leave all 120 requested slots open. Extended Block Shapes is reference-only. Its four ordinary fences and eight controls were excluded from intended-provider coverage.
+- Changes: Added 30 pairs each for Tuff, Cinnabar, Sulfur and Smooth Basalt. The four fences use BBB's pillar and infill hammer behavior. All 16 full patterns retain independent identities, stonecutting outputs and engraving. The Smooth Basalt Arrow Slit, Frame and Shutter always craft from vanilla Smooth Basalt blocks. A diagonal of three crafts shutters, keeping the BBB Column's vertical recipe distinct.
+- Each base uses its own vanilla cube-all sprite. The controls and window material bindings use it directly. Compared every texel in 40 BBB sheets and 44 Paths sheets, preserving source UVs, non-material details and alpha. For each of the four shutters, verified all 207 material pixels against 16 finalized C9 Stone luminance ranks and all 49 transparent RGBA pixels. The C9 source PNG is SHA-256 `c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878`. The full Tuff, Cinnabar, Sulfur and Smooth Basalt palettes contain 5, 11, 6 and 6 colors respectively.
+- Build/static: The Java 25 build passed all 179 controlled Fabric GameTests without Extended Block Shapes. Verified recipes and unlocks, drops, creative placement, inventory models, state graphs, UVs and behavioral parity across all 297 pairs. The recipe manager resolved all four Smooth Basalt crafting grids to their intended forms.
+- Compared all 3,042 production entries to the finalized C22 JAR (SHA-256 `ced8e122ac4bad974e41dc93dfcad3c643940e77cf0ae83dedf93ebfd33a391e`). All 177 preceding pairs and 1,881 preceding entries are present. Of those entries, 1,852 are byte-identical, including all ten classes and all original recipes, models and sprites. The other 29 are release/entrypoint metadata, en_us translations and 27 append-only shared tags. C23 adds 1,161 entries.
+- Artifact: Retained local `AMC C23.jar`, embedded version `0.1.0-canary23`, 1,514,846 bytes, SHA-256 `8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5`, built at `2026-11-21T01:41:37.7429583Z`.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify C23 against the four material families in TESTING.md.

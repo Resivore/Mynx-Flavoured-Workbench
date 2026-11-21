@@ -27,7 +27,8 @@
       "Provide a Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter for Sandstone and Red Sandstone. The controls, parapets and windows use directional vanilla textures. Each shutter uses the matching vanilla top sprite on every face at the original UVs, with C9 structural shading on the five slats and frame.",
       "Provide six Deepslate, 21 Quartz and 23 Nether Bricks forms. Use vanilla controls, Macaw's Windows geometry and interactions, and directional Deepslate and Quartz textures. The Deepslate and Nether Bricks shutter artwork uses the finalized C9 Stone shutter remapped to the full corresponding vanilla palette. Quartz and Nether Bricks each have eleven thin Macaw paths and pavings and four independent engravable full blocks with full vanilla palette transfers.",
       "Provide 26 End Stone Bricks forms: five BBB masonry forms, fifteen Macaw paths and pavings including four independent engravable full blocks, four standard windows, a parapet and a louvered shutter. Provide one Polished Blackstone Louvered Shutter. Both shutters transfer the finalized Stone artwork to their full vanilla palettes.",
-      "Provide 15 Mossy Stone Bricks controls, masonry and window forms. Selectively moss the corresponding vanilla, BBB, Macaw and AMC Stone artwork using the vanilla moss footprint and the brightness of each source pixel."
+      "Provide 15 Mossy Stone Bricks controls, masonry and window forms. Selectively moss the corresponding vanilla, BBB, Macaw and AMC Stone artwork using the vanilla moss footprint and the brightness of each source pixel.",
+      "Provide all 30 AMC forms for each of Tuff, Cinnabar, Sulfur and Smooth Basalt. Use vanilla Stone controls, BBB Stone masonry, Macaw windows and paths, and the full vanilla palettes for the four C9-derived shutters. Each material has four independent engravable full blocks."
     ],
     "boundaries": {
       "owned_paths": [
@@ -43,7 +44,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Target game, Stone redstone controls and source of Stone, Andesite, Diorite, Granite, Packed Mud, Prismarine Bricks, Dark Prismarine, Sandstone, Red Sandstone, Deepslate, Quartz, Nether Bricks, End Stone Bricks, Polished Blackstone, glass and iron-bar sprites."
+        "reason": "Supplies the base material registries and textures, Stone redstone control behavior, glass and iron bars for AMC's Minecraft Java 26.2 families."
       },
       {
         "type": "MOD",
@@ -78,23 +79,23 @@
     ]
   },
   "state": {
-    "milestone": "C22 brings AMC to 177 block/item pairs. All 125 controlled Fabric GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C23 adds 120 pairs for a total of 297. All 179 controlled Fabric GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C22 (0.1.0-canary22)",
-        "canary": 22,
-        "embedded_version": "0.1.0-canary22",
+        "version": "C23 (0.1.0-canary23)",
+        "canary": 23,
+        "embedded_version": "0.1.0-canary23",
         "artifact": {
-          "filename": "AMC C22.jar",
-          "sha256": "ced8e122ac4bad974e41dc93dfcad3c643940e77cf0ae83dedf93ebfd33a391e"
+          "filename": "AMC C23.jar",
+          "sha256": "8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5"
         },
-        "built_at": "2026-11-20T22:32:44.5206551Z",
-        "source_commit": "4523bca9c621697851196be3f08e1b763c714e80",
+        "built_at": "2026-11-21T01:41:37.7429583Z",
+        "source_commit": "f0d48a30949b4eb88b31a9f6a95567455797a43e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 15 Mossy Stone Bricks forms with selective moss that follows the original Stone artwork and its local shading."
+        "summary": "Adds 30 forms each for Tuff, Cinnabar, Sulfur and Smooth Basalt, including hammer-operated fences, engravable patterned blocks and Stone-derived shutters."
       },
       "accepted": null,
       "rollback": null,
@@ -108,10 +109,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 23,
-    "activity_at": "2026-11-20T22:34:25Z",
-    "updated_at": "2026-11-20T22:34:25Z",
-    "last_codex_at": "2026-11-20T22:34:25Z",
-    "source_commit": "4523bca9c621697851196be3f08e1b763c714e80"
+    "revision": 24,
+    "activity_at": "2026-11-21T01:42:56Z",
+    "updated_at": "2026-11-21T01:42:56Z",
+    "last_codex_at": "2026-11-21T01:42:56Z",
+    "source_commit": "f0d48a30949b4eb88b31a9f6a95567455797a43e"
   }
 }
