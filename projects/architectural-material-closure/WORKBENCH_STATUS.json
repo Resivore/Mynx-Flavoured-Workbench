@@ -31,7 +31,8 @@
       "Provide all 30 AMC forms for each of Tuff, Cinnabar, Sulfur and Smooth Basalt. Use vanilla Stone controls, BBB Stone masonry, Macaw windows and paths, and the full vanilla palettes for the four C9-derived shutters. Each material has four independent engravable full blocks.",
       "Provide 28 optional AMC forms each for base Veradite, Mirestone and Kurodite. Enderscape retains its six polished controls. Register the three families and enable their built-in assets and data after the optional provider registers its block/item pairs.",
       "All 30 Cinnabar forms use vanilla Cinnabar Bricks as their visual source. Direct material slots reference the brick tile and derived artwork uses its full 15-color palette. Raw Cinnabar and Cinnabar Slabs remain the recipe materials.",
-      "Provide all 30 forms for Purpur, Resin and optional Dusk Purpur. Use native Purpur and Dusk Purpur blocks and slabs. Resin uses raw Resin Blocks for crafting and stonecutting and the Resin Bricks tile for artwork. The three shutters use the complete seven-color palettes on the finalized C9 artwork."
+      "Provide all 30 forms for Purpur, Resin and optional Dusk Purpur. Use native Purpur and Dusk Purpur blocks and slabs. Resin uses raw Resin Blocks for crafting and stonecutting and the Resin Bricks tile for artwork. The three shutters use the complete seven-color palettes on the finalized C9 artwork.",
+      "Use the matching AMC Column cap sprite on all Purpur and Dusk Purpur Button surfaces and inventory previews at vanilla Button UV scale."
     ],
     "boundaries": {
       "owned_paths": [
@@ -88,23 +89,23 @@
     ]
   },
   "state": {
-    "milestone": "C26 adds 90 pairs across Purpur, Resin and optional Dusk Purpur. All 254 Enderscape-present and 206 Enderscape-absent controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C27 updates the two Purpur Button materials. All 254 Enderscape-present and 206 Enderscape-absent controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C26 (0.1.0-canary26)",
-        "canary": 26,
-        "embedded_version": "0.1.0-canary26",
+        "version": "C27 (0.1.0-canary27)",
+        "canary": 27,
+        "embedded_version": "0.1.0-canary27",
         "artifact": {
-          "filename": "AMC C26.jar",
-          "sha256": "06eed8311abd74bc2cc9e522d4c7667ebaca92539ff1289b3f290d1efc326456"
+          "filename": "AMC C27.jar",
+          "sha256": "4eaaebe4de7bb9927c474dff1821863a7bfae931610c11787fac7926fd4e10ce"
         },
-        "built_at": "2026-11-21T02:49:48.4100247Z",
-        "source_commit": "292a8f2b477e08d99c758feb7901d715e7f2231c",
+        "built_at": "2026-11-21T11:01:47.1071058Z",
+        "source_commit": "c5d863095406b8471006a9cdcb697b2c26170a2e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 30 forms each for Purpur, Resin and optional Dusk Purpur, with Resin Bricks artwork on raw Resin recipes."
+        "summary": "Binds Purpur and Dusk Purpur Buttons to the exact top-face artwork of their matching AMC Columns."
       },
       "accepted": null,
       "rollback": null,
@@ -118,10 +119,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 27,
-    "activity_at": "2026-11-21T02:55:06Z",
-    "updated_at": "2026-11-21T02:55:06Z",
-    "last_codex_at": "2026-11-21T02:55:06Z",
-    "source_commit": "292a8f2b477e08d99c758feb7901d715e7f2231c"
+    "revision": 28,
+    "activity_at": "2026-11-21T11:03:02Z",
+    "updated_at": "2026-11-21T11:03:02Z",
+    "last_codex_at": "2026-11-21T11:03:02Z",
+    "source_commit": "c5d863095406b8471006a9cdcb697b2c26170a2e"
   }
 }

@@ -337,3 +337,15 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Runtime: Owner gameplay verification and acceptance pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify all three families in-world using TESTING.md and record observations against the exact C26 hash.
+
+## 2026-11-21T11:03:02Z — Bind both Purpur Buttons to their matching Column caps in Canary 27
+
+- Revision: 28
+- Source checkpoint: `c5d863095406b8471006a9cdcb697b2c26170a2e`
+- Changes: Bound the unpressed, pressed and inventory Button models to `architectural_material_closure:block/column/purpur_top` and `architectural_material_closure:block/column/dusk_purpur_top` respectively. The Dusk Purpur models remain in the optional Enderscape pack.
+- In the upright Column, both the standalone and stacked top shaft use the up face at y=16 and UV [2,2,14,14]. Their fourth cap layer ends at y=16 and uses [0,0,16,16], as does the inventory cap. All resolve #top with no rotation at one texel per model unit. The Button inherits vanilla face UVs and inventory transforms.
+- Build/static: Java 25 build passed. Verified 48 placed Button states and two item previews against finalized C26 SHA-256 `06eed8311abd74bc2cc9e522d4c7667ebaca92539ff1289b3f290d1efc326456`. The six Button models and embedded version account for all changes across 4,769 archive entries. The other 4,762 entries matched byte-for-byte, including both Column and Pressure Plate families, all PNGs and all Java classes. Controlled Fabric GameTests passed with Enderscape 3.0.2 present (254/254, 471 pairs) and absent (206/206, 357 pairs).
+- Artifact: `AMC C27.jar`, 2,385,359 bytes, SHA-256 `4eaaebe4de7bb9927c474dff1821863a7bfae931610c11787fac7926fd4e10ce`, built_at `2026-11-21T11:01:47.1071058Z`.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare each Button with its matching Column cap on floor, wall, ceiling and in inventory using TESTING.md.
