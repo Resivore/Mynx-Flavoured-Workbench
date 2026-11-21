@@ -29,7 +29,8 @@
       "Provide 26 End Stone Bricks forms: five BBB masonry forms, fifteen Macaw paths and pavings including four independent engravable full blocks, four standard windows, a parapet and a louvered shutter. Provide one Polished Blackstone Louvered Shutter. Both shutters transfer the finalized Stone artwork to their full vanilla palettes.",
       "Provide 15 Mossy Stone Bricks controls, masonry and window forms. Selectively moss the corresponding vanilla, BBB, Macaw and AMC Stone artwork using the vanilla moss footprint and the brightness of each source pixel.",
       "Provide all 30 AMC forms for each of Tuff, Cinnabar, Sulfur and Smooth Basalt. Use vanilla Stone controls, BBB Stone masonry, Macaw windows and paths, and the full vanilla palettes for the four C9-derived shutters. Each material has four independent engravable full blocks.",
-      "Provide 28 optional AMC forms each for base Veradite, Mirestone and Kurodite. Enderscape retains its six polished controls. Register the three families and enable their built-in assets and data after the optional provider registers its block/item pairs."
+      "Provide 28 optional AMC forms each for base Veradite, Mirestone and Kurodite. Enderscape retains its six polished controls. Register the three families and enable their built-in assets and data after the optional provider registers its block/item pairs.",
+      "All 30 Cinnabar forms use vanilla Cinnabar Bricks as their visual source. Direct material slots reference the brick tile and derived artwork uses its full 15-color palette. Raw Cinnabar and Cinnabar Slabs remain the recipe materials."
     ],
     "boundaries": {
       "owned_paths": [
@@ -86,23 +87,23 @@
     ]
   },
   "state": {
-    "milestone": "C24 provides 381 pairs with Enderscape and 297 without it. All 213 provider-present and 179 provider-absent controlled GameTests passed. Owner runtime verification and acceptance are pending.",
+    "milestone": "C25 updates Cinnabar artwork across all 30 existing forms. All 213 Enderscape-present and 179 Enderscape-absent controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C24 (0.1.0-canary24)",
-        "canary": 24,
-        "embedded_version": "0.1.0-canary24",
+        "version": "C25 (0.1.0-canary25)",
+        "canary": 25,
+        "embedded_version": "0.1.0-canary25",
         "artifact": {
-          "filename": "AMC C24.jar",
-          "sha256": "ddafc326d6e41e98170ad5c059a14774858fb1a6bc28b902d95e4b64206d6018"
+          "filename": "AMC C25.jar",
+          "sha256": "dd4f53d297c51c74436b0f240d12943b9de91749669ec7cc0e48107d212e8f81"
         },
-        "built_at": "2026-11-21T02:07:52.3149422Z",
-        "source_commit": "a48ee2563ca78b33aa5eb2686b71926f1f5aea3e",
+        "built_at": "2026-11-21T02:12:45.8719817Z",
+        "source_commit": "4e6efefdff512027c965a4b8b5b0b3394bfcc793",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 84 optional Veradite, Mirestone and Kurodite forms using Enderscape's native materials and existing polished controls."
+        "summary": "Updates all 30 Cinnabar forms to the vanilla Cinnabar Bricks tile and palette while keeping their raw Cinnabar recipes."
       },
       "accepted": null,
       "rollback": null,
@@ -116,10 +117,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 25,
-    "activity_at": "2026-11-21T02:09:26Z",
-    "updated_at": "2026-11-21T02:09:26Z",
-    "last_codex_at": "2026-11-21T02:09:26Z",
-    "source_commit": "a48ee2563ca78b33aa5eb2686b71926f1f5aea3e"
+    "revision": 26,
+    "activity_at": "2026-11-21T02:15:04Z",
+    "updated_at": "2026-11-21T02:15:04Z",
+    "last_codex_at": "2026-11-21T02:15:04Z",
+    "source_commit": "4e6efefdff512027c965a4b8b5b0b3394bfcc793"
   }
 }

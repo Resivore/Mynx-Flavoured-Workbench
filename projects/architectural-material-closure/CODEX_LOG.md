@@ -293,3 +293,35 @@
 - Runtime: Owner gameplay verification and acceptance pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify each of the three families in-world against its unpolished Enderscape base using TESTING.md.
+
+## 2026-11-21T02:15:04Z — Use Cinnabar Bricks artwork for all 30 Cinnabar forms in Canary 25
+
+- Revision: 26
+- Source checkpoint: `4e6efefdff512027c965a4b8b5b0b3394bfcc793`
+- Changes: Selected the actual Minecraft 26.2 sprite `assets/minecraft/textures/block/cinnabar_bricks.png` for Cinnabar visual inputs. The opaque 16×16 PNG has SHA-256 `0cfb48bd8a01555cccd630d3ae7a404624dec3b9e957b25b8acee4538e5e8c70` and 15 colors. Changed 84 direct material and particle slots in 54 models and remapped 22 sprites using the established BBB, Paths and C9 shutter methods.
+- Build/static: Java 25 build and controlled Fabric GameTests passed with Enderscape present (213/213, 381 pairs) and absent (179/179, 297 pairs). Compared all 17,152 sprite pixels against their authored references, including BBB backing, transparent padding, connected column ramps and the C9 shutter's 207 opaque and 49 transparent pixels. All four full patterns retain distinct sprites.
+- Verified all 3,896 entries against finalized C24 SHA-256 `ddafc326d6e41e98170ad5c059a14774858fb1a6bc28b902d95e4b64206d6018`. Exactly 3,819 entries are byte-identical. The only other difference besides the listed models and textures is the embedded version. All registries, classes, state graphs, transforms, item definitions, recipes, loot, tags, translations, other artwork and optional Enderscape resources are preserved.
+- Verified BGE C106's captured model graphs against C25. All four Cinnabar parents and their eight derived roles per parent resolve the matching updated AMC sprite. The existing IBF catalog resolves the same 26 Cinnabar selector members. These are resource/catalog checks.
+- Artifact: Retained local `AMC C25.jar`, embedded version `0.1.0-canary25`, 1,967,917 bytes, SHA-256 `dd4f53d297c51c74436b0f240d12943b9de91749669ec7cc0e48107d212e8f81`, built at `2026-11-21T02:12:45.8719817Z`.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare the Cinnabar forms with vanilla Cinnabar Bricks under matching light using TESTING.md.
+
+Changed resources under `assets/architectural_material_closure/` grouped by directory:
+
+- `models/block/arrow_slit/` — `cinnabar_arrow_slit.json`, `cinnabar_arrow_slit_lower.json`, `cinnabar_arrow_slit_middle.json`, `cinnabar_arrow_slit_upper.json`
+- `models/block/` — `cinnabar_button.json`, `cinnabar_button_inventory.json`, `cinnabar_button_pressed.json`, `cinnabar_pressure_plate.json`, `cinnabar_pressure_plate_down.json`
+- `models/block/frame/cinnabar/` — `cinnabar_bottom.json`, `cinnabar_bottom_left_corner.json`, `cinnabar_bottom_right_corner.json`, `cinnabar_diagonal_left.json`, `cinnabar_diagonal_right.json`, `cinnabar_horizontal.json`, `cinnabar_inventory.json`, `cinnabar_left.json`, `cinnabar_right.json`, `cinnabar_top.json`, `cinnabar_top_left_corner.json`, `cinnabar_top_right_corner.json`
+- `models/block/gothic/` — `cinnabar_gothic_window.json`, `cinnabar_gothic_window_tall_lower.json`, `cinnabar_gothic_window_tall_middle.json`, `cinnabar_gothic_window_tall_top.json`
+- `models/block/moulding/` — `cinnabar.json`, `cinnabar_dentil.json`, `cinnabar_inner.json`, `cinnabar_inner_dentil.json`, `cinnabar_outer.json`, `cinnabar_outer_dentil.json`
+- `models/block/parapet/` — `cinnabar_parapet.json`, `cinnabar_support.json`
+- `models/block/resizeable/` — `cinnabar_mid_l.json`, `cinnabar_middle.json`, `cinnabar_single.json`, `cinnabar_single_l.json`, `cinnabar_single_m.json`, `cinnabar_top.json`, `cinnabar_top_l.json`, `cinnabar_top_m.json`
+- `models/block/urn/` — `cinnabar.json`
+- `models/block/window/` — `cinnabar_window_above.json`, `cinnabar_window_above_open.json`, `cinnabar_window_base.json`, `cinnabar_window_base_open.json`, `cinnabar_window_below.json`, `cinnabar_window_below_open.json`, `cinnabar_window_middle.json`, `cinnabar_window_middle_open.json`
+- `models/block/window_barred/` — `cinnabar_four_window.json`, `cinnabar_four_window_open.json`, `cinnabar_window.json`, `cinnabar_window_open.json`
+- `textures/block/` — `cinnabar_basket_weave_paving.png`, `cinnabar_clover_paving.png`, `cinnabar_crystal_floor.png`, `cinnabar_diamond_paving.png`, `cinnabar_dumble_paving.png`, `cinnabar_flagstone.png`, `cinnabar_honeycomb_paving.png`, `cinnabar_louvered_shutter.png`, `cinnabar_running_bond.png`, `cinnabar_square_paving.png`, `cinnabar_strewn_rocky.png`, `cinnabar_windmill_weave.png`, `polished_cinnabar.png`
+- `textures/block/column/` — `cinnabar_lower.png`, `cinnabar_middle.png`, `cinnabar_none.png`, `cinnabar_top.png`, `cinnabar_upper.png`
+- `textures/block/fence/` — `cinnabar_fence.png`
+- `textures/block/frame/cinnabar/` — `cinnabar.png`
+- `textures/block/moulding/` — `cinnabar.png`
+- `textures/block/urn/` — `cinnabar.png`
