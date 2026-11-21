@@ -268,3 +268,14 @@
 - Artifact: `IBF C25.jar`, embedded version `0.1.0-canary25`, 62,805 bytes, SHA-256 `8a90fe8d0ee2d0cc40f6bf7c62968adefe53caba0475d89fced5d92bf11c6066`, finalized at `2026-11-21T02:15:04.5045397Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of polished controls, transfers, recipes and independent full blocks in TESTING.md.
+
+## 2026-11-21T02:59:08.0890460Z — IBF C26 integrates AMC Purpur, Dusk Purpur and Resin
+
+- Revision: 26
+- Source checkpoint: `7cc0e44064e1109d6417726e120247b493549cd8`
+- Changes: Added four selectors per material with the AMC Button, Column, Window and Running Bond Path as canonical parents. All 78 members resolved exactly once. Removing only the twelve new keys from the compiled C26 catalog reproduced the C25 catalog digest `4f2e6c7c9bdbf32d7539763e3b49402c8648955b1291314e992a31cf7a6a30fe`. The C26 catalog SHA-256 is `755bd84010e39e36a61eaa10ab715c953607396834b054f2285a5faa82a02539`.
+- Build/static: With Enderscape 3.0.2, both exact AMC C26 and AMC-absent builds passed 55 JUnit tests, 37 controlled Fabric GameTests and archive isolation. With AMC, 246 families and 1,827 items resolved. Named stacks of seven preserved count and component patches in both directions. All twelve independent patterned full blocks retained recipes, creative entries and placement. The six provider slabs and stairs remained outside IBF and the vanilla Resin Clump recipe survived. Without AMC, 181 families and 1,397 items resolved. The recipe audit removed 1,533 alternate recipes with AMC and 1,114 without it, with zero canonical removals. The 102 new provider recipes account for 75 new alternate removals. With AMC present and Enderscape disabled, Fabric rejected the missing required provider before IBF initialized.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Artifact: `IBF C26.jar`, embedded version `0.1.0-canary26`, 63,979 bytes, SHA-256 `e5d919c43278f4329bef54dd3360fe6e990e262398c49c70e898bb607f062bb0`, finalized at `2026-11-21T02:59:08.0890460Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of selector transfers, independent patterned blocks and recipes in TESTING.md.
