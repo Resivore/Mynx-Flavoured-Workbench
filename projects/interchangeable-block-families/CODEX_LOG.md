@@ -246,3 +246,14 @@
 - Artifact: `IBF C23.jar`, embedded version `0.1.0-canary23`, 60,261 bytes, SHA-256 `6879a263b8f33b9dd0a8a689e615b6c75c87844dce5a4393e5f8a18622d68a4a`, finalized at `2026-11-20T22:39:01.2320214Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner-directed Mossy Stone Bricks selector, recipe and reload checks in TESTING.md.
+
+## 2026-11-21T01:48:44.0304125Z — IBF C24 integrates four AMC base materials
+
+- Revision: 24
+- Source checkpoint: `88b851aa264971db24346ffd311379fd095da3fe`
+- Changes: Added four literal selectors each for Tuff, Cinnabar, Sulfur and Smooth Basalt. The AMC Button, Column, Window and Running Bond Path are the parents. All 104 members resolved once. Removing the sixteen additions from the compiled C24 catalog reproduced the finalized C23 catalog SHA-256 `71e85a472c26c030e24439fedce4ecbdbe538667fe126f91c9d1b86f89b0198b`. The ordered C24 catalog SHA-256 is `bc0038de836e6208b7ac9fa863cbbe53349ee464ddd98be9f2acd9936c13aad4`.
+- Build/static: Exact AMC C23 and AMC-absent builds each passed 55 JUnit tests, 35 controlled Fabric GameTests and production archive isolation. With AMC, 225 families and 1,677 items resolved. Named stacks of seven preserved their count and component patches in both directions. All sixteen independent patterned full blocks retained their recipes and Building Blocks tab entries and placed with their own IDs. Without AMC, 181 families and 1,397 items resolved. The assembled recipe audits recorded 1,386 alternate removals with AMC and 1,114 without it, and zero canonical removals in both runs.
+- Runtime: Owner-directed Minecraft verification is pending.
+- Artifact: `IBF C24.jar`, embedded version `0.1.0-canary24`, 61,757 bytes, SHA-256 `e3940a3244847793e50b2a2c14209fa62320f46fffcfdf6d2332335e80652a96`, finalized at `2026-11-21T01:48:44.0304125Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner verification of the four materials in TESTING.md and an explicit acceptance decision.
