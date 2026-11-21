@@ -1,6 +1,30 @@
-# Testing Foundation v8
+# Testing Foundation v9
 
-Use `Foundation v8.zip`, Canary 4, SHA-256 `6ff2d732ab196204e0cfe7d1057953b5ce0d0ac09b10d476a234966913f36f92`. In an owner-directed Minecraft Java 26.2 session, give Foundation higher priority than Matcha Flavoured 1.12. Foundation includes the Matcha Overlays v37 resources. Use the pack stack's connected-texture renderer for the overlay checks and AMC with its window provider for the six forms.
+Use `Foundation v9.zip`, Canary 5, SHA-256 `ecab2e5963df45805947b12a96dce8c586969ec2ba70737dd49b6d6b60946b2d`. In an owner-directed Minecraft Java 26.2 session, give Foundation higher priority than Matcha Flavoured 1.12. Foundation includes the Matcha Overlays v37 resources. The native catalog below was checked against BBB Canary 9 (dev.7) and Macaw's Windows 2.4.2. Use the pack stack's connected-texture renderer for the overlay checks and AMC for its six additional forms.
+
+## Native Red Sandstone blocks
+
+Compare every inventory preview and placed form with Matcha Cut Red Sandstone under the same lighting. Look for its reddish-brown material throughout the carving, including narrow edges, recessed shadows and lit caps. Inspect all sides and break a sample of each form to check its stone particles.
+
+| Native block ID | Placed checks |
+| --- | --- |
+| `bbb:red_sandstone_column` | Inspect single and joined columns on all three axes. Compare the cap, flutes and four layer variants across a joint. |
+| `bbb:red_sandstone_fence` | Check the post, connected rails and filled joins from both sides. |
+| `bbb:red_sandstone_frame` | Join vertical, horizontal, diagonal and corner pieces. Break the vertical piece and compare its particles with the other frame pieces. |
+| `bbb:red_sandstone_moulding` | Inspect straight, inner and outer corners on both halves, with and without dentils. Check the highlight on each tooth. |
+| `bbb:red_sandstone_urn` | Inspect the rim, body and foot on empty and soiled urns. The stone changes color and the soil retains its dirt artwork. |
+| `mcwwindows:red_sandstone_window` | Build a resizable window at least three blocks wide and high. Inspect both axes, mirrored outer pieces, and the glass-only center. |
+| `mcwwindows:red_sandstone_window2` | Rotate the rectangular window and inspect closed, locked, open-left and open-right states. |
+| `mcwwindows:red_sandstone_four_window` | Check all four panes, both opening directions, the locked state and the frame around each pane. |
+| `mcwwindows:red_sandstone_pane_window` | Stack the panes and check base, above, below and middle parts across closed, locked and both open states. |
+
+The Macaw frames keep their original grain with Matcha's color mapping. Check glass transparency through each opening. Compare a regular Sandstone window and BBB Sandstone carving as controls.
+
+To reproduce the static evidence from a checkout retaining the inputs, run the following with Python and Pillow. The three reports list every selector and parent chain, the pixel counts and shade mapping for each sprite, and the SHA-256 of every changed ZIP member.
+
+```sh
+python -B resourcepacks/foundation/tools/build_foundation_v9.py --reports .tmp/foundation-v9
+```
 
 ## Vanilla materials and connected edges
 
@@ -26,4 +50,4 @@ Use the six Red Sandstone forms in the inventory and in the world. Place Matcha 
 
 Check the cube and four exterior foliage cards in the inventory previews for Veiled, Silver Birch and Wisteria Leaves. Silver Birch retains its constant tint. Check all three placed bushy models, the shulker-box artwork, and the merged Matcha appearance of a lily pad, birch door and item frame.
 
-Record the Foundation filename and SHA-256, AMC version, pack order, CTM renderer, locale, affected block and pose with each runtime observation.
+Record the Foundation filename and SHA-256, provider versions, pack order, CTM renderer, locale, affected block and pose with each runtime observation.

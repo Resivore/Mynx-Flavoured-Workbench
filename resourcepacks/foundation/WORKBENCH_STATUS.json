@@ -16,7 +16,8 @@
     ],
     "scope": [
       "Maintain the consolidated Foundation and Matcha Overlays resources, including the v7 leaf inventory previews.",
-      "Restore vanilla 26.2 Netherrack, Nether Bricks and End Stone Bricks above Matcha Flavoured and supply Matcha Red Sandstone artwork for AMC's Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter."
+      "Restore vanilla 26.2 Netherrack, Nether Bricks and End Stone Bricks above Matcha Flavoured and supply Matcha Red Sandstone artwork for AMC's Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter.",
+      "Recolor all five native BBB and four native Macaw's Windows Red Sandstone forms in Foundation, retaining provider geometry, state selection and decorative artwork."
     ],
     "boundaries": {
       "owned_paths": [
@@ -31,15 +32,15 @@
     "dependencies": [
       {
         "type": "RESOURCE_PACK",
-        "identifier": "Foundation v7.zip",
-        "requirement": "Build input, SHA-256 0d2ecfa31358c1e7d27ea9a97303a2bcee1864160d37c9797f39881dd0e31727",
-        "reason": "Complete private archive base, including the inherited Matcha Overlays v37 masks and rules."
+        "identifier": "Foundation v8.zip",
+        "requirement": "Exact build input, SHA-256 6ff2d732ab196204e0cfe7d1057953b5ce0d0ac09b10d476a234966913f36f92",
+        "reason": "Supplies the complete v8 pack, including the six AMC forms, vanilla material restorations and merged CTMs."
       },
       {
         "type": "RESOURCE_PACK",
         "identifier": "Matcha_Flavoured_1_12.zip",
         "requirement": "Artwork reference, SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
-        "reason": "Supplies the two Red Sandstone sprites and identifies the four English locale overrides. Give Foundation higher priority when using both packs."
+        "reason": "Supplies the Red Sandstone artwork. Matching cut and chiseled sprites establish its seven-shade stone palette at corresponding vanilla pixel coordinates."
       },
       {
         "type": "MOD",
@@ -52,27 +53,39 @@
         "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
         "requirement": "Optional provider of the six Red Sandstone forms. Artwork and model reference is AMC C25.jar, SHA-256 dd4f53d297c51c74436b0f240d12943b9de91749669ec7cc0e48107d212e8f81.",
         "reason": "Its existing models select the shared sprites and separately baked shutter. The C25 lighting recipe uses the Macaw's Windows 2.4.2 Andesite shutter mask."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "5d42f47f-b006-4125-840d-dec0d2728afa",
+        "requirement": "Optional native provider. Build reference is BBB Canary 9 (dev.7), SHA-256 57ddb5dfe62f2eb9f4a2ce22fbeeb5cce4386bbd93aab3f7df0dd8e6d19ddaf0.",
+        "reason": "Provides the five registered Red Sandstone masonry forms, model routes and nine baked sheets."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwwindows",
+        "requirement": "Optional native provider. Build reference is Macaw's Windows 2.4.2 for Fabric 26.2, SHA-256 40ba9c55f191f8bd4758293683ed2bcf6d0c76c8f54f9fc8a0dccabdbcfd36ad.",
+        "reason": "Provides four Red Sandstone window blocks with twenty frame models and one shared glass-only center."
       }
     ]
   },
   "state": {
-    "milestone": "Foundation v8 passed archive, texture, CTM, locale and AMC model resolution checks. In-game visual verification is pending.",
+    "milestone": "Foundation v9 passed static checks for every native Red Sandstone blockstate and inventory selector from BBB and Macaw's Windows. In-game visual verification is pending.",
     "releases": {
       "current": {
-        "version": "v8",
-        "canary": 4,
-        "embedded_version": "v8",
+        "version": "v9",
+        "canary": 5,
+        "embedded_version": "v9",
         "artifact": {
-          "filename": "Foundation v8.zip",
-          "sha256": "6ff2d732ab196204e0cfe7d1057953b5ce0d0ac09b10d476a234966913f36f92"
+          "filename": "Foundation v9.zip",
+          "sha256": "ecab2e5963df45805947b12a96dce8c586969ec2ba70737dd49b6d6b60946b2d"
         },
-        "built_at": "2026-11-21T03:04:44.5325795Z",
-        "source_commit": "5d11bd13c073782c06b924a923bb0dec599e4e6d",
+        "built_at": "2026-11-21T11:03:29.8425399Z",
+        "source_commit": "d11d14d45f41c2ac89a34b58a7be19377df7927c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Restores vanilla Netherrack, Nether Bricks and End Stone Bricks and brings Matcha Red Sandstone artwork to all six AMC forms."
+        "summary": "Brings Matcha Red Sandstone to all five native BBB masonry forms and four Macaw's Windows blocks while preserving their carved details and moving parts."
       },
       "accepted": null,
       "rollback": null,
@@ -86,10 +99,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 4,
-    "activity_at": "2026-11-21T03:07:46.883061Z",
-    "updated_at": "2026-11-21T03:07:46.883061Z",
-    "last_codex_at": "2026-11-21T03:07:46.883061Z",
-    "source_commit": "5d11bd13c073782c06b924a923bb0dec599e4e6d"
+    "revision": 5,
+    "activity_at": "2026-11-21T11:07:14.350054Z",
+    "updated_at": "2026-11-21T11:07:14.350054Z",
+    "last_codex_at": "2026-11-21T11:07:14.350054Z",
+    "source_commit": "d11d14d45f41c2ac89a34b58a7be19377df7927c"
   }
 }

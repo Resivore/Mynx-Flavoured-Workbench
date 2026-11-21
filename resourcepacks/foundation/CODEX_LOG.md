@@ -76,3 +76,52 @@ A assets/minecraft/textures/block/red_sandstone.png
 A assets/minecraft/textures/block/red_sandstone_top.png
 M pack.mcmeta
 ```
+
+## 2026-11-21T11:07:14.350054Z — Correct native Red Sandstone coverage in Foundation v9 Canary 5
+
+- Revision: 5
+- Source checkpoint: `d11d14d45f41c2ac89a34b58a7be19377df7927c`
+- Changes: The owner reported that the native BBB and Macaw's Windows Red Sandstone forms still showed the provider colors with v8 Canary 4 (`6ff2d732ab196204e0cfe7d1057953b5ce0d0ac09b10d476a234966913f36f92`). BBB's StoneSpec registration supplies column, fence, frame, moulding and urn. Macaw's BlockInit registers window, window2, four_window and pane_window. Recolored BBB's nine original sheets in place at their sprite IDs. Twenty Macaw material models bind their stone and particle slots to a private recolored bottom sprite. The BBB urn uses that sprite for its particle. The vertical BBB frame uses the same Red Sandstone particle as its other pieces.
+- Build/static: Built twice from the verified v8 archive with identical SHA-256. Traced 327 variant/multipart applications and nine inventory selectors through 69 distinct root models. Checked every selected face and defined particle. The cut and chiseled Matcha references gave identical seven-color mappings at corresponding vanilla UVs. All six colors in the window grain map exactly. The additional BBB light and shadow levels retain distinct, ordered shades. All 7,554 material pixels were recolored in place. All 5,642 transparent pixels and 884 opaque black backing pixels retain their exact RGBA values. Every model change is confined to texture bindings. The soil, both glass sprites and glass-only center retain their existing resolution. All twelve AMC selectors and twenty selected models and their effective textures matched v8 for C25 and current C27. ZIP root, uniqueness, CRCs, 2,739 JSON/metadata files, 5,052 PNGs and the full archive diff passed. Repository validation passed for 65 manifests and one Foundation transition. Retention verified the 15,386,161-byte ZIP in the primary checkout.
+- Runtime: RUNTIME_UNTESTED for v9.
+- Artifact: `Foundation v9.zip`, SHA-256 `ecab2e5963df45805947b12a96dce8c586969ec2ba70737dd49b6d6b60946b2d`, 15,386,161 bytes, finalized `2026-11-21T11:03:29.8425399Z`.
+- Result: ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.
+- Next state: Check the nine native forms in inventory and in their placed, joined and moving states using TESTING.md.
+
+**v8 to v9 archive paths** · 32 added, 1 modified, 0 removed, 7,947 byte-identical.
+
+```text
+A assets/bbb/models/block/frame/stone/red_sandstone_vertical.json
+A assets/bbb/models/block/urn/red_sandstone.json
+A assets/bbb/textures/block/column/red_sandstone_lower.png
+A assets/bbb/textures/block/column/red_sandstone_middle.png
+A assets/bbb/textures/block/column/red_sandstone_none.png
+A assets/bbb/textures/block/column/red_sandstone_top.png
+A assets/bbb/textures/block/column/red_sandstone_upper.png
+A assets/bbb/textures/block/fence/red_sandstone_fence.png
+A assets/bbb/textures/block/frame/stone/red_sandstone.png
+A assets/bbb/textures/block/moulding/red_sandstone.png
+A assets/bbb/textures/block/urn/red_sandstone.png
+A assets/foundation/textures/block/red_sandstone_bottom.png
+A assets/mcwwindows/models/block/resizeable/red_sandstone_mid_l.json
+A assets/mcwwindows/models/block/resizeable/red_sandstone_middle.json
+A assets/mcwwindows/models/block/resizeable/red_sandstone_single.json
+A assets/mcwwindows/models/block/resizeable/red_sandstone_single_l.json
+A assets/mcwwindows/models/block/resizeable/red_sandstone_single_m.json
+A assets/mcwwindows/models/block/resizeable/red_sandstone_top.json
+A assets/mcwwindows/models/block/resizeable/red_sandstone_top_l.json
+A assets/mcwwindows/models/block/resizeable/red_sandstone_top_m.json
+A assets/mcwwindows/models/block/window/red_sandstone_window_above.json
+A assets/mcwwindows/models/block/window/red_sandstone_window_above_open.json
+A assets/mcwwindows/models/block/window/red_sandstone_window_base.json
+A assets/mcwwindows/models/block/window/red_sandstone_window_base_open.json
+A assets/mcwwindows/models/block/window/red_sandstone_window_below.json
+A assets/mcwwindows/models/block/window/red_sandstone_window_below_open.json
+A assets/mcwwindows/models/block/window/red_sandstone_window_middle.json
+A assets/mcwwindows/models/block/window/red_sandstone_window_middle_open.json
+A assets/mcwwindows/models/block/window_barred/red_sandstone_four_window.json
+A assets/mcwwindows/models/block/window_barred/red_sandstone_four_window_open.json
+A assets/mcwwindows/models/block/window_barred/red_sandstone_window.json
+A assets/mcwwindows/models/block/window_barred/red_sandstone_window_open.json
+M pack.mcmeta
+```
