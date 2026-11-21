@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "AMC Enderscape material families",
+    "min_format": 88,
+    "max_format": [
+      107,
+      1
+    ]
+  }
+}

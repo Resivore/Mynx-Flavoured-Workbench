@@ -110,7 +110,7 @@ def check_geometry(jar, bbb, client, material, substrate, form, expected, sheets
           f"{len(visited) - local_models} shared BBB model nodes")
 
 
-def check_sheets(jar, bbb, client, material, substrate, expected, sheets):
+def check_sheets(jar, bbb, client, material, substrate, expected, sheets, material_ns="minecraft"):
     def pixels(archive, path):
         im = Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
         return im.size, list(im.getdata())
@@ -118,7 +118,7 @@ def check_sheets(jar, bbb, client, material, substrate, expected, sheets):
     def palette(colors):
         return sorted(set(colors), key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
 
-    _, tile = pixels(client, f"assets/minecraft/textures/block/{substrate}.png")
+    _, tile = pixels(client, f"assets/{material_ns}/textures/block/{substrate}.png")
     target = palette(pixel[:3] for pixel in tile if pixel[3] == 255)
     if material == "granite":
         darkest, *target, lightest = target

@@ -62,7 +62,7 @@ public final class DirectFormTests {
                 result.put("parapet", BlockInit.ANDESITE_PARAPET);
                 result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
             }
-            case "tuff", "cinnabar", "sulfur", "smooth_basalt" -> {
+            case "veradite", "mirestone", "kurodite", "tuff", "cinnabar", "sulfur", "smooth_basalt" -> {
                 result.putAll(MUD_REFERENCES);
                 result.put("gothic_window", BlockInit.STONE_BRICK_GOTHIC);
                 result.put("arrow_slit", BlockInit.STONE_BRICK_ARROW_SLIT);
@@ -91,10 +91,14 @@ public final class DirectFormTests {
             default -> result.putAll(REFERENCES);
         }
         if (List.of("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks").contains(material)
-                || StoneTests.BASE_MATERIALS.contains(material)) {
+                || StoneTests.BASE_MATERIALS.contains(material) || StoneTests.END_MATERIALS.contains(material)) {
             for (var form : PATH_FORMS) {
                 result.put(form, BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("mcwpaths", "dark_prismarine_" + form)));
             }
+        }
+        if (StoneTests.END_MATERIALS.contains(material)) {
+            result.remove("button");
+            result.remove("pressure_plate");
         }
         return result;
     }
@@ -215,7 +219,7 @@ public final class DirectFormTests {
         referenceStatesAndData(helper, "dark_prismarine");
     }
 
-    private static void referenceStatesAndData(GameTestHelper helper, String material) {
+    static void referenceStatesAndData(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(LEFT);
         references(material).forEach((form, ref) -> {
@@ -348,7 +352,7 @@ public final class DirectFormTests {
         placement(helper, "dark_prismarine");
     }
 
-    private static void placement(GameTestHelper helper, String material) {
+    static void placement(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var center = new BlockPos(1, 1, 1);
         for (var face : Direction.values()) {
@@ -631,7 +635,7 @@ public final class DirectFormTests {
         engraving(helper, "end_stone_bricks");
     }
 
-    private static void engraving(GameTestHelper helper, String material) {
+    static void engraving(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var pos = helper.absolutePos(LEFT);
@@ -690,7 +694,7 @@ public final class DirectFormTests {
         windowInteractions(helper, "end_stone_bricks");
     }
 
-    private static void windowInteractions(GameTestHelper helper, String material) {
+    static void windowInteractions(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var absolute = helper.absolutePos(LEFT);
         var hit = new BlockHitResult(Vec3.atCenterOf(absolute), Direction.NORTH, absolute, false);
@@ -781,7 +785,7 @@ public final class DirectFormTests {
         stackedMasonry(helper, "red_sandstone");
     }
 
-    private static void stackedMasonry(GameTestHelper helper, String material) {
+    static void stackedMasonry(GameTestHelper helper, String material) {
         for (String form : List.of("gothic_window", "arrow_slit")) {
             for (var base : List.of(LEFT, RIGHT)) {
                 var block = base.equals(LEFT) ? block(material, form) : REFERENCES.get(form);

@@ -117,7 +117,7 @@ public final class MasonryTests {
         completeStateAndShapeParity(helper, "dark_prismarine");
     }
 
-    private static void completeStateAndShapeParity(GameTestHelper helper, String material) {
+    static void completeStateAndShapeParity(GameTestHelper helper, String material) {
         var level = helper.getLevel();
         var pos = helper.absolutePos(CENTER);
         for (String form : FORMS) {
@@ -218,7 +218,7 @@ public final class MasonryTests {
         wetAndDryPlacement(helper, "dark_prismarine");
     }
 
-    private static void wetAndDryPlacement(GameTestHelper helper, String material) {
+    static void wetAndDryPlacement(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         for (boolean wet : List.of(false, true)) {
             helper.setBlock(CENTER, wet ? Blocks.WATER : Blocks.AIR);
@@ -322,7 +322,7 @@ public final class MasonryTests {
         columnAndMouldingChanges(helper, "dark_prismarine");
     }
 
-    private static void columnAndMouldingChanges(GameTestHelper helper, String material) {
+    static void columnAndMouldingChanges(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         for (boolean reference : List.of(true, false)) {
             var column = (ColumnBlock) block(material, "column", reference);
@@ -411,7 +411,7 @@ public final class MasonryTests {
         fenceAndFrameChanges(helper, "dark_prismarine");
     }
 
-    private static void fenceAndFrameChanges(GameTestHelper helper, String material) {
+    static void fenceAndFrameChanges(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         for (boolean reference : List.of(true, false)) {
             helper.setBlock(CENTER, block(material, "fence", reference));
@@ -506,7 +506,7 @@ public final class MasonryTests {
         urnSoilAndPlant(helper, "dark_prismarine");
     }
 
-    private static void urnSoilAndPlant(GameTestHelper helper, String material) {
+    static void urnSoilAndPlant(GameTestHelper helper, String material) {
         var player = helper.makeMockPlayer(GameType.SURVIVAL);
         var pos = helper.absolutePos(CENTER);
         for (boolean reference : List.of(true, false)) {

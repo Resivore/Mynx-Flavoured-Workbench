@@ -43,8 +43,8 @@ def adapt(value):
     return stone_reference(value) if isinstance(value, str) else value
 
 
-def remap_stone_shutter(source, client, dest, material):
-    tile = masonry.image(client, f"assets/minecraft/textures/block/{material}.png")
+def remap_stone_shutter(source, client, dest, material, namespace="minecraft"):
+    tile = masonry.image(client, f"assets/{namespace}/textures/block/{material}.png")
     target = sorted({p[:3] for p in tile.getdata() if p[3] == 255}, key=masonry.rank)
     mapping = masonry.rank_mapping({p[:3] for p in source.getdata() if p[3] == 255}, target)
     result = source.copy()
@@ -97,13 +97,13 @@ def shade_shutter(provider, client, dest, substrate):
     result.save(dest)
 
 
-def recipe_unlock(root, name, material, category):
+def recipe_unlock(root, name, material, category, *, namespace="minecraft"):
     recipe = f"{NS}:{name}"
     write_json(root, f"data/{NS}/advancement/recipes/{category}/{name}.json", {
         "parent": "minecraft:recipes/root",
         "criteria": {
             "material": {"trigger": "minecraft:inventory_changed", "conditions": {
-                "items": [{"items": "minecraft:" + material}]}},
+                "items": [{"items": namespace + ":" + material}]}},
             "recipe": {"trigger": "minecraft:recipe_unlocked", "conditions": {"recipe": recipe}},
         },
         "requirements": [["material", "recipe"]],
@@ -133,11 +133,11 @@ def base_slab_ingredient(material):
     return material if material == "smooth_basalt" else material + "_slab"
 
 
-def generate_direct_form(root, archive, namespace, source, form, material, *, substrate=None):
+def generate_direct_form(root, archive, namespace, source, form, material, *, substrate=None, material_ns="minecraft"):
     substrate = substrate or ("quartz_block" if material == "quartz" else material)
     side = "quartz_block_side" if material == "quartz" else substrate
     slab = "deepslate_brick_slab" if material == "deepslate" else base_slab_ingredient(material)
-    sprite_id = f"minecraft:block/{side}"
+    sprite_id = f"{material_ns}:block/{side}"
     if material == moss.MATERIAL:
         slab = "mossy_stone_brick_slab"
         sprite_id = f"{NS}:block/mossed_stone" + ("_bricks" if namespace == "mcwwindows" else "")
@@ -184,8 +184,8 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
         write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
     recipe = load(f"data/{namespace}/recipe/{source}.json")
-    materials = {"minecraft:stone": f"minecraft:{substrate}", "minecraft:stone_bricks": f"minecraft:{substrate}",
-                 "minecraft:stone_brick_slab": f"minecraft:{slab}", "minecraft:glass_pane": "minecraft:glass_pane"}
+    materials = {"minecraft:stone": f"{material_ns}:{substrate}", "minecraft:stone_bricks": f"{material_ns}:{substrate}",
+                 "minecraft:stone_brick_slab": f"{material_ns}:{slab}", "minecraft:glass_pane": "minecraft:glass_pane"}
     if "key" in recipe:
         recipe["key"] = {key: materials[value] for key, value in recipe["key"].items()}
     else:
@@ -194,7 +194,7 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
     recipe["result"]["id"] = own_id
     write(f"data/{NS}/recipe", recipe)
     category = "redstone" if namespace == "minecraft" else "building_blocks"
-    recipe_unlock(root, name, substrate, category)
+    recipe_unlock(root, name, substrate, category, namespace=material_ns)
     loot = load(f"data/{namespace}/loot_table/blocks/{source}.json")
     entry, = loot["pools"][0]["entries"]
     assert entry["name"] == source_id
@@ -205,7 +205,7 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
 
 
 def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None,
-                   ref_ns="mcwwindows", ref_material="andesite"):
+                   ref_ns="mcwwindows", ref_material="andesite", material_ns="minecraft"):
     side = "quartz_block_side" if material == "quartz" else substrate
     sandstone = material in ("sandstone", "red_sandstone")
     ids = {f"{ref_ns}:{ref_material}_{form}": f"{NS}:{material}_{form}" for form in forms}
@@ -232,7 +232,7 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
             model = masonry.load_json(provider, f"assets/{ref_ns}/models/{path}.json")
             for slot, sprite in model["textures"].items():
                 if sprite in ("minecraft:block/andesite", "minecraft:block/polished_andesite"):
-                    model["textures"][slot] = f"minecraft:block/{side}"
+                    model["textures"][slot] = f"{material_ns}:block/{side}"
                 elif material == moss.MATERIAL and sprite == "minecraft:block/stone":
                     model["textures"][slot] = f"{NS}:block/mossed_stone"
                 elif sprite == f"{ref_ns}:block/{ref_material}_louvered_shutter":
@@ -245,7 +245,7 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
             write_json(root, f"assets/{NS}/models/{dest}.json", model)
 
         recipe = masonry.load_json(provider, f"data/{ref_ns}/recipe/{source}.json")
-        materials = {f"minecraft:{ref_material}": f"minecraft:{substrate}", f"minecraft:{ref_material}_slab": f"minecraft:{slab}"}
+        materials = {f"minecraft:{ref_material}": f"{material_ns}:{substrate}", f"minecraft:{ref_material}_slab": f"{material_ns}:{slab}"}
         recipe["key"] = {k: materials.get(v, v) for k, v in recipe["key"].items()}
         if name == "smooth_basalt_louvered_shutter":
             # The BBB Column already uses a vertical line of three full blocks.
@@ -255,7 +255,7 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
         recipe["result"]["id"] = own_id
         write_json(root, f"data/{NS}/recipe/{name}.json", recipe)
         ingredient = slab if name.endswith("_shutter") else substrate
-        recipe_unlock(root, name, ingredient, "building_blocks")
+        recipe_unlock(root, name, ingredient, "building_blocks", namespace=material_ns)
         loot = masonry.load_json(provider, f"data/{ref_ns}/loot_table/blocks/{source}.json")
         entry, = loot["pools"][0]["entries"]
         assert entry["name"] == source_id
@@ -274,7 +274,7 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
     if stone_artwork is None:
         shade_shutter(provider, client, dest, material + "_top" if sandstone else side)
     else:
-        remap_stone_shutter(stone_artwork, client, dest, material)
+        remap_stone_shutter(stone_artwork, client, dest, material, material_ns)
 
 
 def generate_stone_forms(root, provider, client, tags, names, material):
@@ -415,8 +415,34 @@ def generate(provider, client, bbb, path_provider, stone_reference_jar, stone_sh
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})
 
 
+def generate_enderscape(root, enderscape, windows, client, bbb, path_provider, stone_shutter):
+    names, tags = {}, {}
+    material_ns = "enderscape"
+    window_forms = ("window", "window2", "four_window", "pane_window", *FORMS)
+    for material in ("veradite", "mirestone", "kurodite"):
+        slab = material + "_slab"
+        masonry.generate(root, bbb, enderscape, material, tags, write_json, recipe_unlock, material_ns=material_ns)
+        paths.generate(root, path_provider, client, tags, names, write_json, recipe_unlock, material,
+                       material_archive=enderscape, material_ns=material_ns)
+        generate_macaw(root, windows, enderscape, tags, material, material, slab, window_forms,
+                       stone_artwork=stone_shutter, material_ns=material_ns)
+        for form, source in (("gothic_window", "stone_brick_gothic"), ("arrow_slit", "stone_brick_arrow_slit")):
+            generate_direct_form(root, windows, "mcwwindows", source, form, material, material_ns=material_ns)
+            own = f"{NS}:{material}_{form}"
+            provider_tag = "gothic" if form == "gothic_window" else "arrow_slit"
+            for tag in ("minecraft/tags/block/mineable/pickaxe", "minecraft/tags/block/walls",
+                        "mcwwindows/tags/block/" + provider_tag):
+                tags.setdefault(tag, []).append(own)
+        for form in (*masonry.FORMS, *window_forms, "gothic_window", "arrow_slit"):
+            name = f"{material}_{form}"
+            names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
+    write_json(root, f"assets/{NS}/lang/en_us.json", names)
+    for tag, values in tags.items():
+        write_json(root, f"data/{tag}.json", {"replace": False, "values": values})
+
+
 if __name__ == "__main__":
-    provider_path, client_path, bbb_path, paths_path, stone_path, root = map(Path, sys.argv[1:])
+    provider_path, client_path, bbb_path, paths_path, stone_path, enderscape_path, root = map(Path, sys.argv[1:])
     if not root.resolve().is_relative_to(Path(__file__).resolve().parents[1] / "build"):
         sys.exit("Private derived assets must be generated under AMC's ignored build directory")
     if hashlib.sha256(provider_path.read_bytes()).hexdigest() != PROVIDER_SHA256:
@@ -429,6 +455,8 @@ if __name__ == "__main__":
         sys.exit("Unexpected Macaw's Paths reference bytes")
     if hashlib.sha256(stone_path.read_bytes()).hexdigest() != "f32b382563252e8a73a0bfd0b9ca0abacb02dd3c81a2a074b9d200fb5f147e8b":
         sys.exit("Expected the retained AMC C9 artifact")
+    if hashlib.sha256(enderscape_path.read_bytes()).hexdigest() != "9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b":
+        sys.exit("Expected Enderscape 3.0.2 for Minecraft 26.2")
     with ZipFile(stone_path) as c9:
         artwork = c9.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
         if hashlib.sha256(artwork).hexdigest() != "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878":
@@ -436,3 +464,6 @@ if __name__ == "__main__":
         stone_shutter = Image.open(io.BytesIO(artwork)).convert("RGBA")
         with ZipFile(provider_path) as provider, ZipFile(client_path) as client, ZipFile(bbb_path) as bbb, ZipFile(paths_path) as path_provider:
             generate(provider, client, bbb, path_provider, c9, stone_shutter, root)
+            with ZipFile(enderscape_path) as enderscape:
+                generate_enderscape(root / "resourcepacks/enderscape", enderscape, provider, client,
+                                    bbb, path_provider, stone_shutter)

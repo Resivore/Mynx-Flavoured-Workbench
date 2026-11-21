@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary23'
+version = '0.1.0-canary24'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c23')
+layout.buildDirectory = layout.projectDirectory.dir('build/c24')
 
 repositories {
     mavenCentral()
@@ -15,11 +15,13 @@ def pathsJar = file('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar')
 def bbbJar = file(providers.gradleProperty('bbbJar').getOrElse(
         '../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar'))
 def stoneShutterJar = file(providers.gradleProperty('stoneShutterJar').getOrElse('artifacts/AMC C9.jar'))
+def enderscapeJar = file('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
+def c23Jar = file(providers.gradleProperty('c23Jar').getOrElse('artifacts/AMC C23.jar'))
 def previousJar = file(providers.gradleProperty('c22Jar').getOrElse('artifacts/AMC C22.jar'))
 def clientJar = file(providers.gradleProperty('vanillaClient').getOrElse(
         new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/26.2/minecraft-client.jar').path))
 def python = providers.gradleProperty('python').getOrElse('python')
-def privateResources = layout.buildDirectory.dir('generated/privateResources')
+def privateResources = layout.buildDirectory.dir('gen')
 
 dependencies {
     minecraft 'com.mojang:minecraft:26.2'
@@ -33,9 +35,9 @@ java {
 }
 
 tasks.register('generateAmcResources', Exec) {
-    inputs.files('tools/generate.py', 'tools/moss.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar, stoneShutterJar)
+    inputs.files('tools/generate.py', 'tools/moss.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar, stoneShutterJar, enderscapeJar)
     outputs.dir(privateResources)
-    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, stoneShutterJar, privateResources.get().asFile
+    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, stoneShutterJar, enderscapeJar, privateResources.get().asFile
 }
 
 sourceSets.main.resources.srcDir(privateResources)
@@ -46,13 +48,13 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C23.jar'
+    archiveFileName = 'AMC C24.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
     dependsOn jar
-    inputs.files('tools/verify_c22.py', previousJar, 'tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
-    commandLine python, 'tools/verify.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar, previousJar
+    inputs.files('tools/verify_c24.py', c23Jar, enderscapeJar, 'tools/verify_c22.py', previousJar, 'tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
+    commandLine python, 'tools/verify_c24.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar, previousJar, c23Jar, enderscapeJar
 }
 
 check.dependsOn 'verifyAmcJar'
@@ -73,7 +75,21 @@ if (providers.gradleProperty('extshapeReference').isPresent()) {
     dependencies { gametestRuntimeOnly files(providers.gradleProperty('extshapeReference').get()) }
 }
 
+def withEnderscape = providers.gradleProperty('withEnderscape').isPresent()
+tasks.named('processGametestResources') {
+    inputs.property 'withEnderscape', withEnderscape
+    filesMatching('fabric.mod.json') {
+        expand optionalTests: withEnderscape ? ', "dev.resivore.amc.test.EnderscapeTests"' : ''
+    }
+}
+if (withEnderscape) {
+    def support = fileTree(providers.gradleProperty('enderscapeTestDeps').getOrElse('build/c24/test-dependencies')) {
+        include '*.jar'
+    }
+    dependencies { gametestRuntimeOnly files(enderscapeJar, support) }
+}
 loom.runs.named('gameTest') {
-    runDir 'build/c23/gametest'
+    runDir withEnderscape ? 'build/c24/gametest-present' : 'build/c24/gametest-absent'
+    vmArg "-Damc.test.enderscape=${withEnderscape}"
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

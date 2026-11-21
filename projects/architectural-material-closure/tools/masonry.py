@@ -41,8 +41,8 @@ def rank_mapping(colors, target):
             for i, rgb in enumerate(source)}
 
 
-def stage_textures(root, bbb, client, material, substrate):
-    tile = image(client, f"assets/minecraft/textures/block/{substrate}.png")
+def stage_textures(root, bbb, client, material, substrate, material_ns):
+    tile = image(client, f"assets/{material_ns}/textures/block/{substrate}.png")
     target = sorted({rgb[:3] for rgb in tile.getdata() if rgb[3] == 255}, key=rank)
     if material == "granite":
         target = target[1:-1]  # Keep the interior shades across all six BBB ramps.
@@ -61,11 +61,11 @@ def stage_textures(root, bbb, client, material, substrate):
             sheet.save(dest)
 
 
-def generate(root, bbb, client, material, tags, write_json, recipe_unlock, *, substrate=None, slab=None, particle=None, ranked_textures=True):
+def generate(root, bbb, client, material, tags, write_json, recipe_unlock, *, substrate=None, slab=None, particle=None, ranked_textures=True, material_ns="minecraft"):
     substrate = substrate or material
     slab = slab or material + "_slab"
     if ranked_textures:
-        stage_textures(root, bbb, client, material, substrate)
+        stage_textures(root, bbb, client, material, substrate, material_ns)
     sprites = {"bbb:block/" + sheet for group in RAMPS for sheet in group}
     staged = set()
 
@@ -83,7 +83,7 @@ def generate(root, bbb, client, material, tags, write_json, recipe_unlock, *, su
                 if sprite in sprites:
                     model["textures"][slot] = material_id(sprite, material)
                 elif slot == "particle" and sprite == "block/stone":
-                    model["textures"][slot] = particle or f"minecraft:block/{substrate}"
+                    model["textures"][slot] = particle or f"{material_ns}:block/{substrate}"
                 else:
                     raise ValueError(f"Unaudited {reference} sprite {slot}: {sprite}")
             write_json(root, f"assets/{NS}/models/{dest.split(':')[1]}.json", model)
@@ -105,12 +105,12 @@ def generate(root, bbb, client, material, tags, write_json, recipe_unlock, *, su
             sources.append(("recipe", "_from_stonecutting"))
         for folder, suffix in sources:
             content = bbb.read(f"data/bbb/{folder}/{source}{suffix}.json").decode()
-            adapted = content.replace(f'"{ref}"', f'"{own}"').replace('"minecraft:stone"', f'"minecraft:{substrate}"')
-            adapted = adapted.replace('"minecraft:stone_slab"', f'"minecraft:{slab}"')
+            adapted = content.replace(f'"{ref}"', f'"{own}"').replace('"minecraft:stone"', f'"{material_ns}:{substrate}"')
+            adapted = adapted.replace('"minecraft:stone_slab"', f'"{material_ns}:{slab}"')
             write_json(root, f"data/{NS}/{folder}/{name}{suffix}.json", json.loads(adapted))
             if folder == "recipe":
                 ingredient = slab if form == "frame" else substrate
-                recipe_unlock(root, name + suffix, ingredient, "building_blocks")
+                recipe_unlock(root, name + suffix, ingredient, "building_blocks", namespace=material_ns)
         for path in bbb.namelist():
             if path.startswith("data/") and "/tags/" in path and path.endswith(".json"):
                 if ref in load_json(bbb, path)["values"]:

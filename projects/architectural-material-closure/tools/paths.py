@@ -7,10 +7,10 @@ FORMS = (*FULL, *(name + "_path" for name in FULL), "strewn_rocky_path",
          "diamond_paving", "basket_weave_paving", "square_paving", "honeycomb_paving", "clover_paving", "dumble_paving")
 
 
-def generate(root, provider, client, tags, names, write_json, recipe_unlock, material="prismarine_bricks"):
+def generate(root, provider, client, tags, names, write_json, recipe_unlock, material="prismarine_bricks", *, material_archive=None, material_ns="minecraft"):
     ingredient = "quartz_block" if material == "quartz" else material
     sprite = "quartz_block_side" if material == "quartz" else material
-    tile = image(client, f"assets/minecraft/textures/block/{sprite}.png")
+    tile = image(material_archive or client, f"assets/{material_ns}/textures/block/{sprite}.png")
     palette = sorted({p[:3] for p in tile.getdata() if p[3] == 255}, key=rank)
     sheets = {}
     models = {}
@@ -37,10 +37,10 @@ def generate(root, provider, client, tags, names, write_json, recipe_unlock, mat
         write_json(root, f"assets/{NS}/items/{name}.json", item)
         recipe = load_json(provider, f"data/mcwpaths/recipe/{source}.json")
         assert recipe["ingredient"] == "minecraft:dark_prismarine" and recipe["result"]["id"] == ref
-        recipe["ingredient"] = f"minecraft:{ingredient}"
+        recipe["ingredient"] = f"{material_ns}:{ingredient}"
         recipe["result"]["id"] = own
         write_json(root, f"data/{NS}/recipe/{name}.json", recipe)
-        recipe_unlock(root, name, ingredient, "building_blocks")
+        recipe_unlock(root, name, ingredient, "building_blocks", namespace=material_ns)
         loot = load_json(provider, f"data/mcwpaths/loot_table/blocks/{source}.json")
         entry, = loot["pools"][0]["entries"]
         assert entry["name"] == ref

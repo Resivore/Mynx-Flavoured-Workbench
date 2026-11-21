@@ -99,6 +99,8 @@ public final class StoneTests {
         helper.succeed();
     }
 
+    static final java.util.List<String> END_MATERIALS = java.util.List.of("veradite", "mirestone", "kurodite");
+
     @GameTest
     public void registryAndResources(GameTestHelper helper) {
         var ids = new java.util.HashSet<>(Set.of(id("parapet"), id("louvered_shutter")));
@@ -121,6 +123,38 @@ public final class StoneTests {
             }
         }
         helper.assertTrue(ids.size() == 297, "Expected 297 block/item pairs");
+        boolean present = net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("enderscape");
+        helper.assertTrue(present == Boolean.getBoolean("amc.test.enderscape"), "Wrong controlled provider set");
+        var level = helper.getLevel();
+        for (String material : END_MATERIALS) {
+            var forms = new java.util.ArrayList<>(DirectFormTests.references(material).keySet());
+            forms.addAll(java.util.List.of("column", "urn", "moulding", "fence", "frame"));
+            helper.assertTrue(Set.copyOf(forms).size() == 28, material + " form count");
+            for (String form : forms) {
+                var key = Identifier.fromNamespaceAndPath(NAMESPACE, material + "_" + form);
+                var recipe = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, key));
+                helper.assertTrue(recipe.isPresent() == present, key + " recipe activation");
+                if (present) {
+                    ids.add(key);
+                    var base = BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("enderscape", material));
+                    var block = BuiltInRegistries.BLOCK.getValue(key);
+                    helper.assertTrue(block.defaultDestroyTime() == base.defaultDestroyTime()
+                            && block.getExplosionResistance() == base.getExplosionResistance()
+                            && block.defaultBlockState().getSoundType() == base.defaultBlockState().getSoundType()
+                            && block.defaultBlockState().requiresCorrectToolForDrops(), key + " material properties");
+                }
+            }
+            if (present) {
+                for (String control : java.util.List.of("button", "pressure_plate")) {
+                    var key = Identifier.fromNamespaceAndPath("enderscape", "polished_" + material + "_" + control);
+                    helper.assertTrue(BuiltInRegistries.ITEM.getValue(key) instanceof BlockItem item
+                            && item.getBlock() == BuiltInRegistries.BLOCK.getValue(key), key + " provider binding");
+                    helper.assertTrue(level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, key)).isPresent(),
+                            key + " provider recipe");
+                }
+            }
+        }
+        helper.assertTrue(ids.size() == (present ? 381 : 297), "Unexpected active AMC count");
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());
@@ -271,7 +305,7 @@ public final class StoneTests {
                 blocks.getValue(Identifier.fromNamespaceAndPath(NAMESPACE, "red_sandstone_louvered_shutter")));
     }
 
-    private static void supportsAndShutterInteraction(GameTestHelper helper, Block parapet, Block shutterBlock) {
+    static void supportsAndShutterInteraction(GameTestHelper helper, Block parapet, Block shutterBlock) {
         helper.setBlock(POSITION, parapet);
         helper.setBlock(POSITION.above(), Blocks.FLOWER_POT);
         helper.assertTrue(helper.getBlockState(POSITION).getValue(Parapet.FLOWER) == Parapet.Flower.FLOWER,
