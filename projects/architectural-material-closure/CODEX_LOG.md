@@ -349,3 +349,15 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Runtime: Owner gameplay verification and acceptance pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare each Button with its matching Column cap on floor, wall, ceiling and in inventory using TESTING.md.
+
+## 2026-11-21T18:46:01Z — Add Calcite and optional Shadoline Block in Canary 28
+
+- Revision: 29
+- Source checkpoint: `bcd1f4caf0abda6b26c96a21ef185d09a237f7dd`
+- Changes: Added the complete 30-form AMC matrix for each of `calcite` and `shadoline_block`. Found zero intended-provider equivalents. Calcite recipes use full Calcite in slab slots and the diagonal Shutter grid. Native `enderscape:shadoline_block_slab` supplies Shadoline slab slots. Two diagonal Shadoline Blocks craft a Button, preserving the provider's single-block recipe for nine ingots.
+- Build/static: Java 25 build and controlled Fabric GameTests passed with Enderscape 3.0.2 present (282/282, 531 pairs) and absent (220/220, 387 pairs). Checked creative entries, recipes, drops, registry and state parity, placement, controls, BBB interactions, window behavior and all eight independent engravable blocks.
+- Compared all 4,769 entries from finalized C27 SHA-256 `4eaaebe4de7bb9927c474dff1821863a7bfae931610c11787fac7926fd4e10ce`. C28 adds 580 entries, preserves 4,710 byte-for-byte and updates 54 additive tags, two translation files, two registration classes and the embedded version. Verified the new resource graphs and artwork against their references. Both shutters transfer all 16 opaque C9 luminance ranks into their native palettes (six Calcite and nine Shadoline colors), preserving the 49 transparent RGBA pixels in each.
+- Artifact: `AMC C28.jar`, 2,672,069 bytes, SHA-256 `c90194fb12306d1c47b22023eab23e62869f8310a56ab2c322c8f635bbce7fa9`, built_at `2026-11-21T18:44:29.7480692Z`.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Check the Calcite and Shadoline Block families in-world using TESTING.md and record observations against the C28 hash.

@@ -32,7 +32,8 @@
       "Provide 28 optional AMC forms each for base Veradite, Mirestone and Kurodite. Enderscape retains its six polished controls. Register the three families and enable their built-in assets and data after the optional provider registers its block/item pairs.",
       "All 30 Cinnabar forms use vanilla Cinnabar Bricks as their visual source. Direct material slots reference the brick tile and derived artwork uses its full 15-color palette. Raw Cinnabar and Cinnabar Slabs remain the recipe materials.",
       "Provide all 30 forms for Purpur, Resin and optional Dusk Purpur. Use native Purpur and Dusk Purpur blocks and slabs. Resin uses raw Resin Blocks for crafting and stonecutting and the Resin Bricks tile for artwork. The three shutters use the complete seven-color palettes on the finalized C9 artwork.",
-      "Use the matching AMC Column cap sprite on all Purpur and Dusk Purpur Button surfaces and inventory previews at vanilla Button UV scale."
+      "Use the matching AMC Column cap sprite on all Purpur and Dusk Purpur Button surfaces and inventory previews at vanilla Button UV scale.",
+      "Provide all 30 forms for vanilla Calcite and optional Enderscape Block of Shadoline. Use full Calcite in slab slots and enderscape:shadoline_block_slab for the corresponding Shadoline recipes. Both shutters use the C9 Stone template and the full native material palette."
     ],
     "boundaries": {
       "owned_paths": [
@@ -84,28 +85,28 @@
         "type": "MOD",
         "identifier": "enderscape",
         "requirement": "optional (*)",
-        "reason": "Supplies four optional base materials and their slabs, and six existing polished controls. With Enderscape 3.0.2, AMC registers 114 additional pairs alongside the 357 standalone pairs."
+        "reason": "Supplies five optional base materials and their slabs, and six existing polished controls. Enderscape 3.0.2 enables 144 additional AMC pairs alongside the 387 standalone pairs."
       }
     ]
   },
   "state": {
-    "milestone": "C27 updates the two Purpur Button materials. All 254 Enderscape-present and 206 Enderscape-absent controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C28 adds 60 pairs across Calcite and optional Shadoline Block. All 282 Enderscape-present and 220 Enderscape-absent controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C27 (0.1.0-canary27)",
-        "canary": 27,
-        "embedded_version": "0.1.0-canary27",
+        "version": "C28 (0.1.0-canary28)",
+        "canary": 28,
+        "embedded_version": "0.1.0-canary28",
         "artifact": {
-          "filename": "AMC C27.jar",
-          "sha256": "4eaaebe4de7bb9927c474dff1821863a7bfae931610c11787fac7926fd4e10ce"
+          "filename": "AMC C28.jar",
+          "sha256": "c90194fb12306d1c47b22023eab23e62869f8310a56ab2c322c8f635bbce7fa9"
         },
-        "built_at": "2026-11-21T11:01:47.1071058Z",
-        "source_commit": "c5d863095406b8471006a9cdcb697b2c26170a2e",
+        "built_at": "2026-11-21T18:44:29.7480692Z",
+        "source_commit": "bcd1f4caf0abda6b26c96a21ef185d09a237f7dd",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Binds Purpur and Dusk Purpur Buttons to the exact top-face artwork of their matching AMC Columns."
+        "summary": "Adds 30 Calcite forms and 30 optional Shadoline Block forms using their native artwork and the C9 Stone shutter."
       },
       "accepted": null,
       "rollback": null,
@@ -119,10 +120,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 28,
-    "activity_at": "2026-11-21T11:03:02Z",
-    "updated_at": "2026-11-21T11:03:02Z",
-    "last_codex_at": "2026-11-21T11:03:02Z",
-    "source_commit": "c5d863095406b8471006a9cdcb697b2c26170a2e"
+    "revision": 29,
+    "activity_at": "2026-11-21T18:46:01Z",
+    "updated_at": "2026-11-21T18:46:01Z",
+    "last_codex_at": "2026-11-21T18:46:01Z",
+    "source_commit": "bcd1f4caf0abda6b26c96a21ef185d09a237f7dd"
   }
 }
