@@ -29,6 +29,12 @@ def image(archive, path):
     return Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
 
 
+def visual_sprite(namespace, sprite):
+    if namespace == "minecraft" and sprite == "cinnabar":
+        return "cinnabar_bricks"
+    return sprite
+
+
 def rank(rgb):
     r, g, b = rgb
     return (299 * r + 587 * g + 114 * b, rgb)
@@ -41,8 +47,8 @@ def rank_mapping(colors, target):
             for i, rgb in enumerate(source)}
 
 
-def stage_textures(root, bbb, client, material, substrate, material_ns):
-    tile = image(client, f"assets/{material_ns}/textures/block/{substrate}.png")
+def stage_textures(root, bbb, client, material, sprite_source, material_ns):
+    tile = image(client, f"assets/{material_ns}/textures/block/{sprite_source}.png")
     target = sorted({rgb[:3] for rgb in tile.getdata() if rgb[3] == 255}, key=rank)
     if material == "granite":
         target = target[1:-1]  # Keep the interior shades across all six BBB ramps.
@@ -63,9 +69,10 @@ def stage_textures(root, bbb, client, material, substrate, material_ns):
 
 def generate(root, bbb, client, material, tags, write_json, recipe_unlock, *, substrate=None, slab=None, particle=None, ranked_textures=True, material_ns="minecraft"):
     substrate = substrate or material
+    sprite_source = visual_sprite(material_ns, substrate)
     slab = slab or material + "_slab"
     if ranked_textures:
-        stage_textures(root, bbb, client, material, substrate, material_ns)
+        stage_textures(root, bbb, client, material, sprite_source, material_ns)
     sprites = {"bbb:block/" + sheet for group in RAMPS for sheet in group}
     staged = set()
 
@@ -83,7 +90,7 @@ def generate(root, bbb, client, material, tags, write_json, recipe_unlock, *, su
                 if sprite in sprites:
                     model["textures"][slot] = material_id(sprite, material)
                 elif slot == "particle" and sprite == "block/stone":
-                    model["textures"][slot] = particle or f"{material_ns}:block/{substrate}"
+                    model["textures"][slot] = particle or f"{material_ns}:block/{sprite_source}"
                 else:
                     raise ValueError(f"Unaudited {reference} sprite {slot}: {sprite}")
             write_json(root, f"assets/{NS}/models/{dest.split(':')[1]}.json", model)

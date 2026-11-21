@@ -43,8 +43,8 @@ def adapt(value):
     return stone_reference(value) if isinstance(value, str) else value
 
 
-def remap_stone_shutter(source, client, dest, material, namespace="minecraft"):
-    tile = masonry.image(client, f"assets/{namespace}/textures/block/{material}.png")
+def remap_stone_shutter(source, client, dest, sprite, namespace="minecraft"):
+    tile = masonry.image(client, f"assets/{namespace}/textures/block/{sprite}.png")
     target = sorted({p[:3] for p in tile.getdata() if p[3] == 255}, key=masonry.rank)
     mapping = masonry.rank_mapping({p[:3] for p in source.getdata() if p[3] == 255}, target)
     result = source.copy()
@@ -135,7 +135,7 @@ def base_slab_ingredient(material):
 
 def generate_direct_form(root, archive, namespace, source, form, material, *, substrate=None, material_ns="minecraft"):
     substrate = substrate or ("quartz_block" if material == "quartz" else material)
-    side = "quartz_block_side" if material == "quartz" else substrate
+    side = "quartz_block_side" if material == "quartz" else masonry.visual_sprite(material_ns, substrate)
     slab = "deepslate_brick_slab" if material == "deepslate" else base_slab_ingredient(material)
     sprite_id = f"{material_ns}:block/{side}"
     if material == moss.MATERIAL:
@@ -206,7 +206,7 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
 
 def generate_macaw(root, provider, client, tags, material, substrate, slab, forms, *, stone_artwork=None,
                    ref_ns="mcwwindows", ref_material="andesite", material_ns="minecraft"):
-    side = "quartz_block_side" if material == "quartz" else substrate
+    side = "quartz_block_side" if material == "quartz" else masonry.visual_sprite(material_ns, substrate)
     sandstone = material in ("sandstone", "red_sandstone")
     ids = {f"{ref_ns}:{ref_material}_{form}": f"{NS}:{material}_{form}" for form in forms}
     for source_id, own_id in ids.items():
@@ -274,7 +274,7 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
     if stone_artwork is None:
         shade_shutter(provider, client, dest, material + "_top" if sandstone else side)
     else:
-        remap_stone_shutter(stone_artwork, client, dest, material, material_ns)
+        remap_stone_shutter(stone_artwork, client, dest, masonry.visual_sprite(material_ns, material), material_ns)
 
 
 def generate_stone_forms(root, provider, client, tags, names, material):

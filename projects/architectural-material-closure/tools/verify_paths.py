@@ -10,9 +10,9 @@ FORMS = ("running_bond_path", "strewn_rocky_path", "windmill_weave_path", "flags
          "diamond_paving", "basket_weave_paving", "square_paving", "honeycomb_paving", "clover_paving", "dumble_paving", *FULL)
 
 
-def check_paths(jar, provider, client, expected, material="prismarine_bricks", *, material_archive=None, material_ns="minecraft"):
+def check_paths(jar, provider, client, expected, material="prismarine_bricks", *, material_archive=None, material_ns="minecraft", palette_tile=None):
     ingredient = "quartz_block" if material == "quartz" else material
-    palette_tile = "quartz_block_side" if material == "quartz" else material
+    palette_tile = palette_tile or ("quartz_block_side" if material == "quartz" else material)
     sheets = {}
     models = set()
     for form in FORMS:
@@ -92,8 +92,8 @@ def check_paths(jar, provider, client, expected, material="prismarine_bricks", *
                       key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
 
     colors = palette(image(material_archive or client, f"assets/{material_ns}/textures/block/{palette_tile}.png"))
-    assert len(colors) == {"quartz": 6, "nether_bricks": 7, "prismarine_bricks": 8, "end_stone_bricks": 8,
-                           "tuff": 5, "cinnabar": 11, "sulfur": 6, "smooth_basalt": 6, "veradite": 6, "mirestone": 6, "kurodite": 6}[material] and len(sheets) == 11 and len(set(sheets.values())) == 11
+    assert len(colors) == {"quartz_block_side": 6, "nether_bricks": 7, "prismarine_bricks": 8, "end_stone_bricks": 8,
+                           "tuff": 5, "cinnabar": 11, "cinnabar_bricks": 15, "sulfur": 6, "smooth_basalt": 6, "veradite": 6, "mirestone": 6, "kurodite": 6}[palette_tile] and len(sheets) == 11 and len(set(sheets.values())) == 11
     for source, target in sheets.items():
         ns, sprite = source.split(":")
         original = image(provider if ns == "mcwpaths" else client, f"assets/{ns}/textures/{sprite}.png")

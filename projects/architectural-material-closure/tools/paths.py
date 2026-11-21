@@ -1,5 +1,5 @@
 """Generate fifteen material patterns from Macaw's Dark Prismarine family."""
-from masonry import NS, image, load_json, rank, rank_mapping
+from masonry import NS, image, load_json, rank, rank_mapping, visual_sprite
 
 REFERENCE_SHA256 = "39128a12cb64fd61286b631714da742d7b6ea0fa8d4573c103081d01e4993bc2"
 FULL = ("running_bond", "flagstone", "windmill_weave", "crystal_floor")
@@ -9,7 +9,7 @@ FORMS = (*FULL, *(name + "_path" for name in FULL), "strewn_rocky_path",
 
 def generate(root, provider, client, tags, names, write_json, recipe_unlock, material="prismarine_bricks", *, material_archive=None, material_ns="minecraft"):
     ingredient = "quartz_block" if material == "quartz" else material
-    sprite = "quartz_block_side" if material == "quartz" else material
+    sprite = "quartz_block_side" if material == "quartz" else visual_sprite(material_ns, material)
     tile = image(material_archive or client, f"assets/{material_ns}/textures/block/{sprite}.png")
     palette = sorted({p[:3] for p in tile.getdata() if p[3] == 255}, key=rank)
     sheets = {}

@@ -109,10 +109,7 @@ def compare_resources(current, previous, enderscape, bbb, paths, client):
     print(f"C24: {len(actual)} optional pack entries, 84 new pairs, 3041 byte-identical C23 entries; {len(new)} total.")
 
 
-if __name__ == "__main__":
-    if not __debug__:
-        sys.exit("Verification requires assertions enabled")
-    current, windows, client, bbb, paths, c22, c23, enderscape = map(Path, sys.argv[1:])
+def verify_c24(current, windows, client, bbb, paths, c22, c23, enderscape):
     assert hashlib.sha256(enderscape.read_bytes()).hexdigest() == "9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b"
     assert hashlib.sha256(c23.read_bytes()).hexdigest() == "8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5"
     with ExitStack() as stack:
@@ -120,3 +117,9 @@ if __name__ == "__main__":
         verify(prev, w, v, b, p)
         compare_c22(prev, c22)
         compare_resources(jar, prev, e, b, p, v)
+
+
+if __name__ == "__main__":
+    if not __debug__:
+        sys.exit("Verification requires assertions enabled")
+    verify_c24(*map(Path, sys.argv[1:]))

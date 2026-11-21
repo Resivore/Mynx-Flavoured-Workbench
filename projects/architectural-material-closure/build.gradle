@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary24'
+version = '0.1.0-canary25'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c24')
+layout.buildDirectory = layout.projectDirectory.dir('build/c25')
 
 repositories {
     mavenCentral()
@@ -16,6 +16,7 @@ def bbbJar = file(providers.gradleProperty('bbbJar').getOrElse(
         '../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar'))
 def stoneShutterJar = file(providers.gradleProperty('stoneShutterJar').getOrElse('artifacts/AMC C9.jar'))
 def enderscapeJar = file('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
+def c24Jar = file(providers.gradleProperty('c24Jar').getOrElse('artifacts/AMC C24.jar'))
 def c23Jar = file(providers.gradleProperty('c23Jar').getOrElse('artifacts/AMC C23.jar'))
 def previousJar = file(providers.gradleProperty('c22Jar').getOrElse('artifacts/AMC C22.jar'))
 def clientJar = file(providers.gradleProperty('vanillaClient').getOrElse(
@@ -48,13 +49,13 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C24.jar'
+    archiveFileName = 'AMC C25.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
     dependsOn jar
-    inputs.files('tools/verify_c24.py', c23Jar, enderscapeJar, 'tools/verify_c22.py', previousJar, 'tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
-    commandLine python, 'tools/verify_c24.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar, previousJar, c23Jar, enderscapeJar
+    inputs.files('tools/verify_c25.py', c24Jar, 'tools/verify_c24.py', c23Jar, enderscapeJar, 'tools/verify_c22.py', previousJar, 'tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
+    commandLine python, 'tools/verify_c25.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar, previousJar, c23Jar, enderscapeJar, c24Jar
 }
 
 check.dependsOn 'verifyAmcJar'
@@ -83,13 +84,13 @@ tasks.named('processGametestResources') {
     }
 }
 if (withEnderscape) {
-    def support = fileTree(providers.gradleProperty('enderscapeTestDeps').getOrElse('build/c24/test-dependencies')) {
+    def support = fileTree(providers.gradleProperty('enderscapeTestDeps').getOrElse('build/c25/test-dependencies')) {
         include '*.jar'
     }
     dependencies { gametestRuntimeOnly files(enderscapeJar, support) }
 }
 loom.runs.named('gameTest') {
-    runDir withEnderscape ? 'build/c24/gametest-present' : 'build/c24/gametest-absent'
+    runDir withEnderscape ? 'build/c25/gametest-present' : 'build/c25/gametest-absent'
     vmArg "-Damc.test.enderscape=${withEnderscape}"
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }
