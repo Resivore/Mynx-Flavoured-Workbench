@@ -181,7 +181,7 @@ tasks.named('runGameTest') {
 // server. The normal regression fixture provides several of the same mod IDs and classes.
 def amcTest = providers.gradleProperty('amcGameTest').isPresent()
 if (amcTest) {
-    def amc = file('../architectural-material-closure/artifacts/AMC C21.jar')
+    def amc = file('../architectural-material-closure/artifacts/AMC C23.jar')
     def paths = file('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar')
     def windows = file('../../originals/mods/mcw-windows-2.4.2-mc26.2fabric.jar')
     def bbb = file('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')

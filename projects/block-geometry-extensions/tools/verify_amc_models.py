@@ -9,7 +9,8 @@ from pathlib import Path
 from zipfile import ZipFile
 
 AMC = "architectural_material_closure"
-MATERIALS = ("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks")
+MATERIALS = ("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks",
+             "tuff", "cinnabar", "sulfur", "smooth_basalt")
 PATTERNS = ("running_bond", "flagstone", "windmill_weave", "crystal_floor")
 ROLES = ("block", "slab", "stairs", "wall", "vertical_slab", "step", "corner", "quarter_column", "layer")
 
@@ -65,6 +66,7 @@ def verify(audit, jars):
     expected = {f"{AMC}:{m}_{p}" for m, p in itertools.product(MATERIALS, PATTERNS)}
     assert set(audit["membership"]) == expected
     counts, sprite_hashes = Counter(), set()
+    selector_counts = dict(zip(ROLES, (2, 3, 40, 9, 8, 12, 4, 6, 24), strict=True))
     for root, roles in audit["membership"].items():
         assert tuple(roles) == ROLES and roles["block"] == root
         name = root.split(":")[1]
@@ -76,7 +78,10 @@ def verify(audit, jars):
             else:
                 expected_id = f"cnm_terrain_slabs_compat:{AMC}/{name}_{role}"
             assert roles[role] == expected_id, (root, role, roles[role], expected_id)
-        sprite = f"{AMC}:block/{name}"
+        canonical = read(asset(root, "blockstates"))["variants"]["engraved=false"]["model"]
+        parent = model(canonical)
+        sprite = resolve(parent["textures"]["particle"], parent["textures"])
+        assert sprite == f"{AMC}:block/{name}", (root, sprite)
         png = read(asset(sprite, "textures", "png"))
         assert png[:8] == bytes.fromhex("89504e470d0a1a0a") and png[16:24] == bytes.fromhex("0000001000000010")
         sprite_hashes.add(hashlib.sha256(png).digest())
@@ -100,7 +105,7 @@ def verify(audit, jars):
                     assert value["model"].split("_stairs")[-1] == ref["model"].split("_stairs")[-1]
             placed = list(selectors(state))
             inventory = list(selectors(item))
-            assert placed and len(inventory) == 1
+            assert len(placed) == selector_counts[role] and len(inventory) == 1, (root, role)
             for selection in placed:
                 if selection.get("x") or selection.get("y"):
                     assert selection.get("uvlock") is True, (block, selection)

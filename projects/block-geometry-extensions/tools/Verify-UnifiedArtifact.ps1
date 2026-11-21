@@ -1,9 +1,9 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C105.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C106.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
     [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C78.jar'),
     [string]$C92Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C92.jar'),
-    [string]$C104Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C104.jar'),
+    [string]$C105Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C105.jar'),
     [string]$C93Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C93.jar'),
     [string]$BbbJar = (Join-Path $PSScriptRoot '..\..\building-but-better\artifacts\bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar')
 )
@@ -177,7 +177,7 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/client/ExternalMaterialGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/BookshelfResourceTextures(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/ProviderModelTextureResolver(?:\$.*)?\.class$' -or
-            $Name -match '^dev/aero/cnmterraincompat/mixin/(?:AmcPatterns|MacawsPaths|MynxTrees|Ribbits|Bbb|Enderscape|MossyStone)InitializationMixin(?:\$.*)?\.class$' -or
+            $Name -match '^dev/aero/cnmterraincompat/mixin/(?:AmcPatterns|AmcBaseStone|MacawsPaths|MynxTrees|Ribbits|Bbb|Enderscape|MossyStone)InitializationMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/mixin/CnmCompatibilityItemVisibilityMixin(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/BgeGeneratedResourceWriter(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/(?:CatalogItemGeneratedResources|BeamItemModelContract)(?:\$.*)?\.class$' -or
@@ -219,11 +219,11 @@ Require ((Get-FileSha256 $c93Path) -eq '16087d67acb3554f8a6aeee3652f4d75ff00b8a0
         'Exact BGE C93 placed-resource baseline hash mismatch'
 Require ((Get-FileSha256 $bbbPath) -eq '0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a') `
         'Exact locally supplied BBB Beam source artifact hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C105.jar') `
-        'Private local-only artifact filename is not exactly BGE C105.jar'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C106.jar') `
+        'Private local-only artifact filename is not exactly BGE C106.jar'
 
-Require ((Get-FileSha256 $C104Jar) -eq '0ec890c1d062816e1eb62664ae77936bd8c7ba61b66069e18e833b94e33a51b9') 'Current C104 baseline hash mismatch'
-$c104 = [System.IO.Compression.ZipFile]::OpenRead($C104Jar)
+Require ((Get-FileSha256 $C105Jar) -eq '2a2505cee80cfe2c81bd8d320a0df9cba760c29ee04e489603222cb95ca8d29b') 'Current C105 baseline hash mismatch'
+$c105 = [System.IO.Compression.ZipFile]::OpenRead($C105Jar)
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
 $predecessor = [System.IO.Compression.ZipFile]::OpenRead($predecessorPath)
@@ -232,16 +232,16 @@ $c93 = [System.IO.Compression.ZipFile]::OpenRead($c93Path)
 $bbb = [System.IO.Compression.ZipFile]::OpenRead($bbbPath)
 try {
     $unifiedMap = Get-EntryMap $unified
-    $baseline = Get-EntryMap $c104
+    $baseline = Get-EntryMap $c105
     $added = @($unifiedMap.Keys | Where-Object { -not $baseline.ContainsKey($_) })
-    Require ($added.Count -eq 1 -and $added[0] -ceq 'dev/aero/cnmterraincompat/mixin/AmcPatternsInitializationMixin.class') 'Unexpected C105 addition'
-    $changedFromC104 = @()
+    Require ($added.Count -eq 1 -and $added[0] -ceq 'dev/aero/cnmterraincompat/mixin/AmcBaseStoneInitializationMixin.class') 'Unexpected C106 addition'
+    $changedFromC105 = @()
     foreach ($name in $baseline.Keys) {
-        Require $unifiedMap.ContainsKey($name) "C105 removed $name"
+        Require $unifiedMap.ContainsKey($name) "C106 removed $name"
         if ((Get-EntrySha256 $baseline[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) { continue }
-        $changedFromC104 += $name
+        $changedFromC105 += $name
         Require ($name -in @('fabric.mod.json', 'cnm_terrain_slabs_compat.mixins.json') -or
-                $name -cmatch '^dev/aero/cnmterraincompat/(?:ExternalMaterialCatalog|client/ExternalMaterialGeneratedResources)(?:\$.*)?\.class$') "Unexpected C105 change to $name"
+                $name -cmatch '^dev/aero/cnmterraincompat/ExternalMaterialCatalog(?:\$.*)?\.class$') "Unexpected C106 change to $name"
     }
     $acceptedMap = Get-EntryMap $accepted
     $predecessorMap = Get-EntryMap $predecessor
@@ -373,10 +373,10 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.49-bge.canary105.amc-patterns+26.2') `
-            'Unified Fabric version is not exact C105'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 105 ' + [char]0x2014 + ' AMC Patterned Geometry')) `
-            'Unified Fabric display name is not exact C105'
+    Require ($metadata.version -eq '4.2.50-bge.canary106.amc-base-stone+26.2') `
+            'Unified Fabric version is not exact C106'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 106 ' + [char]0x2014 + ' AMC Base Stone Patterns')) `
+            'Unified Fabric display name is not exact C106'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -409,7 +409,7 @@ try {
     })
     Require ($nativeSpruceAssets.Count -eq 0) `
             "C99 shadows native spruce blockstate/model/texture assets: $($nativeSpruceAssets -join ', ')"
-    foreach ($providerHook in @('AmcPatternsInitializationMixin', 'MacawsPathsInitializationMixin', 'MynxTreesInitializationMixin', 'RibbitsInitializationMixin', 'BbbInitializationMixin', 'EnderscapeInitializationMixin', 'MossyStoneInitializationMixin')) {
+    foreach ($providerHook in @('AmcBaseStoneInitializationMixin', 'AmcPatternsInitializationMixin', 'MacawsPathsInitializationMixin', 'MynxTreesInitializationMixin', 'RibbitsInitializationMixin', 'BbbInitializationMixin', 'EnderscapeInitializationMixin', 'MossyStoneInitializationMixin')) {
         Require ($integrationMixins -match [regex]::Escape($providerHook)) "Provider completion hook is not packaged: $providerHook"
     }
     Require ($integrationMixins -match 'HoeItemAccessor') 'C72 HoeItem tillable-map accessor is not packaged'
@@ -679,12 +679,12 @@ try {
 
     [ordered]@{
         result = 'PASS'
-        exact_c104_delta = [ordered]@{
+        exact_c105_delta = [ordered]@{
             added = $added
-            changed = @($changedFromC104 | Sort-Object)
-            byte_identical = $baseline.Count - $changedFromC104.Count
+            changed = @($changedFromC105 | Sort-Object)
+            byte_identical = $baseline.Count - $changedFromC105.Count
         }
-        c105 = [ordered]@{
+        c106 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
@@ -749,7 +749,7 @@ try {
     $accepted.Dispose()
     $predecessor.Dispose()
     $c92.Dispose()
-    $c104.Dispose()
+    $c105.Dispose()
     $c93.Dispose()
     $bbb.Dispose()
 }

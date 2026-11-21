@@ -36,6 +36,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,11 +59,11 @@ public final class AmcPatternGameTests {
     @GameTest
     public void productionPatternFamilies(GameTestHelper helper) throws Exception {
         var hash = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(Path.of(System.getProperty("bge.amcJar"))));
-        helper.assertTrue(HexFormat.of().formatHex(hash).equals("0a39d8f6f1e83cf1b2d5bdf85552e190386e56d8873c9db6e122b0097de81c66"),
-                "Controlled provider must be the finalized AMC C21 bytes");
+        helper.assertTrue(HexFormat.of().formatHex(hash).equals("8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5"),
+                "Controlled provider must be the finalized AMC C23 bytes");
         var expected = ExternalMaterialCatalog.specs().stream().filter(s -> s.provider().equals(AMC)).toList();
         var families = ExternalMaterialFamilies.all().stream().filter(b -> b.spec().provider().equals(AMC)).toList();
-        helper.assertTrue(families.size() == expected.size() && expected.size() == 16, "AMC family count");
+        helper.assertTrue(families.size() == expected.size() && expected.size() == 32, "AMC family count");
         var macawPatterns = ExternalMaterialFamilies.all().stream().filter(b -> b.spec().provider().equals("mcwpaths")
                 && !b.spec().providerRoles().isEmpty()).toList();
         helper.assertTrue(macawPatterns.size() == 52, "Production Macaw patterned catalog");
@@ -166,6 +167,32 @@ public final class AmcPatternGameTests {
     }
 
     @GameTest
+    public void derivedStateShapesMatchEstablishedPattern(GameTestHelper helper) {
+        var reference = ExternalMaterialFamilies.fromSource(
+                Identifier.fromNamespaceAndPath(AMC, "prismarine_bricks_running_bond")).orElseThrow();
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(1, 1, 1));
+        var context = CollisionContext.empty();
+        for (var family : ExternalMaterialFamilies.all()) {
+            if (!family.spec().provider().equals(AMC)) continue;
+            for (String role : ROLES.subList(1, ROLES.size())) {
+                var block = family.roles().get(role);
+                var original = reference.roles().get(role);
+                helper.assertTrue(block.getStateDefinition().getProperties().equals(original.getStateDefinition().getProperties()),
+                        "State properties " + family.spec().id() + " " + role);
+                for (var state : block.getStateDefinition().getPossibleStates()) {
+                    var expected = original.withPropertiesOf(state);
+                    helper.assertTrue(state.getFluidState() == expected.getFluidState()
+                            && Shapes.equal(state.getShape(level, pos, context), expected.getShape(level, pos, context))
+                            && Shapes.equal(state.getCollisionShape(level, pos, context), expected.getCollisionShape(level, pos, context)),
+                            "Outline, collision or fluid mismatch for " + state);
+                }
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest
     public void survivalPlacementEngravingAndRecipes(GameTestHelper helper) {
         var support = new BlockPos(1, 1, 1);
         var target = support.above();
@@ -176,9 +203,9 @@ public final class AmcPatternGameTests {
         for (var family : ExternalMaterialFamilies.all()) {
             if (!family.spec().provider().equals(AMC)) continue;
             var id = family.spec().id();
-            var material = id.getPath().startsWith("quartz_") ? Blocks.QUARTZ_BLOCK
-                    : id.getPath().startsWith("nether_") ? Blocks.NETHER_BRICKS
-                    : id.getPath().startsWith("end_") ? Blocks.END_STONE_BRICKS : Blocks.PRISMARINE_BRICKS;
+            String materialName = id.getPath().replaceFirst("_(running_bond|flagstone|windmill_weave|crystal_floor)$", "");
+            var ingredient = Identifier.withDefaultNamespace(materialName.equals("quartz") ? "quartz_block" : materialName);
+            var material = BuiltInRegistries.BLOCK.getOptional(ingredient).orElseThrow();
             var input = new SingleRecipeInput(new ItemStack(material));
             var recipe = level.getServer().getRecipeManager().byKey(ResourceKey.create(Registries.RECIPE, id)).orElseThrow().value();
             helper.assertTrue(recipe instanceof StonecutterRecipe cut && cut.matches(input, level)

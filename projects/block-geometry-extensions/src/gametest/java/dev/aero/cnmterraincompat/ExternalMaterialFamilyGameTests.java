@@ -183,9 +183,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 164
-                        && ExternalMaterialCatalog.sourceCount("architectural_material_closure") == 16,
-                "Expected 148 legacy sources and 16 AMC patterns");
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 180
+                        && ExternalMaterialCatalog.sourceCount("architectural_material_closure") == 32,
+                "Expected 148 legacy sources and 32 AMC patterns");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
                         && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
                         && ExternalMaterialCatalog.sourceCount("ribbits") == 4
@@ -207,6 +207,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         for (var spec : ExternalMaterialCatalog.specs()) {
             if (spec.provider().equals("architectural_material_closure")) {
                 helper.assertTrue(!BuiltInRegistries.BLOCK.containsKey(spec.id())
+                                && !BuiltInRegistries.ITEM.containsKey(spec.id())
                                 && ExternalMaterialFamilies.fromSource(spec.id()).isEmpty(),
                         "Absent AMC parent exposed " + spec.id());
                 for (String role : List.of("slab", "stairs", "wall", "corner", "quarter_column", "layer")) {
@@ -220,6 +221,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(BuiltInRegistries.BLOCK.keySet().stream().noneMatch(id ->
                         id.getPath().contains("architectural_material_closure/")),
                 "Absent AMC exposed derived geometry");
+        helper.assertTrue(BuiltInRegistries.ITEM.keySet().stream().noneMatch(id ->
+                        id.getPath().contains("architectural_material_closure/")),
+                "Absent AMC exposed a derived selector item");
         helper.assertTrue(actual.equals(expected),
                 "Registered external sources differ from the exact allowlist");
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))

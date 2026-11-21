@@ -22,18 +22,32 @@ import java.util.Set;
 /** Exact, allowlisted external material sources. Provider lookup happens only at provider-entrypoint RETURN. */
 public final class ExternalMaterialCatalog {
     public static final String PROFILE_VERSION = "bge-c93-provider-role-completion-v1";
+    private static final String AMC = "architectural_material_closure";
+    private static final List<Spec> AMC_MASONRY = amcPatterns(List.of(
+            "prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks"));
+    private static final List<Spec> AMC_BASE_STONE = amcPatterns(List.of(
+            "tuff", "cinnabar", "sulfur", "smooth_basalt"));
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
     private ExternalMaterialCatalog() {}
 
-    /** Called by optional pseudo-mixins after the named provider has registered all of its blocks. */
+    /** Called by optional pseudo-mixins after the named provider has registered its blocks. */
     public static synchronized void registerProvider(String provider) {
         if (!FabricLoader.getInstance().isModLoaded(provider) || !REGISTERED_PROVIDERS.add(provider)) return;
         if (provider.equals("enderscape")) PrivateBeamFamilies.registerRoots();
-        List<Spec> specs = SPECS.stream().filter(spec -> spec.provider().equals(provider)).toList();
+        // AMC's original hook is the return from EndStoneBricksBlocks. Only the masonry
+        // batch is ready there, including on versions predating BaseStoneFamilies.
+        List<Spec> specs = provider.equals(AMC) ? AMC_MASONRY
+                : SPECS.stream().filter(spec -> spec.provider().equals(provider)).toList();
         if (specs.isEmpty()) throw new IllegalArgumentException("Unsupported external provider: " + provider);
         CnmTerrainCompat.registerExternalFamilies(provider, specs);
+    }
+
+    public static synchronized void registerAmcBaseStonePatterns() {
+        if (FabricLoader.getInstance().isModLoaded(AMC) && REGISTERED_PROVIDERS.add(AMC + ":base_stone")) {
+            CnmTerrainCompat.registerExternalFamilies(AMC, AMC_BASE_STONE);
+        }
     }
 
     public static List<Spec> specs() {
@@ -59,16 +73,23 @@ public final class ExternalMaterialCatalog {
                 // This provider has a live custom color function, not vanilla birch foliage.
                 leaves("mynx_trees:silver_birch_leaves", TintProfile.SOURCE_PROVIDER)));
         result.addAll(pathSpecs());
+        result.addAll(AMC_MASONRY);
+        result.addAll(AMC_BASE_STONE);
+        result.addAll(bbbBeamSpecs());
+        result.addAll(enderscapeSpecs());
+        return List.copyOf(result);
+    }
+
+    private static List<Spec> amcPatterns(List<String> materials) {
+        List<Spec> result = new ArrayList<>();
         // AMC's normal and engraved models both resolve #all to block/<material>_<pattern>.
         // Each engraved full block is independent and supplies none of its eight derived roles.
-        for (String material : List.of("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks")) {
+        for (String material : materials) {
             for (String pattern : List.of("running_bond", "flagstone", "windmill_weave", "crystal_floor")) {
-                result.add(uniform("architectural_material_closure:" + material + "_" + pattern,
+                result.add(uniform(AMC + ":" + material + "_" + pattern,
                         Set.of(BlockTags.MINEABLE_WITH_PICKAXE), Map.of()));
             }
         }
-        result.addAll(bbbBeamSpecs());
-        result.addAll(enderscapeSpecs());
         return List.copyOf(result);
     }
 
