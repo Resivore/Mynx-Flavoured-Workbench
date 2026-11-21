@@ -39,13 +39,17 @@ def block_uv(direction, bounds):
             "west": [z, 16-b, c, 16-y], "east": [16-c, 16-b, 16-z, 16-y]}[direction]
 
 
-def verify(audit, jars):
+def verify(audit, jars, version, enderscape):
+    provider_pack = enderscape and version == "24"
     def read(key):
         if key in audit["resources"]:
             return audit["resources"][key]
         namespace, path = key.split(":")
         entry = f"assets/{namespace}/{path}"
         for jar in reversed(jars):
+            nested = "resourcepacks/enderscape/" + entry
+            if provider_pack and Path(jar.filename).name == "AMC C24.jar" and nested in jar.NameToInfo:
+                return json.loads(jar.read(nested)) if entry.endswith(".json") else jar.read(nested)
             if entry in jar.NameToInfo:
                 return json.loads(jar.read(entry)) if entry.endswith(".json") else jar.read(entry)
         raise KeyError(key)
@@ -63,8 +67,13 @@ def verify(audit, jars):
             value = textures[value[1:]]
         return value
 
-    expected = {f"{AMC}:{m}_{p}" for m, p in itertools.product(MATERIALS, PATTERNS)}
+    materials = () if version == "none" else MATERIALS
+    if provider_pack:
+        materials += ("veradite", "mirestone", "kurodite")
+    expected = {f"{AMC}:{m}_{p}" for m, p in itertools.product(materials, PATTERNS)}
     assert set(audit["membership"]) == expected
+    if not expected:
+        assert not audit["resources"]
     counts, sprite_hashes = Counter(), set()
     selector_counts = dict(zip(ROLES, (2, 3, 40, 9, 8, 12, 4, 6, 24), strict=True))
     for root, roles in audit["membership"].items():
@@ -135,12 +144,16 @@ def verify(audit, jars):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--amc-version", default="23", choices=("none", "23", "24"))
+    parser.add_argument("--enderscape", action="store_true")
     parser.add_argument("audit", type=Path)
     parser.add_argument("jars", nargs="+")
     args = parser.parse_args()
     audit = json.loads(args.audit.read_text(encoding="utf-8"))
     with ExitStack() as stack:
-        verify(audit, [stack.enter_context(ZipFile(p)) for p in args.jars])
-    report = args.audit.parent / "reports" / "amc-pattern-families.json"
+        verify(audit, [stack.enter_context(ZipFile(p)) for p in args.jars], args.amc_version, args.enderscape)
+    report_name = ("amc-pattern-families.json" if args.amc_version == "24" and args.enderscape
+                   else args.audit.stem + "-members.json")
+    report = args.audit.parent / "reports" / report_name
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(json.dumps(audit["membership"], indent=2) + "\n", encoding="utf-8")

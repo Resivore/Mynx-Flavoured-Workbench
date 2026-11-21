@@ -27,6 +27,7 @@ public final class ExternalMaterialCatalog {
             "prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks"));
     private static final List<Spec> AMC_BASE_STONE = amcPatterns(List.of(
             "tuff", "cinnabar", "sulfur", "smooth_basalt"));
+    private static final List<Spec> AMC_ENDERSCAPE = amcPatterns(List.of("veradite", "mirestone", "kurodite"));
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -47,6 +48,13 @@ public final class ExternalMaterialCatalog {
     public static synchronized void registerAmcBaseStonePatterns() {
         if (FabricLoader.getInstance().isModLoaded(AMC) && REGISTERED_PROVIDERS.add(AMC + ":base_stone")) {
             CnmTerrainCompat.registerExternalFamilies(AMC, AMC_BASE_STONE);
+        }
+    }
+
+    public static synchronized void registerAmcEnderscapePatterns() {
+        var loader = FabricLoader.getInstance();
+        if (loader.isModLoaded(AMC) && loader.isModLoaded("enderscape") && REGISTERED_PROVIDERS.add(AMC + ":enderscape")) {
+            CnmTerrainCompat.registerExternalFamilies(AMC, AMC_ENDERSCAPE);
         }
     }
 
@@ -75,6 +83,7 @@ public final class ExternalMaterialCatalog {
         result.addAll(pathSpecs());
         result.addAll(AMC_MASONRY);
         result.addAll(AMC_BASE_STONE);
+        result.addAll(AMC_ENDERSCAPE);
         result.addAll(bbbBeamSpecs());
         result.addAll(enderscapeSpecs());
         return List.copyOf(result);

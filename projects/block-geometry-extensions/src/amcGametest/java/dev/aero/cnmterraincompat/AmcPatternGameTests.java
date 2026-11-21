@@ -9,6 +9,7 @@ import dev.aero.cnmterraincompat.client.QuarterGeometryGeneratedResources;
 import dev.tazer.clutternomore.ClutterNoMore;
 import dev.tazer.clutternomore.common.shape_map.ShapeMap;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -22,6 +23,7 @@ import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.tags.BlockTags;
@@ -53,17 +55,55 @@ import java.util.Optional;
 
 public final class AmcPatternGameTests {
     private static final String AMC = "architectural_material_closure";
+    private static final List<String> END_STONES = List.of("veradite", "mirestone", "kurodite");
     private static final List<String> ROLES = List.of("block", "slab", "stairs", "wall",
             "vertical_slab", "step", "corner", "quarter_column", "layer");
 
     @GameTest
     public void productionPatternFamilies(GameTestHelper helper) throws Exception {
-        var hash = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(Path.of(System.getProperty("bge.amcJar"))));
-        helper.assertTrue(HexFormat.of().formatHex(hash).equals("8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5"),
-                "Controlled provider must be the finalized AMC C23 bytes");
-        var expected = ExternalMaterialCatalog.specs().stream().filter(s -> s.provider().equals(AMC)).toList();
+        var loader = FabricLoader.getInstance();
+        String version = System.getProperty("bge.amcVersion");
+        boolean present = !version.equals("none");
+        boolean enderscape = Boolean.getBoolean("bge.withEnderscape");
+        boolean patterns = enderscape && version.equals("24");
+        helper.assertTrue(loader.isModLoaded(AMC) == present && loader.isModLoaded("enderscape") == enderscape,
+                "Unexpected optional-provider configuration");
+        if (present) {
+            var hash = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(Path.of(System.getProperty("bge.amcJar"))));
+            String expectedHash = version.equals("24") ? "ddafc326d6e41e98170ad5c059a14774858fb1a6bc28b902d95e4b64206d6018"
+                    : "8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5";
+            helper.assertTrue(HexFormat.of().formatHex(hash).equals(expectedHash), "Unexpected AMC artifact");
+        }
         var families = ExternalMaterialFamilies.all().stream().filter(b -> b.spec().provider().equals(AMC)).toList();
-        helper.assertTrue(families.size() == expected.size() && expected.size() == 32, "AMC family count");
+        int expectedCount = patterns ? 44 : present ? 32 : 0;
+        helper.assertTrue(families.size() == expectedCount, "AMC family count");
+        for (var spec : ExternalMaterialCatalog.specs()) {
+            if (!spec.provider().equals(AMC)) continue;
+            boolean expected = present && (patterns || END_STONES.stream().noneMatch(m -> spec.id().getPath().startsWith(m + "_")));
+            helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(spec.id()) == expected
+                    && BuiltInRegistries.ITEM.containsKey(spec.id()) == expected
+                    && ExternalMaterialFamilies.fromSource(spec.id()).isPresent() == expected, "Optional source " + spec.id());
+            if (!expected) {
+                String fragment = AMC + "/" + spec.id().getPath() + "_";
+                helper.assertTrue(BuiltInRegistries.BLOCK.keySet().stream().noneMatch(id -> id.getPath().contains(fragment))
+                        && BuiltInRegistries.ITEM.keySet().stream().noneMatch(id -> id.getPath().contains(fragment)),
+                        "Phantom derived registration for " + spec.id());
+            }
+        }
+        for (String material : END_STONES) {
+            var id = Identifier.fromNamespaceAndPath("enderscape", material);
+            var plain = ExternalMaterialFamilies.fromSource(id);
+            helper.assertTrue(plain.isPresent() == enderscape, "Ordinary Enderscape family " + id);
+            if (enderscape) {
+                var binding = plain.orElseThrow();
+                helper.assertTrue(ShapeMap.getShapes(binding.source().asItem()).equals(
+                        binding.roles().values().stream().map(Block::asItem).toList()), "Ordinary selector " + id);
+                for (String role : List.of("slab", "stairs", "wall")) {
+                    helper.assertTrue(BuiltInRegistries.BLOCK.getKey(binding.roles().get(role)).equals(
+                            id.withPath(material + "_" + role)) && !binding.isGeneratedRole(role), "Provider role " + id + " " + role);
+                }
+            }
+        }
         var macawPatterns = ExternalMaterialFamilies.all().stream().filter(b -> b.spec().provider().equals("mcwpaths")
                 && !b.spec().providerRoles().isEmpty()).toList();
         helper.assertTrue(macawPatterns.size() == 52, "Production Macaw patterned catalog");
@@ -142,6 +182,11 @@ public final class AmcPatternGameTests {
             var location = new PackLocationInfo(name, Component.literal(name), PackSource.DEFAULT, Optional.empty());
             packs.add(new FilePackResources.FileResourcesSupplier(new File(name)).openPrimary(location));
         }
+        if (patterns) {
+            var root = loader.getModContainer(AMC).orElseThrow().findPath("resourcepacks/enderscape").orElseThrow();
+            var location = new PackLocationInfo(AMC + ":enderscape", Component.literal("AMC Enderscape"), PackSource.DEFAULT, Optional.empty());
+            packs.add(new PathPackResources(location, root));
+        }
         try (var manager = new MultiPackResourceManager(PackType.CLIENT_RESOURCES, packs)) {
             ExternalMaterialGeneratedResources.generate(manager);
             QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
@@ -168,6 +213,10 @@ public final class AmcPatternGameTests {
 
     @GameTest
     public void derivedStateShapesMatchEstablishedPattern(GameTestHelper helper) {
+        if (!FabricLoader.getInstance().isModLoaded(AMC)) {
+            helper.succeed();
+            return;
+        }
         var reference = ExternalMaterialFamilies.fromSource(
                 Identifier.fromNamespaceAndPath(AMC, "prismarine_bricks_running_bond")).orElseThrow();
         var level = helper.getLevel();
@@ -204,7 +253,8 @@ public final class AmcPatternGameTests {
             if (!family.spec().provider().equals(AMC)) continue;
             var id = family.spec().id();
             String materialName = id.getPath().replaceFirst("_(running_bond|flagstone|windmill_weave|crystal_floor)$", "");
-            var ingredient = Identifier.withDefaultNamespace(materialName.equals("quartz") ? "quartz_block" : materialName);
+            var ingredient = END_STONES.contains(materialName) ? Identifier.fromNamespaceAndPath("enderscape", materialName)
+                    : Identifier.withDefaultNamespace(materialName.equals("quartz") ? "quartz_block" : materialName);
             var material = BuiltInRegistries.BLOCK.getOptional(ingredient).orElseThrow();
             var input = new SingleRecipeInput(new ItemStack(material));
             var recipe = level.getServer().getRecipeManager().byKey(ResourceKey.create(Registries.RECIPE, id)).orElseThrow().value();

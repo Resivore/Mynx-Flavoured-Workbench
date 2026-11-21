@@ -17,6 +17,7 @@
     "MacawsPathsInitializationMixin",
     "AmcPatternsInitializationMixin",
     "AmcBaseStoneInitializationMixin",
+    "AmcEnderscapeInitializationMixin",
     "MossyStoneInitializationMixin",
     "MynxTreesInitializationMixin",
     "RibbitsInitializationMixin",

@@ -4,5 +4,5 @@
   "version": "1.0.0",
   "name": "BGE controlled AMC integration",
   "entrypoints": {"fabric-gametest": ["dev.aero.cnmterraincompat.AmcPatternGameTests"]},
-  "depends": {"architectural_material_closure": "*", "cnm_terrain_slabs_compat": "=${version}"}
+  "depends": {"cnm_terrain_slabs_compat": "=${version}"}
 }

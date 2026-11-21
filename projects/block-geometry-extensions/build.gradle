@@ -181,25 +181,39 @@ tasks.named('runGameTest') {
 // server. The normal regression fixture provides several of the same mod IDs and classes.
 def amcTest = providers.gradleProperty('amcGameTest').isPresent()
 if (amcTest) {
-    def amc = file('../architectural-material-closure/artifacts/AMC C23.jar')
+    def amcVersion = providers.gradleProperty('amcTestVersion').getOrElse('24')
+    if (!(amcVersion in ['none', '23', '24'])) throw new GradleException("Unsupported AMC test version: ${amcVersion}")
+    def withEnderscape = !providers.gradleProperty('withoutTestEnderscape').isPresent()
+    def amc = amcVersion == 'none' ? files() : files("../architectural-material-closure/artifacts/AMC C${amcVersion}.jar")
+    def enderscape = withEnderscape ? files(privateEnderscapeJar) : files()
+    def scenario = "amc-${amcVersion}-${withEnderscape ? 'with' : 'without'}-enderscape"
     def paths = file('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar')
     def windows = file('../../originals/mods/mcw-windows-2.4.2-mc26.2fabric.jar')
     def bbb = file('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')
     sourceSets.gametest.java.setSrcDirs(['src/amcGametest/java'])
     sourceSets.gametest.resources.setSrcDirs(['src/amcGametest/resources'])
-    dependencies { gametestRuntimeOnly files(amc, paths, windows, bbb) }
-    loom.runs.named('gameTest') { runDir 'build/run/amcGameTest' }
-    def resourceJars = files(minecraftClientArchive, paths, bbb, amc,
+    dependencies {
+        gametestRuntimeOnly files(amc, paths, windows, bbb, enderscape)
+        if (withEnderscape) {
+            gametestRuntimeOnly fileTree(providers.gradleProperty('enderscapeTestDeps')
+                    .getOrElse('../architectural-material-closure/build/c24/test-dependencies')) { include '*.jar' }
+        }
+    }
+    loom.runs.named('gameTest') { runDir "build/run/${scenario}" }
+    def resourceJars = files(minecraftClientArchive, paths, bbb, amc, enderscape,
             file('../../originals/mods/clutternomore-2.0.7+26.2-fabric.jar'), jar.archiveFile)
-    def audit = layout.buildDirectory.file('amc-model-audit.json')
+    def audit = layout.buildDirectory.file("amc-model-audit-${scenario}.json")
     tasks.register('verifyAmcModels', Exec) {
         dependsOn 'runGameTest'
-        commandLine(['python', '-B', 'tools/verify_amc_models.py', audit.get().asFile] + resourceJars.files.toList())
+        commandLine(['python', '-B', 'tools/verify_amc_models.py', '--amc-version', amcVersion]
+                + (withEnderscape ? ['--enderscape'] : []) + [audit.get().asFile] + resourceJars.files.toList())
     }
     tasks.named('runGameTest') {
         dependsOn jar
         systemProperty 'bge.testResourceJars', resourceJars.asPath
-        systemProperty 'bge.amcJar', amc.absolutePath
+        systemProperty 'bge.amcVersion', amcVersion
+        systemProperty 'bge.withEnderscape', withEnderscape
+        if (!amc.empty) systemProperty 'bge.amcJar', amc.singleFile.absolutePath
         systemProperty 'bge.amcAudit', audit.get().asFile.absolutePath
     }
 }
