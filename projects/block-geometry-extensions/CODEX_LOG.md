@@ -669,3 +669,14 @@
 - Artifact: PRIVATE_LOCAL_ONLY `BGE C106.jar`, 6,425,709 bytes, SHA-256 `8723e77187dc65cadba534df447b735f8c4d8c17973e6e0ecf7ebb160c2490e2`, finalized at `2026-11-21T01:50:06.8417228Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
 - Next state: Owner verification of pattern alignment, item previews, and survival behavior using TESTING.md and the retained C106 bytes.
+
+## 2026-11-21T02:19:51.489719Z — Finalize BGE C107 AMC Enderscape patterns
+
+- Revision: 69
+- Source checkpoint: `cb528521784cd99b8a8925119d26ad8d19a9ca03`
+- Changes: Completed twelve independent AMC C24 patterned families after AMC registers its Enderscape-backed blocks and activates its built-in pack. Each AMC full block has eight derived roles. Ordinary Enderscape material selectors retain their provider-owned standard shapes.
+- Build/static: All four controlled Fabric tests passed in each of five configurations. AMC C24 alone and AMC C23 with Enderscape each resolved the original 32 families. Enderscape alone and neither provider produced zero AMC registrations and zero emitted AMC resources. The 52 Macaw patterned parents kept their native Slabs and Stairs. All 163 full regression GameTests passed. The model audit traced 4,752 placed selections and 396 previews through 2,112 models and 16,236 faces to 44 distinct provider sprites. All twelve new patterns resolved from the active AMC built-in Enderscape pack. All 32 C106 memberships and 1,984 generated resource definitions matched. Architecture, authored glass, native material/semantic checks and archive validation passed. Against finalized C106, one AMC lifecycle hook class was added, 5 entries changed and 11,249 entries retained identical bytes, including every packaged asset and data file.
+- Runtime: Owner Minecraft verification and acceptance are pending.
+- Artifact: PRIVATE_LOCAL_ONLY `BGE C107.jar`, 6,426,686 bytes, SHA-256 `2a2d864cf2dcce55ae006d184dcbe0d408382821845e51e9a3256df2141daaf3`, finalized at `2026-11-21T02:16:04.4901745Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
+- Next state: Verify the twelve pattern/parent selectors, UV alignment and survival behavior against the retained C107 bytes using TESTING.md.
