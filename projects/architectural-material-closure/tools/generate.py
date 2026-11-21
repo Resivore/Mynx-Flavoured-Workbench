@@ -140,6 +140,9 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
     side = "quartz_block_side" if material == "quartz" else masonry.visual_sprite(material_ns, substrate)
     slab = "deepslate_brick_slab" if material == "deepslate" else base_slab_ingredient(material)
     sprite_id = f"{material_ns}:block/{side}"
+    if form == "button" and material in ("purpur", "dusk_purpur"):
+        # BBB's unrotated up face uses this tile at one texel per model unit.
+        sprite_id = f"{NS}:block/column/{material}_top"
     if material == moss.MATERIAL:
         slab = "mossy_stone_brick_slab"
         sprite_id = f"{NS}:block/mossed_stone" + ("_bricks" if namespace == "mcwwindows" else "")
