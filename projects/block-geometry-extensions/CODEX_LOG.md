@@ -680,3 +680,14 @@
 - Artifact: PRIVATE_LOCAL_ONLY `BGE C107.jar`, 6,426,686 bytes, SHA-256 `2a2d864cf2dcce55ae006d184dcbe0d408382821845e51e9a3256df2141daaf3`, finalized at `2026-11-21T02:16:04.4901745Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
 - Next state: Verify the twelve pattern/parent selectors, UV alignment and survival behavior against the retained C107 bytes using TESTING.md.
+
+## 2026-11-21T03:04:41.757548Z — Finalize BGE C108 AMC Purpur and Resin patterns
+
+- Revision: 70
+- Source checkpoint: `1a45fe2b65fc8283222f7d9d0335861e18596596`
+- Changes: Added twelve independent C26 families through the existing AMC return hooks. The base stone hook handles Purpur and Resin, and the optional Enderscape hook handles Dusk Purpur. Each new geometry uses the exact registered AMC patterned parent and its authored sprite.
+- Build/static: Validated 6,048 placed selections and 504 previews through 2,688 models and 20,664 faces against 56 distinct AMC sprites and block-space UVs. Verified the provider pattern pixels using the Purpur Block, Dusk Purpur Block and Resin Bricks palettes. Compared all 44 original C107 memberships and 2,728 generated resource definitions. All four controlled Fabric tests passed in each of seven provider configurations. C26 without Enderscape resolved 40 families. C25 and C24 with Enderscape each resolved 44, C23 with Enderscape resolved 32, and both AMC-absent configurations emitted zero AMC resources. All 52 Macaw patterns retained their native Slabs and Stairs. All 163 full regression GameTests passed. Architecture, glass, native semantics, Bookshelf resources and archive validation passed. Compared with exact C107, 4 entries changed, 11,251 stayed byte-identical and zero entries were added or removed. All packaged assets and data retained their bytes.
+- Runtime: Owner Minecraft verification and acceptance are pending.
+- Artifact: PRIVATE_LOCAL_ONLY `BGE C108.jar`, 6,427,095 bytes, SHA-256 `7ce394afaee22797af2cf952036876efcb2354ead32222402088d48d5b1ebde0`, finalized at `2026-11-21T03:00:18.7462149Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
+- Next state: Verify the twelve patterns, their alignment across faces and previews, and survival behavior against the retained C108 bytes using TESTING.md.
