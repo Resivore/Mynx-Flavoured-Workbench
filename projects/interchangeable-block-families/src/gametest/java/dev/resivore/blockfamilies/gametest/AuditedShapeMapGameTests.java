@@ -272,7 +272,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 246 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 254 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -299,7 +299,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_827 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_879 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1219,6 +1219,58 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             assertSelectorRoundTrip(helper, List.of(prefix + "button", prefix + "pressure_plate",
                     prefix + "parapet", prefix + "louvered_shutter"));
             assertMasonryWindowsPathsAndPatterns(helper, material, prefix, prefix + "button");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void optionalProviderMatrix(GameTestHelper helper) {
+        var loader = FabricLoader.getInstance();
+        boolean enderscape = loader.isModLoaded("enderscape");
+        boolean amc = loader.isModLoaded("architectural_material_closure");
+        helper.assertTrue(enderscape == Boolean.getBoolean("ibf.test.enderscapeExpected"), "Enderscape setup differs");
+        helper.assertTrue(amc == Boolean.getBoolean("ibf.test.amcExpected"), "AMC setup differs");
+
+        // Derive expected membership independently from the live provider registries.
+        int families = 0;
+        Set<Item> items = new LinkedHashSet<>();
+        for (AuditedShapeFamily family : AuditedShapeFamilies.families()) {
+            var registered = family.members().stream().filter(BuiltInRegistries.ITEM::containsKey).toList();
+            if (!registered.contains(family.canonicalParent())) {
+                for (Identifier id : registered) {
+                    helper.assertTrue(!AuditedShapeRuntime.isAudited(requiredItem(id)), "Orphaned alternate " + id);
+                }
+                continue;
+            }
+            helper.assertTrue(registered.size() >= 2, "Singleton selector " + family.key());
+            assertExactShapeSet(helper, family.canonicalParent().toString(),
+                    registered.stream().map(Identifier::toString).toList());
+            for (Identifier id : registered) {
+                Item item = requiredItem(id);
+                helper.assertTrue(items.add(item) && AuditedShapeRuntime.isAudited(item), "Membership mismatch " + id);
+            }
+            families++;
+        }
+        int expectedFamilies = enderscape ? (amc ? 254 : 181) : (amc ? 220 : 164);
+        int expectedItems = enderscape ? (amc ? 1879 : 1397) : (amc ? 1704 : 1348);
+        helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
+                "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
+
+        for (String material : List.of("calcite", "shadoline_block")) {
+            String prefix = "architectural_material_closure:" + material + "_";
+            if (amc && (enderscape || material.equals("calcite"))) {
+                assertSelectorRoundTrip(helper, List.of(prefix + "button", prefix + "pressure_plate",
+                        prefix + "parapet", prefix + "louvered_shutter"));
+                assertMasonryWindowsPathsAndPatterns(helper, material, prefix, prefix + "button");
+            } else {
+                helper.assertTrue(BuiltInRegistries.ITEM.keySet().stream().noneMatch(id -> id.toString().startsWith(prefix)),
+                        "Unexpected optional items for " + material);
+            }
+        }
+        if (amc && !enderscape) {
+            helper.assertTrue(hasRecipe(helper, "architectural_material_closure:end_stone_bricks_parapet")
+                            && hasRecipe(helper, "architectural_material_closure:end_stone_bricks_louvered_shutter"),
+                    "Standalone AMC recipes lost their Enderscape parent");
         }
         helper.succeed();
     }

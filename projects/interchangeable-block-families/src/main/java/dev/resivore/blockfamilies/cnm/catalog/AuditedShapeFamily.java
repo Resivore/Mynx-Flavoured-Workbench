@@ -18,8 +18,13 @@ public record AuditedShapeFamily(
         Identifier key,
         Category category,
         Identifier canonicalParent,
-        List<Identifier> members
+        List<Identifier> members,
+        boolean requiresEnderscape
 ) {
+    public AuditedShapeFamily(Identifier key, Category category, Identifier canonicalParent, List<Identifier> members) {
+        this(key, category, canonicalParent, members, false);
+    }
+
     public AuditedShapeFamily {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(category, "category");

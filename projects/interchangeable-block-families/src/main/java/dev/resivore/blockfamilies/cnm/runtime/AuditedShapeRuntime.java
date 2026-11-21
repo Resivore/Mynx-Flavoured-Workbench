@@ -170,7 +170,9 @@ public final class AuditedShapeRuntime {
         ArrayList<ResolvedFamily> families = new ArrayList<>(definitions.size());
         IdentityHashMap<Item, ResolvedFamily> byMember = new IdentityHashMap<>();
         boolean amcLoaded = FabricLoader.getInstance().isModLoaded("architectural_material_closure");
+        boolean enderscapeLoaded = FabricLoader.getInstance().isModLoaded("enderscape");
         for (AuditedShapeFamily definition : definitions) {
+            if (definition.requiresEnderscape() && !enderscapeLoaded) continue;
             List<Identifier> available = definition.availableMembers(amcLoaded);
             if (available.isEmpty()) continue;
             ArrayList<Item> members = new ArrayList<>(available.size());

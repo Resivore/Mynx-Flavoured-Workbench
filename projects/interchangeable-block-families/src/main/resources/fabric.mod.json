@@ -13,6 +13,12 @@
   "mixins": [
     "interchangeable_block_families.mixins.json"
   ],
+  "suggests": {
+    "enderscape": ">=3.0.2"
+  },
+  "breaks": {
+    "enderscape": "<3.0.2"
+  },
   "depends": {
     "fabricloader": ">=0.19.3",
     "minecraft": "=26.2",
@@ -23,7 +29,6 @@
     "mcwpaths": ">=1.1.1",
     "auroraslanterns": ">=2.1.1",
     "bbb": "=2.0pre4+26.2-enderscape-dev.7",
-    "enderscape": ">=3.0.2",
     "ribbits": ">=4.1.6",
     "mcwtrpdoors": ">=1.1.5",
     "mcwwindows": ">=2.4.2",

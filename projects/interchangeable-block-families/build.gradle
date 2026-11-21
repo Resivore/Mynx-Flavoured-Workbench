@@ -195,7 +195,9 @@ dependencies {
 
     // Enderscape is a literal inventory-item provider. Its exact local JAR is
     // audited directly and remains an external runtime input, never bundled.
-    runtimeOnly files(enderscapeReferenceJar)
+    if (!providers.gradleProperty('without_enderscape').isPresent()) {
+        runtimeOnly files(enderscapeReferenceJar)
+    }
     enderscapeReference files(enderscapeReferenceJar)
 
     // Exact controlled-validation providers required by Enderscape 3.0.2.
@@ -269,7 +271,10 @@ loom.runs.named('gameTest') {
     // Providers remain loaded so IBF exercises their live registrations. Limit
     // execution to the IBF suite rather than treating an upstream provider's
     // own GameTest failures as failures of this project.
-    vmArg '-Dfabric-api.gametest.filter=interchangeable-block-families-runtime-tests:*'
+    def withoutEnderscape = providers.gradleProperty('without_enderscape').isPresent()
+    vmArg "-Dibf.test.enderscapeExpected=${!withoutEnderscape}"
+    def testPattern = withoutEnderscape ? '*matrix*' : '*'
+    vmArg "-Dfabric-api.gametest.filter=interchangeable-block-families-runtime-tests:${testPattern}"
 }
 
 // Ribbits validates its owned trade recipes at server startup. The optional
