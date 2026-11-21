@@ -135,8 +135,8 @@ final class AuditedAccessoryFamiliesTest {
         assertTrue(family("prismarine_bricks_button").members().contains(id("mcwwindows:prismarine_parapet")));
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
-        assertEquals(50, accessories.size());
-        assertEquals(362, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(58, accessories.size());
+        assertEquals(422, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }

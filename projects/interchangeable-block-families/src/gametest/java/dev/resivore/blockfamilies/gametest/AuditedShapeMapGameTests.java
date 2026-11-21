@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -265,7 +266,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 209 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 225 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -292,7 +293,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_573 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_677 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1195,6 +1196,44 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             }
         }
         assertSeparate(helper, gothic, "mcwwindows:nether_brick_arrow_slit", "Nether Brick window and details joined");
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void baseStoneMaterialsKeepFourSelectorsAndIndependentPatternedBlocks(GameTestHelper helper) {
+        boolean amcPresent = Boolean.getBoolean("ibf.test.amcExpected");
+        if (amcPresent) {
+            var level = helper.getLevel();
+            CreativeModeTabs.tryRebuildTabContents(level.enabledFeatures(), false, level.registryAccess());
+        }
+        for (String material : List.of("tuff", "cinnabar", "sulfur", "smooth_basalt")) {
+            String prefix = "architectural_material_closure:" + material + "_";
+            if (!amcPresent) {
+                helper.assertTrue(BuiltInRegistries.ITEM.keySet().stream()
+                        .noneMatch(key -> key.toString().startsWith(prefix)), "Unexpected AMC items for " + material);
+                continue;
+            }
+
+            assertSelectorRoundTrip(helper, List.of(prefix + "button", prefix + "pressure_plate",
+                    prefix + "parapet", prefix + "louvered_shutter"));
+            assertSelectorRoundTrip(helper, List.of(prefix + "column", prefix + "urn", prefix + "moulding",
+                    prefix + "fence", prefix + "frame", prefix + "arrow_slit"));
+            assertSelectorRoundTrip(helper, List.of(prefix + "window", prefix + "window2", prefix + "four_window",
+                    prefix + "pane_window", prefix + "gothic_window"));
+            assertPathsAndIndependentFullBlocks(helper, prefix, prefix + "button");
+
+            helper.assertTrue(hasRecipe(helper, prefix + "column_from_stonecutting"), "Lost column recipe for " + material);
+            for (String form : List.of("urn", "moulding", "fence")) {
+                helper.assertTrue(!hasRecipe(helper, prefix + form + "_from_stonecutting"),
+                        "Retained alternate stonecutting recipe for " + prefix + form);
+            }
+            var buildingTab = BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(CreativeModeTabs.BUILDING_BLOCKS);
+            for (String form : List.of("running_bond", "flagstone", "windmill_weave", "crystal_floor")) {
+                Item item = requiredItem(prefix + form);
+                helper.assertTrue(buildingTab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)),
+                        "Missing patterned full block in Building Blocks: " + prefix + form);
+            }
+        }
         helper.succeed();
     }
 
