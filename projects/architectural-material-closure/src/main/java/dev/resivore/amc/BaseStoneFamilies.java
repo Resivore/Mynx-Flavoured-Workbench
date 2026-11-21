@@ -47,6 +47,8 @@ public final class BaseStoneFamilies implements ModInitializer {
         registerFamily("cinnabar", Blocks.CINNABAR);
         registerFamily("sulfur", Blocks.SULFUR);
         registerFamily("smooth_basalt", Blocks.SMOOTH_BASALT);
+        registerFamily("purpur", Blocks.PURPUR_BLOCK);
+        registerFamily("resin", Blocks.RESIN_BLOCK);
     }
 
     private static void registerFamily(String material, Block base) {

@@ -21,7 +21,8 @@ public final class EnderscapeTests {
     public void nativeIngredientsAndOutputs(GameTestHelper helper) {
         var level = helper.getLevel();
         for (String material : StoneTests.END_MATERIALS) {
-            var base = BuiltInRegistries.ITEM.getValue(Identifier.parse("enderscape:" + material)).getDefaultInstance();
+            var base = BuiltInRegistries.ITEM.getValue(Identifier.parse(
+                    "enderscape:" + (material.equals("dusk_purpur") ? "dusk_purpur_block" : material))).getDefaultInstance();
             var slab = BuiltInRegistries.ITEM.getValue(Identifier.parse("enderscape:" + material + "_slab")).getDefaultInstance();
             var grids = Map.of(
                     "frame", CraftingInput.of(3, 3, List.of(slab, slab, slab, slab, ItemStack.EMPTY, slab, slab, slab, slab)),
@@ -222,5 +223,79 @@ public final class EnderscapeTests {
         StoneTests.supportsAndShutterInteraction(helper,
                 registry.getValue(Identifier.parse("architectural_material_closure:kurodite_parapet")),
                 registry.getValue(Identifier.parse("architectural_material_closure:kurodite_louvered_shutter")));
+    }
+
+    @GameTest
+    public void duskPurpurRecipes(GameTestHelper helper) {
+        DirectFormTests.familyRecipes(helper, "dusk_purpur", "enderscape:dusk_purpur_block", "enderscape:dusk_purpur_slab");
+        helper.succeed();
+    }
+
+    @GameTest
+    public void duskPurpurReferenceStatesAndData(GameTestHelper helper) {
+        DirectFormTests.referenceStatesAndData(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurPlacement(GameTestHelper helper) {
+        DirectFormTests.placement(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurEngraving(GameTestHelper helper) {
+        DirectFormTests.engraving(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurWindowInteractions(GameTestHelper helper) {
+        DirectFormTests.windowInteractions(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurStackedMasonry(GameTestHelper helper) {
+        DirectFormTests.stackedMasonry(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurCompleteStateAndShapeParity(GameTestHelper helper) {
+        MasonryTests.completeStateAndShapeParity(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurWetAndDryPlacement(GameTestHelper helper) {
+        MasonryTests.wetAndDryPlacement(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurColumnAndMouldingChanges(GameTestHelper helper) {
+        MasonryTests.columnAndMouldingChanges(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurFenceAndFrameChanges(GameTestHelper helper) {
+        MasonryTests.fenceAndFrameChanges(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurUrnSoilAndPlant(GameTestHelper helper) {
+        MasonryTests.urnSoilAndPlant(helper, "dusk_purpur");
+    }
+
+    @GameTest
+    public void duskPurpurSupportsAndShutter(GameTestHelper helper) {
+        var registry = BuiltInRegistries.BLOCK;
+        StoneTests.supportsAndShutterInteraction(helper,
+                registry.getValue(Identifier.parse("architectural_material_closure:dusk_purpur_parapet")),
+                registry.getValue(Identifier.parse("architectural_material_closure:dusk_purpur_louvered_shutter")));
+    }
+
+    @GameTest
+    public void duskPurpurButtonPulse(GameTestHelper helper) {
+        DirectFormTests.buttonPulse(helper, "dusk_purpur");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void duskPurpurPressurePlateSensitivity(GameTestHelper helper) {
+        DirectFormTests.pressurePlateSensitivity(helper, "dusk_purpur");
     }
 }

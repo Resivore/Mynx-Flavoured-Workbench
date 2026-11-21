@@ -150,7 +150,7 @@ def check_sheets(jar, bbb, client, material, substrate, expected, sheets, materi
                     rank = Fraction(ramp.index(before[:3]), len(ramp) - 1)
                     index = floor(rank * (len(target) - 1) + Fraction(1, 2))
                     assert after == (*target[index], before[3]), (name, i)
-    print(f"Verified every pixel of {len(sheets)} sheets against {len(target)} vanilla {substrate} colors.")
+    print(f"Verified every pixel of {len(sheets)} sheets against {len(target)} {material_ns}:{substrate} colors.")
 
 
 def check_masonry(jar, bbb, client, material, expected):

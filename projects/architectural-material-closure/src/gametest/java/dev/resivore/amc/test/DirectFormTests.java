@@ -22,6 +22,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
@@ -62,7 +64,7 @@ public final class DirectFormTests {
                 result.put("parapet", BlockInit.ANDESITE_PARAPET);
                 result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
             }
-            case "veradite", "mirestone", "kurodite", "tuff", "cinnabar", "sulfur", "smooth_basalt" -> {
+            case "veradite", "mirestone", "kurodite", "tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin", "dusk_purpur" -> {
                 result.putAll(MUD_REFERENCES);
                 result.put("gothic_window", BlockInit.STONE_BRICK_GOTHIC);
                 result.put("arrow_slit", BlockInit.STONE_BRICK_ARROW_SLIT);
@@ -96,7 +98,7 @@ public final class DirectFormTests {
                 result.put(form, BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("mcwpaths", "dark_prismarine_" + form)));
             }
         }
-        if (StoneTests.END_MATERIALS.contains(material)) {
+        if (StoneTests.END_MATERIALS.contains(material) && !material.equals("dusk_purpur")) {
             result.remove("button");
             result.remove("pressure_plate");
         }
@@ -119,6 +121,56 @@ public final class DirectFormTests {
                     "Smooth Basalt crafting grid should produce " + form + ", got " + match);
         });
         helper.succeed();
+    }
+
+    @GameTest
+    public void purpurAndResinRecipes(GameTestHelper helper) {
+        familyRecipes(helper, "purpur", "minecraft:purpur_block", "minecraft:purpur_slab");
+        familyRecipes(helper, "resin", "minecraft:resin_block", "minecraft:resin_block");
+        helper.succeed();
+    }
+
+    static void familyRecipes(GameTestHelper helper, String material, String base, String slab) {
+        var level = helper.getLevel();
+        var keys = Map.of('B', base, 'S', slab, 'G', "minecraft:glass_pane", 'T', "minecraft:stick",
+                'W', "mcwwindows:window_base", 'H', "mcwwindows:window_half_bar_base", 'C', "mcwwindows:window_centre_bar_base");
+        boolean resin = material.equals("resin");
+        record Grid(String output, int count, String... rows) {}
+        var grids = new java.util.ArrayList<>(List.of(
+                new Grid("button", 1, resin ? new String[]{"B ", " B"} : new String[]{"B"}),
+                new Grid("pressure_plate", 1, "BB"), new Grid("column", 3, "B", "B", "B"),
+                new Grid("urn", 2, "B B", " B "), new Grid("moulding", 8, "B  ", "BBB", "BBB"),
+                new Grid("fence", 5, "BBB", "B B"), new Grid("frame", 12, "SSS", "S S", "SSS"),
+                new Grid("window", 4, " W ", "WBW", " W "), new Grid("four_window", 8, "CCC", "CBC", "CCC"),
+                new Grid("pane_window", 8, "WWW", "WBW", "WWW"), new Grid("window2", 8, "HHH", "HBH", "HHH"),
+                new Grid("gothic_window", 4, " B ", "BGB", " B "), new Grid("parapet", 5, "TTT", "TBT"),
+                new Grid("arrow_slit", 3, "BB", "SS", "BB"),
+                new Grid("louvered_shutter", 3, resin ? new String[]{"S  ", " S ", "  S"} : new String[]{"S", "S", "S"})));
+        if (resin) grids.add(new Grid("minecraft:resin_clump", 9, "B"));
+        for (var grid : grids) {
+            var stacks = new java.util.ArrayList<ItemStack>();
+            for (var row : grid.rows()) {
+                for (char key : row.toCharArray()) {
+                    stacks.add(key == ' ' ? ItemStack.EMPTY
+                            : BuiltInRegistries.ITEM.getOptional(Identifier.parse(keys.get(key))).orElseThrow().getDefaultInstance());
+                }
+            }
+            var input = CraftingInput.of(grid.rows()[0].length(), grid.rows().length, stacks);
+            var recipe = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level).orElseThrow();
+            var expected = grid.output().contains(":") ? Identifier.parse(grid.output()) : id(material, grid.output());
+            var output = recipe.value().assemble(input);
+            helper.assertTrue(recipe.id().identifier().equals(expected) && output.is(BuiltInRegistries.ITEM.getValue(expected))
+                    && output.getCount() == grid.count(), expected + " crafting grid selected " + recipe.id());
+        }
+        var input = new SingleRecipeInput(BuiltInRegistries.ITEM.getValue(Identifier.parse(base)).getDefaultInstance());
+        var forms = new java.util.ArrayList<>(PATH_FORMS);
+        forms.addAll(List.of("column", "urn", "moulding", "fence"));
+        for (var form : forms) {
+            var recipeId = id(material, PATH_FORMS.contains(form) ? form : form + "_from_stonecutting");
+            var recipe = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, recipeId)).orElseThrow().value();
+            helper.assertTrue(recipe instanceof StonecutterRecipe cut && cut.matches(input, level)
+                    && cut.assemble(input).is(BuiltInRegistries.ITEM.getValue(id(material, form))), recipeId + " stonecutting");
+        }
     }
 
     private static Identifier id(String material, String form) {
@@ -476,7 +528,7 @@ public final class DirectFormTests {
         buttonPulse(helper, "dark_prismarine");
     }
 
-    private static void buttonPulse(GameTestHelper helper, String material) {
+    static void buttonPulse(GameTestHelper helper, String material) {
         for (var pos : List.of(LEFT, RIGHT)) {
             var button = pos.equals(LEFT) ? block(material, "button") : Blocks.STONE_BUTTON;
             helper.setBlock(pos.below(), Blocks.STONE);
@@ -573,7 +625,7 @@ public final class DirectFormTests {
         pressurePlateSensitivity(helper, "dark_prismarine");
     }
 
-    private static void pressurePlateSensitivity(GameTestHelper helper, String material) {
+    static void pressurePlateSensitivity(GameTestHelper helper, String material) {
         for (var pos : List.of(LEFT, RIGHT)) {
             helper.setBlock(pos.below(), Blocks.STONE);
             helper.setBlock(pos, pos.equals(LEFT) ? block(material, "pressure_plate") : Blocks.STONE_PRESSURE_PLATE);
@@ -811,5 +863,141 @@ public final class DirectFormTests {
             }
         }
         helper.succeed();
+    }
+
+    @GameTest
+    public void purpurReferenceStatesAndData(GameTestHelper helper) {
+        DirectFormTests.referenceStatesAndData(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurPlacement(GameTestHelper helper) {
+        DirectFormTests.placement(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurEngraving(GameTestHelper helper) {
+        DirectFormTests.engraving(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurWindowInteractions(GameTestHelper helper) {
+        DirectFormTests.windowInteractions(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurStackedMasonry(GameTestHelper helper) {
+        DirectFormTests.stackedMasonry(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurCompleteStateAndShapeParity(GameTestHelper helper) {
+        MasonryTests.completeStateAndShapeParity(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurWetAndDryPlacement(GameTestHelper helper) {
+        MasonryTests.wetAndDryPlacement(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurColumnAndMouldingChanges(GameTestHelper helper) {
+        MasonryTests.columnAndMouldingChanges(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurFenceAndFrameChanges(GameTestHelper helper) {
+        MasonryTests.fenceAndFrameChanges(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurUrnSoilAndPlant(GameTestHelper helper) {
+        MasonryTests.urnSoilAndPlant(helper, "purpur");
+    }
+
+    @GameTest
+    public void purpurSupportsAndShutter(GameTestHelper helper) {
+        var registry = BuiltInRegistries.BLOCK;
+        StoneTests.supportsAndShutterInteraction(helper,
+                registry.getValue(Identifier.parse("architectural_material_closure:purpur_parapet")),
+                registry.getValue(Identifier.parse("architectural_material_closure:purpur_louvered_shutter")));
+    }
+
+    @GameTest
+    public void purpurButtonPulse(GameTestHelper helper) {
+        DirectFormTests.buttonPulse(helper, "purpur");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void purpurPressurePlateSensitivity(GameTestHelper helper) {
+        DirectFormTests.pressurePlateSensitivity(helper, "purpur");
+    }
+
+    @GameTest
+    public void resinReferenceStatesAndData(GameTestHelper helper) {
+        DirectFormTests.referenceStatesAndData(helper, "resin");
+    }
+
+    @GameTest
+    public void resinPlacement(GameTestHelper helper) {
+        DirectFormTests.placement(helper, "resin");
+    }
+
+    @GameTest
+    public void resinEngraving(GameTestHelper helper) {
+        DirectFormTests.engraving(helper, "resin");
+    }
+
+    @GameTest
+    public void resinWindowInteractions(GameTestHelper helper) {
+        DirectFormTests.windowInteractions(helper, "resin");
+    }
+
+    @GameTest
+    public void resinStackedMasonry(GameTestHelper helper) {
+        DirectFormTests.stackedMasonry(helper, "resin");
+    }
+
+    @GameTest
+    public void resinCompleteStateAndShapeParity(GameTestHelper helper) {
+        MasonryTests.completeStateAndShapeParity(helper, "resin");
+    }
+
+    @GameTest
+    public void resinWetAndDryPlacement(GameTestHelper helper) {
+        MasonryTests.wetAndDryPlacement(helper, "resin");
+    }
+
+    @GameTest
+    public void resinColumnAndMouldingChanges(GameTestHelper helper) {
+        MasonryTests.columnAndMouldingChanges(helper, "resin");
+    }
+
+    @GameTest
+    public void resinFenceAndFrameChanges(GameTestHelper helper) {
+        MasonryTests.fenceAndFrameChanges(helper, "resin");
+    }
+
+    @GameTest
+    public void resinUrnSoilAndPlant(GameTestHelper helper) {
+        MasonryTests.urnSoilAndPlant(helper, "resin");
+    }
+
+    @GameTest
+    public void resinSupportsAndShutter(GameTestHelper helper) {
+        var registry = BuiltInRegistries.BLOCK;
+        StoneTests.supportsAndShutterInteraction(helper,
+                registry.getValue(Identifier.parse("architectural_material_closure:resin_parapet")),
+                registry.getValue(Identifier.parse("architectural_material_closure:resin_louvered_shutter")));
+    }
+
+    @GameTest
+    public void resinButtonPulse(GameTestHelper helper) {
+        DirectFormTests.buttonPulse(helper, "resin");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void resinPressurePlateSensitivity(GameTestHelper helper) {
+        DirectFormTests.pressurePlateSensitivity(helper, "resin");
     }
 }

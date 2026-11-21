@@ -75,7 +75,7 @@ public final class StoneTests {
         helper.succeed();
     }
 
-    static final java.util.List<String> BASE_MATERIALS = java.util.List.of("tuff", "cinnabar", "sulfur", "smooth_basalt");
+    static final java.util.List<String> BASE_MATERIALS = java.util.List.of("tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin");
 
     @GameTest
     public void baseMaterialProviderOwnership(GameTestHelper helper) {
@@ -83,7 +83,7 @@ public final class StoneTests {
         forms.addAll(java.util.List.of("button", "pressure_plate", "column", "urn", "moulding", "fence", "frame",
                 "window", "window2", "four_window", "pane_window", "gothic_window", "arrow_slit", "parapet", "louvered_shutter"));
         for (String material : BASE_MATERIALS) {
-            var base = Identifier.withDefaultNamespace(material);
+            var base = Identifier.withDefaultNamespace(Set.of("purpur", "resin").contains(material) ? material + "_block" : material);
             helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(base) && BuiltInRegistries.ITEM.containsKey(base), "Missing " + base);
             for (String form : forms) {
                 String path = material + "_" + form;
@@ -99,14 +99,14 @@ public final class StoneTests {
         helper.succeed();
     }
 
-    static final java.util.List<String> END_MATERIALS = java.util.List.of("veradite", "mirestone", "kurodite");
+    static final java.util.List<String> END_MATERIALS = java.util.List.of("veradite", "mirestone", "kurodite", "dusk_purpur");
 
     @GameTest
     public void registryAndResources(GameTestHelper helper) {
         var ids = new java.util.HashSet<>(Set.of(id("parapet"), id("louvered_shutter")));
         for (String material : java.util.List.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine",
                 "sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks", "end_stone_bricks", "polished_blackstone", "mossy_stone_bricks",
-                "tuff", "cinnabar", "sulfur", "smooth_basalt")) {
+                "tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin")) {
             var forms = new java.util.ArrayList<>(DirectFormTests.references(material).keySet());
             if (Set.of("andesite", "diorite", "granite", "mud_bricks", "prismarine_bricks", "dark_prismarine", "end_stone_bricks", "mossy_stone_bricks").contains(material)
                     || BASE_MATERIALS.contains(material)) {
@@ -122,29 +122,35 @@ public final class StoneTests {
                 }
             }
         }
-        helper.assertTrue(ids.size() == 297, "Expected 297 block/item pairs");
+        helper.assertTrue(ids.size() == 357, "Expected 357 block/item pairs");
         boolean present = net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("enderscape");
         helper.assertTrue(present == Boolean.getBoolean("amc.test.enderscape"), "Wrong controlled provider set");
         var level = helper.getLevel();
         for (String material : END_MATERIALS) {
             var forms = new java.util.ArrayList<>(DirectFormTests.references(material).keySet());
             forms.addAll(java.util.List.of("column", "urn", "moulding", "fence", "frame"));
-            helper.assertTrue(Set.copyOf(forms).size() == 28, material + " form count");
+            helper.assertTrue(Set.copyOf(forms).size() == (material.equals("dusk_purpur") ? 30 : 28), material + " form count");
             for (String form : forms) {
                 var key = Identifier.fromNamespaceAndPath(NAMESPACE, material + "_" + form);
                 var recipe = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, key));
                 helper.assertTrue(recipe.isPresent() == present, key + " recipe activation");
                 if (present) {
                     ids.add(key);
-                    var base = BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("enderscape", material));
+                    var base = BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("enderscape",
+                            material.equals("dusk_purpur") ? "dusk_purpur_block" : material));
                     var block = BuiltInRegistries.BLOCK.getValue(key);
+                    var reference = DirectFormTests.references(material).getOrDefault(form, base);
+                    // Vanilla control constructors select the sound from their BlockSetType.
+                    var soundReference = Set.of("button", "pressure_plate").contains(form) ? reference : base;
+                    boolean requiresTool = base.defaultBlockState().requiresCorrectToolForDrops()
+                            || reference.defaultBlockState().requiresCorrectToolForDrops();
                     helper.assertTrue(block.defaultDestroyTime() == base.defaultDestroyTime()
                             && block.getExplosionResistance() == base.getExplosionResistance()
-                            && block.defaultBlockState().getSoundType() == base.defaultBlockState().getSoundType()
-                            && block.defaultBlockState().requiresCorrectToolForDrops(), key + " material properties");
+                            && block.defaultBlockState().getSoundType() == soundReference.defaultBlockState().getSoundType()
+                            && block.defaultBlockState().requiresCorrectToolForDrops() == requiresTool, key + " material properties");
                 }
             }
-            if (present) {
+            if (present && !material.equals("dusk_purpur")) {
                 for (String control : java.util.List.of("button", "pressure_plate")) {
                     var key = Identifier.fromNamespaceAndPath("enderscape", "polished_" + material + "_" + control);
                     helper.assertTrue(BuiltInRegistries.ITEM.getValue(key) instanceof BlockItem item
@@ -154,7 +160,7 @@ public final class StoneTests {
                 }
             }
         }
-        helper.assertTrue(ids.size() == (present ? 381 : 297), "Unexpected active AMC count");
+        helper.assertTrue(ids.size() == (present ? 471 : 357), "Unexpected active AMC count");
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());

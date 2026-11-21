@@ -1,8 +1,15 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 25
+## Owner verification for Canary 26
 
-Match the SHA-256 of `AMC C25.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC has 381 pairs with Enderscape and 297 without it. All AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C26.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC has 471 pairs with Enderscape and 357 without it. All AMC IDs use the namespace `architectural_material_closure`.
+
+### Purpur, Dusk Purpur and Resin
+
+1. Locate 30 AMC items for each available family. Compare Purpur to vanilla Purpur Block, Dusk Purpur to Enderscape's Dusk Purpur Block and Resin to vanilla Resin Bricks under matching light. Compare the shutter to the five slats and transparent gaps of the AMC Stone shutter. Open, stack and reverse both hinges.
+2. Craft and stonecut with Purpur Block, Dusk Purpur Block or Block of Resin. Use the corresponding Purpur slabs in slab slots and full raw Resin Blocks in Resin recipes. Verify two diagonal Resin Blocks craft one Button, one block unpacks into nine vanilla clumps, three diagonal blocks craft three Shutters and three vertically craft three Columns.
+3. Repeat the control, window, masonry and paths procedures below for each family. Engrave and restore all four full patterns independently. Inspect the thin path heights, weighted Strewn Rocky placements, directional Dumble and all rotations of the window glass and bars.
+4. In a separate world with Enderscape absent, check that the 60 new Purpur and Resin entries remain available and all 30 Dusk Purpur entries and recipes are absent. Record the exact artifact hash with owner observations.
 
 ### Veradite, Mirestone and Kurodite
 
@@ -10,7 +17,7 @@ Match the SHA-256 of `AMC C25.jar` to the current release in `WORKBENCH_STATUS.j
 2. Exercise all five BBB forms using the masonry procedure below, including connected column grain, planting, moulding corners, hammer-operated fence pillars and infill, and frame diagonals. Check Mirestone hardness and each family's placement sounds. Compare joining, glass, bars, locking, parapet supports and shutter hinges against Macaw's Windows.
 3. Craft the Frame with eight native slabs around an empty center (12), the Arrow Slit with four base blocks and two slabs (3), and the Shutter with three vertical slabs (3). Stonecut each unpolished base into its eleven thin forms (4 each) and four independent full patterns (1 each). Engrave and restore each full pattern and check weighted Strewn Rocky arrangements and Dumble orientation.
 4. Place a pair of each shutter beside the AMC Stone Shutter. Inspect all five slats, raised lips, recesses, open edges and transparent gaps in-world and in inventory. Toggle both hinges and stacked shutters, then save and rejoin.
-5. In a separate disposable world with Enderscape absent, check the 297 preceding AMC pairs, creative inventory and recipe loading. Use separate worlds for the two provider configurations. Record owner observations against the exact C25 hash.
+5. In a separate disposable world with Enderscape absent, check the 357 standalone AMC pairs, creative inventory and recipe loading. Use separate worlds for the two provider configurations. Record owner observations against the exact C26 hash.
 
 ### Tuff, Cinnabar, Sulfur and Smooth Basalt
 
@@ -26,7 +33,7 @@ Compare Cinnabar forms with vanilla Cinnabar Bricks under matching light. For th
 
 1. Under matching light, place the new Button and Pressure Plate beside the vanilla Stone controls, the four standard windows beside Macaw's Stone versions, and the Parapet beside AMC's Stone Parapet. Look for exposed Stone grain between the moss patches. Compare Gothic Window and Arrow Slit masonry with Macaw's Stone Brick versions. Toggle stacked windows and inspect glass, bars, joins, and held models.
 2. Place all five masonry forms beside BBB's corresponding Stone models. Follow the masonry interaction table below. Inspect the column seams, urn lip and soil, moulding recesses, fence pillar and frame diagonals. Moss should follow the brightness of each bevel and groove. Look for repeated bright patches crossing a recessed edge, lost highlights, or altered soil and transparent gaps.
-3. Compare the new shutter with AMC's Stone shutter in all four poses and in hand. Follow a moss patch across a raised lip and into a slat recess. Check all five slats at normal viewing distance, the transparent gaps and the vertical stack toggle. Compare button timing and plate sensitivity to Stone, verify each recipe and self-drop, and record observations against the C24 hash.
+3. Compare the new shutter with AMC's Stone shutter in all four poses and in hand. Follow a moss patch across a raised lip and into a slat recess. Check all five slats at normal viewing distance, the transparent gaps and the vertical stack toggle. Compare button timing and plate sensitivity to Stone, verify each recipe and self-drop, and record observations against the current release hash.
 
 ### End Stone Bricks and Polished Blackstone
 
@@ -54,7 +61,7 @@ Run these checks for both materials. Place the corresponding vanilla block along
 2. Face each Parapet in four directions and place and remove a flower pot above it. Inspect the top, underside and edge of both the ledge and support. Compare their shape and orientation with Macaw's Andesite Parapet.
 3. Compare both windows with the Macaw Stone Brick Gothic Window and Arrow Slit. Inspect the masonry cap and underside, the narrow faces of the opening, and the visible side bands. Form stacks, remove the middle block, then toggle the Gothic Window and check its glass and conditional iron bars in the reference states.
 4. Face the shutter in each direction, use both hinges and toggle a vertical pair. Compare its five shaded slats with the C9 Stone shutter. Compare the broad faces, narrow edges and underside with the top face of the corresponding vanilla block. Check that the smoother grain follows the original UVs, with the five slats, raised lips and dark recesses visible in open, closed and held views.
-5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C25 hash, orientation, state and screenshots for any visual differences.
+5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C26 hash, orientation, state and screenshots for any visual differences.
 
 ### Prismarine Bricks and Dark Prismarine
 
@@ -102,7 +109,7 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C25 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C26 are pending.
 
 ## Controlled build checks
 
@@ -115,6 +122,6 @@ gradle build runGameTest --rerun-tasks -Ppython=<interpreter>
 `verifyAmcJar` checks the production file list, translations, recipes, loot, tags, inventory models, exact reference state choices and model parents, sprite bindings, and the C9 shutter PNG. For each material’s five BBB forms, it compares every state branch and follows each placed and item model through its parents. It checks all model fields, resolves face slots, verifies each sheet pixel against its ranked palette and compares recipes, drops and direct tag membership to the provider. Controlled server GameTests exercise each material independently and compare creative tabs, registered entries, loaded data, block states, collision, redstone behavior, placement and masonry interactions. For C15 the archive check follows every Paths blockstate and item model, including weighted choices and engraved models, and compares every texel across eleven source sheets. For C16 the archive check compares every material face and reference element for both sandstone families, including cap sprite selection, UVs, culling, model parents and item transforms. C19 repeats the complete Paths graph and pixel checks independently for Quartz and Nether Bricks. The C20 shutter check compares each opaque pixel with the proportional rank of its C9 source gray in the full vanilla palette, checks that every target color appears and compares all transparent pixels in RGBA. For C22 the pixel check independently derives vanilla's five moss greens and checks all thirteen derived sprites, including unmodified pixels and the brightness of moss at every affected coordinate. The C23 package check compares against the hash-verified retained C22 JAR, including every previous production class and resource. Set `-Pc22Jar=<path>` to select another copy of that exact artifact. All generated resources, the isolated GameTest world and the retained JAR are local-only.
 
 
-For C25, run the controlled suite twice using Java 25. The default run uses the provider-absent world. Add `-PwithEnderscape` for the separate provider-present world. Supply the actual Enderscape 3.0.2 JAR under `originals/mods` and its required Fabric 26.2 libraries in the current canary's `build/c25/test-dependencies`, or set `-PenderscapeTestDeps=<directory>`. The controlled present run used Lithostitched 1.8.0, Trim Patcher 2.1 and YACL 3.9.7. The new tests resolve native recipes and compare all three families with the retained BBB and Macaw implementations. The package verifier checks the isolated built-in resource pack against the verified C23 Tuff graphs and the actual source pixels. All 3,042 pre-existing entries are compared against `artifacts/AMC C23.jar`. Use `-Pc23Jar=<path>` for an alternate copy of the same bytes.
+Run the Java 25 suite a second time with `-PwithEnderscape`. Supply Enderscape 3.0.2 under `originals/mods` and its supporting JARs under `build/c26/test-dependencies`, or set `-PenderscapeTestDeps=<directory>`. The controlled run uses Lithostitched 1.8.0, Trim Patcher 2.1 and YACL 3.9.7.
 
-For C25 the package verifier compares the final JAR with `artifacts/AMC C24.jar` (override with `-Pc24Jar=<path>`). It checks each direct Cinnabar model change and verifies all 22 derived sprites against the original authored sheets and vanilla Cinnabar Bricks. All other resources and production classes must match C24.
+The C26 checker verifies the exact retained C25 artifact and its historical reference chain. It compares all new resource graphs to the finalized Tuff family and checks the derived textures against each provider's artwork pixel by pixel. It verifies all prior entries, additive tag and translation memberships, version metadata and the two registration classes. Set `-Pc25Jar=<path>` for another copy of the exact C25 artifact. Controlled GameTests exercise both registry sets, all 45 new crafting grids, the vanilla Resin Clump recipe, stonecutting, drops, engraving and provider interactions.

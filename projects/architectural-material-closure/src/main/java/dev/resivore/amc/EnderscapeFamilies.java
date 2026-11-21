@@ -30,6 +30,10 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.PressurePlateBlock;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.PushReaction;
 
@@ -58,6 +62,10 @@ public record EnderscapeFamilies(String material, Block base) {
                 container, PackActivationType.ALWAYS_ENABLED)) {
             throw new IllegalStateException("Missing AMC Enderscape resource pack");
         }
+        requireBlockItem("dusk_purpur_slab");
+        var dusk = new EnderscapeFamilies("dusk_purpur", requireBlockItem("dusk_purpur_block"));
+        dusk.registerControls();
+        families.add(dusk);
         families.forEach(EnderscapeFamilies::registerForms);
     }
 
@@ -69,6 +77,16 @@ public record EnderscapeFamilies(String material, Block base) {
             throw new IllegalStateException("Invalid Enderscape block item " + id);
         }
         return block;
+    }
+
+    private void registerControls() {
+        var button = register("button", Blocks.STONE_BUTTON, p -> new ButtonBlock(BlockSetType.STONE, 20, p), BlockItem::new);
+        var plate = register("pressure_plate", Blocks.STONE_PRESSURE_PLATE,
+                p -> new PressurePlateBlock(BlockSetType.STONE, p), BlockItem::new);
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(output -> {
+            output.accept(button);
+            output.accept(plate);
+        });
     }
 
     private void registerForms() {

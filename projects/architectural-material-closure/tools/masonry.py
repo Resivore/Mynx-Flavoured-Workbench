@@ -32,6 +32,8 @@ def image(archive, path):
 def visual_sprite(namespace, sprite):
     if namespace == "minecraft" and sprite == "cinnabar":
         return "cinnabar_bricks"
+    if namespace == "minecraft" and sprite == "resin_block":
+        return "resin_bricks"
     return sprite
 
 

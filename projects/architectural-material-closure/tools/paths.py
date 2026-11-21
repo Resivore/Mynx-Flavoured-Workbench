@@ -7,9 +7,9 @@ FORMS = (*FULL, *(name + "_path" for name in FULL), "strewn_rocky_path",
          "diamond_paving", "basket_weave_paving", "square_paving", "honeycomb_paving", "clover_paving", "dumble_paving")
 
 
-def generate(root, provider, client, tags, names, write_json, recipe_unlock, material="prismarine_bricks", *, material_archive=None, material_ns="minecraft"):
-    ingredient = "quartz_block" if material == "quartz" else material
-    sprite = "quartz_block_side" if material == "quartz" else visual_sprite(material_ns, material)
+def generate(root, provider, client, tags, names, write_json, recipe_unlock, material="prismarine_bricks", *, substrate=None, material_archive=None, material_ns="minecraft"):
+    ingredient = "quartz_block" if material == "quartz" else (substrate or material)
+    sprite = "quartz_block_side" if material == "quartz" else visual_sprite(material_ns, ingredient)
     tile = image(material_archive or client, f"assets/{material_ns}/textures/block/{sprite}.png")
     palette = sorted({p[:3] for p in tile.getdata() if p[3] == 255}, key=rank)
     sheets = {}

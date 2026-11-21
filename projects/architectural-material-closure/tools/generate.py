@@ -129,7 +129,9 @@ def bind_directional_caps(model, archive, material, material_slot):
 
 
 def base_slab_ingredient(material):
-    # Vanilla has no Smooth Basalt slab. Its three slab-shaped recipes use the base block.
+    # Smooth Basalt and raw Resin have no slabs. Use their base blocks in those recipes.
+    if material == "resin":
+        return "resin_block"
     return material if material == "smooth_basalt" else material + "_slab"
 
 
@@ -192,6 +194,10 @@ def generate_direct_form(root, archive, namespace, source, form, material, *, su
         recipe["ingredients"] = [materials[value] for value in recipe["ingredients"]]
     assert recipe["result"]["id"] == source_id
     recipe["result"]["id"] = own_id
+    if name == "resin_button":
+        # One raw block already unpacks into nine vanilla Resin Clumps.
+        recipe.pop("ingredients")
+        recipe.update(type="minecraft:crafting_shaped", key={"R": "minecraft:resin_block"}, pattern=["R ", " R"])
     write(f"data/{NS}/recipe", recipe)
     category = "redstone" if namespace == "minecraft" else "building_blocks"
     recipe_unlock(root, name, substrate, category, namespace=material_ns)
@@ -247,7 +253,7 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
         recipe = masonry.load_json(provider, f"data/{ref_ns}/recipe/{source}.json")
         materials = {f"minecraft:{ref_material}": f"{material_ns}:{substrate}", f"minecraft:{ref_material}_slab": f"{material_ns}:{slab}"}
         recipe["key"] = {k: materials.get(v, v) for k, v in recipe["key"].items()}
-        if name == "smooth_basalt_louvered_shutter":
+        if name in ("smooth_basalt_louvered_shutter", "resin_louvered_shutter"):
             # The BBB Column already uses a vertical line of three full blocks.
             assert recipe["pattern"] == ["B", "B", "B"]
             recipe["pattern"] = ["B  ", " B ", "  B"]
@@ -274,10 +280,10 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
     if stone_artwork is None:
         shade_shutter(provider, client, dest, material + "_top" if sandstone else side)
     else:
-        remap_stone_shutter(stone_artwork, client, dest, masonry.visual_sprite(material_ns, material), material_ns)
+        remap_stone_shutter(stone_artwork, client, dest, side, material_ns)
 
 
-def generate_stone_forms(root, provider, client, tags, names, material):
+def generate_stone_forms(root, provider, client, tags, names, material, *, substrate=None, material_ns="minecraft"):
     forms = (
         (client, "minecraft", "stone_button", "button"),
         (client, "minecraft", "stone_pressure_plate", "pressure_plate"),
@@ -287,7 +293,7 @@ def generate_stone_forms(root, provider, client, tags, names, material):
     for archive, namespace, source, form in forms:
         if material == "nether_bricks" and namespace != "minecraft":
             continue
-        generate_direct_form(root, archive, namespace, source, form, material)
+        generate_direct_form(root, archive, namespace, source, form, material, substrate=substrate, material_ns=material_ns)
         names[f"block.{NS}.{material}_{form}"] = f"{material}_{form}".replace("_", " ").title()
     button, plate, window, slit = [f"{NS}:{material}_{form}" for form in
                                    ("button", "pressure_plate", "gothic_window", "arrow_slit")]
@@ -401,18 +407,29 @@ def generate(provider, client, bbb, path_provider, stone_reference_jar, stone_sh
     for form in (*masonry.FORMS, *standard_windows, *FORMS):
         name = f"{material}_{form}"
         names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
-    for material in ("tuff", "cinnabar", "sulfur", "smooth_basalt"):
-        slab = base_slab_ingredient(material)
-        generate_stone_forms(root, provider, client, tags, names, material)
-        masonry.generate(root, bbb, client, material, tags, write_json, recipe_unlock, slab=slab)
-        generate_macaw(root, provider, client, tags, material, material, slab, windows, stone_artwork=stone_shutter)
-        paths.generate(root, path_provider, client, tags, names, write_json, recipe_unlock, material)
-        for form in (*masonry.FORMS, *windows):
-            name = f"{material}_{form}"
-            names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
+    for material in ("tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "resin"):
+        substrate = material + "_block" if material in ("purpur", "resin") else material
+        generate_complete_family(root, provider, client, bbb, path_provider, stone_shutter, tags, names,
+                                 material, substrate, client, "minecraft")
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     for tag, values in tags.items():
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})
+
+
+def generate_complete_family(root, windows, client, bbb, path_provider, stone_shutter, tags, names,
+                             material, substrate, material_archive, namespace):
+    forms = ("window", "window2", "four_window", "pane_window", *FORMS)
+    slab = base_slab_ingredient(material)
+    generate_stone_forms(root, windows, client, tags, names, material, substrate=substrate, material_ns=namespace)
+    masonry.generate(root, bbb, material_archive, material, tags, write_json, recipe_unlock,
+                     substrate=substrate, slab=slab, material_ns=namespace)
+    generate_macaw(root, windows, material_archive, tags, material, substrate, slab, forms,
+                   stone_artwork=stone_shutter, material_ns=namespace)
+    paths.generate(root, path_provider, client, tags, names, write_json, recipe_unlock, material,
+                   substrate=substrate, material_archive=material_archive, material_ns=namespace)
+    for form in (*masonry.FORMS, *forms):
+        name = f"{material}_{form}"
+        names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
 
 
 def generate_enderscape(root, enderscape, windows, client, bbb, path_provider, stone_shutter):
@@ -436,6 +453,8 @@ def generate_enderscape(root, enderscape, windows, client, bbb, path_provider, s
         for form in (*masonry.FORMS, *window_forms, "gothic_window", "arrow_slit"):
             name = f"{material}_{form}"
             names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
+    generate_complete_family(root, windows, client, bbb, path_provider, stone_shutter, tags, names,
+                             "dusk_purpur", "dusk_purpur_block", enderscape, material_ns)
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     for tag, values in tags.items():
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})
