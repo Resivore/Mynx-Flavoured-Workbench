@@ -272,7 +272,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 234 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 246 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -299,7 +299,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_749 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_827 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1206,9 +1206,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void baseStoneMaterialsKeepFourSelectorsAndIndependentPatternedBlocks(GameTestHelper helper) {
+    public void amcMaterialsKeepFourSelectorsAndIndependentPatternedBlocks(GameTestHelper helper) {
         boolean amcPresent = Boolean.getBoolean("ibf.test.amcExpected");
-        for (String material : List.of("tuff", "cinnabar", "sulfur", "smooth_basalt")) {
+        for (String material : List.of("tuff", "cinnabar", "sulfur", "smooth_basalt", "purpur", "dusk_purpur", "resin")) {
             String prefix = "architectural_material_closure:" + material + "_";
             if (!amcPresent) {
                 helper.assertTrue(BuiltInRegistries.ITEM.keySet().stream()
@@ -1220,6 +1220,18 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     prefix + "parapet", prefix + "louvered_shutter"));
             assertMasonryWindowsPathsAndPatterns(helper, material, prefix, prefix + "button");
         }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
+    public void purpurAndResinKeepProviderGeometryAndVanillaClumpRecipe(GameTestHelper helper) {
+        for (String itemId : List.of("minecraft:purpur_slab", "minecraft:purpur_stairs",
+                "enderscape:dusk_purpur_slab", "enderscape:dusk_purpur_stairs",
+                "minecraft:resin_brick_slab", "minecraft:resin_brick_stairs")) {
+            helper.assertTrue(!AuditedShapeRuntime.isAudited(requiredItem(itemId)),
+                    "Provider geometry joined an IBF family: " + itemId);
+        }
+        helper.assertTrue(hasRecipe(helper, "minecraft:resin_clump"), "Lost vanilla Resin Clump recipe");
         helper.succeed();
     }
 
