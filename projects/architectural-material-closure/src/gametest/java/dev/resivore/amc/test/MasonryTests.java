@@ -83,6 +83,26 @@ public final class MasonryTests {
     }
 
     @GameTest
+    public void tuffCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltCompleteStateAndShapeParity(GameTestHelper helper) {
+        completeStateAndShapeParity(helper, "smooth_basalt");
+    }
+
+    @GameTest
     public void mossyStoneBricksCompleteStateAndShapeParity(GameTestHelper helper) {
         completeStateAndShapeParity(helper, "mossy_stone_bricks");
     }
@@ -161,6 +181,26 @@ public final class MasonryTests {
     @GameTest
     public void endStoneBricksWetAndDryPlacement(GameTestHelper helper) {
         wetAndDryPlacement(helper, "end_stone_bricks");
+    }
+
+    @GameTest
+    public void tuffWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltWetAndDryPlacement(GameTestHelper helper) {
+        wetAndDryPlacement(helper, "smooth_basalt");
     }
 
     @GameTest
@@ -248,6 +288,26 @@ public final class MasonryTests {
     }
 
     @GameTest
+    public void tuffColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltColumnAndMouldingChanges(GameTestHelper helper) {
+        columnAndMouldingChanges(helper, "smooth_basalt");
+    }
+
+    @GameTest
     public void mossyStoneBricksColumnAndMouldingChanges(GameTestHelper helper) {
         columnAndMouldingChanges(helper, "mossy_stone_bricks");
     }
@@ -314,6 +374,26 @@ public final class MasonryTests {
     @GameTest
     public void endStoneBricksFenceAndFrameChanges(GameTestHelper helper) {
         fenceAndFrameChanges(helper, "end_stone_bricks");
+    }
+
+    @GameTest
+    public void tuffFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltFenceAndFrameChanges(GameTestHelper helper) {
+        fenceAndFrameChanges(helper, "smooth_basalt");
     }
 
     @GameTest
@@ -389,6 +469,26 @@ public final class MasonryTests {
     @GameTest
     public void endStoneBricksUrnSoilAndPlant(GameTestHelper helper) {
         urnSoilAndPlant(helper, "end_stone_bricks");
+    }
+
+    @GameTest
+    public void tuffUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltUrnSoilAndPlant(GameTestHelper helper) {
+        urnSoilAndPlant(helper, "smooth_basalt");
     }
 
     @GameTest

@@ -8,6 +8,7 @@ from zipfile import ZipFile
 
 from PIL import Image
 
+from verify_c22 import compare_c22
 from verify_moss import check_moss
 from verify_mud import MACAW_FORMS, check_directional_caps, check_windows
 from verify_paths import FORMS as PATH_FORMS, check_paths
@@ -18,6 +19,9 @@ NS = "architectural_material_closure"
 FORMS = ("stone_parapet", "stone_louvered_shutter")
 MATERIALS = ("andesite", "diorite", "granite")
 DIRECT = ("button", "pressure_plate", "gothic_window", "arrow_slit")
+
+
+BASE_MATERIALS = ("tuff", "cinnabar", "sulfur", "smooth_basalt")
 
 
 def read_json(jar, path):
@@ -130,9 +134,11 @@ def check_direct(jar, provider, client, material, expected):
     substrate = {"mud_bricks": "packed_mud", "quartz": "quartz_block"}.get(material, material)
     side = "quartz_block_side" if material == "quartz" else substrate
     slab = "deepslate_brick_slab" if material == "deepslate" else material + "_slab"
+    if material == "smooth_basalt":
+        slab = "smooth_basalt"
     if material == "mossy_stone_bricks":
         slab = "mossy_stone_brick_slab"
-    forms = controls | masonry if material in (*MATERIALS, "mossy_stone_bricks", "sandstone", "red_sandstone", "deepslate", "quartz") else controls
+    forms = controls | masonry if material in (*MATERIALS, *BASE_MATERIALS, "mossy_stone_bricks", "sandstone", "red_sandstone", "deepslate", "quartz") else controls
     for form, (source, model_count) in forms.items():
         archive, namespace = (client, "minecraft") if form in controls else (provider, "mcwwindows")
         name = material + "_" + form
@@ -299,6 +305,21 @@ def check_tags(jar, bbb, provider, client, paths, expected):
                 additions = ["mossy_stone_bricks_" + form for source, form in refs.items() if namespace + ":" + source in members]
                 if additions:
                     tags.setdefault(path[5:-5], []).extend(additions)
+    for material in BASE_MATERIALS:
+        for archive, refs in (
+                (client, {"minecraft:stone_button": "button", "minecraft:stone_pressure_plate": "pressure_plate"}),
+                (provider, {"mcwwindows:stone_brick_gothic": "gothic_window", "mcwwindows:stone_brick_arrow_slit": "arrow_slit"}),
+                (bbb, {"bbb:stone_" + f: f for f in COVERAGE}),
+                (provider, {"mcwwindows:andesite_" + f: f for f in MACAW_FORMS}),
+                (paths, {"mcwpaths:dark_prismarine_" + f: f for f in PATH_FORMS})):
+            for path in archive.namelist():
+                if "/tags/" in path and path.endswith(".json"):
+                    members = read_json(archive, path)["values"]
+                    selected = [ref for ref in refs if ref in members]
+                    if archive is paths:
+                        selected.sort(key=members.index)
+                    if selected:
+                        tags.setdefault(path[5:-5], []).extend(material + "_" + refs[ref] for ref in selected)
     for tag, values in tags.items():
         path = f"data/{tag}.json"
         expected.add(path)
@@ -335,7 +356,10 @@ def verify(jar, provider, client, bbb, paths):
     forms.append("polished_blackstone_louvered_shutter")
     expected.add("dev/resivore/amc/MossyStoneBricksBlocks.class")
     forms.extend("mossy_stone_bricks_" + form for form in (*DIRECT, *COVERAGE, *MACAW_FORMS))
-    assert len(forms) == len(set(forms)) == 177
+    expected.add("dev/resivore/amc/BaseStoneFamilies.class")
+    for material in BASE_MATERIALS:
+        forms.extend(f"{material}_{form}" for form in (*DIRECT, *COVERAGE, *MACAW_FORMS, *PATH_FORMS))
+    assert len(forms) == len(set(forms)) == 297
     assert names == {f"block.{NS}.{name}": name.replace("window2", "window 2").replace("_", " ").title() for name in forms}
     models = set()
     for form in FORMS:
@@ -381,13 +405,21 @@ def verify(jar, provider, client, bbb, paths):
     check_direct(jar, provider, client, "mossy_stone_bricks", expected)
     check_masonry(jar, bbb, client, "mossy_stone_bricks", expected)
     check_windows(jar, provider, client, expected, "mossy_stone_bricks", "mossy_stone_bricks", "mossy_stone_brick_slab")
+    for material in BASE_MATERIALS:
+        model = read_json(client, f"assets/minecraft/models/block/{material}.json")
+        assert model == {"parent": "minecraft:block/cube_all", "textures": {"all": "minecraft:block/" + material}}
+        check_direct(jar, provider, client, material, expected)
+        check_masonry(jar, bbb, client, material, expected)
+        slab = "smooth_basalt" if material == "smooth_basalt" else material + "_slab"
+        check_windows(jar, provider, client, expected, material, material, slab)
+        check_paths(jar, paths, client, expected, material)
     check_moss(jar, bbb, client, expected)
     check_tags(jar, bbb, provider, client, paths, expected)
     assert set(files) == expected, set(files).symmetric_difference(expected)
     check_texture(jar, provider, client)
     sprite = jar.read(f"assets/{NS}/textures/block/stone_louvered_shutter.png")
     assert hashlib.sha256(sprite).hexdigest() == "c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878"
-    print(f"Verified 177 block/item sets, state and sprite closure, recipes, drops, tags, "
+    print(f"Verified 297 block/item sets, state and sprite closure, recipes, drops, tags, "
           f"the exact C9 shutter sprite and all {len(files)} production entries.")
 
 
@@ -396,3 +428,4 @@ if __name__ == "__main__":
         sys.exit("Run resource checks without Python optimization")
     with ZipFile(Path(sys.argv[1])) as jar, ZipFile(sys.argv[2]) as provider, ZipFile(sys.argv[3]) as client, ZipFile(sys.argv[4]) as bbb, ZipFile(sys.argv[5]) as paths:
         verify(jar, provider, client, bbb, paths)
+        compare_c22(jar, Path(sys.argv[6]))

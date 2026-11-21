@@ -52,7 +52,8 @@ def check_ranked_shutter(stone, tile, result, material):
     colors = sorted({p[:3] for p in tile.getdata() if p[3] == 255},
                     key=lambda c: (sum(x * y for x, y in zip(c, (299, 587, 114))), c))
     assert len(colors) == {"prismarine_bricks": 8, "dark_prismarine": 6, "deepslate": 5, "nether_bricks": 7,
-                           "end_stone_bricks": 8, "polished_blackstone": 6}[material]
+                           "end_stone_bricks": 8, "polished_blackstone": 6, "tuff": 5, "cinnabar": 11,
+                           "sulfur": 6, "smooth_basalt": 6}[material]
     for before, after in zip(source, result.getdata(), strict=True):
         if before[3] == 255:
             assert before[0] == before[1] == before[2]
@@ -73,7 +74,8 @@ def check_shutter(jar, provider, client, expected, material, substrate):
     expected.add(path)
     result = image(jar, path)
     base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
-    if material in ("prismarine_bricks", "dark_prismarine", "deepslate", "nether_bricks", "end_stone_bricks", "polished_blackstone"):
+    if material in ("prismarine_bricks", "dark_prismarine", "deepslate", "nether_bricks", "end_stone_bricks", "polished_blackstone",
+                    "tuff", "cinnabar", "sulfur", "smooth_basalt"):
         stone = image(jar, f"assets/{NS}/textures/block/stone_louvered_shutter.png")
         check_ranked_shutter(stone, base, result, material)
         return
@@ -176,7 +178,7 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
             assert visible <= {"mcwwindows:block/glass", "minecraft:block/glass", surface}
 
     for form, (state_count, model_count) in MACAW_FORMS.items():
-        if material not in ("mud_bricks", "nether_bricks", "end_stone_bricks", "mossy_stone_bricks") and form != "louvered_shutter" and not (
+        if material not in ("mud_bricks", "nether_bricks", "end_stone_bricks", "mossy_stone_bricks", "tuff", "cinnabar", "sulfur", "smooth_basalt") and form != "louvered_shutter" and not (
                 material in ("sandstone", "red_sandstone", "deepslate", "quartz") and form == "parapet"):
             continue
         source_material = "stone" if material == "mossy_stone_bricks" else "andesite"
@@ -209,6 +211,9 @@ def check_windows(jar, provider, client, expected, material, substrate, slab):
         for folder in ("recipe", "loot_table/blocks"):
             ref = read(origin, f"data/{source_ns}/{folder}/{src}.json")
             actual = read(jar, f"data/{NS}/{folder}/{own}.json")
+            if folder == "recipe" and own == "smooth_basalt_louvered_shutter":
+                assert ref["pattern"] == ["B", "B", "B"]
+                ref["pattern"] = ["B  ", " B ", "  B"]
             content = json.dumps(ref).replace(ref_id, own_id).replace(f'"minecraft:{source_material}"', f'"minecraft:{substrate}"')
             assert actual == json.loads(content.replace(f"minecraft:{source_material}_slab", f"minecraft:{slab}"))
         unlock = read(jar, f"data/{NS}/advancement/recipes/building_blocks/{own}.json")

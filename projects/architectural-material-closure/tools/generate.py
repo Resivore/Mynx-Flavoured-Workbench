@@ -128,10 +128,15 @@ def bind_directional_caps(model, archive, material, material_slot):
                 face["texture"] = "#" + slot
 
 
+def base_slab_ingredient(material):
+    # Vanilla has no Smooth Basalt slab. Its three slab-shaped recipes use the base block.
+    return material if material == "smooth_basalt" else material + "_slab"
+
+
 def generate_direct_form(root, archive, namespace, source, form, material, *, substrate=None):
     substrate = substrate or ("quartz_block" if material == "quartz" else material)
     side = "quartz_block_side" if material == "quartz" else substrate
-    slab = "deepslate_brick_slab" if material == "deepslate" else material + "_slab"
+    slab = "deepslate_brick_slab" if material == "deepslate" else base_slab_ingredient(material)
     sprite_id = f"minecraft:block/{side}"
     if material == moss.MATERIAL:
         slab = "mossy_stone_brick_slab"
@@ -242,6 +247,10 @@ def generate_macaw(root, provider, client, tags, material, substrate, slab, form
         recipe = masonry.load_json(provider, f"data/{ref_ns}/recipe/{source}.json")
         materials = {f"minecraft:{ref_material}": f"minecraft:{substrate}", f"minecraft:{ref_material}_slab": f"minecraft:{slab}"}
         recipe["key"] = {k: materials.get(v, v) for k, v in recipe["key"].items()}
+        if name == "smooth_basalt_louvered_shutter":
+            # The BBB Column already uses a vertical line of three full blocks.
+            assert recipe["pattern"] == ["B", "B", "B"]
+            recipe["pattern"] = ["B  ", " B ", "  B"]
         assert recipe["result"]["id"] == source_id
         recipe["result"]["id"] = own_id
         write_json(root, f"data/{NS}/recipe/{name}.json", recipe)
@@ -392,6 +401,15 @@ def generate(provider, client, bbb, path_provider, stone_reference_jar, stone_sh
     for form in (*masonry.FORMS, *standard_windows, *FORMS):
         name = f"{material}_{form}"
         names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
+    for material in ("tuff", "cinnabar", "sulfur", "smooth_basalt"):
+        slab = base_slab_ingredient(material)
+        generate_stone_forms(root, provider, client, tags, names, material)
+        masonry.generate(root, bbb, client, material, tags, write_json, recipe_unlock, slab=slab)
+        generate_macaw(root, provider, client, tags, material, material, slab, windows, stone_artwork=stone_shutter)
+        paths.generate(root, path_provider, client, tags, names, write_json, recipe_unlock, material)
+        for form in (*masonry.FORMS, *windows):
+            name = f"{material}_{form}"
+            names[f"block.{NS}.{name}"] = name.replace("window2", "window 2").replace("_", " ").title()
     write_json(root, f"assets/{NS}/lang/en_us.json", names)
     for tag, values in tags.items():
         write_json(root, f"data/{tag}.json", {"replace": False, "values": values})

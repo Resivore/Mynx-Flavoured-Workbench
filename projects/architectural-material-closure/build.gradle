@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary22'
+version = '0.1.0-canary23'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c22')
+layout.buildDirectory = layout.projectDirectory.dir('build/c23')
 
 repositories {
     mavenCentral()
@@ -15,6 +15,7 @@ def pathsJar = file('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar')
 def bbbJar = file(providers.gradleProperty('bbbJar').getOrElse(
         '../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar'))
 def stoneShutterJar = file(providers.gradleProperty('stoneShutterJar').getOrElse('artifacts/AMC C9.jar'))
+def previousJar = file(providers.gradleProperty('c22Jar').getOrElse('artifacts/AMC C22.jar'))
 def clientJar = file(providers.gradleProperty('vanillaClient').getOrElse(
         new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/26.2/minecraft-client.jar').path))
 def python = providers.gradleProperty('python').getOrElse('python')
@@ -45,13 +46,13 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C22.jar'
+    archiveFileName = 'AMC C23.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
     dependsOn jar
-    inputs.files('tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
-    commandLine python, 'tools/verify.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar
+    inputs.files('tools/verify_c22.py', previousJar, 'tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
+    commandLine python, 'tools/verify.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar, previousJar
 }
 
 check.dependsOn 'verifyAmcJar'
@@ -66,12 +67,13 @@ fabricApi {
     }
 }
 
-// Check ownership of the existing End Stone Brick controls in the test registry.
-dependencies {
-    gametestRuntimeOnly files('../../originals/mods/extshape-fabric-3.1.6+mc26.2.jar')
+// The intended pack omits Extended Block Shapes. Its historical C21 audit
+// can still be run explicitly using a read-only reference JAR.
+if (providers.gradleProperty('extshapeReference').isPresent()) {
+    dependencies { gametestRuntimeOnly files(providers.gradleProperty('extshapeReference').get()) }
 }
 
 loom.runs.named('gameTest') {
-    runDir 'build/c22/gametest'
+    runDir 'build/c23/gametest'
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

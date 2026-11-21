@@ -19,6 +19,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
@@ -59,6 +62,11 @@ public final class DirectFormTests {
                 result.put("parapet", BlockInit.ANDESITE_PARAPET);
                 result.put("louvered_shutter", BlockInit.ANDESITE_LOUVERED_SHUTTER);
             }
+            case "tuff", "cinnabar", "sulfur", "smooth_basalt" -> {
+                result.putAll(MUD_REFERENCES);
+                result.put("gothic_window", BlockInit.STONE_BRICK_GOTHIC);
+                result.put("arrow_slit", BlockInit.STONE_BRICK_ARROW_SLIT);
+            }
             case "mossy_stone_bricks" -> {
                 result.putAll(REFERENCES);
                 result.put("window", BlockInit.STONE_WINDOW);
@@ -82,12 +90,31 @@ public final class DirectFormTests {
             }
             default -> result.putAll(REFERENCES);
         }
-        if (List.of("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks").contains(material)) {
+        if (List.of("prismarine_bricks", "quartz", "nether_bricks", "end_stone_bricks").contains(material)
+                || StoneTests.BASE_MATERIALS.contains(material)) {
             for (var form : PATH_FORMS) {
                 result.put(form, BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("mcwpaths", "dark_prismarine_" + form)));
             }
         }
         return result;
+    }
+
+    @GameTest
+    public void smoothBasaltCraftingInputs(GameTestHelper helper) {
+        var block = Items.SMOOTH_BASALT.getDefaultInstance();
+        var empty = ItemStack.EMPTY;
+        var grids = Map.of(
+                "column", CraftingInput.of(1, 3, List.of(block, block, block)),
+                "louvered_shutter", CraftingInput.of(3, 3, List.of(block, empty, empty, empty, block, empty, empty, empty, block)),
+                "frame", CraftingInput.of(3, 3, List.of(block, block, block, block, empty, block, block, block, block)),
+                "arrow_slit", CraftingInput.of(2, 3, List.of(block, block, block, block, block, block)));
+        var level = helper.getLevel();
+        grids.forEach((form, grid) -> {
+            var match = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, grid, level);
+            helper.assertTrue(match.isPresent() && match.get().id().identifier().equals(id("smooth_basalt", form)),
+                    "Smooth Basalt crafting grid should produce " + form + ", got " + match);
+        });
+        helper.succeed();
     }
 
     private static Identifier id(String material, String form) {
@@ -131,6 +158,26 @@ public final class DirectFormTests {
     @GameTest
     public void netherBricksReferenceStatesAndData(GameTestHelper helper) {
         referenceStatesAndData(helper, "nether_bricks");
+    }
+
+    @GameTest
+    public void tuffReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltReferenceStatesAndData(GameTestHelper helper) {
+        referenceStatesAndData(helper, "smooth_basalt");
     }
 
     @GameTest
@@ -247,6 +294,26 @@ public final class DirectFormTests {
     }
 
     @GameTest
+    public void tuffPlacement(GameTestHelper helper) {
+        placement(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarPlacement(GameTestHelper helper) {
+        placement(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurPlacement(GameTestHelper helper) {
+        placement(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltPlacement(GameTestHelper helper) {
+        placement(helper, "smooth_basalt");
+    }
+
+    @GameTest
     public void mossyStoneBricksPlacement(GameTestHelper helper) {
         placement(helper, "mossy_stone_bricks");
     }
@@ -308,7 +375,8 @@ public final class DirectFormTests {
 
     @GameTest
     public void controlSupports(GameTestHelper helper) {
-        for (String material : List.of("sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks")) {
+        for (String material : List.of("sandstone", "red_sandstone", "deepslate", "quartz", "nether_bricks",
+                "tuff", "cinnabar", "sulfur", "smooth_basalt")) {
             for (String form : List.of("button", "pressure_plate")) {
                 for (Block control : List.of(block(material, form), REFERENCES.get(form))) {
                     helper.setBlock(LEFT.below(), Blocks.STONE);
@@ -357,6 +425,26 @@ public final class DirectFormTests {
     @GameTest
     public void netherBricksButtonPulse(GameTestHelper helper) {
         buttonPulse(helper, "nether_bricks");
+    }
+
+    @GameTest
+    public void tuffButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltButtonPulse(GameTestHelper helper) {
+        buttonPulse(helper, "smooth_basalt");
     }
 
     @GameTest
@@ -437,6 +525,26 @@ public final class DirectFormTests {
     }
 
     @GameTest(maxTicks = 40)
+    public void tuffPressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "tuff");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void cinnabarPressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "cinnabar");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void sulfurPressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "sulfur");
+    }
+
+    @GameTest(maxTicks = 40)
+    public void smoothBasaltPressurePlateSensitivity(GameTestHelper helper) {
+        pressurePlateSensitivity(helper, "smooth_basalt");
+    }
+
+    @GameTest(maxTicks = 40)
     public void mossyStoneBricksPressurePlateSensitivity(GameTestHelper helper) {
         pressurePlateSensitivity(helper, "mossy_stone_bricks");
     }
@@ -499,6 +607,26 @@ public final class DirectFormTests {
     }
 
     @GameTest
+    public void tuffEngraving(GameTestHelper helper) {
+        engraving(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarEngraving(GameTestHelper helper) {
+        engraving(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurEngraving(GameTestHelper helper) {
+        engraving(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltEngraving(GameTestHelper helper) {
+        engraving(helper, "smooth_basalt");
+    }
+
+    @GameTest
     public void endStoneBricksEngraving(GameTestHelper helper) {
         engraving(helper, "end_stone_bricks");
     }
@@ -530,6 +658,26 @@ public final class DirectFormTests {
     @GameTest
     public void netherBricksWindowInteractions(GameTestHelper helper) {
         windowInteractions(helper, "nether_bricks");
+    }
+
+    @GameTest
+    public void tuffWindowInteractions(GameTestHelper helper) {
+        windowInteractions(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarWindowInteractions(GameTestHelper helper) {
+        windowInteractions(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurWindowInteractions(GameTestHelper helper) {
+        windowInteractions(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltWindowInteractions(GameTestHelper helper) {
+        windowInteractions(helper, "smooth_basalt");
     }
 
     @GameTest
@@ -591,6 +739,26 @@ public final class DirectFormTests {
     @GameTest
     public void sandstoneStackedMasonry(GameTestHelper helper) {
         stackedMasonry(helper, "sandstone");
+    }
+
+    @GameTest
+    public void tuffStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "tuff");
+    }
+
+    @GameTest
+    public void cinnabarStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "cinnabar");
+    }
+
+    @GameTest
+    public void sulfurStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "sulfur");
+    }
+
+    @GameTest
+    public void smoothBasaltStackedMasonry(GameTestHelper helper) {
+        stackedMasonry(helper, "smooth_basalt");
     }
 
     @GameTest
