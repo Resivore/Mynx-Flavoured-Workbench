@@ -257,3 +257,14 @@
 - Artifact: `IBF C24.jar`, embedded version `0.1.0-canary24`, 61,757 bytes, SHA-256 `e3940a3244847793e50b2a2c14209fa62320f46fffcfdf6d2332335e80652a96`, finalized at `2026-11-21T01:48:44.0304125Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner verification of the four materials in TESTING.md and an explicit acceptance decision.
+
+## 2026-11-21T02:15:04.5045397Z — IBF C25 integrates three Enderscape-backed AMC materials
+
+- Revision: 25
+- Source checkpoint: `a290ae301866d304cc6e53f4c63101be99482c5e`
+- Changes: Added Veradite, Mirestone and Kurodite Column, Window and Running Bond Path selectors. Appended each AMC Parapet and Louvered Shutter after its native polished Enderscape Button and Pressure Plate. All 72 new members resolved once. Removing nine families and the six appended members from the compiled C25 catalog reproduced the exact C24 digest `bc0038de836e6208b7ac9fa863cbbe53349ee464ddd98be9f2acd9936c13aad4`. The C25 catalog SHA-256 is `4f2e6c7c9bdbf32d7539763e3b49402c8648955b1291314e992a31cf7a6a30fe`.
+- Build/static: With Enderscape 3.0.2, the exact AMC C24 and AMC-absent runs each passed 55 JUnit tests, 36 controlled Fabric GameTests, archive isolation and build. With AMC, 234 families and 1,749 items resolved. Named stacks of seven preserved their counts and component patches in forward and reverse transfers. All twelve independent patterned full blocks retained recipes, creative entries and placement. Without AMC, 181 families and 1,397 items resolved, including the original three control pairs. The assembled audit included all 96 recipes in AMC's Enderscape pack and recorded 1,458 alternate removals with AMC and 1,114 without it. Both runs retained all canonical recipes. A separate controlled launch with Enderscape disabled stopped in Fabric dependency resolution before IBF initialized.
+- Runtime: Owner-directed Minecraft verification and acceptance are pending.
+- Artifact: `IBF C25.jar`, embedded version `0.1.0-canary25`, 62,805 bytes, SHA-256 `8a90fe8d0ee2d0cc40f6bf7c62968adefe53caba0475d89fced5d92bf11c6066`, finalized at `2026-11-21T02:15:04.5045397Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of polished controls, transfers, recipes and independent full blocks in TESTING.md.

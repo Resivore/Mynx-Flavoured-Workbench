@@ -21,13 +21,13 @@
     "goals": [
       "Contribute the exact audited literal block and accessory families to Clutter No More ShapeMap so approved material forms can share one interchangeable storage family.",
       "Preserve Clutter No More as the sole switching, transmutation, recipe-cleanup, and equivalence authority while keeping component patches and source variants exact.",
-      "Use AMC registrations for the Stone accessories and the Andesite, Diorite, and Granite accessory, masonry detail, and Gothic window forms. Integrate the thirteen AMC Mud Bricks forms with the Macaw Mud Brick Gothic Window and Arrow Slit. Integrate the Prismarine Bricks and Dark Prismarine accessories and masonry details, and the eleven thin Prismarine Bricks paths and pavings. Integrate the twelve AMC Sandstone and Red Sandstone forms into their accessory, window, and masonry detail selectors. Integrate the Deepslate, Quartz and Nether Bricks accessory, window, masonry and thin path forms admitted by C21. Integrate End Stone Bricks accessories, windows, masonry details and thin paths and pavings, and the Polished Blackstone Louvered Shutter. Integrate the fifteen AMC Mossy Stone Bricks forms into Button, Column and Window selectors. Integrate the AMC Tuff, Cinnabar, Sulfur and Smooth Basalt accessories, masonry details, windows and thin paths and pavings."
+      "Use AMC registrations for the Stone accessories and the Andesite, Diorite, and Granite accessory, masonry detail, and Gothic window forms. Integrate the thirteen AMC Mud Bricks forms with the Macaw Mud Brick Gothic Window and Arrow Slit. Integrate the Prismarine Bricks and Dark Prismarine accessories and masonry details, and the eleven thin Prismarine Bricks paths and pavings. Integrate the twelve AMC Sandstone and Red Sandstone forms into their accessory, window, and masonry detail selectors. Integrate the Deepslate, Quartz and Nether Bricks accessory, window, masonry and thin path forms admitted by C21. Integrate End Stone Bricks accessories, windows, masonry details and thin paths and pavings, and the Polished Blackstone Louvered Shutter. Integrate the fifteen AMC Mossy Stone Bricks forms into Button, Column and Window selectors. Integrate the AMC Tuff, Cinnabar, Sulfur and Smooth Basalt accessories, masonry details, windows and thin paths and pavings. Integrate the AMC Veradite, Mirestone and Kurodite forms with the existing polished Enderscape controls."
     ],
     "scope": [
-      "With AMC C23, 225 families resolve across 1,677 distinct items. Without AMC, 181 families resolve across 1,397 items. The largest family has 22 members. Each of Tuff, Cinnabar, Sulfur and Smooth Basalt has four selectors and four independent patterned full blocks.",
+      "With AMC C24 and Enderscape 3.0.2, 234 families resolve across 1,749 distinct items. With Enderscape present and AMC absent, 181 families resolve across 1,397 items and the three polished control pairs retain their original order. The largest family has 22 members. Each new material has four independent patterned full blocks.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain the accepted C7 and historical rollback C3 artifacts while C24 undergoes owner-directed verification."
+      "Retain the accepted C7 and historical rollback C3 artifacts while C25 undergoes owner-directed verification."
     ],
     "boundaries": {
       "owned_paths": [
@@ -38,7 +38,7 @@
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
         "Required providers supply every audited item. An absent AMC parent omits its whole family. Existing vanilla, Macaw, BBB, and Enderscape parents retain their registered alternates when AMC is absent.",
-        "C24 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
+        "C25 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -47,7 +47,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version targeted by C24; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
+        "reason": "Exact game version targeted by C25; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
       },
       {
         "type": "MOD",
@@ -137,35 +137,35 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "=25",
-        "reason": "Required Java release for Minecraft 26.2 and the controlled C24 build."
+        "reason": "Required Java release for Minecraft 26.2 and the controlled C25 build."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1 with Fabric Loom 1.17.19",
-        "reason": "Exact build-tool baseline used for the controlled C24 build and GameTest validation."
+        "reason": "Exact build-tool baseline used for the controlled C25 build and GameTest validation."
       },
       {
         "type": "PROJECT",
         "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
-        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C23.jar, SHA-256 8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5.",
-        "reason": "Provides the Stone accessories and the Button, Pressure Plate, Column, Urn, Moulding, Fence, Frame, Arrow Slit, and Gothic Window for each of Andesite, Diorite, and Granite. C14 also supplies the thirteen Mud Bricks accessory, masonry, and window items. C15 supplies the 27 Prismarine accessory, masonry, path and paving items admitted by C19. C16 supplies six registered forms each for Sandstone and Red Sandstone. C19 supplies the six Deepslate, seventeen Quartz and nineteen Nether Bricks items admitted by C21. C21 supplies the 22 End Stone Bricks forms admitted by C22 and the Polished Blackstone Louvered Shutter. C22 supplies all fifteen Mossy Stone Bricks items. C23 supplies 26 selector members and four independent patterned full blocks per new material."
+        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C24.jar, SHA-256 ddafc326d6e41e98170ad5c059a14774858fb1a6bc28b902d95e4b64206d6018.",
+        "reason": "Provides the Stone accessories and the Button, Pressure Plate, Column, Urn, Moulding, Fence, Frame, Arrow Slit, and Gothic Window for each of Andesite, Diorite, and Granite. C14 also supplies the thirteen Mud Bricks accessory, masonry, and window items. C15 supplies the 27 Prismarine accessory, masonry, path and paving items admitted by C19. C16 supplies six registered forms each for Sandstone and Red Sandstone. C19 supplies the six Deepslate, seventeen Quartz and nineteen Nether Bricks items admitted by C21. C21 supplies the 22 End Stone Bricks forms admitted by C22 and the Polished Blackstone Louvered Shutter. C22 supplies all fifteen Mossy Stone Bricks items. C23 supplies 26 selector members and four independent patterned full blocks per new material. C24 supplies 24 selector members per Enderscape material, including the two alternates for each existing polished control family."
       }
     ]
   },
   "state": {
-    "milestone": "All 104 new members resolved exactly once across sixteen selectors. Removing them reproduced the ordered catalog from the finalized C23 JAR. Both provider configurations passed 55 JUnit tests and 35 controlled Fabric GameTests. Owner verification is pending.",
+    "milestone": "All 72 additions resolved once. Removing nine new families and six appended alternates reproduced the ordered catalog from the C24 JAR. Both AMC configurations passed 55 JUnit tests and 36 controlled GameTests. With Enderscape disabled, Fabric stopped before IBF initialization. Owner verification is pending.",
     "releases": {
       "current": {
-        "version": "C24 (0.1.0-canary24)",
-        "canary": 24,
-        "embedded_version": "0.1.0-canary24",
+        "version": "C25 (0.1.0-canary25)",
+        "canary": 25,
+        "embedded_version": "0.1.0-canary25",
         "artifact": {
-          "filename": "IBF C24.jar",
-          "sha256": "e3940a3244847793e50b2a2c14209fa62320f46fffcfdf6d2332335e80652a96"
+          "filename": "IBF C25.jar",
+          "sha256": "8a90fe8d0ee2d0cc40f6bf7c62968adefe53caba0475d89fced5d92bf11c6066"
         },
-        "built_at": "2026-11-21T01:48:44.0304125Z",
-        "source_commit": "88b851aa264971db24346ffd311379fd095da3fe",
+        "built_at": "2026-11-21T02:15:04.5045397Z",
+        "source_commit": "a290ae301866d304cc6e53f4c63101be99482c5e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -176,14 +176,14 @@
               "predicate": "=2.0pre4+26.2-enderscape-dev.7",
               "reason": "BBB dev.7 supplies the audited Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package. Its provider version does not support Fabric semantic version ordering. The dev.6 provider lacks the required package.",
               "regression_evidence": [
-                "Fresh C24 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
+                "Fresh C25 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
                 "The Fabric VersionPredicate equality check accepts dev.7 and rejects the incompatible pre-C9 pale-oak dev.6 package before ShapeMap resolution.",
-                "Both AMC configurations passed the 55 C24 JUnit checks, including the BBB provider contracts, and 35 controlled GameTests."
+                "Both AMC configurations passed the 55 C25 JUnit checks, including the BBB provider contracts, and 36 controlled GameTests."
               ]
             }
           ]
         },
-        "summary": "Adds sixteen accessory, masonry, window and path selectors for AMC Tuff, Cinnabar, Sulfur and Smooth Basalt."
+        "summary": "Adds nine AMC masonry, window and path selectors for Veradite, Mirestone and Kurodite and extends their three polished Enderscape control families."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -220,10 +220,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 24,
-    "activity_at": "2026-11-21T01:48:44.0304125Z",
-    "updated_at": "2026-11-21T01:48:44.0304125Z",
-    "last_codex_at": "2026-11-21T01:48:44.0304125Z",
-    "source_commit": "88b851aa264971db24346ffd311379fd095da3fe"
+    "revision": 25,
+    "activity_at": "2026-11-21T02:15:04.5045397Z",
+    "updated_at": "2026-11-21T02:15:04.5045397Z",
+    "last_codex_at": "2026-11-21T02:15:04.5045397Z",
+    "source_commit": "a290ae301866d304cc6e53f4c63101be99482c5e"
   }
 }
