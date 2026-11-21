@@ -15,7 +15,8 @@
       "Maintain the private Foundation resource pack for Minecraft Java 26.2 without modifying its immutable source archive."
     ],
     "scope": [
-      "Foundation v7 replaces only the Veiled, Silver Birch, and Wisteria inventory item-model routes with target-textured, Matcha-structured cube-plus-foliage models while preserving their v6 world resources."
+      "Maintain the consolidated Foundation and Matcha Overlays resources, including the v7 leaf inventory previews.",
+      "Restore vanilla 26.2 Netherrack, Nether Bricks and End Stone Bricks above Matcha Flavoured and supply Matcha Red Sandstone artwork for AMC's Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter."
     ],
     "boundaries": {
       "owned_paths": [
@@ -30,42 +31,48 @@
     "dependencies": [
       {
         "type": "RESOURCE_PACK",
-        "identifier": "Foundation v6.zip",
-        "requirement": "exact retained artifact SHA-256 ee2cd0ca5fdade2f66404fcd2f34ae950a1661080b4cc23cf1792a76305bf281",
-        "reason": "Supplies the complete immutable v6 base whose non-item resources are retained unchanged."
+        "identifier": "Foundation v7.zip",
+        "requirement": "Build input, SHA-256 0d2ecfa31358c1e7d27ea9a97303a2bcee1864160d37c9797f39881dd0e31727",
+        "reason": "Complete private archive base, including the inherited Matcha Overlays v37 masks and rules."
       },
       {
         "type": "RESOURCE_PACK",
         "identifier": "Matcha_Flavoured_1_12.zip",
-        "requirement": "read-only structural reference for the active Minecraft Oak Leaves item-model chain; no Matcha texture or unrelated asset is redistributed",
-        "reason": "Its minecraft:block/cross_leaves parent provides the inspected central-cube plus four exterior-card topology used by the target-specific v7 item models."
+        "requirement": "Artwork reference, SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
+        "reason": "Supplies the two Red Sandstone sprites and identifies the four English locale overrides. Give Foundation higher priority when using both packs."
       },
       {
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Defines the assets/<namespace>/items/<id>.json item-model selector convention used by the correction."
+        "reason": "Supplies the original block PNGs, model routes, English translations and Red Sandstone bottom fallback for resource pack format 88."
+      },
+      {
+        "type": "PROJECT",
+        "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
+        "requirement": "Optional provider of the six Red Sandstone forms. Artwork and model reference is AMC C25.jar, SHA-256 dd4f53d297c51c74436b0f240d12943b9de91749669ec7cc0e48107d212e8f81.",
+        "reason": "Its existing models select the shared sprites and separately baked shutter. The C25 lighting recipe uses the Macaw's Windows 2.4.2 Andesite shutter mask."
       }
     ]
   },
   "state": {
-    "milestone": "Foundation v7 repairs the three target inventory previews with Matcha-structured item models while static archive validation passed and runtime testing remains outstanding.",
+    "milestone": "Foundation v8 passed archive, texture, CTM, locale and AMC model resolution checks. In-game visual verification is pending.",
     "releases": {
       "current": {
-        "version": "v7",
-        "canary": 3,
-        "embedded_version": "v7",
+        "version": "v8",
+        "canary": 4,
+        "embedded_version": "v8",
         "artifact": {
-          "filename": "Foundation v7.zip",
-          "sha256": "0d2ecfa31358c1e7d27ea9a97303a2bcee1864160d37c9797f39881dd0e31727"
+          "filename": "Foundation v8.zip",
+          "sha256": "6ff2d732ab196204e0cfe7d1057953b5ce0d0ac09b10d476a234966913f36f92"
         },
-        "built_at": "2026-09-28T04:35:57.959389Z",
-        "source_commit": "d7e49ed877e75837029df098a8ce6e0e169362ba",
+        "built_at": "2026-11-21T03:04:44.5325795Z",
+        "source_commit": "5d11bd13c073782c06b924a923bb0dec599e4e6d",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Restores cube-plus-bushy foliage inventory previews for Veiled, Silver Birch, and Wisteria Leaves without changing their in-world resources."
+        "summary": "Restores vanilla Netherrack, Nether Bricks and End Stone Bricks and brings Matcha Red Sandstone artwork to all six AMC forms."
       },
       "accepted": null,
       "rollback": null,
@@ -79,10 +86,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-28T04:35:57.959389Z",
-    "updated_at": "2026-09-28T04:35:57.959389Z",
-    "last_codex_at": "2026-09-28T04:35:57.959389Z",
-    "source_commit": "d7e49ed877e75837029df098a8ce6e0e169362ba"
+    "revision": 4,
+    "activity_at": "2026-11-21T03:07:46.883061Z",
+    "updated_at": "2026-11-21T03:07:46.883061Z",
+    "last_codex_at": "2026-11-21T03:07:46.883061Z",
+    "source_commit": "5d11bd13c073782c06b924a923bb0dec599e4e6d"
   }
 }

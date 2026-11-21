@@ -32,3 +32,47 @@
 - Artifact: `Foundation v7.zip`; SHA-256 `0d2ecfa31358c1e7d27ea9a97303a2bcee1864160d37c9797f39881dd0e31727`; finalized `2026-09-28T04:35:57.959389Z`.
 - Result: ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.
 - Next state: Retain this exact local artifact and perform the targeted item-preview and placed-leaf checks in TESTING.md before any owner acceptance decision.
+
+## 2026-11-21T03:07:46.883061Z — Finalize Foundation v8 Canary 4
+
+- Revision: 4
+- Source checkpoint: `5d11bd13c073782c06b924a923bb0dec599e4e6d`
+- Changes: Copied the three base PNGs from the 26.2 client. Vanilla blockstates and item selectors already route each material to its cube model. Restored the four Brown Sandstone family names from the official US, AU, CA and GB English assets using per-key overrides. Copied Matcha's Red Sandstone side and top sprites to their existing IDs. The five non-shutter forms inherit the vanilla bottom used by Matcha. The shutter retains the top sprite on both caps and uses C25's five-slat lighting recipe with Matcha top grain at the original UVs.
+- Build/static: Two builds from the verified v7 ZIP had identical SHA-256. Verified all 1,558 visible Netherrack overlay pixels against vanilla at the same UV and every alpha byte against v7. All 1,044 visible End Stone Bricks overlay pixels already matched vanilla. Ordinary Nether Bricks receive 53 overlay rules and have no dedicated source tile set. All 151 CTM property files retain their v7 bytes. Resolved the six placed and inventory model routes, all 19 AMC material models and the separate Gothic iron bars. Reproduced C25's original shutter pixels before substituting the Matcha substrate. Verified 2,717 JSON/metadata files, 5,042 PNGs, root layout, unique ZIP paths, CRCs and the complete member diff. Repository validation passed for 65 manifests with one Foundation transition. Artifact retention verified the complete ZIP in the primary checkout.
+- Runtime: RUNTIME_UNTESTED.
+- Artifact: `Foundation v8.zip`, SHA-256 `6ff2d732ab196204e0cfe7d1057953b5ce0d0ac09b10d476a234966913f36f92`, 15,368,722 bytes, finalized `2026-11-21T03:04:44.5325795Z`.
+- Result: ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.
+- Next state: Check the CTM boundaries, localized names and all six AMC forms in an owner-directed Minecraft 26.2 session using TESTING.md.
+
+**v7 to v8 archive paths** · 10 added, 18 modified, 0 removed, 7,920 byte-identical.
+
+```text
+A assets/architectural_material_closure/textures/block/red_sandstone_louvered_shutter.png
+A assets/minecraft/lang/en_au.json
+A assets/minecraft/lang/en_ca.json
+A assets/minecraft/lang/en_gb.json
+A assets/minecraft/lang/en_us.json
+M assets/minecraft/optifine/ctm/overlays/netherrack/0.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/1.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/10.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/11.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/12.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/13.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/14.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/15.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/16.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/2.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/3.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/4.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/5.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/6.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/7.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/8.png
+M assets/minecraft/optifine/ctm/overlays/netherrack/9.png
+A assets/minecraft/textures/block/end_stone_bricks.png
+A assets/minecraft/textures/block/nether_bricks.png
+A assets/minecraft/textures/block/netherrack.png
+A assets/minecraft/textures/block/red_sandstone.png
+A assets/minecraft/textures/block/red_sandstone_top.png
+M pack.mcmeta
+```
