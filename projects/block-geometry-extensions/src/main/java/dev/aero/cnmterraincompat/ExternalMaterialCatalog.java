@@ -7,6 +7,7 @@ import games.twinhead.moreslabsstairsandwalls.api.material.TintProfile;
 import games.twinhead.moreslabsstairsandwalls.api.material.VisualProfile;
 import games.twinhead.moreslabsstairsandwalls.block.ModBlocks;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
@@ -28,6 +29,8 @@ public final class ExternalMaterialCatalog {
     private static final List<Spec> AMC_BASE_STONE = amcPatterns(List.of(
             "tuff", "cinnabar", "sulfur", "smooth_basalt"));
     private static final List<Spec> AMC_ENDERSCAPE = amcPatterns(List.of("veradite", "mirestone", "kurodite"));
+    private static final List<Spec> AMC_PURPUR_AND_RESIN = amcPatterns(List.of("purpur", "resin"));
+    private static final List<Spec> AMC_DUSK_PURPUR = amcPatterns(List.of("dusk_purpur"));
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -48,6 +51,7 @@ public final class ExternalMaterialCatalog {
     public static synchronized void registerAmcBaseStonePatterns() {
         if (FabricLoader.getInstance().isModLoaded(AMC) && REGISTERED_PROVIDERS.add(AMC + ":base_stone")) {
             CnmTerrainCompat.registerExternalFamilies(AMC, AMC_BASE_STONE);
+            registerAvailableAmcPatterns(AMC_PURPUR_AND_RESIN);
         }
     }
 
@@ -55,7 +59,14 @@ public final class ExternalMaterialCatalog {
         var loader = FabricLoader.getInstance();
         if (loader.isModLoaded(AMC) && loader.isModLoaded("enderscape") && REGISTERED_PROVIDERS.add(AMC + ":enderscape")) {
             CnmTerrainCompat.registerExternalFamilies(AMC, AMC_ENDERSCAPE);
+            registerAvailableAmcPatterns(AMC_DUSK_PURPUR);
         }
+    }
+
+    // Older providers run the same callbacks without registering these newer pattern IDs.
+    private static void registerAvailableAmcPatterns(List<Spec> candidates) {
+        var available = candidates.stream().filter(spec -> BuiltInRegistries.BLOCK.containsKey(spec.id())).toList();
+        if (!available.isEmpty()) CnmTerrainCompat.registerExternalFamilies(AMC, available);
     }
 
     public static List<Spec> specs() {
@@ -84,6 +95,8 @@ public final class ExternalMaterialCatalog {
         result.addAll(AMC_MASONRY);
         result.addAll(AMC_BASE_STONE);
         result.addAll(AMC_ENDERSCAPE);
+        result.addAll(AMC_PURPUR_AND_RESIN);
+        result.addAll(AMC_DUSK_PURPUR);
         result.addAll(bbbBeamSpecs());
         result.addAll(enderscapeSpecs());
         return List.copyOf(result);

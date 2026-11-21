@@ -55,9 +55,13 @@ import java.util.Optional;
 
 public final class AmcPatternGameTests {
     private static final String AMC = "architectural_material_closure";
-    private static final List<String> END_STONES = List.of("veradite", "mirestone", "kurodite");
+    private static final List<String> END_STONES = List.of("veradite", "mirestone", "kurodite", "dusk_purpur");
     private static final List<String> ROLES = List.of("block", "slab", "stairs", "wall",
             "vertical_slab", "step", "corner", "quarter_column", "layer");
+
+    private static String materialName(Identifier id) {
+        return id.getPath().replaceFirst("_(running_bond|flagstone|windmill_weave|crystal_floor)$", "");
+    }
 
     @GameTest
     public void productionPatternFamilies(GameTestHelper helper) throws Exception {
@@ -65,21 +69,33 @@ public final class AmcPatternGameTests {
         String version = System.getProperty("bge.amcVersion");
         boolean present = !version.equals("none");
         boolean enderscape = Boolean.getBoolean("bge.withEnderscape");
-        boolean patterns = enderscape && version.equals("24");
+        boolean patterns = enderscape && present && !version.equals("23");
+        boolean purpurAndResin = version.equals("26");
         helper.assertTrue(loader.isModLoaded(AMC) == present && loader.isModLoaded("enderscape") == enderscape,
                 "Unexpected optional-provider configuration");
         if (present) {
             var hash = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(Path.of(System.getProperty("bge.amcJar"))));
-            String expectedHash = version.equals("24") ? "ddafc326d6e41e98170ad5c059a14774858fb1a6bc28b902d95e4b64206d6018"
-                    : "8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5";
+            String expectedHash = switch (version) {
+                case "23" -> "8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5";
+                case "24" -> "ddafc326d6e41e98170ad5c059a14774858fb1a6bc28b902d95e4b64206d6018";
+                case "25" -> "dd4f53d297c51c74436b0f240d12943b9de91749669ec7cc0e48107d212e8f81";
+                case "26" -> "06eed8311abd74bc2cc9e522d4c7667ebaca92539ff1289b3f290d1efc326456";
+                default -> throw new IllegalArgumentException(version);
+            };
             helper.assertTrue(HexFormat.of().formatHex(hash).equals(expectedHash), "Unexpected AMC artifact");
         }
         var families = ExternalMaterialFamilies.all().stream().filter(b -> b.spec().provider().equals(AMC)).toList();
-        int expectedCount = patterns ? 44 : present ? 32 : 0;
+        int expectedCount = (present ? 32 : 0) + (patterns ? 12 : 0)
+                + (purpurAndResin ? 8 : 0) + (purpurAndResin && patterns ? 4 : 0);
         helper.assertTrue(families.size() == expectedCount, "AMC family count");
         for (var spec : ExternalMaterialCatalog.specs()) {
             if (!spec.provider().equals(AMC)) continue;
-            boolean expected = present && (patterns || END_STONES.stream().noneMatch(m -> spec.id().getPath().startsWith(m + "_")));
+            boolean expected = switch (materialName(spec.id())) {
+                case "purpur", "resin" -> purpurAndResin;
+                case "dusk_purpur" -> purpurAndResin && patterns;
+                case "veradite", "mirestone", "kurodite" -> patterns;
+                default -> present;
+            };
             helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(spec.id()) == expected
                     && BuiltInRegistries.ITEM.containsKey(spec.id()) == expected
                     && ExternalMaterialFamilies.fromSource(spec.id()).isPresent() == expected, "Optional source " + spec.id());
@@ -91,7 +107,7 @@ public final class AmcPatternGameTests {
             }
         }
         for (String material : END_STONES) {
-            var id = Identifier.fromNamespaceAndPath("enderscape", material);
+            var id = Identifier.fromNamespaceAndPath("enderscape", material.equals("dusk_purpur") ? "dusk_purpur_block" : material);
             var plain = ExternalMaterialFamilies.fromSource(id);
             helper.assertTrue(plain.isPresent() == enderscape, "Ordinary Enderscape family " + id);
             if (enderscape) {
@@ -177,6 +193,11 @@ public final class AmcPatternGameTests {
             }
             membership.add(id.toString(), roles);
         }
+        for (var ordinary : List.of(Blocks.PURPUR_BLOCK, Blocks.RESIN_BRICKS)) {
+            var shapes = ShapeMap.getShapes(ordinary.asItem());
+            helper.assertTrue(shapes.contains(ordinary.asItem()) && shapes.stream().noneMatch(item ->
+                    unique.contains(Block.byItem(item))), "Ordinary material selector overlaps AMC: " + ordinary);
+        }
         var packs = new ArrayList<PackResources>();
         for (String name : System.getProperty("bge.testResourceJars").split(File.pathSeparator)) {
             var location = new PackLocationInfo(name, Component.literal(name), PackSource.DEFAULT, Optional.empty());
@@ -252,9 +273,12 @@ public final class AmcPatternGameTests {
         for (var family : ExternalMaterialFamilies.all()) {
             if (!family.spec().provider().equals(AMC)) continue;
             var id = family.spec().id();
-            String materialName = id.getPath().replaceFirst("_(running_bond|flagstone|windmill_weave|crystal_floor)$", "");
-            var ingredient = END_STONES.contains(materialName) ? Identifier.fromNamespaceAndPath("enderscape", materialName)
-                    : Identifier.withDefaultNamespace(materialName.equals("quartz") ? "quartz_block" : materialName);
+            String materialName = materialName(id);
+            String base = switch (materialName) {
+                case "quartz", "purpur", "resin", "dusk_purpur" -> materialName + "_block";
+                default -> materialName;
+            };
+            var ingredient = Identifier.fromNamespaceAndPath(END_STONES.contains(materialName) ? "enderscape" : "minecraft", base);
             var material = BuiltInRegistries.BLOCK.getOptional(ingredient).orElseThrow();
             var input = new SingleRecipeInput(new ItemStack(material));
             var recipe = level.getServer().getRecipeManager().byKey(ResourceKey.create(Registries.RECIPE, id)).orElseThrow().value();

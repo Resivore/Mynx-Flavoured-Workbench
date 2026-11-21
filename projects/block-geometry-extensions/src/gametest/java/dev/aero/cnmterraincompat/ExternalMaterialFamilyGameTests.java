@@ -183,9 +183,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 192
-                        && ExternalMaterialCatalog.sourceCount("architectural_material_closure") == 44,
-                "Expected 148 legacy sources and 44 AMC patterns");
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 204
+                        && ExternalMaterialCatalog.sourceCount("architectural_material_closure") == 56,
+                "Expected 148 legacy sources and 56 AMC patterns");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
                         && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
                         && ExternalMaterialCatalog.sourceCount("ribbits") == 4

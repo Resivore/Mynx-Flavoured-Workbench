@@ -1,9 +1,9 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C107.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C108.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
     [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C78.jar'),
     [string]$C92Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C92.jar'),
-    [string]$C106Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C106.jar'),
+    [string]$C107Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C107.jar'),
     [string]$C93Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C93.jar'),
     [string]$BbbJar = (Join-Path $PSScriptRoot '..\..\building-but-better\artifacts\bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar')
 )
@@ -219,11 +219,11 @@ Require ((Get-FileSha256 $c93Path) -eq '16087d67acb3554f8a6aeee3652f4d75ff00b8a0
         'Exact BGE C93 placed-resource baseline hash mismatch'
 Require ((Get-FileSha256 $bbbPath) -eq '0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a') `
         'Exact locally supplied BBB Beam source artifact hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C107.jar') `
-        'Private local-only artifact filename is not exactly BGE C107.jar'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C108.jar') `
+        'Private local-only artifact filename is not exactly BGE C108.jar'
 
-Require ((Get-FileSha256 $C106Jar) -eq '8723e77187dc65cadba534df447b735f8c4d8c17973e6e0ecf7ebb160c2490e2') 'Current C106 baseline hash mismatch'
-$c106 = [System.IO.Compression.ZipFile]::OpenRead($C106Jar)
+Require ((Get-FileSha256 $C107Jar) -eq '2a2d864cf2dcce55ae006d184dcbe0d408382821845e51e9a3256df2141daaf3') 'Current C107 baseline hash mismatch'
+$c107 = [System.IO.Compression.ZipFile]::OpenRead($C107Jar)
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
 $predecessor = [System.IO.Compression.ZipFile]::OpenRead($predecessorPath)
@@ -232,16 +232,16 @@ $c93 = [System.IO.Compression.ZipFile]::OpenRead($c93Path)
 $bbb = [System.IO.Compression.ZipFile]::OpenRead($bbbPath)
 try {
     $unifiedMap = Get-EntryMap $unified
-    $baseline = Get-EntryMap $c106
+    $baseline = Get-EntryMap $c107
     $added = @($unifiedMap.Keys | Where-Object { -not $baseline.ContainsKey($_) })
-    Require ($added.Count -eq 1 -and $added[0] -ceq 'dev/aero/cnmterraincompat/mixin/AmcEnderscapeInitializationMixin.class') 'Unexpected C107 addition'
-    $changedFromC106 = @()
+    Require ($added.Count -eq 0) 'Unexpected C108 addition'
+    $changedFromC107 = @()
     foreach ($name in $baseline.Keys) {
-        Require $unifiedMap.ContainsKey($name) "C107 removed $name"
+        Require $unifiedMap.ContainsKey($name) "C108 removed $name"
         if ((Get-EntrySha256 $baseline[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) { continue }
-        $changedFromC106 += $name
-        Require ($name -in @('fabric.mod.json', 'cnm_terrain_slabs_compat.mixins.json') -or
-                $name -cmatch '^dev/aero/cnmterraincompat/ExternalMaterialCatalog(?:\$.*)?\.class$') "Unexpected C107 change to $name"
+        $changedFromC107 += $name
+        Require ($name -ceq 'fabric.mod.json' -or
+                $name -cmatch '^dev/aero/cnmterraincompat/ExternalMaterialCatalog(?:\$.*)?\.class$') "Unexpected C108 change to $name"
     }
     $acceptedMap = Get-EntryMap $accepted
     $predecessorMap = Get-EntryMap $predecessor
@@ -373,10 +373,10 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.51-bge.canary107.amc-enderscape+26.2') `
-            'Unified Fabric version is not exact C107'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 107 ' + [char]0x2014 + ' AMC Enderscape Patterns')) `
-            'Unified Fabric display name is not exact C107'
+    Require ($metadata.version -eq '4.2.52-bge.canary108.amc-purpur-resin+26.2') `
+            'Unified Fabric version is not exact C108'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 108 ' + [char]0x2014 + ' AMC Purpur and Resin Patterns')) `
+            'Unified Fabric display name is not exact C108'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -679,12 +679,12 @@ try {
 
     [ordered]@{
         result = 'PASS'
-        exact_c106_delta = [ordered]@{
+        exact_c107_delta = [ordered]@{
             added = $added
-            changed = @($changedFromC106 | Sort-Object)
-            byte_identical = $baseline.Count - $changedFromC106.Count
+            changed = @($changedFromC107 | Sort-Object)
+            byte_identical = $baseline.Count - $changedFromC107.Count
         }
-        c107 = [ordered]@{
+        c108 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
@@ -749,7 +749,7 @@ try {
     $accepted.Dispose()
     $predecessor.Dispose()
     $c92.Dispose()
-    $c106.Dispose()
+    $c107.Dispose()
     $c93.Dispose()
     $bbb.Dispose()
 }

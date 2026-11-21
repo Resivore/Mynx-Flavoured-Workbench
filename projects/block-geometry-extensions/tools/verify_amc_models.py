@@ -40,7 +40,7 @@ def block_uv(direction, bounds):
 
 
 def verify(audit, jars, version, enderscape):
-    provider_pack = enderscape and version == "24"
+    provider_pack = enderscape and version in ("24", "25", "26")
     def read(key):
         if key in audit["resources"]:
             return audit["resources"][key]
@@ -48,7 +48,7 @@ def verify(audit, jars, version, enderscape):
         entry = f"assets/{namespace}/{path}"
         for jar in reversed(jars):
             nested = "resourcepacks/enderscape/" + entry
-            if provider_pack and Path(jar.filename).name == "AMC C24.jar" and nested in jar.NameToInfo:
+            if provider_pack and Path(jar.filename).name == f"AMC C{version}.jar" and nested in jar.NameToInfo:
                 return json.loads(jar.read(nested)) if entry.endswith(".json") else jar.read(nested)
             if entry in jar.NameToInfo:
                 return json.loads(jar.read(entry)) if entry.endswith(".json") else jar.read(entry)
@@ -70,6 +70,10 @@ def verify(audit, jars, version, enderscape):
     materials = () if version == "none" else MATERIALS
     if provider_pack:
         materials += ("veradite", "mirestone", "kurodite")
+    if version == "26":
+        materials += ("purpur", "resin")
+        if provider_pack:
+            materials += ("dusk_purpur",)
     expected = {f"{AMC}:{m}_{p}" for m, p in itertools.product(materials, PATTERNS)}
     assert set(audit["membership"]) == expected
     if not expected:
@@ -144,7 +148,7 @@ def verify(audit, jars, version, enderscape):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--amc-version", default="23", choices=("none", "23", "24"))
+    parser.add_argument("--amc-version", default="23", choices=("none", "23", "24", "25", "26"))
     parser.add_argument("--enderscape", action="store_true")
     parser.add_argument("audit", type=Path)
     parser.add_argument("jars", nargs="+")
@@ -152,7 +156,7 @@ if __name__ == "__main__":
     audit = json.loads(args.audit.read_text(encoding="utf-8"))
     with ExitStack() as stack:
         verify(audit, [stack.enter_context(ZipFile(p)) for p in args.jars], args.amc_version, args.enderscape)
-    report_name = ("amc-pattern-families.json" if args.amc_version == "24" and args.enderscape
+    report_name = ("amc-pattern-families.json" if args.amc_version == "26" and args.enderscape
                    else args.audit.stem + "-members.json")
     report = args.audit.parent / "reports" / report_name
     report.parent.mkdir(parents=True, exist_ok=True)
