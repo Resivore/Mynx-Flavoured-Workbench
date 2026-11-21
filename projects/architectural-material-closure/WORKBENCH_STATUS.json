@@ -28,7 +28,8 @@
       "Provide six Deepslate, 21 Quartz and 23 Nether Bricks forms. Use vanilla controls, Macaw's Windows geometry and interactions, and directional Deepslate and Quartz textures. The Deepslate and Nether Bricks shutter artwork uses the finalized C9 Stone shutter remapped to the full corresponding vanilla palette. Quartz and Nether Bricks each have eleven thin Macaw paths and pavings and four independent engravable full blocks with full vanilla palette transfers.",
       "Provide 26 End Stone Bricks forms: five BBB masonry forms, fifteen Macaw paths and pavings including four independent engravable full blocks, four standard windows, a parapet and a louvered shutter. Provide one Polished Blackstone Louvered Shutter. Both shutters transfer the finalized Stone artwork to their full vanilla palettes.",
       "Provide 15 Mossy Stone Bricks controls, masonry and window forms. Selectively moss the corresponding vanilla, BBB, Macaw and AMC Stone artwork using the vanilla moss footprint and the brightness of each source pixel.",
-      "Provide all 30 AMC forms for each of Tuff, Cinnabar, Sulfur and Smooth Basalt. Use vanilla Stone controls, BBB Stone masonry, Macaw windows and paths, and the full vanilla palettes for the four C9-derived shutters. Each material has four independent engravable full blocks."
+      "Provide all 30 AMC forms for each of Tuff, Cinnabar, Sulfur and Smooth Basalt. Use vanilla Stone controls, BBB Stone masonry, Macaw windows and paths, and the full vanilla palettes for the four C9-derived shutters. Each material has four independent engravable full blocks.",
+      "Provide 28 optional AMC forms each for base Veradite, Mirestone and Kurodite. Enderscape retains its six polished controls. Register the three families and enable their built-in assets and data after the optional provider registers its block/item pairs."
     ],
     "boundaries": {
       "owned_paths": [
@@ -75,27 +76,33 @@
         "identifier": "mcwpaths",
         "requirement": "*",
         "reason": "Provides the path, directional paving and engraved block implementations and shared model parents. The controlled build uses Macaw's Paths and Pavings 1.1.1 for 26.2 Fabric."
+      },
+      {
+        "type": "MOD",
+        "identifier": "enderscape",
+        "requirement": "optional (*)",
+        "reason": "Supplies the three unpolished bases and slabs and six existing polished controls when installed. The previous 297 AMC pairs load independently. The controlled reference is Enderscape 3.0.2 for 26.2 Fabric."
       }
     ]
   },
   "state": {
-    "milestone": "C23 adds 120 pairs for a total of 297. All 179 controlled Fabric GameTests and package checks passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C24 provides 381 pairs with Enderscape and 297 without it. All 213 provider-present and 179 provider-absent controlled GameTests passed. Owner runtime verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C23 (0.1.0-canary23)",
-        "canary": 23,
-        "embedded_version": "0.1.0-canary23",
+        "version": "C24 (0.1.0-canary24)",
+        "canary": 24,
+        "embedded_version": "0.1.0-canary24",
         "artifact": {
-          "filename": "AMC C23.jar",
-          "sha256": "8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5"
+          "filename": "AMC C24.jar",
+          "sha256": "ddafc326d6e41e98170ad5c059a14774858fb1a6bc28b902d95e4b64206d6018"
         },
-        "built_at": "2026-11-21T01:41:37.7429583Z",
-        "source_commit": "f0d48a30949b4eb88b31a9f6a95567455797a43e",
+        "built_at": "2026-11-21T02:07:52.3149422Z",
+        "source_commit": "a48ee2563ca78b33aa5eb2686b71926f1f5aea3e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 30 forms each for Tuff, Cinnabar, Sulfur and Smooth Basalt, including hammer-operated fences, engravable patterned blocks and Stone-derived shutters."
+        "summary": "Adds 84 optional Veradite, Mirestone and Kurodite forms using Enderscape's native materials and existing polished controls."
       },
       "accepted": null,
       "rollback": null,
@@ -109,10 +116,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 24,
-    "activity_at": "2026-11-21T01:42:56Z",
-    "updated_at": "2026-11-21T01:42:56Z",
-    "last_codex_at": "2026-11-21T01:42:56Z",
-    "source_commit": "f0d48a30949b4eb88b31a9f6a95567455797a43e"
+    "revision": 25,
+    "activity_at": "2026-11-21T02:09:26Z",
+    "updated_at": "2026-11-21T02:09:26Z",
+    "last_codex_at": "2026-11-21T02:09:26Z",
+    "source_commit": "a48ee2563ca78b33aa5eb2686b71926f1f5aea3e"
   }
 }

@@ -280,3 +280,16 @@
 - Runtime: Owner gameplay verification and acceptance are pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify C23 against the four material families in TESTING.md.
+
+## 2026-11-21T02:09:26Z — Complete optional Enderscape material families in Canary 24
+
+- Revision: 25
+- Source checkpoint: `a48ee2563ca78b33aa5eb2686b71926f1f5aea3e`
+- Changes: Added exactly 28 AMC block/item pairs each for Veradite, Mirestone and Kurodite. An optional post-initialization hook validates the three Enderscape bases, their native slabs and the six polished controls before registering any families and activating their built-in pack. The six Enderscape controls retain their provider recipes and IBF families. The twelve patterned full blocks are independent and engravable.
+- Verified Enderscape 3.0.2 SHA-256 `9fcc4f59ca88e91f90e7c7d18289f2f859f20c810eebcca924764aa15236c40b`. The three base sprites are opaque 16×16 cube-all tiles with six colors each. Compared 30 BBB sheets, 33 Paths sheets and the three shutters pixel-for-pixel. Each shutter maps the 16 gray ranks of finalized C9 PNG `c67d4b297dd2b312c0732dc38dc607cdae9937d493028000a33f4b2e4e959878` into 9, 17, 21, 39, 104 and 17 pixels per target rank and preserves all 49 transparent RGBA pixels.
+- Build/static: Java 25 / Gradle 9.5.1 build passed all 213 real-provider and 179 provider-absent controlled Fabric GameTests. Verified exact registries, material hardness/resistance/sounds/tool requirements, creative tabs, loaded recipes and behavior. Resolved all nine slab-based crafting grids and all 45 stonecutting inputs/outputs for the new paths, pavings and full patterns. The optional pack has 851 entries, including 96 recipes and matching unlocks, 84 loot tables, 84 item definitions, 315 models and 24 additive tags.
+- Compared C24 with exact C23 SHA-256 `8e850efa8d6e8f17e8bfa0b2da7058a7b1b0cd91e4c42e133fabedf3062589f5`. All 3,042 previous entries remain, including 3,041 byte-identical entries. Only fabric.mod.json changed. All 11 previous production classes, sprites, states, models, recipes, tags and translations are byte-identical. Final package contains 3,896 entries.
+- Artifact: Local-only `AMC C24.jar`, embedded version `0.1.0-canary24`, 1,967,734 bytes, SHA-256 `ddafc326d6e41e98170ad5c059a14774858fb1a6bc28b902d95e4b64206d6018`, finalized at `2026-11-21T02:07:52.3149422Z`.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify each of the three families in-world against its unpolished Enderscape base using TESTING.md.
