@@ -325,3 +325,15 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - `textures/block/frame/cinnabar/` — `cinnabar.png`
 - `textures/block/moulding/` — `cinnabar.png`
 - `textures/block/urn/` — `cinnabar.png`
+
+## 2026-11-21T02:55:06Z — Complete Purpur, Dusk Purpur and Resin in Canary 26
+
+- Revision: 27
+- Source checkpoint: `292a8f2b477e08d99c758feb7901d715e7f2231c`
+- Changes: Added all 30 C23 forms for each of `purpur`, `dusk_purpur` and `resin`. The ownership audit found zero intended-provider equivalents. Extended Block Shapes is reference-only. Purpur and Dusk Purpur use their native blocks, slabs and block sprites. Raw Resin Blocks supply all Resin ingredients and Resin Bricks supply its visual material. Two diagonal Resin Blocks craft one Button, preserving the vanilla one-block clump recipe. Three diagonal blocks craft three Shutters and three vertically craft three Columns.
+- Build/static: The Java 25 build and controlled Fabric GameTests passed with Enderscape 3.0.2 present (254/254, 471 registered pairs) and absent (206/206, 357 registered pairs). Checked 45 crafting grids, vanilla Resin Clumps, stonecutting, all 12 engravable full patterns, drops, tags, placement, shape and interaction parity. The optional pack supplies 30 Dusk Purpur pairs only with Enderscape.
+- Compared all 3,896 entries from C25 SHA-256 `dd4f53d297c51c74436b0f240d12943b9de91749669ec7cc0e48107d212e8f81`. Exactly 3,840 entries matched byte-for-byte. Updates comprise 51 additive tags, two translation files, two registration classes and version metadata. Verified all 873 additions, including the new models and UVs against the C25 Tuff graphs. Checked every pixel across 66 derived sheets against the BBB, Macaw and C9 sources, including all 49 transparent shutter pixels per material and all seven target colors.
+- Artifact: `AMC C26.jar`, 2,385,209 bytes, SHA-256 `06eed8311abd74bc2cc9e522d4c7667ebaca92539ff1289b3f290d1efc326456`, built_at `2026-11-21T02:49:48.4100247Z`.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify all three families in-world using TESTING.md and record observations against the exact C26 hash.

@@ -30,7 +30,8 @@
       "Provide 15 Mossy Stone Bricks controls, masonry and window forms. Selectively moss the corresponding vanilla, BBB, Macaw and AMC Stone artwork using the vanilla moss footprint and the brightness of each source pixel.",
       "Provide all 30 AMC forms for each of Tuff, Cinnabar, Sulfur and Smooth Basalt. Use vanilla Stone controls, BBB Stone masonry, Macaw windows and paths, and the full vanilla palettes for the four C9-derived shutters. Each material has four independent engravable full blocks.",
       "Provide 28 optional AMC forms each for base Veradite, Mirestone and Kurodite. Enderscape retains its six polished controls. Register the three families and enable their built-in assets and data after the optional provider registers its block/item pairs.",
-      "All 30 Cinnabar forms use vanilla Cinnabar Bricks as their visual source. Direct material slots reference the brick tile and derived artwork uses its full 15-color palette. Raw Cinnabar and Cinnabar Slabs remain the recipe materials."
+      "All 30 Cinnabar forms use vanilla Cinnabar Bricks as their visual source. Direct material slots reference the brick tile and derived artwork uses its full 15-color palette. Raw Cinnabar and Cinnabar Slabs remain the recipe materials.",
+      "Provide all 30 forms for Purpur, Resin and optional Dusk Purpur. Use native Purpur and Dusk Purpur blocks and slabs. Resin uses raw Resin Blocks for crafting and stonecutting and the Resin Bricks tile for artwork. The three shutters use the complete seven-color palettes on the finalized C9 artwork."
     ],
     "boundaries": {
       "owned_paths": [
@@ -82,28 +83,28 @@
         "type": "MOD",
         "identifier": "enderscape",
         "requirement": "optional (*)",
-        "reason": "Supplies the three unpolished bases and slabs and six existing polished controls when installed. The previous 297 AMC pairs load independently. The controlled reference is Enderscape 3.0.2 for 26.2 Fabric."
+        "reason": "Supplies four optional base materials and their slabs, and six existing polished controls. With Enderscape 3.0.2, AMC registers 114 additional pairs alongside the 357 standalone pairs."
       }
     ]
   },
   "state": {
-    "milestone": "C25 updates Cinnabar artwork across all 30 existing forms. All 213 Enderscape-present and 179 Enderscape-absent controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "C26 adds 90 pairs across Purpur, Resin and optional Dusk Purpur. All 254 Enderscape-present and 206 Enderscape-absent controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C25 (0.1.0-canary25)",
-        "canary": 25,
-        "embedded_version": "0.1.0-canary25",
+        "version": "C26 (0.1.0-canary26)",
+        "canary": 26,
+        "embedded_version": "0.1.0-canary26",
         "artifact": {
-          "filename": "AMC C25.jar",
-          "sha256": "dd4f53d297c51c74436b0f240d12943b9de91749669ec7cc0e48107d212e8f81"
+          "filename": "AMC C26.jar",
+          "sha256": "06eed8311abd74bc2cc9e522d4c7667ebaca92539ff1289b3f290d1efc326456"
         },
-        "built_at": "2026-11-21T02:12:45.8719817Z",
-        "source_commit": "4e6efefdff512027c965a4b8b5b0b3394bfcc793",
+        "built_at": "2026-11-21T02:49:48.4100247Z",
+        "source_commit": "292a8f2b477e08d99c758feb7901d715e7f2231c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Updates all 30 Cinnabar forms to the vanilla Cinnabar Bricks tile and palette while keeping their raw Cinnabar recipes."
+        "summary": "Adds 30 forms each for Purpur, Resin and optional Dusk Purpur, with Resin Bricks artwork on raw Resin recipes."
       },
       "accepted": null,
       "rollback": null,
@@ -117,10 +118,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 26,
-    "activity_at": "2026-11-21T02:15:04Z",
-    "updated_at": "2026-11-21T02:15:04Z",
-    "last_codex_at": "2026-11-21T02:15:04Z",
-    "source_commit": "4e6efefdff512027c965a4b8b5b0b3394bfcc793"
+    "revision": 27,
+    "activity_at": "2026-11-21T02:55:06Z",
+    "updated_at": "2026-11-21T02:55:06Z",
+    "last_codex_at": "2026-11-21T02:55:06Z",
+    "source_commit": "292a8f2b477e08d99c758feb7901d715e7f2231c"
   }
 }
