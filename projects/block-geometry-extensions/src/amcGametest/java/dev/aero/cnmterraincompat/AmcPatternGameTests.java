@@ -55,7 +55,7 @@ import java.util.Optional;
 
 public final class AmcPatternGameTests {
     private static final String AMC = "architectural_material_closure";
-    private static final List<String> END_STONES = List.of("veradite", "mirestone", "kurodite", "dusk_purpur");
+    private static final List<String> END_STONES = List.of("veradite", "mirestone", "kurodite", "dusk_purpur", "shadoline_block");
     private static final List<String> ROLES = List.of("block", "slab", "stairs", "wall",
             "vertical_slab", "step", "corner", "quarter_column", "layer");
 
@@ -69,8 +69,9 @@ public final class AmcPatternGameTests {
         String version = System.getProperty("bge.amcVersion");
         boolean present = !version.equals("none");
         boolean enderscape = Boolean.getBoolean("bge.withEnderscape");
-        boolean patterns = enderscape && present && !version.equals("23");
-        boolean purpurAndResin = version.equals("26");
+        int canary = present ? Integer.parseInt(version) : 0;
+        boolean patterns = enderscape && canary >= 24;
+        boolean purpurAndResin = canary >= 26;
         helper.assertTrue(loader.isModLoaded(AMC) == present && loader.isModLoaded("enderscape") == enderscape,
                 "Unexpected optional-provider configuration");
         if (present) {
@@ -80,17 +81,22 @@ public final class AmcPatternGameTests {
                 case "24" -> "ddafc326d6e41e98170ad5c059a14774858fb1a6bc28b902d95e4b64206d6018";
                 case "25" -> "dd4f53d297c51c74436b0f240d12943b9de91749669ec7cc0e48107d212e8f81";
                 case "26" -> "06eed8311abd74bc2cc9e522d4c7667ebaca92539ff1289b3f290d1efc326456";
+                case "27" -> "4eaaebe4de7bb9927c474dff1821863a7bfae931610c11787fac7926fd4e10ce";
+                case "28" -> "c90194fb12306d1c47b22023eab23e62869f8310a56ab2c322c8f635bbce7fa9";
                 default -> throw new IllegalArgumentException(version);
             };
             helper.assertTrue(HexFormat.of().formatHex(hash).equals(expectedHash), "Unexpected AMC artifact");
         }
         var families = ExternalMaterialFamilies.all().stream().filter(b -> b.spec().provider().equals(AMC)).toList();
         int expectedCount = (present ? 32 : 0) + (patterns ? 12 : 0)
-                + (purpurAndResin ? 8 : 0) + (purpurAndResin && patterns ? 4 : 0);
+                + (purpurAndResin ? 8 : 0) + (purpurAndResin && patterns ? 4 : 0)
+                + (canary >= 28 ? 4 : 0) + (canary >= 28 && enderscape ? 4 : 0);
         helper.assertTrue(families.size() == expectedCount, "AMC family count");
         for (var spec : ExternalMaterialCatalog.specs()) {
             if (!spec.provider().equals(AMC)) continue;
             boolean expected = switch (materialName(spec.id())) {
+                case "calcite" -> canary >= 28;
+                case "shadoline_block" -> canary >= 28 && enderscape;
                 case "purpur", "resin" -> purpurAndResin;
                 case "dusk_purpur" -> purpurAndResin && patterns;
                 case "veradite", "mirestone", "kurodite" -> patterns;

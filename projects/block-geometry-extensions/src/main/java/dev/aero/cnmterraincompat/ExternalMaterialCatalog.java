@@ -29,8 +29,8 @@ public final class ExternalMaterialCatalog {
     private static final List<Spec> AMC_BASE_STONE = amcPatterns(List.of(
             "tuff", "cinnabar", "sulfur", "smooth_basalt"));
     private static final List<Spec> AMC_ENDERSCAPE = amcPatterns(List.of("veradite", "mirestone", "kurodite"));
-    private static final List<Spec> AMC_PURPUR_AND_RESIN = amcPatterns(List.of("purpur", "resin"));
-    private static final List<Spec> AMC_DUSK_PURPUR = amcPatterns(List.of("dusk_purpur"));
+    private static final List<Spec> AMC_OPTIONAL_BASE_STONE = amcPatterns(List.of("purpur", "resin", "calcite"));
+    private static final List<Spec> AMC_OPTIONAL_ENDERSCAPE = amcPatterns(List.of("dusk_purpur", "shadoline_block"));
     private static final List<Spec> SPECS = specs();
     private static final Set<String> REGISTERED_PROVIDERS = new LinkedHashSet<>();
 
@@ -51,7 +51,7 @@ public final class ExternalMaterialCatalog {
     public static synchronized void registerAmcBaseStonePatterns() {
         if (FabricLoader.getInstance().isModLoaded(AMC) && REGISTERED_PROVIDERS.add(AMC + ":base_stone")) {
             CnmTerrainCompat.registerExternalFamilies(AMC, AMC_BASE_STONE);
-            registerAvailableAmcPatterns(AMC_PURPUR_AND_RESIN);
+            registerAvailableAmcPatterns(AMC_OPTIONAL_BASE_STONE);
         }
     }
 
@@ -59,7 +59,7 @@ public final class ExternalMaterialCatalog {
         var loader = FabricLoader.getInstance();
         if (loader.isModLoaded(AMC) && loader.isModLoaded("enderscape") && REGISTERED_PROVIDERS.add(AMC + ":enderscape")) {
             CnmTerrainCompat.registerExternalFamilies(AMC, AMC_ENDERSCAPE);
-            registerAvailableAmcPatterns(AMC_DUSK_PURPUR);
+            registerAvailableAmcPatterns(AMC_OPTIONAL_ENDERSCAPE);
         }
     }
 
@@ -95,8 +95,8 @@ public final class ExternalMaterialCatalog {
         result.addAll(AMC_MASONRY);
         result.addAll(AMC_BASE_STONE);
         result.addAll(AMC_ENDERSCAPE);
-        result.addAll(AMC_PURPUR_AND_RESIN);
-        result.addAll(AMC_DUSK_PURPUR);
+        result.addAll(AMC_OPTIONAL_BASE_STONE);
+        result.addAll(AMC_OPTIONAL_ENDERSCAPE);
         result.addAll(bbbBeamSpecs());
         result.addAll(enderscapeSpecs());
         return List.copyOf(result);

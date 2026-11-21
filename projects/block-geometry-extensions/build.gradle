@@ -181,8 +181,8 @@ tasks.named('runGameTest') {
 // server. The normal regression fixture provides several of the same mod IDs and classes.
 def amcTest = providers.gradleProperty('amcGameTest').isPresent()
 if (amcTest) {
-    def amcVersion = providers.gradleProperty('amcTestVersion').getOrElse('26')
-    if (!(amcVersion in ['none', '23', '24', '25', '26'])) throw new GradleException("Unsupported AMC test version: ${amcVersion}")
+    def amcVersion = providers.gradleProperty('amcTestVersion').getOrElse('28')
+    if (!(amcVersion in ['none', '23', '24', '25', '26', '27', '28'])) throw new GradleException("Unsupported AMC test version: ${amcVersion}")
     def withEnderscape = !providers.gradleProperty('withoutTestEnderscape').isPresent()
     def amc = amcVersion == 'none' ? files() : files("../architectural-material-closure/artifacts/AMC C${amcVersion}.jar")
     def enderscape = withEnderscape ? files(privateEnderscapeJar) : files()

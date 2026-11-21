@@ -3,8 +3,8 @@
   "id": "cnm_terrain_slabs_compat",
   "version": "${version}",
   "provides": ["more_slabs_stairs_and_walls"],
-  "name": "Block Geometry Extensions Canary 108 — AMC Purpur and Resin Patterns",
-  "description": "Adds eight BGE shapes for each of fifty-six optional Architectural Material Closure patterned full blocks.",
+  "name": "Block Geometry Extensions Canary 109 — AMC Calcite and Shadoline Patterns",
+  "description": "Adds eight BGE shapes for each of sixty-four optional Architectural Material Closure patterned full blocks.",
   "authors": ["Mynx Workbench", "Nibaru"],
   "environment": "*",
   "entrypoints": {

@@ -40,7 +40,8 @@ def block_uv(direction, bounds):
 
 
 def verify(audit, jars, version, enderscape):
-    provider_pack = enderscape and version in ("24", "25", "26")
+    canary = 0 if version == "none" else int(version)
+    provider_pack = enderscape and canary >= 24
     def read(key):
         if key in audit["resources"]:
             return audit["resources"][key]
@@ -70,10 +71,14 @@ def verify(audit, jars, version, enderscape):
     materials = () if version == "none" else MATERIALS
     if provider_pack:
         materials += ("veradite", "mirestone", "kurodite")
-    if version == "26":
+    if canary >= 26:
         materials += ("purpur", "resin")
         if provider_pack:
             materials += ("dusk_purpur",)
+    if canary >= 28:
+        materials += ("calcite",)
+        if provider_pack:
+            materials += ("shadoline_block",)
     expected = {f"{AMC}:{m}_{p}" for m, p in itertools.product(materials, PATTERNS)}
     assert set(audit["membership"]) == expected
     if not expected:
@@ -148,7 +153,7 @@ def verify(audit, jars, version, enderscape):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--amc-version", default="23", choices=("none", "23", "24", "25", "26"))
+    parser.add_argument("--amc-version", default="23", choices=("none", "23", "24", "25", "26", "27", "28"))
     parser.add_argument("--enderscape", action="store_true")
     parser.add_argument("audit", type=Path)
     parser.add_argument("jars", nargs="+")
@@ -156,7 +161,7 @@ if __name__ == "__main__":
     audit = json.loads(args.audit.read_text(encoding="utf-8"))
     with ExitStack() as stack:
         verify(audit, [stack.enter_context(ZipFile(p)) for p in args.jars], args.amc_version, args.enderscape)
-    report_name = ("amc-pattern-families.json" if args.amc_version == "26" and args.enderscape
+    report_name = ("amc-pattern-families.json" if args.amc_version == "28" and args.enderscape
                    else args.audit.stem + "-members.json")
     report = args.audit.parent / "reports" / report_name
     report.parent.mkdir(parents=True, exist_ok=True)
