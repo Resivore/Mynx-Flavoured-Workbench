@@ -691,3 +691,14 @@
 - Artifact: PRIVATE_LOCAL_ONLY `BGE C108.jar`, 6,427,095 bytes, SHA-256 `7ce394afaee22797af2cf952036876efcb2354ead32222402088d48d5b1ebde0`, finalized at `2026-11-21T03:00:18.7462149Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
 - Next state: Verify the twelve patterns, their alignment across faces and previews, and survival behavior against the retained C108 bytes using TESTING.md.
+
+## 2026-11-21T19:25:19.375129Z — Finalize BGE C109 AMC Calcite and Shadoline patterns
+
+- Revision: 71
+- Source checkpoint: `f4da0a52886aa0bf1abc521f1d848ed45d71acfb`
+- Changes: Completed eight independent AMC C28 families. The existing base stone return hook checks the four Calcite parents. The optional Enderscape return hook checks the four Shadoline Block parents. AMC owns each full block and BGE supplies all eight derived roles.
+- Build/static: Checked 6,912 placed selections, 576 previews, 3,072 models and 23,616 faces against the 64 resolved AMC sprites and block-space UVs. Confirmed the eight new patterns against the exact Calcite and Shadoline provider artwork. All 56 C108 memberships and 3,472 generated resource definitions matched. All four controlled Fabric tests passed in each of nine configurations. C28 without Enderscape resolved 44 families. With Enderscape present, C27/C26 resolved 56, C25/C24 resolved 44, and C23 resolved 32. Without AMC, both configurations produced zero AMC families and zero AMC resources. The 52 Macaw patterned families retained their native Slabs and Stairs. All 163 full regression GameTests passed. Architecture, glass, native semantics, Bookshelf references and archive validation passed. Against exact C108, 2 entries changed, 11,253 entries retained identical bytes, and zero entries were added or removed. All packaged assets and data matched.
+- Runtime: Owner Minecraft verification and acceptance are pending.
+- Artifact: PRIVATE_LOCAL_ONLY `BGE C109.jar`, 6,427,101 bytes, SHA-256 `7efd346718e4e941e6c55906663517bc212c128764605aab956eae7858825897`, finalized at `2026-11-21T18:50:49.9126982Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
+- Next state: Verify the Calcite and Shadoline selectors, pattern alignment and survival behavior using TESTING.md and the retained C109 bytes.

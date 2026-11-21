@@ -24,7 +24,7 @@
       "Maintain one Fabric mod, source tree, build, version, and deployable JAR for the absorbed Nibaru native material catalog and all BGE geometry.",
       "Preserve every former Nibaru and BGE registry/resource identity, specialized material behavior, and saved-world reference while CNM remains an unchanged external dependency.",
       "Expose one deterministic ordered geometry catalog for Vertical Slab, Step, Corner, Quarter Column, and Layer without changing established placement, economy, or material-frame semantics.",
-      "Offer complete nine-role BGE geometry families for the exact 204 explicitly cataloged optional-provider sources when Ribbits, Mynx Trees, Macaw's Paths, Building But Better, Enderscape, Mossy Stone, or Architectural Material Closure supplies the corresponding source block, without discovering or completing arbitrary CNM families.",
+      "Offer complete nine-role BGE geometry families for the exact 212 explicitly cataloged optional-provider sources when Ribbits, Mynx Trees, Macaw's Paths, Building But Better, Enderscape, Mossy Stone, or Architectural Material Closure supplies the corresponding source block, without discovering or completing arbitrary CNM families.",
       "Treat adding a normal catalog material as full membership in the canonical block, horizontal slab, stair, wall, Vertical Slab, Step, Layer, Corner, and Quarter Column roles unless an exact technical exclusion is recorded.",
       "Keep canonical material identity separate from geometry generation so limited special forms such as Farmland Slab remain explicitly canonical-bound without implying a full generated family.",
       "Require every BGE-owned registered block to have one explicit canonical classification or a documented exemption, with bootstrap validation preventing anonymous material-semantic holes.",
@@ -36,8 +36,8 @@
       "Preserve all native material profiles, canonical parents, copied settings, TOP/SIDE/BOTTOM roles, axes, patterns, tint, translucency, transitions, drops, and specialized behaviors; C62 corrects the wall-material, canonical-role duplication, leaf-wall, and plain-Path seams demonstrated by exact C61 runtime evidence, C63 corrects external axis-family inventory previews, C64 adds the complete BBB beam catalog, C65 corrects its demonstrated BBB production axis-resource classification failure, C66 gives compatible Quarter Columns Step-equivalent full-cell continuation targeting without changing their physical geometry, C68 preserves one-to-one texel density for axis-material Layer faces without changing their geometry or grain orientation, C69 restores independent material axes to the canonical BBB Beam Slab and Beam Stair, C70 restores vanilla Stone slab ownership, C71 mirrors Minecraft 26.2 horizontal-slab tilling and Farmland lifecycle semantics, C72 extends that Farmland Slab water search exactly one block lower without changing the C71 lifecycle, C73 establishes authoritative typed canonical bindings plus placement-time canonicalization for completed ordinary horizontal and Vertical Slabs, C74 adds Ribbits huge-toadstool material surfaces, C75 adds the generic binding-owned surface-patch contract, C76 makes every visible generated Ribbits toadstool surface use its assigned source-block texture, C77 canonicalizes a newly completed four-Layer blockspace while retaining legacy four-Layer states, C78 completes the contract for every resolved Stair and Wall state with authoritative union-tiled surfaces, and C79 adds three current Minecraft parent families plus a generic, resource-contract-verified CNM axis-pillar bridge.",
       "C92 restores C78's explicit material/profile architecture and removes C79-C91 arbitrary-CNM discovery. C93 and C94 preserve the explicit provider catalog, role ownership, placed resources, and item presentation. C99 removes the C95-C98 spruce tint interception and tracing experiment, restores the exact C94 spruce/client contract, and retains C96's generated Veiled Leaves and Silver Birch Leaves Stair frames. C99 also makes Bookshelf Corner, Quarter Column, and Layer top/bottom faces select the existing Matcha bookshelf-top resource only while the active pack supplies it, keeps valid oak-planks fallback and Bookshelf side faces, and locks Bookshelf Stair wood UVs to the Minecraft 26.2 non-directional Stair frame without changing physical shape or placement.",
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
-      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.52-bge.canary108.amc-purpur-resin+26.2`.",
-      "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks plus five distinct Macaw soil Path blocks, six Mynx Trees log/wood/leaf sources, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, all 12 BBB beam parents including Pale Oak, 68 exact Enderscape sources, the provider-owned Mossy Stone root, and 56 AMC patterned full blocks. AMC registers the original 16 before the EndStoneBricksBlocks return hook and the 16 Tuff, Cinnabar, Sulfur and Smooth Basalt patterns before the BaseStoneFamilies return hook. C107 adds twelve Enderscape-backed AMC patterns at the return of AMC's own EnderscapeFamilies.registerAfterProvider callback. C108 uses the same base stone and optional Enderscape callbacks to admit the exact registered Purpur, Resin and Dusk Purpur pattern IDs. C93 adopts exact vanilla or Enderscape Slab/Stairs/Wall blocks wherever supplied, suppresses overlapping fallback registrations while Enderscape is loaded, supplies only genuinely absent standard roles plus the five BGE-specific roles, and validates exactly one visible nine-role ShapeMap variation for each explicit family. The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` remains a declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's thin Beam Wall topology remains canonical for all 12 Beam families, and the three Enderscape private Beam variants preserve that topology with their own palettes."
+      "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.53-bge.canary109.amc-calcite-shadoline+26.2`.",
+      "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks plus five distinct Macaw soil Path blocks, six Mynx Trees log/wood/leaf sources, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, all 12 BBB beam parents including Pale Oak, 68 exact Enderscape sources, the provider-owned Mossy Stone root, and 64 AMC patterned full blocks. AMC registers the original 16 before the EndStoneBricksBlocks return hook and the 16 Tuff, Cinnabar, Sulfur and Smooth Basalt patterns before the BaseStoneFamilies return hook. C107 adds twelve Enderscape-backed AMC patterns at the return of AMC's own EnderscapeFamilies.registerAfterProvider callback. C108 uses the same base stone and optional Enderscape callbacks to admit the exact registered Purpur, Resin and Dusk Purpur pattern IDs. C109 extends those same checks to the four Calcite and four Enderscape-backed Shadoline Block patterns. C93 adopts exact vanilla or Enderscape Slab/Stairs/Wall blocks wherever supplied, suppresses overlapping fallback registrations while Enderscape is loaded, supplies only genuinely absent standard roles plus the five BGE-specific roles, and validates exactly one visible nine-role ShapeMap variation for each explicit family. The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` remains a declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's thin Beam Wall topology remains canonical for all 12 Beam families, and the three Enderscape private Beam variants preserve that topology with their own palettes."
     ],
     "boundaries": {
       "owned_paths": [
@@ -71,7 +71,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "~26.2",
-        "reason": "Unified BGE C108 targets Minecraft Java 26.2."
+        "reason": "Unified BGE C109 targets Minecraft Java 26.2."
       },
       {
         "type": "MOD",
@@ -94,18 +94,18 @@
     ]
   },
   "state": {
-    "milestone": "Adds eight derived shapes for each of twelve AMC Purpur, Resin and optional Dusk Purpur patterns, bringing the complete AMC catalog to 56 independent families. Controlled validation passed across seven provider configurations. Owner runtime verification and acceptance are pending.",
+    "milestone": "Adds eight derived shapes to each of four AMC Calcite and four optional Shadoline Block patterns, bringing the complete AMC catalog to 64 independent families. Controlled validation passed across nine provider configurations. Owner runtime verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C108 (AMC Purpur and Resin Patterns; embedded 4.2.52-bge.canary108.amc-purpur-resin+26.2)",
-        "canary": 108,
-        "embedded_version": "4.2.52-bge.canary108.amc-purpur-resin+26.2",
+        "version": "C109 (AMC Calcite and Shadoline Patterns; embedded 4.2.53-bge.canary109.amc-calcite-shadoline+26.2)",
+        "canary": 109,
+        "embedded_version": "4.2.53-bge.canary109.amc-calcite-shadoline+26.2",
         "artifact": {
-          "filename": "BGE C108.jar",
-          "sha256": "7ce394afaee22797af2cf952036876efcb2354ead32222402088d48d5b1ebde0"
+          "filename": "BGE C109.jar",
+          "sha256": "7efd346718e4e941e6c55906663517bc212c128764605aab956eae7858825897"
         },
-        "built_at": "2026-11-21T03:00:18.7462149Z",
-        "source_commit": "1a45fe2b65fc8283222f7d9d0335861e18596596",
+        "built_at": "2026-11-21T18:50:49.9126982Z",
+        "source_commit": "f4da0a52886aa0bf1abc521f1d848ed45d71acfb",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -114,18 +114,18 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "~26.2",
-              "reason": "The target-specific Minecraft predicate covers the 26.2 registry, model, placement and recipe contracts exercised with these finalized C108 bytes.",
+              "reason": "The target-specific Minecraft predicate covers the 26.2 registry, model, placement and recipe contracts exercised with these finalized C109 bytes.",
               "regression_evidence": [
-                "Java 25 / Minecraft 26.2 Fabric build, 6,427,095 bytes, SHA-256 7ce394afaee22797af2cf952036876efcb2354ead32222402088d48d5b1ebde0, finalized at 2026-11-21T03:00:18.7462149Z from source checkpoint 1a45fe2b65fc8283222f7d9d0335861e18596596.",
-                "With AMC C26 (SHA-256 06eed8311abd74bc2cc9e522d4c7667ebaca92539ff1289b3f290d1efc326456) and Enderscape 3.0.2, 56 independent AMC families and 448 derived roles resolved. Verified 4,536 component-preserving selector transfers, outline, collision, waterlogging, survival funding, completion, two-way engraving, drops and stonecutting. The ordinary Purpur, Dusk Purpur and Resin Bricks selectors stayed separate.",
-                "Validated 6,048 placed selections and 504 previews through 2,688 models and 20,664 faces against 56 distinct AMC sprites and block-space UVs. Verified the provider pattern pixels using the Purpur Block, Dusk Purpur Block and Resin Bricks palettes. Compared all 44 original C107 memberships and 2,728 generated resource definitions.",
-                "All four controlled Fabric tests passed in each of seven provider configurations. C26 without Enderscape resolved 40 families. C25 and C24 with Enderscape each resolved 44, C23 with Enderscape resolved 32, and both AMC-absent configurations emitted zero AMC resources. All 52 Macaw patterns retained their native Slabs and Stairs. All 163 full regression GameTests passed.",
-                "Architecture, glass, native semantics, Bookshelf resources and archive validation passed. Compared with exact C107, 4 entries changed, 11,251 stayed byte-identical and zero entries were added or removed. All packaged assets and data retained their bytes."
+                "Java 25 / Minecraft 26.2 Fabric build, 6,427,101 bytes, SHA-256 7efd346718e4e941e6c55906663517bc212c128764605aab956eae7858825897, finalized at 2026-11-21T18:50:49.9126982Z from source checkpoint f4da0a52886aa0bf1abc521f1d848ed45d71acfb.",
+                "With AMC C28 (SHA-256 c90194fb12306d1c47b22023eab23e62869f8310a56ab2c322c8f635bbce7fa9) and Enderscape 3.0.2, all 64 independent AMC families and 512 derived roles resolved. Checked 5,184 component-preserving selector transfers, all derived states for outline, collision and fluid, survival placement and funding, completion, engraving, drops and stonecutting. The ordinary Enderscape Shadoline Block retained its own nine-role selector with provider Slab, Stairs and Wall.",
+                "Checked 6,912 placed selections, 576 previews, 3,072 models and 23,616 faces against the 64 resolved AMC sprites and block-space UVs. Confirmed the eight new patterns against the exact Calcite and Shadoline provider artwork. All 56 C108 memberships and 3,472 generated resource definitions matched.",
+                "All four controlled Fabric tests passed in each of nine configurations. C28 without Enderscape resolved 44 families. With Enderscape present, C27/C26 resolved 56, C25/C24 resolved 44, and C23 resolved 32. Without AMC, both configurations produced zero AMC families and zero AMC resources. The 52 Macaw patterned families retained their native Slabs and Stairs. All 163 full regression GameTests passed.",
+                "Architecture, glass, native semantics, Bookshelf references and archive validation passed. Against exact C108, 2 entries changed, 11,253 entries retained identical bytes, and zero entries were added or removed. All packaged assets and data matched."
               ]
             }
           ]
         },
-        "summary": "Adds eight derived shapes for each of twelve AMC Purpur, Resin and optional Dusk Purpur patterns, bringing the complete AMC catalog to 56 independent families."
+        "summary": "Adds eight derived shapes to each of four AMC Calcite and four optional Shadoline Block patterns, bringing the complete AMC catalog to 64 independent families."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -195,10 +195,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 70,
-    "activity_at": "2026-11-21T03:04:41.757548Z",
-    "updated_at": "2026-11-21T03:04:41.757548Z",
-    "last_codex_at": "2026-11-21T03:04:41.757548Z",
-    "source_commit": "1a45fe2b65fc8283222f7d9d0335861e18596596"
+    "revision": 71,
+    "activity_at": "2026-11-21T19:25:19.375129Z",
+    "updated_at": "2026-11-21T19:25:19.375129Z",
+    "last_codex_at": "2026-11-21T19:25:19.375129Z",
+    "source_commit": "f4da0a52886aa0bf1abc521f1d848ed45d71acfb"
   }
 }
