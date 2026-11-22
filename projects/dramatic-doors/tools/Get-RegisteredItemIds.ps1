@@ -109,15 +109,6 @@ foreach ($id in $ids) {
     if ($definition.model.type -ne 'minecraft:model' -or $definition.model.model -ne "dramaticdoors:item/$id") {
         $errors.Add("Unexpected item definition target: $id")
     }
-    if ($packedDefinitions.ContainsKey($id)) {
-        $height = $id.Split('_')[0]
-        if ($model.parent -ne "dramaticdoors:item/native_${height}_door" -or
-            -not $model.textures.top -or -not $model.textures.bottom -or
-            "block.dramaticdoors.$id" -notin $languageKeys) {
-            $errors.Add("Incomplete provider-backed item model or name for $id")
-        }
-        continue
-    }
     if ($model.overrides -or $model.elements -or $model.display -or -not $model.textures.layer0) {
         $errors.Add("Nontrivial legacy item model requires manual audit: $id")
     }
@@ -126,6 +117,14 @@ foreach ($id in $ids) {
     }
     if ($model.textures.layer0 -match '^dramaticdoors:item/(.+)$') {
         $texturePath = Join-Path $textureRoot "item/$($Matches[1]).png"
+        if ($packedDefinitions.ContainsKey($id)) {
+            $relative = $packedDefinitions[$id].Substring($packRoot.Length + 1)
+            $generated = Join-Path $projectRoot 'fabric/build/generated/nativeDoorArtwork/resourcepacks'
+            $texturePath = Join-Path $generated "$relative/textures/item/${id}.png"
+            if ($model.textures.layer0 -ne "dramaticdoors:item/$id") {
+                $errors.Add("Unexpected packed item texture for $id")
+            }
+        }
         if (-not (Test-Path -LiteralPath $texturePath)) {
             $errors.Add("Missing item texture for ${id}: $($model.textures.layer0)")
         }

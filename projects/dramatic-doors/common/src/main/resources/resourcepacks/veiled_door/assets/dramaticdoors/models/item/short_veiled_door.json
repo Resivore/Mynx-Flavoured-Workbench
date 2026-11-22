@@ -1,7 +1,6 @@
 {
-  "parent": "dramaticdoors:item/native_short_door",
+  "parent": "minecraft:item/generated",
   "textures": {
-    "bottom": "enderscape:block/veiled_door_bottom",
-    "top": "enderscape:block/veiled_door_top"
+    "layer0": "dramaticdoors:item/short_veiled_door"
   }
 }

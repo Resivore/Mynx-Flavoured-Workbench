@@ -98,7 +98,21 @@ tasks.named("sourcesJar", Jar) {
 tasks.withType(Jar).configureEach {
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
+// The protected source and derived pixels stay in local JARs and ignored build output.
+def veiledSourceJar = rootProject.file(providers.gradleProperty('veiledArtJar')
+        .getOrElse('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar'))
+def mossyOakSourceJar = rootProject.file(providers.gradleProperty('mossyOakArtJar')
+        .getOrElse('../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar'))
+def artTool = rootProject.file('tools/NativeDoorArtwork.java')
+def doorArtwork = tasks.register('generateNativeDoorArtwork', Exec) {
+    def output = layout.buildDirectory.dir('generated/nativeDoorArtwork')
+    inputs.files(artTool, veiledSourceJar, mossyOakSourceJar)
+    outputs.dir(output)
+    executable javaToolchains.launcherFor(java.toolchain).get().executablePath.asFile
+    args artTool, veiledSourceJar, mossyOakSourceJar, output.get().asFile
+}
 processResources {
+    from doorArtwork
     from project(":common").sourceSets.main.resources
 }
 

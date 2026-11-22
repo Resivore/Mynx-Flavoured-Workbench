@@ -1,7 +1,6 @@
 {
-  "parent": "dramaticdoors:block/native_door/short_right_open",
+  "parent": "dramaticdoors:block/door_short_right_open",
   "textures": {
-    "bottom": "ribbits:block/mossy_oak_door_bottom",
-    "top": "ribbits:block/mossy_oak_door_top"
+    "texture": "dramaticdoors:block/short_mossy_oak_door"
   }
 }

@@ -1,4 +1,4 @@
-"""Verify C10's packaged model graph against the actual 26.2 Minecraft and provider JARs."""
+"""Verify C11's packaged model graph against the actual 26.2 Minecraft and provider JARs."""
 import argparse
 from contextlib import ExitStack
 import json
@@ -79,21 +79,68 @@ def check(material, provider, packs):
             sprites, elements = resolve(model)
             assert elements, model
             if optional:
-                lower = f"{provider}:block/{material}_door_bottom"
-                upper = f"{provider}:block/{material}_door_top"
-                assert sprites == item_sprites == {lower, upper}, model
-                # Read the provider's actual lower and upper model, including its mappings.
-                for half in ("bottom", "top"):
-                    source = json.loads(read(provider, f"models/block/{material}_door_{half}_left.json"))
-                    assert source["textures"] == {"bottom": lower, "top": upper}
-                faces = [e["faces"]["west"] for e in elements]
-                expected = ([("#bottom", 0, 16), ("#top", 0, 16)] if height == "short" else
-                            [("#bottom", 0, 5), ("#top", 11, 16)] if "_middle_" in model else
-                            [("#top", 0, 11)] if "_top_" in model else [("#bottom", 5, 16)])
-                assert [(f["texture"], *f["uv"][1::2]) for f in faces] == expected, model
+                path = model.split(":")[1]
+                baseline = "assets/dramaticdoors/models/" + path.replace(material, "celestial") + ".json"
+                expected = json.loads(candidate.read(baseline).decode().replace("celestial", material))
+                assert expected == json.loads(read("dramaticdoors", "models/" + path + ".json")), model
+                section = next((part for part in ("top", "middle", "bottom") if f"_{part}_" in path), None)
+                texture = "dramaticdoors:block/" + name + ("_" + section if section else "")
+                assert sprites == {texture}, model
+                assert len(elements) == 1, model
+                for side in ("west", "east"):
+                    u, v, end_u, end_v = elements[0]["faces"][side]["uv"]
+                    assert abs(end_u - u) == abs(end_v - v) == 16, (model, side)
         if optional:
+            assert item_sprites == {"dramaticdoors:item/" + name}
+            item = json.loads(read("dramaticdoors", f"models/item/{name}.json"))
+            assert item == {"parent": "minecraft:item/generated", "textures": {"layer0": "dramaticdoors:item/" + name}}
+            baseline = f"assets/dramaticdoors/blockstates/{height}_celestial_door.json"
+            expected = json.loads(candidate.read(baseline).decode().replace("celestial", material))["variants"]
+            def normalized(variants):
+                return {tuple(sorted(k.split(","))): v for k, v in variants.items()}
+            assert normalized(blockstate) == normalized(expected), name
+            for half in ("top", "bottom"):
+                source = json.loads(read(provider, f"models/block/{material}_door_{half}_left.json"))
+                assert source["textures"] == {k: f"{provider}:block/{material}_door_{k}" for k in ("top", "bottom")}
             assert f"assets/dramaticdoors/items/{name}.json" not in candidate.NameToInfo
             assert f"{prefix}data/dramaticdoors/loot_table/blocks/{name}.json" in candidate.NameToInfo
+
+
+def compare_archives(candidate, previous):
+    def files(jar):
+        entries = [entry.filename for entry in jar.infolist() if not entry.is_dir()]
+        assert len(entries) == len(set(entries)), "Duplicate archive entry"
+        return set(entries)
+
+    new = files(candidate)
+    old = files(previous)
+    added, removed, changed = set(), set(), {"fabric.mod.json"}
+    for height in ("short", "tall"):
+        removed.add(f"assets/dramaticdoors/models/item/native_{height}_door.json")
+    for section in ("short", "top", "middle", "bottom"):
+        for hinge in ("left", "right"):
+            for opened in ("", "_open"):
+                removed.add(f"assets/dramaticdoors/models/block/native_door/{section}_{hinge}{opened}.json")
+    for material in ("veiled", "mossy_oak"):
+        root = f"resourcepacks/{material}_door/assets/dramaticdoors/"
+        for height in ("short", "tall"):
+            name = f"{height}_{material}_door"
+            changed.add(root + f"models/item/{name}.json")
+            added.add(root + f"textures/item/{name}.png")
+            for suffix in (("",) if height == "short" else ("_top", "_middle", "_bottom")):
+                added.add(root + f"textures/block/{name}{suffix}.png")
+                for hinge in ("left", "right"):
+                    for opened in ("", "_open"):
+                        changed.add(root + f"models/block/{name}{suffix}_{hinge}{opened}.json")
+    actual = {n for n in new & old if previous.read(n) != candidate.read(n)}
+    assert actual == changed, sorted(actual ^ changed)
+    assert new - old == added, sorted((new - old) ^ added)
+    assert old - new == removed, sorted((old - new) ^ removed)
+    before, after = (json.loads(jar.read("fabric.mod.json")) for jar in (previous, candidate))
+    assert before.pop("version").endswith("canary10") and after.pop("version").endswith("canary11")
+    assert before == after
+    print(f"{len(new & old) - len(actual):,} identical payloads; 36 model replacements, "
+          "12 new sprites, 18 retired model templates and the Fabric version change.")
 
 
 def main():
@@ -107,15 +154,12 @@ def main():
         previous = packs["previous"]
         names = set(candidate.namelist())
         assert not any(n.startswith(("assets/ribbits/", "assets/enderscape/")) for n in names)
-        assert not any(n.endswith(".png") for n in names - set(previous.namelist()))
-        for n in previous.namelist():
-            if n.startswith("assets/") and "/lang/" not in n:
-                assert candidate.read(n) == previous.read(n), n
+        compare_archives(candidate, previous)
         for material, provider in (("pale_oak", "minecraft"), ("veiled", "enderscape"),
                                    ("celestial", "enderscape"), ("murushroom", "enderscape"),
                                    ("mossy_oak", "ribbits")):
             check(material, provider, packs)
-    print("10 item models, 320 state selections, 80 block models and all referenced textures resolve; C9 artwork preserved.")
+    print("10 item models, 320 state selections, 80 block models and all referenced textures resolve; all four corrected state graphs match Celestial geometry and face UVs.")
 
 
 if __name__ == "__main__":
