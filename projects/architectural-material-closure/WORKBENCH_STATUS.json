@@ -34,7 +34,8 @@
       "Provide all 30 forms for Purpur, Resin and optional Dusk Purpur. Use native Purpur and Dusk Purpur blocks and slabs. Resin uses raw Resin Blocks for crafting and stonecutting and the Resin Bricks tile for artwork. The three shutters use the complete seven-color palettes on the finalized C9 artwork.",
       "Use the matching AMC Column cap sprite on all Purpur and Dusk Purpur Button surfaces and inventory previews at vanilla Button UV scale.",
       "Provide all 30 forms for vanilla Calcite and optional Enderscape Block of Shadoline. Use full Calcite in slab slots and enderscape:shadoline_block_slab for the corresponding Shadoline recipes. Both shutters use the C9 Stone template and the full native material palette.",
-      "Adds six BBB-style Mossy Oak forms when Ribbits is installed."
+      "Adds six BBB-style Mossy Oak forms when Ribbits is installed.",
+      "Provide 88 optional Macaw doors using the original door classes, authored model parents, item art, crafting patterns and wood-specific material masks. Veiled and Mossy Oak have Bark Glass. Celestial and Murublight have Stem Glass."
     ],
     "boundaries": {
       "owned_paths": [
@@ -93,27 +94,33 @@
         "identifier": "ribbits",
         "requirement": "optional (*)",
         "reason": "Provides Mossy Oak Planks and slabs. The six wood forms and their assets and recipes register after both Ribbits and BBB initialize. The controlled texture source is Ribbits C27."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwdoors",
+        "requirement": "optional (*)",
+        "reason": "Supplies the wood door classes, model parents, prints and interactions used with Enderscape or Ribbits. Controlled reference was Macaw's Doors 1.1.5 for Fabric 26.2."
       }
     ]
   },
   "state": {
-    "milestone": "All six optional Mossy Oak forms passed controlled resource, pixel and behavior checks. Owner visual and gameplay verification is pending.",
+    "milestone": "C30 passed controlled checks for all 88 doors, four Enderscape/Ribbits combinations and the optional Macaw-absent configuration. Owner visual and gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C29 (0.1.0-canary29)",
-        "canary": 29,
-        "embedded_version": "0.1.0-canary29",
+        "version": "C30 (0.1.0-canary30)",
+        "canary": 30,
+        "embedded_version": "0.1.0-canary30",
         "artifact": {
-          "filename": "AMC C29.jar",
-          "sha256": "2a039898f657acd66012b6661866a20b77c24b2a0b595b3a2b138ff133593a76"
+          "filename": "AMC C30.jar",
+          "sha256": "f0b4a7f464026a1c021d7004d81a18b9896cfd428018887e2bf69f1fdbe43462"
         },
-        "built_at": "2026-11-22T01:46:49.4246756Z",
-        "source_commit": "89523164812b77f71a02ff07e2e286e9b6d55eff",
+        "built_at": "2026-11-22T15:15:59.1229257Z",
+        "source_commit": "7451efce247ff1ae9720adf86ff02f23e3a87ea8",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds six BBB-style Mossy Oak forms when Ribbits is installed."
+        "summary": "Adds 22 Macaw door designs each for Veiled, Celestial, Murublight and Mossy Oak when their providers are installed."
       },
       "accepted": null,
       "rollback": null,
@@ -127,10 +134,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 30,
-    "activity_at": "2026-11-22T01:51:03Z",
-    "updated_at": "2026-11-22T01:51:03Z",
-    "last_codex_at": "2026-11-22T01:51:03Z",
-    "source_commit": "89523164812b77f71a02ff07e2e286e9b6d55eff"
+    "revision": 31,
+    "activity_at": "2026-11-22T15:18:20Z",
+    "updated_at": "2026-11-22T15:18:20Z",
+    "last_codex_at": "2026-11-22T15:18:20Z",
+    "source_commit": "7451efce247ff1ae9720adf86ff02f23e3a87ea8"
   }
 }

@@ -372,3 +372,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Artifact: `AMC C29.jar`, 2,743,481 bytes, SHA-256 `2a039898f657acd66012b6661866a20b77c24b2a0b595b3a2b138ff133593a76`, built_at `2026-11-22T01:46:49.4246756Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare the six forms and their plants, waterlogging and hammer states in-world against the BBB Oak references.
+
+## 2026-11-22T15:18:20Z — AMC C30 Macaw wood doors
+
+- Revision: 31
+- Source checkpoint: `7451efce247ff1ae9720adf86ff02f23e3a87ea8`
+- Changes: Added 22 optional doors per wood for Veiled, Celestial, Murublight and Mossy Oak. Matched 21 common designs plus the applicable Bark Glass or Stem Glass design. Retained native doors. The two Shoji designs use JapaneseDoors, the two Stable designs use StableDoor, and the remainder use DoorBlock. Mossy Oak Bark Glass uses two Ribbits planks and four glass for three doors, per owner instruction.
+- Build/static: Java 25 build passed. Verified 2,784 state branches, 472 models and 63,488 RGBA pixels across 248 sprites against 63 inspected wood masks. Generated four local closed-front and item preview sheets. Compared the retained C29 artifact (SHA-256 `2a039898f657acd66012b6661866a20b77c24b2a0b595b3a2b138ff133593a76`): 5,454 identical former files, three changes (Fabric metadata and two optional initialization hooks), 1,135 additions. Controlled Fabric GameTests passed in all five configurations: both wood providers 290/290, Enderscape alone 286/286, Ribbits alone 228/228, neither 224/224. With both woods and Macaw's Doors absent, 290/290 passed and the registry retained exactly the 537 C29 pairs. With doors enabled, tested reference class/state/shape parity, two-half placement, manual use, redstone, lower/upper drops and actual crafting selections and yields.
+- Runtime: Owner gameplay and visual verification and acceptance pending.
+- Artifact: `AMC C30.jar`, 3,354,328 bytes, SHA-256 `f0b4a7f464026a1c021d7004d81a18b9896cfd428018887e2bf69f1fdbe43462`, built_at `2026-11-22T15:15:59.1229257Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare the four local preview sheets and placed doors with the Macaw references using TESTING.md and record owner observations against the C30 hash.
