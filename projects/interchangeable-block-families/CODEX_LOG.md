@@ -290,3 +290,14 @@
 - Artifact: `IBF C27.jar`, embedded version `0.1.0-canary27`, 65,137 bytes, SHA-256 `5336cc6faf594fcf7262d19ea75bac10440223bc179008f9e9631d255eeb0d3a`, finalized at `2026-11-21T18:51:54.5313930Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of selector transfers, independent patterns and optional-provider behavior in TESTING.md.
+
+## 2026-11-22T01:51:03Z — IBF C28 Mossy Oak
+
+- Revision: 28
+- Source checkpoint: `89523164812b77f71a02ff07e2e286e9b6d55eff`
+- Changes: Preserved the Ribbits Fence parent and Fence Gate first alternate, then appended AMC Frame and Lattice. Added AMC Trim, Balustrade, Support and Pallet in order to the wood BBB detail category. Removing these catalog changes reproduces the complete C27 digest. The C28 catalog digest is 6926571dc498310dd9c5e88f3bcfd854ff6c7d13486970f61529c476d7dcc60e.
+- Build/static: Java 25 build, 55 JUnit checks and production archive isolation passed. With Enderscape, 38/38 Fabric GameTests passed both with and without AMC. The focused Enderscape-absent GameTest passed both ways. The assembled recipe corpus contained 2,189 recipes with AMC and 1,572 without it. CNM suppressed 1,588 and 1,114 alternate recipes respectively, with zero canonical recipe removals. Checked ordered selectors, unique membership and round trips preserving a named stack of seven.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Artifact: `IBF C28.jar`, 65,515 bytes, SHA-256 `de912d4753f69cbb6cf53e371659bfa91b57392ae48eec868da367d6b735f3c5`, built_at `2026-11-22T01:45:17.1216990Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Exercise both Mossy Oak selectors in-world and verify their recipes and named stack transfers.

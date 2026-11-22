@@ -361,3 +361,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Runtime: Owner gameplay verification and acceptance pending.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Check the Calcite and Shadoline Block families in-world using TESTING.md and record observations against the C28 hash.
+
+## 2026-11-22T01:51:03Z — AMC C29 Mossy Oak
+
+- Revision: 30
+- Source checkpoint: `89523164812b77f71a02ff07e2e286e9b6d55eff`
+- Changes: Added conditional Mossy Oak Frame, Lattice, Trim, Balustrade, Support and Pallet using the original BBB Oak implementations, item class, tags and authored graph. The Frame uses Ribbits slabs. The Balustrade keeps three stripped Oak logs and adds one moss block beside the middle log because Ribbits supplies no mossy stripped log.
+- Build/static: Java 25 build and package checks passed. Matched six state/item graphs, 44 models, 15 sprites and all six crafting grids. Of the 256 paired plank pixels, 63 carry four olive shades and 193 are identical. Aligned packed UV islands separately, retained alpha and scaled the moss by local wood brightness. C29 adds 108 files and preserves 5,348 of 5,349 C28 files byte-for-byte. Only fabric.mod.json changed. Controlled Fabric GameTests passed 286/286 with Ribbits C27 and Enderscape and 220/220 without either.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Artifact: `AMC C29.jar`, 2,743,481 bytes, SHA-256 `2a039898f657acd66012b6661866a20b77c24b2a0b595b3a2b138ff133593a76`, built_at `2026-11-22T01:46:49.4246756Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare the six forms and their plants, waterlogging and hammer states in-world against the BBB Oak references.

@@ -33,7 +33,8 @@
       "All 30 Cinnabar forms use vanilla Cinnabar Bricks as their visual source. Direct material slots reference the brick tile and derived artwork uses its full 15-color palette. Raw Cinnabar and Cinnabar Slabs remain the recipe materials.",
       "Provide all 30 forms for Purpur, Resin and optional Dusk Purpur. Use native Purpur and Dusk Purpur blocks and slabs. Resin uses raw Resin Blocks for crafting and stonecutting and the Resin Bricks tile for artwork. The three shutters use the complete seven-color palettes on the finalized C9 artwork.",
       "Use the matching AMC Column cap sprite on all Purpur and Dusk Purpur Button surfaces and inventory previews at vanilla Button UV scale.",
-      "Provide all 30 forms for vanilla Calcite and optional Enderscape Block of Shadoline. Use full Calcite in slab slots and enderscape:shadoline_block_slab for the corresponding Shadoline recipes. Both shutters use the C9 Stone template and the full native material palette."
+      "Provide all 30 forms for vanilla Calcite and optional Enderscape Block of Shadoline. Use full Calcite in slab slots and enderscape:shadoline_block_slab for the corresponding Shadoline recipes. Both shutters use the C9 Stone template and the full native material palette.",
+      "Adds six BBB-style Mossy Oak forms when Ribbits is installed."
     ],
     "boundaries": {
       "owned_paths": [
@@ -86,27 +87,33 @@
         "identifier": "enderscape",
         "requirement": "optional (*)",
         "reason": "Supplies five optional base materials and their slabs, and six existing polished controls. Enderscape 3.0.2 enables 144 additional AMC pairs alongside the 387 standalone pairs."
+      },
+      {
+        "type": "MOD",
+        "identifier": "ribbits",
+        "requirement": "optional (*)",
+        "reason": "Provides Mossy Oak Planks and slabs. The six wood forms and their assets and recipes register after both Ribbits and BBB initialize. The controlled texture source is Ribbits C27."
       }
     ]
   },
   "state": {
-    "milestone": "C28 adds 60 pairs across Calcite and optional Shadoline Block. All 282 Enderscape-present and 220 Enderscape-absent controlled GameTests passed. Owner gameplay verification and acceptance are pending.",
+    "milestone": "All six optional Mossy Oak forms passed controlled resource, pixel and behavior checks. Owner visual and gameplay verification is pending.",
     "releases": {
       "current": {
-        "version": "C28 (0.1.0-canary28)",
-        "canary": 28,
-        "embedded_version": "0.1.0-canary28",
+        "version": "C29 (0.1.0-canary29)",
+        "canary": 29,
+        "embedded_version": "0.1.0-canary29",
         "artifact": {
-          "filename": "AMC C28.jar",
-          "sha256": "c90194fb12306d1c47b22023eab23e62869f8310a56ab2c322c8f635bbce7fa9"
+          "filename": "AMC C29.jar",
+          "sha256": "2a039898f657acd66012b6661866a20b77c24b2a0b595b3a2b138ff133593a76"
         },
-        "built_at": "2026-11-21T18:44:29.7480692Z",
-        "source_commit": "bcd1f4caf0abda6b26c96a21ef185d09a237f7dd",
+        "built_at": "2026-11-22T01:46:49.4246756Z",
+        "source_commit": "89523164812b77f71a02ff07e2e286e9b6d55eff",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 30 Calcite forms and 30 optional Shadoline Block forms using their native artwork and the C9 Stone shutter."
+        "summary": "Adds six BBB-style Mossy Oak forms when Ribbits is installed."
       },
       "accepted": null,
       "rollback": null,
@@ -120,10 +127,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 29,
-    "activity_at": "2026-11-21T18:46:01Z",
-    "updated_at": "2026-11-21T18:46:01Z",
-    "last_codex_at": "2026-11-21T18:46:01Z",
-    "source_commit": "bcd1f4caf0abda6b26c96a21ef185d09a237f7dd"
+    "revision": 30,
+    "activity_at": "2026-11-22T01:51:03Z",
+    "updated_at": "2026-11-22T01:51:03Z",
+    "last_codex_at": "2026-11-22T01:51:03Z",
+    "source_commit": "89523164812b77f71a02ff07e2e286e9b6d55eff"
   }
 }
