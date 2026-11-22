@@ -41,3 +41,13 @@
 - Artifact: Current C9 / legacy Canary 8 is Git-ignored and SHA-256-retained at the canonical project artifact path as `dramaticdoors-1.20.1-3.3.3+26.2-workbench-canary8.jar`, embedded version `1.20.1-3.3.3+26.2-workbench-canary8`, 13,178,481 bytes, SHA-256 `4e77603b3337ee2a2571900395b89273e7053440ea0c325223da1556c1f14b34`, built from source checkpoint `4162225273eca83ec4ec065b2add89748a93ca32`; artifact retention verified the exact bytes. Exact C8 / legacy Canary 7 remains unchanged as the accepted rollback and reference release, SHA-256 `43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb`.
 - Result: ACTIVE — C9 is a controlled-validated Enderscape 3.x compatibility candidate pending owner acceptance; C8 remains accepted.
 - Next state: Validate the exact C9 artifact with Enderscape 3.0.2 in an isolated Minecraft 26.2 startup and data reload, then record only observed results before any owner acceptance.
+
+## 2026-11-22T01:31:44.610575Z — Complete native door coverage in C10
+- Revision: 5
+- Source checkpoint: `77d745f975e84a5195a952e05804999897dd91a7`
+- Changes: Activated vanilla Pale Oak, added Enderscape Veiled and Ribbits Mossy Oak, and retained the Celestial and Murushroom IDs with their actual provider block sets. Exact source BlockItems gate optional registration, cutting routes share their unlock IDs, and the new models reference provider textures. Macaw and IBF expansion is deferred.
+- Build/static: Java 25 build and four JUnit tests passed. Four controlled Fabric server configurations exercised the native pairs, drops, operation and two reloads. The package validator resolved 320 state selections, 80 block models and ten item models, preserved the C9 artwork and found zero new PNGs. The combined client GameTest found all ten exact items by English name in Creative Search and JEI 30.18.0.144 and verified every registered state and item had a baked model.
+- Runtime: RUNTIME_UNTESTED for owner gameplay. The controlled suites provide no owner acceptance evidence.
+- Artifact: `DD C10.jar`, 13,216,281 bytes, SHA-256 `c1f1b0908146b561c18e0185576478cb8cb3515193550aaa10521711e64475d7`, finalized `2026-11-22T01:29:49.686090Z`, embedded version `1.20.1-3.3.3+26.2-workbench-canary10`. The runtime dependency contract remains CAPABILITY_OR_PROVIDER.
+- Result: ACTIVE C10 candidate with the exact accepted C8 rollback.
+- Next state: Owner gameplay checks for visual and audible fidelity, persisted worlds and the installed mod stack.

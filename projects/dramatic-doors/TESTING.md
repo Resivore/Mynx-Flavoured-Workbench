@@ -1,23 +1,45 @@
-# Testing
+# Testing Dramatic Doors C10
 
-C9 (legacy Canary 8), embedded version `1.20.1-3.3.3+26.2-workbench-canary8`, is the current controlled-validated candidate. It changes only the Enderscape compatibility source item for Dramatic Doors’ retained `short_murushroom_door` and `tall_murushroom_door` IDs: all registration, generated recipe, and recipe-advancement paths now use `enderscape:murublight_door`; `enderscape:celestial_door` and existing Dramatic Doors resources remain unchanged. Exact C8 / legacy Canary 7 remains the owner-accepted rollback and reference release until C9 is explicitly accepted.
+C10 targets Minecraft Java 26.2 on Fabric. The candidate is ACTIVE and awaits owner gameplay testing. The manifest identifies the exact candidate and accepted C8 rollback.
 
-The exact C9 JAR passed the focused Gradle/JUnit and static/package validation suite, including a dedicated Enderscape guard that rejects `enderscape:murushroom_door` in the compatibility source and packaged class while confirming all four generated recipe/advancement paths use `enderscape:murublight_door`. No exact Enderscape 3.0.2 input was available through allowed repository inputs, so no C9 Minecraft startup or data-reload validation was performed. This candidate is `RUNTIME_UNTESTED`; do not infer the C8 standalone-server result for C9.
+## Expected native doors
 
-1. With the exact C9 artifact, Minecraft 26.2, Fabric Loader 0.19.3, Fabric API 0.157.0+26.2, and Enderscape 3.0.2 in an isolated standalone environment, create/load a world and perform data reload. Confirm there is no `Unknown registry key ... enderscape:murushroom_door` failure from `RecipeManagerMixin.interceptPrepare(...)`; confirm the short and tall Dramatic Doors Murushroom-ID recipes and recipe advancements source `enderscape:murublight_door`, and confirm the Celestial family remains available.
+Both output paths in each row belong to `dramaticdoors`. All five materials have a one-block short door and a three-block tall door.
 
-2. In the IBF C5 full dependency-chain environment (including its approximately 3,802-recipe data-pack diagnostic), replace C8 with the exact C9 artifact and run startup plus at least two data reloads. Confirm the server continues past `ServerAdvancementManager.apply(...)` without `UnsupportedOperationException` and that generated Dramatic Doors recipe advancements, vanilla/provider advancements, and advancement totals remain present and stable.
+| Source block and recipe ingredient | Short path | Tall path | English material name |
+| --- | --- | --- | --- |
+| `minecraft:pale_oak_door` | `short_pale_oak_door` | `tall_pale_oak_door` | Pale Oak |
+| `enderscape:veiled_door` | `short_veiled_door` | `tall_veiled_door` | Veiled |
+| `enderscape:celestial_door` | `short_celestial_door` | `tall_celestial_door` | Celestial |
+| `enderscape:murublight_door` | `short_murushroom_door` | `tall_murushroom_door` | Murublight |
+| `ribbits:mossy_oak_door` | `short_mossy_oak_door` | `tall_mossy_oak_door` | Mossy Oak |
 
-3. Confirm representative vanilla and Macaw tall-door recipes craft two tall doors; confirm representative short stonecutting recipes craft two short doors and copper waxing recipes craft one correctly waxed door.
+## Controlled checks
 
-4. Place and use representative wooden, metal, copper, Macaw stable, sliding, and Japanese doors; confirm facing, hinge, hand and redstone interaction, collision, and property-optional waterlogging remain correct.
+Use Java 25 and the project Gradle wrapper. Run `:fabric:test :fabric:build`. Run `tools/verify_native_assets.py` with the candidate, Minecraft 26.2 merged JAR, Enderscape 3.0.2, Ribbits C27 and preceding C9 JAR as positional arguments. It resolves the blockstate, model, item and texture graphs, checks upper/lower UV ranges and compares the existing artwork with C9.
 
-5. Exercise lower, middle, and upper tall-door placement, synchronization, breaking, cleanup, and drops; confirm each true three-block door behaves as one logical door.
+Run `:fabric:runGameTest` four times with `-PdoorTestMatrix=vanilla`, `enderscape`, `ribbits` and `combined`. For provider runs, pass the corresponding local JARs and their dependencies in `-PdoorTestJars`, separated by the platform path separator. Enderscape uses Lithostitched, Trim Patcher and YACL. Ribbits uses YACL, YUNG’s API compat.2, Trinkets Updated, GeckoLib 5.5.1, Cloth Config, Custom Portals and Matcha Heart. For Ribbits, set `-PdoorTestData` to the Matcha Flavoured 1.12 resource root for its trade contracts. The test mod loads only the necessary data categories. The four configurations use separate directories under the Fabric module’s build tree.
 
-6. Exercise representative short and tall waterlogging plus copper weathering, waxing, and axe interaction, then save, reload, unload/reload the chunk, and restart.
+Each run checks exact item/block presence, search-tab routing, source material, recipe matches and outputs, advancement rewards and loot before and after two server data reloads. The placement test exercises real item placement, hand interaction, redstone, waterlogging, state serialization, and survival breaking of each tall third. The JUnit cutting-route check exercises Woodworks, Aurora’s Decorations, their combination and Universal Sawmill alone. Only supported cutting serializers receive generated unlocks.
 
-7. Confirm representative vanilla, glass, metal, weathering, tall, short, and available optional-family items remain visible and render correctly in inventory, hand, and world.
+For the controlled client search test, use the combined inputs and `-PdoorTestJei=<JEI 26.2 Fabric JAR>` with `:fabric:runClientGameTest`. It creates a disposable GameTest world and checks that each exact item appears in the Creative Search and JEI results for its English name, and that every registered state and item has a baked model.
 
-8. Exercise representative villager, piglin, witch, generic door-interaction, fence-gate, loot, and recipe paths and inspect `latest.log` for injection, missing-model, missing-texture, resource, or compatibility errors.
+The C10 server runs used Fabric Loader 0.19.3 and Fabric API 0.157.0+26.2. Both tests passed in every row. The full sets of recipe and advancement IDs matched before and after both reloads, with the following counts.
 
-Stop and record a failure or inconclusive result if the game crashes, world data reload fails, a required mixin does not apply, generated or pre-existing advancements disappear or accumulate, registration or block-state construction fails, a door segment duplicates or loses drops, a recipe changes identity/count, or the test cannot distinguish Dramatic Doors behavior from an unrelated stack failure. Do not infer unobserved matrix rows from a successful launch or aggregate result.
+| Providers loaded | Recipes | Advancements |
+| --- | ---: | ---: |
+| Neither | 1,635 | 1,750 |
+| Enderscape 3.0.2 | 2,008 | 2,138 |
+| Ribbits C27 and its trade inputs | 2,305 | 1,761 |
+| Both providers and their dependencies | 2,678 | 2,149 |
+
+The combined client GameTest passed with JEI 30.18.0.144. It found all ten items by their English names in both search indexes and verified their baked item and block models.
+
+## Owner gameplay checks
+
+1. Test the exact candidate with the four provider configurations above. Search both heights by English name in Creative Search and JEI. In each provider-absent run, check for absent items, recipes and missing-provider errors. With both providers installed, confirm ten distinct items. With either legacy Pale Garden mod available, confirm only one native Pale Oak pair.
+2. Obtain the exact source door. Confirm one input yields two short doors in the stonecutter and three inputs in one vertical column yield two tall doors. Check each recipe-book unlock, reload data twice, then reconnect. With a supported sawmill installed, repeat in its cutting station.
+3. Place each pair with both hinges and in all four directions. Compare opening, closing and footstep sounds with the source. Inspect closed and open silhouettes, collision and pathfinding. Check Veiled and Mossy Oak from both faces and in inventory and hand. The upper pattern must sit above the lower pattern, and the moss must remain visible through all three tall sections.
+4. Open by hand and apply and remove redstone beside each tall third. Check synchronized facing, hinge, power and open state. Repeat in water. Break each section in survival and confirm one item, clean removal of every segment and appropriate fluid restoration. Check creative-mode cleanup separately. Compare Mossy Oak fire behavior with its source.
+5. Save with a mix of wet, dry, open and closed doors. Unload and reload the chunks, restart and check the same positions. Include an existing world with Celestial and Murushroom registry IDs.
+6. Sample existing vanilla, copper and Macaw doors. Check weathering, waxing, axe interaction, representative stable/sliding doors, fence gates and mob interaction. Check logs for missing assets, recipe or advancement decode errors and mixin failures. Record the exact JAR, provider set and observations for each result.
