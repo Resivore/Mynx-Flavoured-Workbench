@@ -166,6 +166,8 @@
     {"id": "dramaticdoors:tall_walnut_door", "required": false}, 
     {"id": "dramaticdoors:tall_ebony_door", "required": false}, 
     {"id": "dramaticdoors:tall_pream_door", "required": false}, 
+    {"id": "dramaticdoors:tall_veiled_door", "required": false},
+    {"id": "dramaticdoors:tall_mossy_oak_door", "required": false},
     {"id": "dramaticdoors:tall_celestial_door", "required": false}, 
     {"id": "dramaticdoors:tall_murushroom_door", "required": false}, 
     {"id": "dramaticdoors:tall_cerulean_door", "required": false},

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "dramaticdoors-tests",
+  "version": "1",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "com.fizzware.dramaticdoors.test.NativeDoorGameTests"
+    ]${clientEntries}
+  },
+  "mixins": [
+    "dramaticdoors-tests.mixins.json"
+  ],
+  "depends": {
+    "dramaticdoors": "*"
+  }
+}

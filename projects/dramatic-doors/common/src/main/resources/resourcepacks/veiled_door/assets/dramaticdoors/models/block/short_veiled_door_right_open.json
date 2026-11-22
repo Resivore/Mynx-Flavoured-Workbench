@@ -1,0 +1,7 @@
+{
+  "parent": "dramaticdoors:block/native_door/short_right_open",
+  "textures": {
+    "bottom": "enderscape:block/veiled_door_bottom",
+    "top": "enderscape:block/veiled_door_top"
+  }
+}

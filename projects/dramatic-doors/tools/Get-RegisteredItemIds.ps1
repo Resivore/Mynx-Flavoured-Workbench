@@ -16,11 +16,17 @@ $names = @{}
 $keys = [System.Collections.Generic.HashSet[string]]::new()
 $unparsed = [System.Collections.Generic.List[string]]::new()
 
-Get-ChildItem -LiteralPath $javaRoot -Recurse -Filter '*.java' | ForEach-Object {
+$fabricCompat = Join-Path $projectRoot 'fabric/src/main/java/com/fizzware/dramaticdoors/fabric/NativeDoorCompat.java'
+Get-ChildItem -LiteralPath $javaRoot,$fabricCompat -Recurse -Filter '*.java' | ForEach-Object {
     $content = [regex]::Replace((Get-Content -Raw -LiteralPath $_.FullName), '(?s)/\*.*?\*/', '')
     foreach ($line in ($content -split "`r?`n")) {
         $code = [regex]::Replace($line, '//.*$', '')
-        if ($code -match 'DDRegistry\.register(?:Weathering|Sliding|Stable)?DoorBlockAndItem\(') {
+        if ($code -match 'watch\("[^"]+", DDNames\.(\w+), DDNames\.(\w+)\)') {
+            [void]$keys.Add($Matches[1])
+            [void]$keys.Add($Matches[2])
+        } elseif ($code -match 'queueNativeDoor\(DDNames\.(\w+)') {
+            [void]$keys.Add($Matches[1])
+        } elseif ($code -match 'DDRegistry\.register(?:Weathering|Sliding|Stable)?DoorBlockAndItem\(') {
             $match = [regex]::Match($code, 'register(?:Weathering|Sliding|Stable)?DoorBlockAndItem\(DDNames\.(\w+),\s*(?:DDNames\.(\w+)|null),.*?,\s*(true|false)(?:,\s*WeatherState\.\w+)?\);\s*$')
             if (-not $match.Success) {
                 $unparsed.Add("$($_.FullName): $line")
@@ -71,9 +77,23 @@ $definitionIds = if (Test-Path -LiteralPath $definitionRoot) {
     @(Get-ChildItem -LiteralPath $definitionRoot -Filter '*.json' | ForEach-Object BaseName | Sort-Object -Unique)
 } else { @() }
 
+$packRoot = Join-Path $projectRoot 'common/src/main/resources/resourcepacks'
+$packedDefinitions = @{}
+foreach ($pack in Get-ChildItem -Directory -LiteralPath $packRoot) {
+    $assets = Join-Path $pack.FullName 'assets/dramaticdoors'
+    foreach ($definition in Get-ChildItem -LiteralPath (Join-Path $assets 'items') -Filter '*.json') {
+        $packedDefinitions.Add($definition.BaseName, $assets)
+        $definitionIds += $definition.BaseName
+    }
+}
+
 foreach ($id in $ids) {
     $modelPath = Join-Path $modelRoot "$id.json"
     $definitionPath = Join-Path $definitionRoot "$id.json"
+    if ($packedDefinitions.ContainsKey($id)) {
+        $modelPath = Join-Path $packedDefinitions[$id] "models/item/$id.json"
+        $definitionPath = Join-Path $packedDefinitions[$id] "items/$id.json"
+    }
     if (-not (Test-Path -LiteralPath $modelPath)) {
         $errors.Add("Missing legacy item model: $id")
         continue
@@ -88,6 +108,15 @@ foreach ($id in $ids) {
 
     if ($definition.model.type -ne 'minecraft:model' -or $definition.model.model -ne "dramaticdoors:item/$id") {
         $errors.Add("Unexpected item definition target: $id")
+    }
+    if ($packedDefinitions.ContainsKey($id)) {
+        $height = $id.Split('_')[0]
+        if ($model.parent -ne "dramaticdoors:item/native_${height}_door" -or
+            -not $model.textures.top -or -not $model.textures.bottom -or
+            "block.dramaticdoors.$id" -notin $languageKeys) {
+            $errors.Add("Incomplete provider-backed item model or name for $id")
+        }
+        continue
     }
     if ($model.overrides -or $model.elements -or $model.display -or -not $model.textures.layer0) {
         $errors.Add("Nontrivial legacy item model requires manual audit: $id")

@@ -12,6 +12,7 @@ import com.fizzware.dramaticdoors.blocks.TallSlidingDoorBlock;
 import com.fizzware.dramaticdoors.blocks.TallStableDoorBlock;
 import com.fizzware.dramaticdoors.blocks.TallWeatheringDoorBlock;
 import com.fizzware.dramaticdoors.compat.Compats;
+import com.fizzware.dramaticdoors.compat.DDCompatRecipe;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -41,6 +42,10 @@ public class DDRegistry
 		DDRegistry.registerDoorBlockAndItem(DDNames.TALL_DARK_OAK, DDNames.SHORT_DARK_OAK, Blocks.DARK_OAK_DOOR, BlockSetType.DARK_OAK, true);
 		DDRegistry.registerDoorBlockAndItem(DDNames.TALL_MANGROVE, DDNames.SHORT_MANGROVE, Blocks.MANGROVE_DOOR, BlockSetType.MANGROVE, true);
 		DDRegistry.registerDoorBlockAndItem(DDNames.TALL_CHERRY, DDNames.SHORT_CHERRY, Blocks.CHERRY_DOOR, BlockSetType.CHERRY, true);
+		queueNativeDoor(DDNames.SHORT_PALE_OAK, Blocks.PALE_OAK_DOOR, BlockSetType.PALE_OAK, false);
+		queueNativeDoor(DDNames.TALL_PALE_OAK, Blocks.PALE_OAK_DOOR, BlockSetType.PALE_OAK, true);
+		DDCompatRecipe.createNativeWoodRecipes(DDNames.SHORT_PALE_OAK, DDNames.TALL_PALE_OAK,
+				BuiltInRegistries.BLOCK.getKey(Blocks.PALE_OAK_DOOR));
 		DDRegistry.registerDoorBlockAndItem(DDNames.TALL_BAMBOO, DDNames.SHORT_BAMBOO, Blocks.BAMBOO_DOOR, BlockSetType.BAMBOO, true);
 		DDRegistry.registerDoorBlockAndItem(DDNames.TALL_CRIMSON, DDNames.SHORT_CRIMSON, Blocks.CRIMSON_DOOR, BlockSetType.CRIMSON, true);
 		DDRegistry.registerDoorBlockAndItem(DDNames.TALL_WARPED, DDNames.SHORT_WARPED, Blocks.WARPED_DOOR, BlockSetType.WARPED, true);
@@ -62,6 +67,14 @@ public class DDRegistry
 		DDRegistry.registerDoorBlockAndItem(DDNames.TALL_WAXED_OXIDIZED_COPPER, DDNames.SHORT_WAXED_OXIDIZED_COPPER, Blocks.COPPER_DOOR.waxed().oxidized(), BlockSetType.COPPER, true);
 	}
 	
+	public static BlockItem queueNativeDoor(String name, Block source, BlockSetType type, boolean tall) {
+		Block block = createDoorBlock(name, source, type, tall);
+		BlockItem item = new BlockItem(block, new Item.Properties().setId(itemKey(name)).useBlockDescriptionPrefix());
+		DOOR_BLOCKS.add(new Pair<>(name, block));
+		DOOR_ITEMS.add(new Pair<>(name, item));
+		return item;
+	}
+
 	// Register methods.
 	public static void registerDoorBlockAndItem(String tallname, @Nullable String shortname, Block block, BlockSetType blocksettype, boolean includeShort) {
 		Block tempBlock;

@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-    [string]$Artifact
+    [string]$Artifact,
+    [string]$ExpectedVersion = '1.20.1-3.3.3+26.2-workbench-canary5'
 )
 
 Set-StrictMode -Version Latest
@@ -79,7 +80,7 @@ if (-not [string]::IsNullOrWhiteSpace($Artifact)) {
         $reader = [IO.StreamReader]::new($metadataEntry.Open())
         try { $metadata = $reader.ReadToEnd() | ConvertFrom-Json }
         finally { $reader.Dispose() }
-        Assert-True ($metadata.id -ceq 'dramaticdoors' -and $metadata.version -ceq '1.20.1-3.3.3+26.2-workbench-canary5') "Unexpected packaged identity: $($metadata.id) $($metadata.version)."
+        Assert-True ($metadata.id -ceq 'dramaticdoors' -and $metadata.version -ceq $ExpectedVersion) "Unexpected packaged identity: $($metadata.id) $($metadata.version)."
     }
     finally {
         $archive.Dispose()

@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    {"id": "dramaticdoors:short_veiled_door", "required": false},
     {"id": "dramaticdoors:short_celestial_door", "required": false},
     {"id": "dramaticdoors:short_murushroom_door", "required": false}
   ]

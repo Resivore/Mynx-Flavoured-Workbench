@@ -160,6 +160,8 @@
     {"id": "dramaticdoors:short_walnut_door", "required": false}, 
     {"id": "dramaticdoors:short_ebony_door", "required": false}, 
     {"id": "dramaticdoors:short_pream_door", "required": false}, 
+    {"id": "dramaticdoors:short_veiled_door", "required": false},
+    {"id": "dramaticdoors:short_mossy_oak_door", "required": false},
     {"id": "dramaticdoors:short_celestial_door", "required": false}, 
     {"id": "dramaticdoors:short_murushroom_door", "required": false}, 
     {"id": "dramaticdoors:short_cerulean_door", "required": false},

@@ -101,3 +101,51 @@ tasks.withType(Jar).configureEach {
 processResources {
     from project(":common").sourceSets.main.resources
 }
+
+// Local provider JARs and their data dependencies are inputs to the controlled tests only.
+def testJei = providers.gradleProperty('doorTestJei')
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'dramaticdoors-tests'
+        enableGameTests = true
+        enableClientGameTests = testJei.isPresent()
+        clearRunDirectory = false
+    }
+}
+
+def testProviders = providers.gradleProperty('doorTestJars').getOrElse('')
+if (testProviders) {
+    dependencies { gametestRuntimeOnly files(testProviders.split(File.pathSeparator)) }
+}
+def testData = providers.gradleProperty('doorTestData')
+if (testData.isPresent()) {
+    tasks.named('processGametestResources') {
+        from(testData.get()) {
+            include 'data/food/recipe/**', 'data/crafting/recipe/**', 'data/blessings/recipe/**'
+            include 'data/*/enchantment/**', 'data/*/tags/item/**', 'data/*/tags/enchantment/**'
+            include 'data/main/tags/entity_type/livestock.json', 'data/main/jukebox_song/golden.json', 'data/minecraft/loot_table/kleis_items/opal.json'
+        }
+    }
+}
+loom.runs.named('gameTest') {
+    def matrix = providers.gradleProperty('doorTestMatrix').getOrElse('vanilla')
+    runDir "build/native-door-tests/${matrix}"
+    vmArg "-Ddramaticdoors.test.matrix=${matrix}"
+    vmArg '-Dfabric-api.gametest.filter=dramaticdoors-tests:*'
+}
+
+if (testJei.isPresent()) {
+    sourceSets.gametest.java.srcDir 'src/clientGametest/java'
+    dependencies { gametestImplementation files(testJei.get()) }
+    loom.runs.named('clientGameTest') {
+        runDir 'build/native-door-tests/client'
+    }
+}
+tasks.named('processGametestResources') {
+    inputs.property 'jei', testJei.isPresent()
+    filesMatching('fabric.mod.json') {
+        expand clientEntries: testJei.isPresent() ?
+                ',"fabric-client-gametest":["com.fizzware.dramaticdoors.test.DoorSearchTest"],"jei_mod_plugin":["com.fizzware.dramaticdoors.test.DoorSearchTest"]' : ''
+    }
+}

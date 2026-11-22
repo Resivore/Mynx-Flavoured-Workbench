@@ -856,10 +856,16 @@ public class DDNames
     public static final String TALL_EBONY = "tall_ebony_door"; // Legacy
     public static final String TALL_PREAM = "tall_pream_door";
     
+    //Ribbits
+    public static final String SHORT_MOSSY_OAK = "short_mossy_oak_door";
+    public static final String TALL_MOSSY_OAK = "tall_mossy_oak_door";
+
     //Enderscape
+    public static final String SHORT_VEILED = "short_veiled_door";
     public static final String SHORT_CELESTIAL = "short_celestial_door";
     public static final String SHORT_MURUSHROOM = "short_murushroom_door";
     
+    public static final String TALL_VEILED = "tall_veiled_door";
     public static final String TALL_CELESTIAL = "tall_celestial_door";
     public static final String TALL_MURUSHROOM = "tall_murushroom_door";
     

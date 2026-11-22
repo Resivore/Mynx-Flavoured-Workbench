@@ -803,9 +803,13 @@
   "block.dramaticdoors.tall_pream_door": "Tall Pream Door",
 
   "block.dramaticdoors.short_celestial_door": "Short Celestial Door",
-  "block.dramaticdoors.short_murushroom_door": "Short Murushroom Door",
+  "block.dramaticdoors.short_veiled_door": "Short Veiled Door",
+  "block.dramaticdoors.short_mossy_oak_door": "Short Mossy Oak Door",
+  "block.dramaticdoors.short_murushroom_door": "Short Murublight Door",
   "block.dramaticdoors.tall_celestial_door": "Tall Celestial Door",
-  "block.dramaticdoors.tall_murushroom_door": "Tall Murushroom Door",
+  "block.dramaticdoors.tall_veiled_door": "Tall Veiled Door",
+  "block.dramaticdoors.tall_mossy_oak_door": "Tall Mossy Oak Door",
+  "block.dramaticdoors.tall_murushroom_door": "Tall Murublight Door",
 
   "block.dramaticdoors.short_cerulean_door": "Short Cerulean Door",
   "block.dramaticdoors.short_indigo_door": "Short Indigo Door",
@@ -2287,6 +2291,8 @@
   "block.dramaticdoors.tall_manyideas_warped_rustic_door": "Tall Warped Rustic Door",
   "block.dramaticdoors.tall_manyideas_warped_shoji_door": "Tall Warped Shoji Door",
   
+  "tag.item.dramaticdoors.categories.short_ribbits_doors": "Short Ribbits Doors",
+  "tag.item.dramaticdoors.categories.tall_ribbits_doors": "Tall Ribbits Doors",
   "tag.item.dramaticdoors.short_doors": "Short Doors",
   "tag.item.dramaticdoors.short_wooden_doors": "Short Wooden Doors",
   "tag.item.dramaticdoors.tall_doors": "Tall Doors",

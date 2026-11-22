@@ -18,6 +18,7 @@ public class DramaticDoorsFabric implements ModInitializer
 			CreateFabricCompat.registerCompat();
 		}*/
 		DDFabricRegistry.registerBlocksItems();
+		NativeDoorCompat.initialize();
 		DDFabricRegistry.registerBlockEntities();
 		DDFabricRegistry.registerCreativeTabs();
 		DDFabricRegistry.registerFuels();

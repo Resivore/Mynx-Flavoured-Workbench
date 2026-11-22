@@ -45,11 +45,16 @@ public abstract class RecipeManagerMixin
 
         DDCompatRecipe.SHORT_DOOR_RECIPES.forEach(recipe -> addRecipe(recipes, recipe));
         DDCompatRecipe.TALL_DOOR_RECIPES.forEach(recipe -> addRecipe(recipes, recipe));
+        DDCompatRecipe.NATIVE_CUTTING_RECIPES.forEach((id, json) -> addRecipe(recipes, id, json));
         cir.setReturnValue(RecipeMap.create(recipes.values()));
     }
 
     private void addRecipe(Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> recipes, JsonObject recipeJson) {
         Identifier recipeId = Identifier.parse(recipeJson.getAsJsonObject("result").get("id").getAsString());
+        addRecipe(recipes, recipeId, recipeJson);
+    }
+
+    private void addRecipe(Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> recipes, Identifier recipeId, JsonObject recipeJson) {
         ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, recipeId);
         recipes.put(recipeKey, fromJson(recipeKey, recipeJson, registries));
     }

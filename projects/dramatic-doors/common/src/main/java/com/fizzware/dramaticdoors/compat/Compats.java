@@ -192,9 +192,6 @@ public class Compats
 		if (isModLoaded("phantasm", checker)) {
 			EndPhantasmCompat.registerCompat();
 		}
-		if (isModLoaded("enderscape", checker)) {
-			EnderscapeCompat.registerCompat();
-		}
 		if (isModLoaded("enlightened_end", checker)) {
 			EnlightenedEndCompat.registerCompat();
 		}
@@ -354,10 +351,6 @@ public class Compats
     	}
     	if (isModLoaded("manyideas_doors", checker)) {
     		ManyIdeasCompat.registerCompat();
-    	}
-    	// Backport mods.
-    	if (isModLoaded("earlyupdate_two", checker) || isModLoaded("palegardenbackport", checker)) {
-    		PaleGardenBackportCompat.registerCompat(checker);
     	}
     	initializedCompat = true;
     }

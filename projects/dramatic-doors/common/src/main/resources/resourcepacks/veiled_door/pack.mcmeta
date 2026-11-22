@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "Dramatic Doors / enderscape:veiled_door",
+    "min_format": 88,
+    "max_format": [
+      107,
+      1
+    ]
+  }
+}

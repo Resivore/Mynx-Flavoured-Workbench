@@ -2,6 +2,8 @@ package com.fizzware.dramaticdoors.compat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +19,32 @@ public class DDCompatRecipe
 	public static List<JsonObject> SHORT_DOOR_RECIPES = new ArrayList<JsonObject>();
 	public static List<JsonObject> TALL_DOOR_RECIPES = new ArrayList<JsonObject>();
 	
+	// Native wooden cutting routes may have several serializers for the same output.
+	public static final Map<Identifier, JsonObject> NATIVE_CUTTING_RECIPES = new LinkedHashMap<>();
+
+	public static void createNativeWoodRecipes(String shortName, String tallName, Identifier source) {
+		Identifier output = Identifier.fromNamespaceAndPath("dramaticdoors", shortName);
+		boolean woodworks = Compats.modChecker.isModLoaded("woodworks");
+		boolean aurora = Compats.modChecker.isModLoaded("aurorasdeco");
+		if (woodworks) {
+			addNativeCuttingRecipe(output, DDCompatAdvancement.WOODWORKS_SAWMILL, source, "woodworks:sawmill");
+		}
+		if (aurora) {
+			addNativeCuttingRecipe(output, DDCompatAdvancement.AURORASDECO_SAWMILL, source, "aurorasdeco:woodcutting");
+		}
+		if (!woodworks && !aurora) {
+			addNativeCuttingRecipe(output, "", source, "minecraft:stonecutting");
+		}
+		createTallDoorRecipe(tallName, source, "tall_wooden_door");
+		DDCompatAdvancement.createRecipeAdvancement(tallName, source);
+	}
+
+	private static void addNativeCuttingRecipe(Identifier output, String suffix, Identifier source, String type) {
+		Identifier recipeId = output.withSuffix(suffix);
+		NATIVE_CUTTING_RECIPES.put(recipeId, createSawmillRecipeJson(source, output, type));
+		DDCompatAdvancement.createRecipeAdvancement(recipeId.getPath(), source);
+	}
+
 	public static JsonObject createShortDoorRecipe(String recipeID, Identifier baseDoor) {
 		JsonObject json = createStonecutterRecipeJson(Identifier.fromNamespaceAndPath(baseDoor.getNamespace(), baseDoor.getPath()), Identifier.fromNamespaceAndPath("dramaticdoors", recipeID));
 		SHORT_DOOR_RECIPES.add(json);
