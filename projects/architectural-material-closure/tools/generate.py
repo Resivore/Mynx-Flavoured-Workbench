@@ -11,6 +11,7 @@ from PIL import Image
 
 import masonry
 import moss
+import doors
 import mossy_oak
 import paths
 
@@ -467,7 +468,7 @@ def generate_enderscape(root, enderscape, windows, client, bbb, path_provider, s
 
 
 if __name__ == "__main__":
-    provider_path, client_path, bbb_path, paths_path, stone_path, enderscape_path, ribbits_path, root = map(Path, sys.argv[1:])
+    provider_path, client_path, bbb_path, paths_path, stone_path, enderscape_path, ribbits_path, doors_path, root = map(Path, sys.argv[1:])
     if not root.resolve().is_relative_to(Path(__file__).resolve().parents[1] / "build"):
         sys.exit("Private derived assets must be generated under AMC's ignored build directory")
     if sys.platform == "win32":
@@ -497,3 +498,5 @@ if __name__ == "__main__":
             with ZipFile(enderscape_path) as enderscape:
                 generate_enderscape(root / "resourcepacks/enderscape", enderscape, provider, client,
                                     bbb, path_provider, stone_shutter)
+            with ZipFile(doors_path) as macaw, ZipFile(enderscape_path) as end, ZipFile(ribbits_path) as ribbits:
+                doors.stage(root, client, macaw, end, ribbits)

@@ -1,15 +1,51 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 29
+## Owner verification for Canary 30
 
-Match the SHA-256 of `AMC C29.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 387 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. All AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C30.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 387 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. With Macaw’s Doors 1.1.5 also present, add 66 Enderscape doors and 22 Ribbits doors. All AMC IDs use the namespace `architectural_material_closure`.
+
+### Macaw wood doors
+
+Each occupied cell below gives an exact AMC registry path in the `architectural_material_closure` namespace. Macaw uses Bark Glass for log woods and Stem Glass for stem woods. The native `enderscape:veiled_door`, `enderscape:celestial_door`, `enderscape:murublight_door` and `ribbits:mossy_oak_door` remain provider-owned. Macaw's fixed-material metal, store, sliding glass, garage and portcullis designs have no per-wood series. The 1.1.5 JAR contains a Cherry Waffle blockstate and item definition without a corresponding BlockInit registration. Oak Waffle is registered and supplies the Waffle reference here.
+
+| Macaw reference | Veiled | Celestial | Murublight | Mossy Oak |
+|---|---|---|---|---|
+| `mcwdoors:oak_bamboo_door` | `veiled_bamboo_door` | `celestial_bamboo_door` | `murublight_bamboo_door` | `mossy_oak_bamboo_door` |
+| `mcwdoors:oak_bark_glass_door` | `veiled_bark_glass_door` | — | — | `mossy_oak_bark_glass_door` |
+| `mcwdoors:oak_barn_door` | `veiled_barn_door` | `celestial_barn_door` | `murublight_barn_door` | `mossy_oak_barn_door` |
+| `mcwdoors:oak_barn_glass_door` | `veiled_barn_glass_door` | `celestial_barn_glass_door` | `murublight_barn_glass_door` | `mossy_oak_barn_glass_door` |
+| `mcwdoors:oak_beach_door` | `veiled_beach_door` | `celestial_beach_door` | `murublight_beach_door` | `mossy_oak_beach_door` |
+| `mcwdoors:spruce_classic_door` | `veiled_classic_door` | `celestial_classic_door` | `murublight_classic_door` | `mossy_oak_classic_door` |
+| `mcwdoors:oak_cottage_door` | `veiled_cottage_door` | `celestial_cottage_door` | `murublight_cottage_door` | `mossy_oak_cottage_door` |
+| `mcwdoors:oak_four_panel_door` | `veiled_four_panel_door` | `celestial_four_panel_door` | `murublight_four_panel_door` | `mossy_oak_four_panel_door` |
+| `mcwdoors:oak_glass_door` | `veiled_glass_door` | `celestial_glass_door` | `murublight_glass_door` | `mossy_oak_glass_door` |
+| `mcwdoors:oak_japanese_door` | `veiled_japanese_door` | `celestial_japanese_door` | `murublight_japanese_door` | `mossy_oak_japanese_door` |
+| `mcwdoors:oak_japanese2_door` | `veiled_japanese2_door` | `celestial_japanese2_door` | `murublight_japanese2_door` | `mossy_oak_japanese2_door` |
+| `mcwdoors:oak_modern_door` | `veiled_modern_door` | `celestial_modern_door` | `murublight_modern_door` | `mossy_oak_modern_door` |
+| `mcwdoors:oak_mystic_door` | `veiled_mystic_door` | `celestial_mystic_door` | `murublight_mystic_door` | `mossy_oak_mystic_door` |
+| `mcwdoors:oak_nether_door` | `veiled_nether_door` | `celestial_nether_door` | `murublight_nether_door` | `mossy_oak_nether_door` |
+| `mcwdoors:oak_paper_door` | `veiled_paper_door` | `celestial_paper_door` | `murublight_paper_door` | `mossy_oak_paper_door` |
+| `mcwdoors:oak_stable_door` | `veiled_stable_door` | `celestial_stable_door` | `murublight_stable_door` | `mossy_oak_stable_door` |
+| `mcwdoors:oak_stable_head_door` | `veiled_stable_head_door` | `celestial_stable_head_door` | `murublight_stable_head_door` | `mossy_oak_stable_head_door` |
+| `mcwdoors:warped_stem_glass_door` | — | `celestial_stem_glass_door` | `murublight_stem_glass_door` | — |
+| `mcwdoors:oak_swamp_door` | `veiled_swamp_door` | `celestial_swamp_door` | `murublight_swamp_door` | `mossy_oak_swamp_door` |
+| `mcwdoors:oak_tropical_door` | `veiled_tropical_door` | `celestial_tropical_door` | `murublight_tropical_door` | `mossy_oak_tropical_door` |
+| `mcwdoors:oak_waffle_door` | `veiled_waffle_door` | `celestial_waffle_door` | `murublight_waffle_door` | `mossy_oak_waffle_door` |
+| `mcwdoors:oak_western_door` | `veiled_western_door` | `celestial_western_door` | `murublight_western_door` | `mossy_oak_western_door` |
+| `mcwdoors:oak_whispering_door` | `veiled_whispering_door` | `celestial_whispering_door` | `murublight_whispering_door` | `mossy_oak_whispering_door` |
+
+1. Open the four local sheets in `build/c30/previews/`. Each design shows its Macaw reference, the packaged AMC closed front and the AMC inventory sprite. Compare those against placed doors and inventory under the same light. Inspect the paper panels, glass reflections, Stable bars, hinges and handles. Mossy Oak should show separate moss patches while the grain and exposed fittings remain legible.
+2. Place left- and right-hinged doors facing each direction. Use each half, power and unpower from beside the lower half, break either half and rejoin. Compare the Shoji sliding motion and Stable behavior with the exact reference in the table.
+3. Craft all designs using their Macaw recipe grids. The Mossy Oak Bark Glass Door takes two Ribbits Mossy Oak Planks and four glass blocks and yields three. Confirm both Stable designs, including the Stable-to-Stable Horse conversion. Keep the four native door recipes available.
+4. With Macaw's Doors installed, check 387 AMC pairs with neither wood provider, 597 with Enderscape only, 415 with Ribbits only, and 625 with both. Check the absent providers' door items and recipes are absent. With both woods present and Macaw's Doors absent, check the C29 set of 537 pairs.
+5. Record the exact C30 SHA-256, provider set, design, placement state and any visual or interaction differences. Owner gameplay and visual verification remain pending.
 
 ### Ribbits Mossy Oak
 
 1. With Ribbits present, locate the six Mossy Oak items in Building Blocks. Compare each placed form and item preview with its BBB Oak counterpart and Ribbits Mossy Oak Planks under the same light. Check frame sticks, slat edges, wood shadows, lattice plant tints and transparent openings.
 2. Join and separate neighboring forms. Place them on different faces and in water. Cycle Frame, Balustrade, Support and Pallet options with the BBB hammer. Plant and shear a Lattice, and crouch-use a Pallet. Break each form and compare the result with its Oak reference.
 3. With AMC alone as the recipe provider, craft the Frame from Ribbits slabs and sticks. Use Ribbits planks in the Lattice, Trim, Support and Pallet grids. For six Balustrades, place three stripped Oak logs vertically with a moss block beside the middle log. With IBF C28 and CNM active, check the two canonical recipes and switch to the alternatives through their selectors.
-4. In an environment without Ribbits, check that all six items and their recipes are absent and earlier AMC forms remain available. Record observations against the exact C29 hash.
+4. In an environment without Ribbits, check that all six items and their recipes are absent and earlier AMC forms remain available. Record observations against the exact C30 hash.
 
 ### Calcite and Shadoline Block
 
@@ -37,7 +73,7 @@ Match the SHA-256 of `AMC C29.jar` to the current release in `WORKBENCH_STATUS.j
 2. Exercise all five BBB forms using the masonry procedure below, including connected column grain, planting, moulding corners, hammer-operated fence pillars and infill, and frame diagonals. Check Mirestone hardness and each family's placement sounds. Compare joining, glass, bars, locking, parapet supports and shutter hinges against Macaw's Windows.
 3. Craft the Frame with eight native slabs around an empty center (12), the Arrow Slit with four base blocks and two slabs (3), and the Shutter with three vertical slabs (3). Stonecut each unpolished base into its eleven thin forms (4 each) and four independent full patterns (1 each). Engrave and restore each full pattern and check weighted Strewn Rocky arrangements and Dumble orientation.
 4. Place a pair of each shutter beside the AMC Stone Shutter. Inspect all five slats, raised lips, recesses, open edges and transparent gaps in-world and in inventory. Toggle both hinges and stacked shutters, then save and rejoin.
-5. In a separate disposable world with Enderscape and Ribbits absent, check the 387 standalone AMC pairs, creative inventory and recipe loading. Use separate worlds for the two provider configurations. Record owner observations against the exact C29 hash.
+5. In a separate disposable world with Enderscape and Ribbits absent, check the 387 standalone AMC pairs, creative inventory and recipe loading. Use separate worlds for the two provider configurations. Record owner observations against the exact C30 hash.
 
 ### Tuff, Cinnabar, Sulfur and Smooth Basalt
 
@@ -81,7 +117,7 @@ Run these checks for both materials. Place the corresponding vanilla block along
 2. Face each Parapet in four directions and place and remove a flower pot above it. Inspect the top, underside and edge of both the ledge and support. Compare their shape and orientation with Macaw's Andesite Parapet.
 3. Compare both windows with the Macaw Stone Brick Gothic Window and Arrow Slit. Inspect the masonry cap and underside, the narrow faces of the opening, and the visible side bands. Form stacks, remove the middle block, then toggle the Gothic Window and check its glass and conditional iron bars in the reference states.
 4. Face the shutter in each direction, use both hinges and toggle a vertical pair. Compare its five shaded slats with the C9 Stone shutter. Compare the broad faces, narrow edges and underside with the top face of the corresponding vanilla block. Check that the smoother grain follows the original UVs, with the five slats, raised lips and dark recesses visible in open, closed and held views.
-5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C29 hash, orientation, state and screenshots for any visual differences.
+5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C30 hash, orientation, state and screenshots for any visual differences.
 
 ### Prismarine Bricks and Dark Prismarine
 
@@ -129,7 +165,7 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C29 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C30 are pending.
 
 ## Controlled build checks
 
@@ -151,3 +187,5 @@ The C27 checker compares all entries to the hash-verified C26 artifact (`-Pc26Ja
 The C28 package check compares all entries to the verified retained C27 JAR. Use `-Pc27Jar=<path>` for an alternate copy of those bytes. It verifies the two families against the C27 Tuff resource graphs, the actual Calcite and Shadoline Block sprites, the provider sheets and the C9 Stone shutter. Run the controlled suites both with and without Enderscape to check registry coverage, creative entries, recipe resolution and interactions.
 
 The C29 package check compares every retained C28 entry, the six original BBB Oak graphs and all 15 generated wood sprites. The real Ribbits C27 reference is required for generation even when omitted at runtime. For the provider-present suite use `build runGameTest -PwithRibbits -PwithEnderscape`, setting `ribbitsJar`, semicolon-separated `ribbitsTestDeps`, `enderscapeTestDeps` and the Matcha 1.12 fixture `matchaFoodResources` where necessary. Repeat without the provider switches to exercise the standalone registry.
+
+The C30 checker revalidates C29, compares the retained payloads, follows each door graph into Macaw's actual model parents, verifies wood and protected pixels, and generates all four local preview sheets. Set `-PdoorsJar=<path>` and `-Pc29Jar=<path>` to select the verified inputs. Run Java 25 `build runGameTest` in the four Enderscape/Ribbits combinations, using the C29 provider switches and fixtures described above. Add `-PwithoutDoors` with both wood providers for the optional Macaw-absent regression.
