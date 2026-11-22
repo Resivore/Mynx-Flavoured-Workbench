@@ -47,12 +47,11 @@ def check(material, provider, packs):
             ns, path = location(value)
             assert read(ns, f"textures/{path}.png").startswith(b"\x89PNG"), value
             actual.add(value)
+            return value
         for value in textures.values():
             sprite(value)
-        for element in elements:
-            for face in element["faces"].values():
-                sprite(face["texture"])
-        return actual, elements
+        sampled = {sprite(face["texture"]) for element in elements for face in element["faces"].values()}
+        return sampled or actual, elements
 
     language = json.loads(read("dramaticdoors", "lang/en_us.json"))
     for height, states in (("short", 16), ("tall", 48)):
@@ -93,7 +92,8 @@ def check(material, provider, packs):
         if optional:
             assert item_sprites == {"dramaticdoors:item/" + name}
             item = json.loads(read("dramaticdoors", f"models/item/{name}.json"))
-            assert item == {"parent": "minecraft:item/generated", "textures": {"layer0": "dramaticdoors:item/" + name}}
+            assert location(item.pop("parent")) == ("minecraft", "item/generated"), name
+            assert item == {"textures": {"layer0": "dramaticdoors:item/" + name}}, name
             baseline = f"assets/dramaticdoors/blockstates/{height}_celestial_door.json"
             expected = json.loads(candidate.read(baseline).decode().replace("celestial", material))["variants"]
             def normalized(variants):
