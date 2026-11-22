@@ -51,3 +51,13 @@
 - Artifact: `DD C10.jar`, 13,216,281 bytes, SHA-256 `c1f1b0908146b561c18e0185576478cb8cb3515193550aaa10521711e64475d7`, finalized `2026-11-22T01:29:49.686090Z`, embedded version `1.20.1-3.3.3+26.2-workbench-canary10`. The runtime dependency contract remains CAPABILITY_OR_PROVIDER.
 - Result: ACTIVE C10 candidate with the exact accepted C8 rollback.
 - Next state: Owner gameplay checks for visual and audible fidelity, persisted worlds and the installed mod stack.
+
+## 2026-11-22T03:50:32.091728Z — Restore native proportions to Veiled and Mossy Oak doors
+- Revision: 6
+- Source checkpoint: `d92b168ae332cba6caec34ff6a912ee3abc51924`
+- Changes: C10 mapped two-block provider art onto reduced short geometry and elongated tall UV bands. C11 composes short faces and continuous 48-pixel tall faces from the verified provider pixels. Veiled has an intact lattice, carved short apron and two recessed tall waist panels. Mossy Oak retains its round porthole, single latch and mossy foot, with fitted lower battens on the tall door. All four items use height-specific flat sprites on Celestial's generated-item model convention.
+- Build/static: Java 25 build and four JUnit checks passed. Both server GameTests passed in each of four provider configurations, including placement, breaking, drops, hand and redstone operation, state serialization, recipes and two reloads. The combined client found all ten exact items in Creative Search and JEI and baked their models. The JAR graph, full archive comparison and 1,696 item definitions passed. The local visual comparison from the finalized JAR verifies the full-size window patterns, tall joins and dedicated inventory silhouettes against C10, both providers and Celestial.
+- Runtime: The owner reported distorted decor and inconsistent inventory presentation on C10. C11 is RUNTIME_UNTESTED for owner gameplay.
+- Artifact: `DD C11.jar`, 13,215,700 bytes, SHA-256 `ad0ed399c6dcb7e0f6659865fb820169bd174be2c9cd4556ea61e0c82cf2f7f2`, finalized `2026-11-22T03:50:16.587632Z`, embedded version `1.20.1-3.3.3+26.2-workbench-canary11`. Runtime dependency policy is CAPABILITY_OR_PROVIDER with no exceptions.
+- Result: ACTIVE C11 with accepted rollback C8, SHA-256 `43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb`.
+- Next state: Owner inspection of the exact candidate in-world and in inventory, including both hinges and faces, tall joins, held items, and saved-world reload.

@@ -93,23 +93,23 @@
     ]
   },
   "state": {
-    "milestone": "C10 completes native Pale Oak, Enderscape and Ribbits door coverage and awaits owner gameplay testing. C8 is the accepted rollback.",
+    "milestone": "C11 corrects Veiled and Mossy Oak artwork across both heights and awaits owner gameplay testing. C8 is the accepted rollback.",
     "releases": {
       "current": {
-        "version": "C10",
-        "canary": 10,
-        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary10",
+        "version": "C11",
+        "canary": 11,
+        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary11",
         "artifact": {
-          "filename": "DD C10.jar",
-          "sha256": "c1f1b0908146b561c18e0185576478cb8cb3515193550aaa10521711e64475d7"
+          "filename": "DD C11.jar",
+          "sha256": "ad0ed399c6dcb7e0f6659865fb820169bd174be2c9cd4556ea61e0c82cf2f7f2"
         },
-        "built_at": "2026-11-22T01:29:49.686090Z",
-        "source_commit": "77d745f975e84a5195a952e05804999897dd91a7",
+        "built_at": "2026-11-22T03:50:16.587632Z",
+        "source_commit": "d92b168ae332cba6caec34ff6a912ee3abc51924",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds native short and tall Pale Oak, Veiled and Mossy Oak doors and restores the material sounds and display names of the existing Enderscape doors."
+        "summary": "Redesigns the short and tall Veiled and Mossy Oak doors around their native window proportions and gives all four doors dedicated flat inventory sprites."
       },
       "accepted": {
         "version": "C8 (legacy Canary 7)",
@@ -153,10 +153,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-11-22T01:31:44.610575Z",
-    "updated_at": "2026-11-22T01:31:44.610575Z",
-    "last_codex_at": "2026-11-22T01:31:44.610575Z",
-    "source_commit": "77d745f975e84a5195a952e05804999897dd91a7"
+    "revision": 6,
+    "activity_at": "2026-11-22T03:50:32.091728Z",
+    "updated_at": "2026-11-22T03:50:32.091728Z",
+    "last_codex_at": "2026-11-22T03:50:32.091728Z",
+    "source_commit": "d92b168ae332cba6caec34ff6a912ee3abc51924"
   }
 }
