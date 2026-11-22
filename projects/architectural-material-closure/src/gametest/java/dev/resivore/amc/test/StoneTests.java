@@ -162,6 +162,14 @@ public final class StoneTests {
             }
         }
         helper.assertTrue(ids.size() == (present ? 531 : 387), "Unexpected active AMC count");
+        boolean ribbits = net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("ribbits");
+        helper.assertTrue(ribbits == Boolean.getBoolean("amc.test.ribbits"), "Wrong Ribbits provider set");
+        for (String form : java.util.List.of("frame", "lattice", "trim", "balustrade", "support", "pallet")) {
+            var key = Identifier.fromNamespaceAndPath(NAMESPACE, "mossy_oak_" + form);
+            if (ribbits) ids.add(key);
+            helper.assertTrue(level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, key)).isPresent() == ribbits,
+                    key + " optional recipe");
+        }
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());

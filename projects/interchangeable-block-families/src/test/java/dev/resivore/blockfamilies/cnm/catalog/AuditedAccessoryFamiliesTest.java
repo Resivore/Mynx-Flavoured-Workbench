@@ -280,7 +280,8 @@ final class AuditedAccessoryFamiliesTest {
                 .orElseThrow();
         assertEquals(id("interchangeable_block_families:cnm/fence_gate/ribbits_mossy_oak_planks"), mossyOak.key());
         assertEquals(List.of(id("ribbits:mossy_oak_planks_fence"),
-                id("ribbits:mossy_oak_planks_fence_gate")), mossyOak.members());
+                id("ribbits:mossy_oak_planks_fence_gate"),
+                id("architectural_material_closure:mossy_oak_frame"), id("architectural_material_closure:mossy_oak_lattice")), mossyOak.members());
         assertEquals(1, fences.stream().filter(family -> family.members().stream()
                 .anyMatch(member -> member.getNamespace().equals("ribbits"))).count());
         assertFalse(allMembers().contains(id("ribbits:mossy_oak_planks_slab")));

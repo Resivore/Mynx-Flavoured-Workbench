@@ -11,6 +11,7 @@ from PIL import Image
 
 import masonry
 import moss
+import mossy_oak
 import paths
 
 NS = "architectural_material_closure"
@@ -466,9 +467,13 @@ def generate_enderscape(root, enderscape, windows, client, bbb, path_provider, s
 
 
 if __name__ == "__main__":
-    provider_path, client_path, bbb_path, paths_path, stone_path, enderscape_path, root = map(Path, sys.argv[1:])
+    provider_path, client_path, bbb_path, paths_path, stone_path, enderscape_path, ribbits_path, root = map(Path, sys.argv[1:])
     if not root.resolve().is_relative_to(Path(__file__).resolve().parents[1] / "build"):
         sys.exit("Private derived assets must be generated under AMC's ignored build directory")
+    if sys.platform == "win32":
+        # Deep worktrees can exceed MAX_PATH even for valid private resources.
+        absolute = root.resolve().as_posix()
+        root = Path("//?/UNC/" + absolute[2:] if absolute.startswith("//") else "//?/" + absolute)
     if hashlib.sha256(provider_path.read_bytes()).hexdigest() != PROVIDER_SHA256:
         sys.exit("Unexpected Macaw's Windows reference bytes")
     if hashlib.sha1(client_path.read_bytes()).hexdigest() != CLIENT_SHA1:
@@ -488,6 +493,7 @@ if __name__ == "__main__":
         stone_shutter = Image.open(io.BytesIO(artwork)).convert("RGBA")
         with ZipFile(provider_path) as provider, ZipFile(client_path) as client, ZipFile(bbb_path) as bbb, ZipFile(paths_path) as path_provider:
             generate(provider, client, bbb, path_provider, c9, stone_shutter, root)
+            mossy_oak.stage(root / "resourcepacks/ribbits", client, bbb, ribbits_path, write_json, recipe_unlock)
             with ZipFile(enderscape_path) as enderscape:
                 generate_enderscape(root / "resourcepacks/enderscape", enderscape, provider, client,
                                     bbb, path_provider, stone_shutter)

@@ -1,8 +1,15 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 28
+## Owner verification for Canary 29
 
-Match the SHA-256 of `AMC C28.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC has 531 pairs with Enderscape and 387 without it. All AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C29.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 387 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. All AMC IDs use the namespace `architectural_material_closure`.
+
+### Ribbits Mossy Oak
+
+1. With Ribbits present, locate the six Mossy Oak items in Building Blocks. Compare each placed form and item preview with its BBB Oak counterpart and Ribbits Mossy Oak Planks under the same light. Check frame sticks, slat edges, wood shadows, lattice plant tints and transparent openings.
+2. Join and separate neighboring forms. Place them on different faces and in water. Cycle Frame, Balustrade, Support and Pallet options with the BBB hammer. Plant and shear a Lattice, and crouch-use a Pallet. Break each form and compare the result with its Oak reference.
+3. With AMC alone as the recipe provider, craft the Frame from Ribbits slabs and sticks. Use Ribbits planks in the Lattice, Trim, Support and Pallet grids. For six Balustrades, place three stripped Oak logs vertically with a moss block beside the middle log. With IBF C28 and CNM active, check the two canonical recipes and switch to the alternatives through their selectors.
+4. In an environment without Ribbits, check that all six items and their recipes are absent and earlier AMC forms remain available. Record observations against the exact C29 hash.
 
 ### Calcite and Shadoline Block
 
@@ -30,7 +37,7 @@ Match the SHA-256 of `AMC C28.jar` to the current release in `WORKBENCH_STATUS.j
 2. Exercise all five BBB forms using the masonry procedure below, including connected column grain, planting, moulding corners, hammer-operated fence pillars and infill, and frame diagonals. Check Mirestone hardness and each family's placement sounds. Compare joining, glass, bars, locking, parapet supports and shutter hinges against Macaw's Windows.
 3. Craft the Frame with eight native slabs around an empty center (12), the Arrow Slit with four base blocks and two slabs (3), and the Shutter with three vertical slabs (3). Stonecut each unpolished base into its eleven thin forms (4 each) and four independent full patterns (1 each). Engrave and restore each full pattern and check weighted Strewn Rocky arrangements and Dumble orientation.
 4. Place a pair of each shutter beside the AMC Stone Shutter. Inspect all five slats, raised lips, recesses, open edges and transparent gaps in-world and in inventory. Toggle both hinges and stacked shutters, then save and rejoin.
-5. In a separate disposable world with Enderscape absent, check the 387 standalone AMC pairs, creative inventory and recipe loading. Use separate worlds for the two provider configurations. Record owner observations against the exact C28 hash.
+5. In a separate disposable world with Enderscape and Ribbits absent, check the 387 standalone AMC pairs, creative inventory and recipe loading. Use separate worlds for the two provider configurations. Record owner observations against the exact C29 hash.
 
 ### Tuff, Cinnabar, Sulfur and Smooth Basalt
 
@@ -74,7 +81,7 @@ Run these checks for both materials. Place the corresponding vanilla block along
 2. Face each Parapet in four directions and place and remove a flower pot above it. Inspect the top, underside and edge of both the ledge and support. Compare their shape and orientation with Macaw's Andesite Parapet.
 3. Compare both windows with the Macaw Stone Brick Gothic Window and Arrow Slit. Inspect the masonry cap and underside, the narrow faces of the opening, and the visible side bands. Form stacks, remove the middle block, then toggle the Gothic Window and check its glass and conditional iron bars in the reference states.
 4. Face the shutter in each direction, use both hinges and toggle a vertical pair. Compare its five shaded slats with the C9 Stone shutter. Compare the broad faces, narrow edges and underside with the top face of the corresponding vanilla block. Check that the smoother grain follows the original UVs, with the five slats, raised lips and dark recesses visible in open, closed and held views.
-5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C28 hash, orientation, state and screenshots for any visual differences.
+5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C29 hash, orientation, state and screenshots for any visual differences.
 
 ### Prismarine Bricks and Dark Prismarine
 
@@ -122,7 +129,7 @@ Find all five in Building Blocks. Compare their shaped recipes to BBB using the 
 
 Repeat the nine forms above with Andesite. Confirm the Diorite and Granite parapets and louvered shutters still use their Macaw IDs. Compare Stone Parapet and Stone Louvered Shutter against C9 at the same angle and light. Check the parapet's flower-pot support, the shutter's two hinges, open/closed geometry, vertical toggling and the selected 75% shadow depth. Craft five parapets from three sticks across the top and stick, Stone, stick below. Craft three shutters from three Stone Slabs in one column.
 
-Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C28 are pending.
+Record the exact artifact hash, observations and any failing state, orientation or interaction. Include a screenshot for rendering issues. Owner verification and acceptance of C29 are pending.
 
 ## Controlled build checks
 
@@ -142,3 +149,5 @@ The C26 checker verifies the exact retained C25 artifact and its historical refe
 The C27 checker compares all entries to the hash-verified C26 artifact (`-Pc26Jar=<path>` selects another copy). It traces each Column's exposed up face through the upright multipart selections and checks the sprite, orientation and UVs. It resolves all 24 placed states and the inventory model per Button against the vanilla parents, and checks every sampled region against its C26 Column cap.
 
 The C28 package check compares all entries to the verified retained C27 JAR. Use `-Pc27Jar=<path>` for an alternate copy of those bytes. It verifies the two families against the C27 Tuff resource graphs, the actual Calcite and Shadoline Block sprites, the provider sheets and the C9 Stone shutter. Run the controlled suites both with and without Enderscape to check registry coverage, creative entries, recipe resolution and interactions.
+
+The C29 package check compares every retained C28 entry, the six original BBB Oak graphs and all 15 generated wood sprites. The real Ribbits C27 reference is required for generation even when omitted at runtime. For the provider-present suite use `build runGameTest -PwithRibbits -PwithEnderscape`, setting `ribbitsJar`, semicolon-separated `ribbitsTestDeps`, `enderscapeTestDeps` and the Matcha 1.12 fixture `matchaFoodResources` where necessary. Repeat without the provider switches to exercise the standalone registry.

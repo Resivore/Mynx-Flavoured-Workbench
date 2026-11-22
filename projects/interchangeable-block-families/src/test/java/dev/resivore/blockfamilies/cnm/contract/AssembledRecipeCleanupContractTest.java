@@ -148,6 +148,8 @@ class AssembledRecipeCleanupContractTest {
             recipes.addAll(recipesFromJar("amcReferenceJar", "architectural_material_closure", "amc_families"));
             recipes.addAll(recipesFromJarResults("amcReferenceJar", "architectural_material_closure", "amc_families",
                     null, "resourcepacks/enderscape/data/architectural_material_closure/recipe/"));
+            recipes.addAll(recipesFromJarResults("amcReferenceJar", "architectural_material_closure", "amc_families",
+                    null, "resourcepacks/ribbits/data/architectural_material_closure/recipe/"));
         }
         recipes.addAll(dynamicAndModeledRecipes());
 
@@ -163,9 +165,9 @@ class AssembledRecipeCleanupContractTest {
                         Map.entry("three_high_doors", 217L),
                         Map.entry("fence_gates", 24L),
                         Map.entry("vanilla_building_accessories", 42L)));
-        if (AMC_PRESENT) expectedCorpus.put("amc_families", 611L);
+        if (AMC_PRESENT) expectedCorpus.put("amc_families", 617L);
         assertEquals(expectedCorpus, countByCorpus(recipes));
-        assertEquals(AMC_PRESENT ? 2_183 : 1_572, recipes.size());
+        assertEquals(AMC_PRESENT ? 2_189 : 1_572, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -187,7 +189,7 @@ class AssembledRecipeCleanupContractTest {
         }
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
-        if (AMC_PRESENT) expectedRemoved.put("amc_families", 454L);
+        if (AMC_PRESENT) expectedRemoved.put("amc_families", 459L);
         expectedRemoved.put("two_high_doors", 260L);
         expectedRemoved.put("macaws_paths", 142L);
         expectedRemoved.put("trapdoors", 195L);
@@ -199,7 +201,7 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(AMC_PRESENT ? 1_583L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(AMC_PRESENT ? 1_588L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -221,6 +223,8 @@ class AssembledRecipeCleanupContractTest {
             recipes.addAll(recipesFromJar("amcReferenceJar", "architectural_material_closure", "amc_families"));
             recipes.addAll(recipesFromJarResults("amcReferenceJar", "architectural_material_closure", "amc_families",
                     null, "resourcepacks/enderscape/data/architectural_material_closure/recipe/"));
+            recipes.addAll(recipesFromJarResults("amcReferenceJar", "architectural_material_closure", "amc_families",
+                    null, "resourcepacks/ribbits/data/architectural_material_closure/recipe/"));
         }
         recipes.addAll(dynamicAndModeledRecipes());
 
@@ -262,7 +266,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(AMC_PRESENT ? 744 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(AMC_PRESENT ? 747 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",

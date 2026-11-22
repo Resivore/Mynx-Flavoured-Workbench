@@ -174,6 +174,11 @@ public final class AuditedShapeRuntime {
         for (AuditedShapeFamily definition : definitions) {
             if (definition.requiresEnderscape() && !enderscapeLoaded) continue;
             List<Identifier> available = definition.availableMembers(amcLoaded);
+            if (definition.key().getPath().endsWith("/ribbits_mossy_oak_planks")) {
+                // Older AMC releases supply neither the detail parent nor the two fence extensions.
+                if (!BuiltInRegistries.ITEM.containsKey(definition.canonicalParent())) continue;
+                available = available.stream().filter(BuiltInRegistries.ITEM::containsKey).toList();
+            }
             if (available.isEmpty()) continue;
             ArrayList<Item> members = new ArrayList<>(available.size());
             for (Identifier id : available) {

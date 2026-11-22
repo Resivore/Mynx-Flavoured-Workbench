@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 254;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_879;
+    public static final int EXPECTED_FAMILY_COUNT = 255;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_885;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 22;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -1053,7 +1053,7 @@ public final class AuditedShapeFamilies {
                     minecraft("warped_fence_gate"), bbb("warped_frame"), bbb("warped_lattice")),
             family("cnm/fence_gate/ribbits_mossy_oak_planks", FENCE_GATE,
                     ribbits("mossy_oak_planks_fence"),
-                    ribbits("mossy_oak_planks_fence_gate")),
+                    ribbits("mossy_oak_planks_fence_gate"), amc("mossy_oak_frame"), amc("mossy_oak_lattice")),
             enderscapeFamily("cnm/fence_gate/enderscape_veiled", FENCE_GATE, enderscape("veiled_fence"),
                     enderscape("veiled_fence_gate"), bbb("veiled_frame"), bbb("veiled_lattice")),
             enderscapeFamily("cnm/fence_gate/enderscape_celestial", FENCE_GATE, enderscape("celestial_fence"),
@@ -1093,6 +1093,8 @@ public final class AuditedShapeFamilies {
 
     private static final List<AuditedShapeFamily> BBB_DETAILS = List.of(
             family("cnm/bbb_detail/wood/oak", BBB_DETAIL, bbb("oak_trim"), bbb("oak_balustrade"), bbb("oak_support"), bbb("oak_pallet")),
+            family("cnm/bbb_detail/wood/ribbits_mossy_oak_planks", BBB_DETAIL, amc("mossy_oak_trim"),
+                    amc("mossy_oak_balustrade"), amc("mossy_oak_support"), amc("mossy_oak_pallet")),
             family("cnm/bbb_detail/wood/spruce", BBB_DETAIL, bbb("spruce_trim"), bbb("spruce_balustrade"), bbb("spruce_support"), bbb("spruce_pallet")),
             family("cnm/bbb_detail/wood/birch", BBB_DETAIL, bbb("birch_trim"), bbb("birch_balustrade"), bbb("birch_support"), bbb("birch_pallet")),
             family("cnm/bbb_detail/wood/jungle", BBB_DETAIL, bbb("jungle_trim"), bbb("jungle_balustrade"), bbb("jungle_support"), bbb("jungle_pallet")),

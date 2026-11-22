@@ -2,20 +2,23 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary28'
+version = '0.1.0-canary29'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c28')
+layout.buildDirectory = layout.projectDirectory.dir('build/c29')
 
 repositories {
     mavenCentral()
 }
 
-def providerJar = file('../../originals/mods/mcw-windows-2.4.2-mc26.2fabric.jar')
-def pathsJar = file('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar')
+def providerJar = file(providers.gradleProperty('windowsJar').getOrElse('../../originals/mods/mcw-windows-2.4.2-mc26.2fabric.jar'))
+def pathsJar = file(providers.gradleProperty('pathsJar').getOrElse('../../originals/mods/mcw-paths-1.1.1-mc26.2fabric.jar'))
 def bbbJar = file(providers.gradleProperty('bbbJar').getOrElse(
         '../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar'))
 def stoneShutterJar = file(providers.gradleProperty('stoneShutterJar').getOrElse('artifacts/AMC C9.jar'))
-def enderscapeJar = file('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
+def enderscapeJar = file(providers.gradleProperty('enderscapeJar').getOrElse('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar'))
+def ribbitsJar = file(providers.gradleProperty('ribbitsJar').getOrElse(
+        '../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar'))
+def c28Jar = file(providers.gradleProperty('c28Jar').getOrElse('artifacts/AMC C28.jar'))
 def c27Jar = file(providers.gradleProperty('c27Jar').getOrElse('artifacts/AMC C27.jar'))
 def c26Jar = file(providers.gradleProperty('c26Jar').getOrElse('artifacts/AMC C26.jar'))
 def c25Jar = file(providers.gradleProperty('c25Jar').getOrElse('artifacts/AMC C25.jar'))
@@ -39,26 +42,31 @@ java {
 }
 
 tasks.register('generateAmcResources', Exec) {
-    inputs.files('tools/generate.py', 'tools/moss.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar, stoneShutterJar, enderscapeJar)
+    inputs.files('tools/mossy_oak.py', ribbitsJar, 'tools/generate.py', 'tools/moss.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar, stoneShutterJar, enderscapeJar)
     outputs.dir(privateResources)
-    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, stoneShutterJar, enderscapeJar, privateResources.get().asFile
+    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, stoneShutterJar, enderscapeJar, ribbitsJar, privateResources.get().asFile
 }
 
 sourceSets.main.resources.srcDir(privateResources)
 processResources {
     dependsOn 'generateAmcResources'
     inputs.property 'version', project.version
+    inputs.property 'historicalEnderscapeMetadataEol', 'crlf'
+    // Preserve the historical packaged bytes on both LF and CRLF checkouts.
+    filesMatching(['amc.enderscape.mixins.json', 'resourcepacks/enderscape/pack.mcmeta']) {
+        filter(eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance('crlf'), org.apache.tools.ant.filters.FixCrLfFilter)
+    }
     filesMatching('fabric.mod.json') { expand version: project.version }
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C28.jar'
+    archiveFileName = 'AMC C29.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
     dependsOn jar
-    inputs.files('tools/verify_c28.py', c27Jar, 'tools/verify_c27.py', c26Jar, 'tools/verify_c26.py', c25Jar, 'tools/verify_c25.py', c24Jar, 'tools/verify_c24.py', c23Jar, enderscapeJar, 'tools/verify_c22.py', previousJar, 'tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
-    commandLine python, 'tools/verify_c28.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar, previousJar, c23Jar, enderscapeJar, c24Jar, c25Jar, c26Jar, c27Jar
+    inputs.files('tools/verify_oak.py', ribbitsJar, c28Jar, 'tools/verify_c28.py', c27Jar, 'tools/verify_c27.py', c26Jar, 'tools/verify_c26.py', c25Jar, 'tools/verify_c25.py', c24Jar, 'tools/verify_c24.py', c23Jar, enderscapeJar, 'tools/verify_c22.py', previousJar, 'tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
+    commandLine python, 'tools/verify_oak.py', jar.archiveFile.get().asFile, providerJar, clientJar, bbbJar, pathsJar, previousJar, c23Jar, enderscapeJar, c24Jar, c25Jar, c26Jar, c27Jar, c28Jar, ribbitsJar
 }
 
 check.dependsOn 'verifyAmcJar'
@@ -79,21 +87,37 @@ if (providers.gradleProperty('extshapeReference').isPresent()) {
     dependencies { gametestRuntimeOnly files(providers.gradleProperty('extshapeReference').get()) }
 }
 
+def withRibbits = providers.gradleProperty('withRibbits').isPresent()
+if (withRibbits) {
+    dependencies {
+        gametestRuntimeOnly files(ribbitsJar, providers.gradleProperty('ribbitsTestDeps').get().split(';'))
+    }
+}
 def withEnderscape = providers.gradleProperty('withEnderscape').isPresent()
 tasks.named('processGametestResources') {
+    if (withRibbits) {
+        from(providers.gradleProperty('matchaFoodResources').getOrElse(
+                '../matcha-flavoured-data/src/main/resources/resourcepacks/matcha_flavoured_1_12')) {
+            include 'data/**'
+            exclude 'data/minecraft/loot_table/advancement/custom/root.json', 'data/main/advancement/mechanics/wither_test.json'
+        }
+    }
     inputs.property 'withEnderscape', withEnderscape
+    inputs.property 'withRibbits', withRibbits
     filesMatching('fabric.mod.json') {
-        expand optionalTests: withEnderscape ? ', "dev.resivore.amc.test.EnderscapeTests"' : ''
+        expand optionalTests: (withEnderscape ? ', "dev.resivore.amc.test.EnderscapeTests"' : '') +
+                (withRibbits ? ', "dev.resivore.amc.test.MossyOakTests"' : '')
     }
 }
 if (withEnderscape) {
-    def support = fileTree(providers.gradleProperty('enderscapeTestDeps').getOrElse('build/c28/test-dependencies')) {
+    def support = fileTree(providers.gradleProperty('enderscapeTestDeps').getOrElse('build/c29/test-dependencies')) {
         include '*.jar'
     }
     dependencies { gametestRuntimeOnly files(enderscapeJar, support) }
 }
 loom.runs.named('gameTest') {
-    runDir withEnderscape ? 'build/c28/gametest-present' : 'build/c28/gametest-absent'
+    vmArg "-Damc.test.ribbits=${withRibbits}"
+    runDir withRibbits ? 'build/c29/gametest-ribbits' : withEnderscape ? 'build/c29/gametest-present' : 'build/c29/gametest-absent'
     vmArg "-Damc.test.enderscape=${withEnderscape}"
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

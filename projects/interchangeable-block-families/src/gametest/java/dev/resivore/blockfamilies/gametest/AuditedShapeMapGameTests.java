@@ -272,7 +272,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 254 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 255 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -299,7 +299,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_879 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_885 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -530,8 +530,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwpaths:andesite_honeycomb_paving",
                 "mcwpaths:andesite_clover_paving",
                 "mcwpaths:andesite_dumble_paving"));
-        assertExactShapeSet(helper, "ribbits:mossy_oak_planks_fence", List.of(
-                "ribbits:mossy_oak_planks_fence", "ribbits:mossy_oak_planks_fence_gate"));
+        checkMossyOak(helper);
         helper.assertTrue(AuditedShapeFamilies.families().stream().noneMatch(family -> family.members()
                         .contains(requiredItem("mcwwindows:golden_curtain_rod"))),
                 "Gold curtain rod acquired a family without a Button parent");
@@ -572,8 +571,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     "minecraft:" + wood + "_fence", "minecraft:" + wood + "_fence_gate",
                     "bbb:" + wood + "_frame", "bbb:" + wood + "_lattice"));
         }
-        assertExactShapeSet(helper, "ribbits:mossy_oak_planks_fence", List.of(
-                "ribbits:mossy_oak_planks_fence", "ribbits:mossy_oak_planks_fence_gate"));
+        checkMossyOak(helper);
         for (String stone : List.of(
                 "stone", "blackstone", "deepslate", "nether_brick", "sandstone", "red_sandstone", "quartz")) {
             List<String> expected = new java.util.ArrayList<>(List.of(
@@ -1251,8 +1249,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             }
             families++;
         }
-        int expectedFamilies = enderscape ? (amc ? 254 : 181) : (amc ? 220 : 164);
-        int expectedItems = enderscape ? (amc ? 1879 : 1397) : (amc ? 1704 : 1348);
+        checkMossyOak(helper);
+        int expectedFamilies = enderscape ? (amc ? 255 : 181) : (amc ? 221 : 164);
+        int expectedItems = enderscape ? (amc ? 1885 : 1397) : (amc ? 1710 : 1348);
         helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
                 "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
 
@@ -1423,6 +1422,19 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             helper.assertTrue(BuiltInRegistries.BLOCK.getKey(helper.getBlockState(pos).getBlock()).equals(id(fullId)),
                     "Patterned full block failed independent placement: " + fullId);
         }
+    }
+
+    private static void checkMossyOak(GameTestHelper helper) {
+        var fences = new java.util.ArrayList<>(List.of("ribbits:mossy_oak_planks_fence", "ribbits:mossy_oak_planks_fence_gate"));
+        String prefix = "architectural_material_closure:mossy_oak_";
+        if (Boolean.getBoolean("ibf.test.amcExpected")) {
+            fences.add(prefix + "frame");
+            fences.add(prefix + "lattice");
+            assertSelectorRoundTrip(helper, List.of(prefix + "trim", prefix + "balustrade", prefix + "support", prefix + "pallet"));
+        } else {
+            helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(id(prefix + "trim")), "Unexpected optional detail parent");
+        }
+        assertSelectorRoundTrip(helper, fences);
     }
 
     private static void assertSelectorRoundTrip(GameTestHelper helper, List<String> members) {

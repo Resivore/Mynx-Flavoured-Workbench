@@ -27,7 +27,7 @@ final class BuildingButBetterFamiliesTest {
     @Test
     void everyRegisteredWoodHasOneExactTrimDetailFamilyIncludingPaleOak() {
         Map<String, AuditedShapeFamily> details = detailsByPath();
-        assertEquals(42, details.size());
+        assertEquals(43, details.size());
         for (String wood : WOODS) {
             assertEquals(List.of(bbb(wood + "_trim"), bbb(wood + "_balustrade"),
                     bbb(wood + "_support"), bbb(wood + "_pallet")),
@@ -58,7 +58,8 @@ final class BuildingButBetterFamiliesTest {
                     bbb(wood + "_frame"), bbb(wood + "_lattice")),
                     fences.get("cnm/fence_gate/" + wood).members(), wood);
         }
-        assertEquals(List.of(id("ribbits:mossy_oak_planks_fence"), id("ribbits:mossy_oak_planks_fence_gate")),
+        assertEquals(List.of(id("ribbits:mossy_oak_planks_fence"), id("ribbits:mossy_oak_planks_fence_gate"),
+                id("architectural_material_closure:mossy_oak_frame"), id("architectural_material_closure:mossy_oak_lattice")),
                 fences.get("cnm/fence_gate/ribbits_mossy_oak_planks").members());
         Set<Identifier> all = AuditedShapeFamilies.families().stream()
                 .flatMap(family -> family.members().stream()).collect(Collectors.toSet());
