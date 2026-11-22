@@ -17,8 +17,8 @@ class RecipeImpactContractTest {
     void fixedAuditIdentityAndFamilyTotalsAreVersionBound() throws Exception {
         Properties contract = AuditFixtures.contract();
 
-        assertEquals("ibf-cnm-shapemap-2026-11-21-canary27", contract.getProperty("audit.id"));
-        assertEquals("546b2b1c50f40c3d05ed75b191bc02dce37edfd9",
+        assertEquals("ibf-cnm-shapemap-2026-11-21-canary28", contract.getProperty("audit.id"));
+        assertEquals("dafe6ed465b31684dd9085658c18c15798fda3f2",
                 contract.getProperty("audit.starting_commit"));
         assertEquals("9ad4600e62808e5e976392a69b495a2fe4b5d47c",
                 contract.getProperty("audit.accepted_ibf_commit"));
