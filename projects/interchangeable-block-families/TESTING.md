@@ -1,24 +1,32 @@
-# C28 verification checklist
+# C29 verification checklist
 
 Use the exact current JAR, SHA-256, and source checkpoint in [WORKBENCH_STATUS.json](WORKBENCH_STATUS.json).
 
-For the AMC-present controlled run, add `"-Pamc_reference_jar=../architectural-material-closure/artifacts/AMC C29.jar"` to the Gradle invocation. Repeat the full invocation with that property omitted. Add `-Pwithout_enderscape` to each invocation to run the focused catalog and selector GameTest with Enderscape omitted. The full suite runs with Enderscape present. The controlled recipe audit uses the base, Enderscape and Ribbits reference packs when the AMC JAR is supplied. Use the standard providers and full Matcha fixture in all four runs. Extended Block Shapes is reference-only.
+For the AMC-present controlled run, add `"-Pamc_reference_jar=../architectural-material-closure/artifacts/AMC C30.jar"` to the Gradle invocation. Repeat the full invocation with that property omitted. Add `-Pwithout_enderscape` to each invocation to run the focused catalog and selector GameTest with Enderscape omitted. The full suite runs with Enderscape present. The controlled recipe audit uses the base, Enderscape and Ribbits reference packs when the AMC JAR is supplied. Use the standard providers and full Matcha fixture in all four runs. Extended Block Shapes is reference-only.
 
 The normal controlled tasks are `test runGameTest build stageCanaryArtifact`. Use the restored C9 dependencies: exact accepted Nibaru C45 and BGE C52, BBB Enderscape dev.7, Dramatic Doors C9, Ribbits C17, Quick Stack Nearby 0.4.0 with compatibility C6, and the audited external providers wired in `build.gradle`. Ribbits support is supplied through `ribbits_runtime_reference_jars`: YUNG's API compat.2, Trinkets Updated compatibility C5, GeckoLib 5.5.1, Cloth Config 26.2.155, Custom Portals C2, and Matcha Heart compatibility C11. Supply `matcha_food_resource_root` from the tracked Matcha Flavoured 1.12 data resource root. Enderscape uses the existing Lithostitched 1.7.13 and Trim Patcher 2.1 controlled inputs. These external inputs remain outside the production IBF archive. The exact BBB dependency predicate remains necessary because dev.7 contains the audited Enderscape package and its version is not ordered Fabric semantic versioning; the contract test rejects incompatible dev.6 before registry startup.
 
+Run the controlled graphical check with the same full-provider arguments and `-Pdoor_viewport_test runClientGameTest`. This exercises all 23 positions of each door selector through the held-item overlay and inventory tooltip in a disposable Gradle test world.
+
+### Two-high wood doors
+
+1. With AMC C30, Enderscape and Ribbits, craft Veiled, Celestial, Murublight and Mossy Oak doors from their native recipes. Open each selector on a named stack of seven. Cycle forward and backward across all 23 icons, including Whispering at the far end. Check both the held-item overlay and inventory tooltip at your usual GUI scale and at a narrow scaled width. Confirm the highlighted icon, resulting item, count and components at each step.
+2. Verify each native door remains first. The alternate order is Bamboo, Bark Glass (Stem Glass for Celestial and Murublight), Barn, Barn Glass, Beach, Classic, Cottage, Four Panel, Glass, Japanese, Japanese2, Modern, Mystic, Nether, Paper, Stable, Stable Head, Swamp, Tropical, Waffle, Western and Whispering. Confirm that the 22 alternate crafting recipes per wood are suppressed after reload. Place and open representatives and check drops from both halves.
+3. Without AMC, craft each available native door and verify it has no selector. With AMC and Ribbits alone, repeat the full Mossy Oak check. Enderscape doors should be absent. Record the exact IBF hash, provider set and GUI scale with observations.
+
 ### Mossy Oak switches
 
-1. With Ribbits, AMC C29 and CNM loaded, craft the Ribbits Mossy Oak Planks Fence. Switch a named stack of seven through Fence Gate, AMC Frame and AMC Lattice in that order, then back. Check the name and count at each step.
+1. With Ribbits, AMC C30 and CNM loaded, craft the Ribbits Mossy Oak Planks Fence. Switch a named stack of seven through Fence Gate, AMC Frame and AMC Lattice in that order, then back. Check the name and count at each step.
 2. Craft AMC Mossy Oak Trim. Repeat through Balustrade, Support and Pallet, then back. Inspect the recipe list for the two canonical recipes and verify that CNM suppresses the other six family members' crafting recipes.
 3. With AMC absent, repeat the Ribbits Fence to Fence Gate round trip. Check that the Mossy Oak detail selector is absent. Record each provider set with the exact IBF release hash.
 
 ### Calcite and Shadoline Block
 
-| AMC C29 | Enderscape 3.0.2 | Active families | Unique items | New selectors available |
+| AMC C30 | Enderscape 3.0.2 | Active families | Unique items | New selectors available |
 |---|---|---:|---:|---|
-| Present | Present | 255 | 1,885 | Four Calcite and four Shadoline Block |
+| Present | Present | 259 | 1,977 | Four Calcite and four Shadoline Block |
 | Absent | Present | 181 | 1,397 | None |
-| Present | Absent | 221 | 1,710 | Four Calcite |
+| Present | Absent | 222 | 1,733 | Four Calcite |
 | Absent | Absent | 164 | 1,348 | None |
 
 Repeat each applicable row for `calcite` and `shadoline_block`. Item IDs use `architectural_material_closure:<material>_<form>`. Open each selector from its canonical parent. Cycle a named stack of seven through each member and back, checking the item, count and components after every switch.
@@ -34,7 +42,7 @@ After reload, check the parent recipes, including Column stonecutting, and verif
 
 ### Veradite, Mirestone and Kurodite
 
-The earlier family checks below assume Enderscape 3.0.2 is present. With exact AMC C29, repeat these checks for `veradite`, `mirestone` and `kurodite`. In the table, AMC forms use `architectural_material_closure:<material>_<form>`. The two polished controls use `enderscape:polished_<material>_<form>`.
+The earlier family checks below assume Enderscape 3.0.2 is present. With exact AMC C30, repeat these checks for `veradite`, `mirestone` and `kurodite`. In the table, AMC forms use `architectural_material_closure:<material>_<form>`. The two polished controls use `enderscape:polished_<material>_<form>`.
 
 | Family key | Canonical parent | Subsequent members in order |
 |---|---|---|
@@ -66,7 +74,7 @@ Repeat without AMC. The twelve C26 selectors and sixteen C24 selectors should di
 
 ### Mossy Stone Bricks selector checks
 
-With AMC C29 loaded, open each Mossy Stone Bricks selector from its canonical parent. Switch a named stack of seven through every alternate in order and back in reverse. Check the item identity, count and components at each step.
+With AMC C30 loaded, open each Mossy Stone Bricks selector from its canonical parent. Switch a named stack of seven through every alternate in order and back in reverse. Check the item identity, count and components at each step.
 
 | AMC canonical parent | AMC alternates in order |
 |---|---|
@@ -80,7 +88,7 @@ With AMC installed and again without it, open the separate Macaw selector from `
 
 ### End Stone Bricks and Polished Blackstone selector checks
 
-With AMC C29 loaded, open each selector below. Switch a named stack of seven through the listed alternates in order, then back to its canonical parent. Check the item, count and component patch after each switch.
+With AMC C30 loaded, open each selector below. Switch a named stack of seven through the listed alternates in order, then back to its canonical parent. Check the item, count and component patch after each switch.
 
 | Canonical parent | Alternates in order |
 |---|---|
@@ -96,7 +104,7 @@ Repeat without AMC. Check that both Macaw End Stone Bricks items retain their st
 
 ### Deepslate, Quartz and Nether Bricks selector checks
 
-With the exact AMC C29 JAR loaded, cycle a named stack of seven through each applicable row in order. Return to the canonical parent and check item identity, count and component patch after every switch.
+With the exact AMC C30 JAR loaded, cycle a named stack of seven through each applicable row in order. Return to the canonical parent and check item identity, count and component patch after every switch.
 
 | Material | Canonical parent | Alternates in order |
 |---|---|---|
@@ -112,7 +120,7 @@ Repeat without AMC. The three Button selectors, two new Path selectors and Nethe
 
 ### Sandstone and Red Sandstone selector checks
 
-With AMC C29 loaded, repeat each row for Sandstone and Red Sandstone. Open the selector from its canonical parent, switch a named stack of seven through the listed alternates in order, then return to the parent. Check the item, count, and component patch after every switch.
+With AMC C30 loaded, repeat each row for Sandstone and Red Sandstone. Open the selector from its canonical parent, switch a named stack of seven through the listed alternates in order, then return to the parent. Check the item, count, and component patch after every switch.
 
 | Canonical parent | Alternates in order |
 |---|---|
@@ -126,7 +134,7 @@ Repeat without AMC. Each Macaw Window should cycle through its original four var
 
 ### Prismarine selector checks
 
-With AMC C29 loaded, cycle a named stack of seven through each of these selectors and back to its parent. Check item identity, stack count, and component patch after each switch.
+With AMC C30 loaded, cycle a named stack of seven through each of these selectors and back to its parent. Check item identity, stack count, and component patch after each switch.
 
 | Material | Parent | Alternates in order |
 |---|---|---|
@@ -142,7 +150,7 @@ With AMC absent, check that the five selectors disappear and that both Macaw par
 
 ### Mud Bricks selector checks
 
-With AMC C29 installed, start with a named stack of seven of each canonical item. Cycle through its selector in the order below and return to the parent. Check the name, count and components at every step.
+With AMC C30 installed, start with a named stack of seven of each canonical item. Cycle through its selector in the order below and return to the parent. Check the name, count and components at every step.
 
 | Canonical item | Alternates in order |
 |---|---|
@@ -156,7 +164,7 @@ Repeat without AMC. Neither Macaw item should expose a Mud Bricks selector, and 
 
 ### Existing family checks
 
-1. With AMC C29 loaded, repeat the following for Andesite, Diorite, and Granite. Use a named stack of seven and switch through each selector, checking count and components after every change and on return to the first item.
+1. With AMC C30 loaded, repeat the following for Andesite, Diorite, and Granite. Use a named stack of seven and switch through each selector, checking count and components after every change and on return to the first item.
 
    | Selector | Expected order |
    |---|---|
@@ -171,7 +179,7 @@ Repeat without AMC. Neither Macaw item should expose a Mud Bricks selector, and 
 3. Recheck the existing Macaw ordinary and Dramatic Doors tall-door families, trapdoors, windows/shutters, the 77 audited Macaw thin Paths and 78 Pavings, Aurora lanterns, Ribbits, BBB, vanilla fences, bars/chains, and accessories. Confirm wood shutters/louvered shutters occur only with their Button-parent wood family; Stone Button is separate from Stone thin Paths; and the Nether Brick arrow slit still belongs to its original BBB detail family. Providers retain native placement, collision, redstone, recipe costs, drops, and copper behavior. CNM retains switching and recipe/equivalence ownership. Macaw path blocks and patterned full-block/slab/stair geometry remain outside IBF.
 4. Exercise all 15 literal display-fixture triples: Oak, Spruce, Birch, Jungle, Acacia, Dark Oak, Mangrove, Cherry, Pale Oak, Bamboo, Crimson, Warped, Veiled, Celestial, and Murublight. Each uses Sign as canonical, then Hanging Sign and Shelf. Wall Sign and Wall Hanging Sign placement blocks and ordinary geometry remain outside these triples.
 5. Verify Veiled, Celestial, and Murublight Fence/Fence Gate/BBB Frame/Lattice families; their three separate BBB Trim/Balustrade/Support/Pallet detail families; the seven Enderscape Button families (Polished End Stone also includes the AMC parapet and shutter when available); and Shadoline Bars/Chain. Confirm the original C7/C8 families and canonical parents remain intact without cross-material merging.
-6. After reload, check canonical acquisition and recipe cleanup. The controlled recipe corpus removes 1,583 alternate recipes with AMC and 1,114 without it. Both runs retain every canonical recipe. Stone Running Bond Path remains obtainable as the Stone Path parent, while Stone Strewn Rocky Path is removed. Five Enderscape `void_lachryma` conversions remain provider-owned at CNM's custom-recipe boundary. Recheck a pre-existing Macaw and BBB canonical recipe and the separate accepted Nibaru/BGE component.
+6. After reload, check canonical acquisition and recipe cleanup. The controlled recipe corpus removes 1,676 alternate recipes with AMC and 1,114 without it. Both runs retain every canonical recipe. Stone Running Bond Path remains obtainable as the Stone Path parent, while Stone Strewn Rocky Path is removed. Five Enderscape `void_lachryma` conversions remain provider-owned at CNM's custom-recipe boundary. Recheck a pre-existing Macaw and BBB canonical recipe and the separate accepted Nibaru/BGE component.
 7. Transfer component-bearing stacks through a vanilla, Enderscape, and BBB family; preserve exact count and component patch. Mismatched components and incompatible targets must fail closed. Check Quick Stack Nearby affinity and the selector viewport/transfer behavior for a 22-member family.
 8. Restart or reload once, repeat representative C7, C8, and C9 families, and report only observed missing members, duplicate membership, canonical-parent changes, cross-family matches, recipe drift, crashes, or reload errors against the exact release identity.
 

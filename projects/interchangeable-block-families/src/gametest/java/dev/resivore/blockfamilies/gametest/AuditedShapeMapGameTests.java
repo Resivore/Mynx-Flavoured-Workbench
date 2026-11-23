@@ -123,9 +123,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     );
 
     private static final List<String> C8_ENDERSCAPE_DOOR_TRAPDOOR_EXCLUSIONS = List.of(
-            "enderscape:veiled_door", "enderscape:veiled_trapdoor",
-            "enderscape:celestial_door", "enderscape:celestial_trapdoor",
-            "enderscape:murublight_door", "enderscape:murublight_trapdoor"
+            "enderscape:veiled_trapdoor",
+            "enderscape:celestial_trapdoor",
+            "enderscape:murublight_trapdoor"
     );
 
     private static final List<String> C9_CANONICAL_RESULT_RECIPE_IDS = List.of(
@@ -272,7 +272,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 255 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 259 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -299,12 +299,12 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_885 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_977 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
-        helper.assertTrue(largest == AuditedShapeFamilies.EXPECTED_LARGEST_FAMILY_SIZE,
-                "Expected largest runtime family size 22, found " + largest);
+        helper.assertTrue(largest == (Boolean.getBoolean("ibf.test.amcExpected") ? 23 : 22),
+                "Unexpected largest runtime family size " + largest);
         helper.succeed();
     }
 
@@ -737,9 +737,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
 
     @GameTest(maxTicks = 40)
     public void largestFamilyTransfersFirstToMiddleToLastWithoutLosingPatch(GameTestHelper helper) {
-        AuditedShapeFamily family = AuditedShapeFamilies.families().stream()
-                .filter(candidate -> candidate.members().size()
-                        == AuditedShapeFamilies.EXPECTED_LARGEST_FAMILY_SIZE)
+        int expectedSize = Boolean.getBoolean("ibf.test.amcExpected") ? 23 : 22;
+        AuditedShapeFamily family = expectedActiveFamilies().stream()
+                .filter(candidate -> candidate.members().size() == expectedSize)
                 .findFirst()
                 .orElseThrow();
         List<Item> actual = ShapeMap.getShapes(requiredItem(family.canonicalParent()));
@@ -751,7 +751,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         ItemStack middle = ShapeMap.transferStack(first, middleIndex);
         ItemStack last = ShapeMap.transferStack(middle, lastIndex);
 
-        helper.assertTrue(actual.size() == 22, "Large-family transfer fixture is no longer 22 members");
+        helper.assertTrue(actual.size() == expectedSize, "Wrong active large-family size: " + actual.size());
         assertTransferred(helper, first, middle, actual.get(middleIndex),
                 "first-to-middle transfer failed");
         assertTransferred(helper, middle, last, actual.get(lastIndex),
@@ -1020,8 +1020,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
 
     private static List<AuditedShapeFamily> expectedActiveFamilies() {
         return AuditedShapeFamilies.families().stream()
-                .filter(family -> Boolean.getBoolean("ibf.test.amcExpected")
-                        || !family.canonicalParent().getNamespace().equals("architectural_material_closure"))
+                .filter(family -> !family.availableMembers(Boolean.getBoolean("ibf.test.amcExpected")).isEmpty())
                 .toList();
     }
 
@@ -1240,6 +1239,14 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 }
                 continue;
             }
+            if (!amc && family.category() == AuditedShapeFamily.Category.TWO_HIGH_DOOR
+                    && !family.canonicalParent().getNamespace().equals("minecraft")) {
+                Item nativeDoor = requiredItem(family.canonicalParent());
+                helper.assertTrue(registered.equals(List.of(family.canonicalParent()))
+                        && !AuditedShapeRuntime.isAudited(nativeDoor) && !ShapeMap.isShape(nativeDoor),
+                        "Unexpected standalone door selector " + family.key());
+                continue;
+            }
             helper.assertTrue(registered.size() >= 2, "Singleton selector " + family.key());
             assertExactShapeSet(helper, family.canonicalParent().toString(),
                     registered.stream().map(Identifier::toString).toList());
@@ -1250,8 +1257,13 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             families++;
         }
         checkMossyOak(helper);
-        int expectedFamilies = enderscape ? (amc ? 255 : 181) : (amc ? 221 : 164);
-        int expectedItems = enderscape ? (amc ? 1885 : 1397) : (amc ? 1710 : 1348);
+        checkWoodDoors(helper, amc, enderscape);
+        if (enderscape) {
+            helper.assertTrue(hasRecipe(helper, "enderscape:murublight_door_from_celestial_door"),
+                    "Lost Enderscape's native door conversion");
+        }
+        int expectedFamilies = enderscape ? (amc ? 259 : 181) : (amc ? 222 : 164);
+        int expectedItems = enderscape ? (amc ? 1977 : 1397) : (amc ? 1733 : 1348);
         helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
                 "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
 
@@ -1421,6 +1433,30 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             helper.placeAt(player, stack, pos.below(), Direction.UP);
             helper.assertTrue(BuiltInRegistries.BLOCK.getKey(helper.getBlockState(pos).getBlock()).equals(id(fullId)),
                     "Patterned full block failed independent placement: " + fullId);
+        }
+    }
+
+    private static void checkWoodDoors(GameTestHelper helper, boolean amc, boolean enderscape) {
+        for (String wood : List.of("veiled", "celestial", "murublight", "mossy_oak")) {
+            boolean mossyOak = wood.equals("mossy_oak");
+            String parent = (mossyOak ? "ribbits:" : "enderscape:") + wood + "_door";
+            String glass = wood.equals("celestial") || wood.equals("murublight") ? "stem_glass" : "bark_glass";
+            var members = new java.util.ArrayList<>(List.of(parent));
+            for (String style : List.of("bamboo", glass, "barn", "barn_glass", "beach", "classic", "cottage",
+                    "four_panel", "glass", "japanese", "japanese2", "modern", "mystic", "nether", "paper",
+                    "stable", "stable_head", "swamp", "tropical", "waffle", "western", "whispering")) {
+                String alternate = "architectural_material_closure:" + wood + "_" + style + "_door";
+                helper.assertTrue(BuiltInRegistries.ITEM.containsKey(id(alternate)) == (amc && (enderscape || mossyOak)),
+                        "Unexpected registration for " + alternate);
+                members.add(alternate);
+            }
+            if (enderscape || mossyOak) {
+                if (amc) assertSelectorRoundTrip(helper, members);
+                else helper.assertTrue(!ShapeMap.isShape(requiredItem(parent)) && hasRecipe(helper, parent),
+                        "Missing independent native door or recipe: " + parent);
+            } else {
+                helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(id(parent)), "Unexpected native door " + parent);
+            }
         }
     }
 

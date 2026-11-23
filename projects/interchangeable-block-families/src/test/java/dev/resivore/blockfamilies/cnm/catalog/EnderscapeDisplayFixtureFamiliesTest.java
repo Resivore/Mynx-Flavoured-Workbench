@@ -186,7 +186,9 @@ final class EnderscapeDisplayFixtureFamiliesTest {
         expectedEnderscape.addAll(ENDERSCAPE_BAR_CHAINS);
         expectedEnderscape.addAll(ENDERSCAPE_BUILDING_ACCESSORIES);
 
-        Set<Identifier> expectedMembers = new LinkedHashSet<>();
+        Set<Identifier> expectedMembers = new LinkedHashSet<>(List.of(
+                Identifier.parse("enderscape:veiled_door"), Identifier.parse("enderscape:celestial_door"),
+                Identifier.parse("enderscape:murublight_door")));
         expectedEnderscape.forEach(family -> family.members().stream()
                 .filter(member -> member.getNamespace().equals("enderscape"))
                 .forEach(expectedMembers::add));
