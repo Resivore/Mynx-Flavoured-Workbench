@@ -323,3 +323,14 @@
 - Artifact: `IBF C30.jar`, embedded version `0.1.0-canary30`, 67,883 bytes, SHA-256 `e8a48fdd1f6dd0bf7b9d1b9a544401067b24fdfab1424955031358901ed9d2ab`, built at `2026-11-23T00:25:33.4821112Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of GUI scale, placement, redstone interactions, recipe availability and reload behavior in TESTING.md.
+
+## 2026-11-23T00:54:08Z — IBF C31 groups AMC Mossy Oak trapdoors
+
+- Revision: 31
+- Source checkpoint: `d78404ce8c84c3471f4058a1ee35b5b586fa2696`
+- Changes: Added `cnm/trapdoor/ribbits_mossy_oak` with `architectural_material_closure:mossy_oak_classic_trapdoor` first and all 16 other verified AMC C31 designs in Macaw order. Removing this one selector from the compiled catalog reproduces the complete ordered C30 digest `84f91142baa852dd076214b9ef8ae52308070aeb5c287e897110d352a0e91c14`.
+- Build/static: Both 55-test JUnit suites, production build and archive isolation passed. With Enderscape 3.0.2, full server GameTests passed 38/38 with AMC (263 families / 2,048 distinct items) and without (181 / 1,397). Both focused tests without Enderscape passed (223 / 1,750 with AMC and 164 / 1,348 without). Switching named stacks of seven through all 17 positions forward and back preserved counts and component patches. The assembled audit removed exactly 16 additional alternate recipes (1,743 with AMC, 1,114 without), with zero canonical removals or surviving literal ingredient rewrites. After a controlled integrated-server data reload the selector retained its order and only Classic remained craftable. The graphical client traversed all 17 positions in the held-item overlay and inventory tooltip and rechecked the three Enderscape trapdoor selectors and four two-high door selectors.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Artifact: `IBF C31.jar`, embedded version `0.1.0-canary31`, 68,114 bytes, SHA-256 `dbb061635ccfe5605864b9641e5c374eaaa22d5e21ca286d876162cd0a049eaf`, built at `2026-11-23T00:51:48.6886263Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of the selector at normal GUI scale, placement, redstone and recipe access after reload in TESTING.md.
