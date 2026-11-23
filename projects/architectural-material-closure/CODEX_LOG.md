@@ -394,3 +394,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Artifact: `AMC C31.jar`, 3,639,775 bytes, SHA-256 `b1d7cb016e806b32bee2c299df1af57239130c040c7bdd3b203991448d492fdb`, built_at `2026-11-23T00:12:04.7397649Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare the four preview sheets and the corresponding inventory and placed trapdoors using TESTING.md. Bind owner observations to the C31 hash.
+
+## 2026-11-23T01:03:47Z — AMC C32 Bamboo architectural forms
+
+- Revision: 33
+- Source checkpoint: `f27f5bf0d66c4838332a2fa7218c38645a66cf95`
+- Changes: Added Bamboo Ranch Trapdoor, Log Parapet, Plank Parapet, Blinds, Curtain Rod and Louvered Shutter. Ranch loads after optional Macaw's Trapdoors initialization. Each timber uses Bamboo Block side or end grain along the individual model member's axis, including the rotated Ranch rails. The Oak shutter's native luminance and alpha modulate Bamboo Planks texels. The material role in each Oak crafting grid determines the Bamboo Block, Planks or Slab ingredient.
+- Build/static: Clean Java 25 build and historical resource checks passed. Compared the retained C31 JAR (SHA-256 `b1d7cb016e806b32bee2c299df1af57239130c040c7bdd3b203991448d492fdb`): 7,070 prior entries byte-identical, 56 new and five changed (Fabric metadata, trapdoor initialization, base translations and two tag lists). Verified 76 state branches, six item definitions, 15 material models, 396 faces and 512 RGBA texels across the rotated side-grain tile and shutter. The local sheet is `build/c32/previews/bamboo.png`. With Enderscape, Ribbits and Macaw's Doors installed, 299/299 controlled GameTests passed with Macaw's Trapdoors and 299/299 without. With neither wood provider, 233/233 passed with Macaw's Trapdoors and 233/233 with both Macaw door providers absent. Verified actual crafting selections and yields, self-drops, shape and placement parity, flower-pot supports, joined blinds, stacked shutters and manual, redstone and waterlogged Ranch operation.
+- Runtime: Owner visual and gameplay verification and acceptance pending.
+- Artifact: `AMC C32.jar`, 3,671,362 bytes, SHA-256 `632c4423c016ebeb7057559efa0494f680c93efdf1cd79e7ee25cd4708111f7c`, built_at `2026-11-23T01:01:47.2851890Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare the six designs with the packaged Oak references using TESTING.md and record owner observations against the C32 hash.

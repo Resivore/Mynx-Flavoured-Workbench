@@ -36,7 +36,8 @@
       "Provide all 30 forms for vanilla Calcite and optional Enderscape Block of Shadoline. Use full Calcite in slab slots and enderscape:shadoline_block_slab for the corresponding Shadoline recipes. Both shutters use the C9 Stone template and the full native material palette.",
       "Adds six BBB-style Mossy Oak forms when Ribbits is installed.",
       "Provide 88 optional Macaw doors using the original door classes, authored model parents, item art, crafting patterns and wood-specific material masks. Veiled and Mossy Oak have Bark Glass. Celestial and Murublight have Stem Glass.",
-      "Provide 17 Macaw trapdoor designs each for Veiled, Celestial, Murublight and Mossy Oak when Macaw's Trapdoors and the matching wood provider are present. Preserve the actual Macaw block types, state/model graphs, protected artwork and recipe grids."
+      "Provide 17 Macaw trapdoor designs each for Veiled, Celestial, Murublight and Mossy Oak when Macaw's Trapdoors and the matching wood provider are present. Preserve the actual Macaw block types, state/model graphs, protected artwork and recipe grids.",
+      "Add Bamboo log and plank parapets, blinds, curtain rod and louvered shutter using the Oak Macaw's Windows implementations. Add the Bamboo Ranch Trapdoor only when Macaw's Trapdoors is present. Use the native Bamboo Block and Bamboo Planks artwork."
     ],
     "boundaries": {
       "owned_paths": [
@@ -88,7 +89,7 @@
         "type": "MOD",
         "identifier": "enderscape",
         "requirement": "optional (*)",
-        "reason": "Supplies five optional base materials and their slabs, and six existing polished controls. Enderscape 3.0.2 enables 144 additional AMC pairs alongside the 387 standalone pairs."
+        "reason": "Supplies five optional base materials and their slabs, and six existing polished controls. Enderscape 3.0.2 enables 144 additional AMC pairs alongside the 392 standalone pairs."
       },
       {
         "type": "MOD",
@@ -111,23 +112,23 @@
     ]
   },
   "state": {
-    "milestone": "C31 passed the package and pixel comparisons and nine controlled provider configurations. Owner visual and gameplay verification and acceptance are pending.",
+    "milestone": "C32 passed package, texture and controlled interaction checks with Macaw's Trapdoors present and absent. Owner visual and gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C31 (0.1.0-canary31)",
-        "canary": 31,
-        "embedded_version": "0.1.0-canary31",
+        "version": "C32 (0.1.0-canary32)",
+        "canary": 32,
+        "embedded_version": "0.1.0-canary32",
         "artifact": {
-          "filename": "AMC C31.jar",
-          "sha256": "b1d7cb016e806b32bee2c299df1af57239130c040c7bdd3b203991448d492fdb"
+          "filename": "AMC C32.jar",
+          "sha256": "632c4423c016ebeb7057559efa0494f680c93efdf1cd79e7ee25cd4708111f7c"
         },
-        "built_at": "2026-11-23T00:12:04.7397649Z",
-        "source_commit": "6ae507318691e703fd84afc5f1518137186165fe",
+        "built_at": "2026-11-23T01:01:47.2851890Z",
+        "source_commit": "f27f5bf0d66c4838332a2fa7218c38645a66cf95",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 68 Macaw trapdoors across Veiled, Celestial, Murublight and Mossy Oak with provider-specific recipes and artwork."
+        "summary": "Adds six Bamboo architectural forms, including the optional Macaw Ranch Trapdoor and a Bamboo Planks louvered shutter."
       },
       "accepted": null,
       "rollback": null,
@@ -141,10 +142,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 32,
-    "activity_at": "2026-11-23T00:19:06Z",
-    "updated_at": "2026-11-23T00:19:06Z",
-    "last_codex_at": "2026-11-23T00:19:06Z",
-    "source_commit": "6ae507318691e703fd84afc5f1518137186165fe"
+    "revision": 33,
+    "activity_at": "2026-11-23T01:03:47Z",
+    "updated_at": "2026-11-23T01:03:47Z",
+    "last_codex_at": "2026-11-23T01:03:47Z",
+    "source_commit": "f27f5bf0d66c4838332a2fa7218c38645a66cf95"
   }
 }
