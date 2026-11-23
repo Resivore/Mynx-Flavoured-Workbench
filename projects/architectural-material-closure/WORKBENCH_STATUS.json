@@ -113,23 +113,23 @@
     ]
   },
   "state": {
-    "milestone": "Adds 30 wood accessories for Veiled, Celestial, Murublight and Mossy Oak. Controlled validation passed. Owner gameplay and visual verification and acceptance are pending.",
+    "milestone": "Updates the regular Veiled, Celestial, Murublight and Mossy Oak shutters with the owner’s artwork. Controlled validation passed. Owner visual and gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C33 (0.1.0-canary33)",
-        "canary": 33,
-        "embedded_version": "0.1.0-canary33",
+        "version": "C34 (0.1.0-canary34)",
+        "canary": 34,
+        "embedded_version": "0.1.0-canary34",
         "artifact": {
-          "filename": "AMC C33.jar",
-          "sha256": "9c4385405ad0e2eb0b91dbb2ed8a0a50ce56680204a4cd1f8e3c9d59d7ea5ded"
+          "filename": "AMC C34.jar",
+          "sha256": "bae05199d1d9b6d8fd187b4f1f50b72db30d046a05038496b8ffce998095185c"
         },
-        "built_at": "2026-11-23T01:51:42.4299175Z",
-        "source_commit": "04fe54fc757d47a0b4af2a1d19784ce47988375d",
+        "built_at": "2026-11-23T03:44:47.2150279Z",
+        "source_commit": "80c62723e6ab31aa8ba8600ef73f971bd43cdde0",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 30 wood accessories for Veiled, Celestial, Murublight and Mossy Oak."
+        "summary": "Updates the regular Veiled, Celestial, Murublight and Mossy Oak shutters with the owner’s artwork."
       },
       "accepted": null,
       "rollback": null,
@@ -143,10 +143,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 34,
-    "activity_at": "2026-11-23T01:54:01Z",
-    "updated_at": "2026-11-23T01:54:01Z",
-    "last_codex_at": "2026-11-23T01:54:01Z",
-    "source_commit": "04fe54fc757d47a0b4af2a1d19784ce47988375d"
+    "revision": 35,
+    "activity_at": "2026-11-23T03:47:06Z",
+    "updated_at": "2026-11-23T03:47:06Z",
+    "last_codex_at": "2026-11-23T03:47:06Z",
+    "source_commit": "80c62723e6ab31aa8ba8600ef73f971bd43cdde0"
   }
 }

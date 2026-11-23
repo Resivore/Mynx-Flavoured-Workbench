@@ -416,3 +416,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Artifact: `AMC C33.jar`, 3,797,215 bytes, SHA-256 `9c4385405ad0e2eb0b91dbb2ed8a0a50ce56680204a4cd1f8e3c9d59d7ea5ded`, built_at `2026-11-23T01:51:42.4299175Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of shutter motifs, wood grain and gameplay against C33.
+
+## 2026-11-23T03:47:06Z — AMC C34 owner artwork
+
+- Revision: 35
+- Source checkpoint: `80c62723e6ab31aa8ba8600ef73f971bd43cdde0`
+- Changes: Updates the regular Veiled, Celestial, Murublight and Mossy Oak shutters with the owner’s artwork.
+- Build/static: Veiled and Mossy Oak match both full PNGs byte-for-byte. Celestial and Murublight match the 11×15 owner panels at (0, 1), including alpha; all 91 surrounding texels per atlas match C33. Against verified AMC C33, all 7,386 other file payloads are identical except the separately counted Fabric version change. Java 25 build, historical resource verification, 346 accessory state branches and 301/301 combined-provider GameTests passed. Comparison and item/placed views are in build/c34/previews.
+- Runtime: Owner gameplay and visual verification pending.
+- Artifact: `AMC C34.jar`, 3,799,300 bytes, SHA-256 `bae05199d1d9b6d8fd187b4f1f50b72db30d046a05038496b8ffce998095185c`, built_at `2026-11-23T03:44:47.2150279Z`. Embedded version `0.1.0-canary34`. Runtime dependency policy CAPABILITY_OR_PROVIDER, no exceptions.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner visual and gameplay checks and acceptance.
