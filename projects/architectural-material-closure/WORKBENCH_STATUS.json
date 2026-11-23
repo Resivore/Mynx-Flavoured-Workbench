@@ -145,10 +145,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 37,
-    "activity_at": "2026-11-23T07:04:23Z",
-    "updated_at": "2026-11-23T07:04:23Z",
-    "last_codex_at": "2026-11-23T07:04:23Z",
-    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
+    "revision": 38,
+    "activity_at": "2026-11-23T17:46:22Z",
+    "updated_at": "2026-11-23T17:46:22Z",
+    "last_codex_at": "2026-11-23T17:46:22Z",
+    "source_commit": "f03a432bd7e24cc246f78e17da0f9c303dac9436"
   }
 }

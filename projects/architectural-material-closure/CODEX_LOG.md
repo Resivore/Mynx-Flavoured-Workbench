@@ -449,3 +449,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Artifact: `AMC C36.jar`, 4,825,993 bytes, SHA-256 `eded83f8a249cf090934f99b0445089b88b87764262458e42b40b15a1fa42bf9`, finalized `2026-11-23T06:52:58.3659924Z`, embedded version `0.1.0-canary36`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS.
 - Next state: Owner checks the exact artifact using TESTING.md.
+
+## 2026-11-23T17:46:22Z — Mossy Oak shading study
+
+- Revision: 38
+- Source checkpoint: `f03a432bd7e24cc246f78e17da0f9c303dac9436`
+- Changes: Added owner-local previews and method comparison.
+- Build/static: Compared seven real surfaces and reproduced six shipped textures pixel for pixel.
+- Runtime: RUNTIME_UNTESTED.
+- Artifact: AMC C36, retained.
+- Result: ACTIVE. Continuous darken-only transfer recommended.
+- Next state: Owner selects a method and decides stripped-top footprint treatment.
