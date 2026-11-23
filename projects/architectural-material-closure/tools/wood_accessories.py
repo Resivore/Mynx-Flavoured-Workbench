@@ -1,5 +1,7 @@
 """Provider-bound wood accessories. All derived art stays in the local AMC stage."""
 import json
+from pathlib import Path
+from shutil import copyfile
 from PIL import Image
 from bamboo import existing
 from doors import MATERIALS, STEMS, read, resource, transfer, wood_tile, write
@@ -7,39 +9,28 @@ from masonry import NS
 from mossy_oak import moss_sheet
 
 FORMS = ("planks_path","log_parapet","plank_parapet","blinds","curtain_rod","shutter","louvered_shutter")
-# Recompose the native trapdoor on Macaw's 11x15 broad face. Preserve narrow
-# frame rails, the bottom latch and individual design features at texel scale.
-# Veiled retains both perforated lattice columns; Celestial keeps the panel
-# junctions and recessed rim; Murublight keeps the entire 8x8 open scroll.
-COLUMNS = {"veiled":(0,2,3,4,5,7,9,10,11,13,15),
-           "celestial":(0,1,2,3,4,6,8,10,12,13,15),
-           "murublight":(0,2,4,5,6,7,8,9,10,11,14)}
-ROWS = {"veiled":(0,1,2,3,4,5,6,7,8,9,10,11,12,14,15),
-        "celestial":(0,1,2,3,4,5,6,7,8,9,10,12,13,14,15),
-        "murublight":(0,1,2,3,4,5,6,7,8,9,10,11,13,14,15)}
+SHUTTER_ART = Path(__file__).with_name("shutter_art")
+# C33 top-edge sampling for the two owner panels. Both broad faces use
+# columns 0..10 and rows 1..15; the two-column side strip is separate.
+TOP_EDGE_COLUMNS = {
+    "celestial": (0, 1, 2, 3, 4, 6, 8, 10, 12, 13, 15),
+    "murublight": (0, 2, 4, 5, 6, 7, 8, 9, 10, 11, 14),
+}
 
 
-def regular(wood, template, oak, moss, provider, ns):
-    if wood=="mossy_oak":
-        result=moss_sheet(template,oak,moss,())
-        door=wood_tile(provider,"ribbits:block/mossy_oak_door_top")
-        # Fit the native arched divided light into the Oak stile-and-rail
-        # outline. Keep all four apertures and their mullions at native scale.
-        result.paste(door.crop((4,7,13,16)),(1,3))
-        # The native door handle sits at the right edge of the lower leaf.
-        lower=wood_tile(provider,"ribbits:block/mossy_oak_door_bottom")
-        result.paste(lower.crop((12,5,15,8)),(8,12))
-        return result
-    tile=wood_tile(provider,f"{ns}:block/{wood}_trapdoor")
-    result=template.copy()
-    for y,sy in enumerate(ROWS[wood],1):
-        for x,sx in enumerate(COLUMNS[wood]):
-            result.putpixel((x,y),tile.getpixel((sx,sy)))
-    for x in range(11):
-        result.putpixel((x,0),tile.getpixel((COLUMNS[wood][x],0)))
-    # The closed and open parents both sample the separate two-texel edge.
-    result.paste(tile.crop((14,0,16,16)),(14,0))
-    return result
+def write_regular_shutter(path, wood, template, provider, ns):
+    if wood in ("veiled", "mossy_oak"):
+        copyfile(SHUTTER_ART / f"{wood}_full_texture.png", path)
+        return
+    tile = wood_tile(provider, f"{ns}:block/{wood}_trapdoor")
+    atlas = template.copy()
+    for x, source_x in enumerate(TOP_EDGE_COLUMNS[wood]):
+        atlas.putpixel((x, 0), tile.getpixel((source_x, 0)))
+    atlas.paste(tile.crop((14, 0, 16, 16)), (14, 0))
+    with Image.open(SHUTTER_ART / f"{wood}_front_panel.png") as panel:
+        assert panel.size == (11, 15)
+        atlas.paste(panel.convert("RGBA"), (0, 1))
+    atlas.save(path)
 
 
 def stage(root, vanilla, windows, paths, end, ribbits, unlock):
@@ -88,14 +79,14 @@ def stage(root, vanilla, windows, paths, end, ribbits, unlock):
                 dest=NS+":block/"+dst
                 path=pack/resource(dest,"textures","png")
                 tile=wood_tile(jar,ref)
-                if form=="shutter":
-                    art=regular(wood,tile,oak,moss,provider,ns)
-                else:
-                    assert form in ("planks_path","louvered_shutter")
-                    mask={(x,y) for y in range(16) for x in range(16) if tile.getpixel((x,y))[3]==255}
-                    palette=wood_tile(provider,native(plank))
-                    art=transfer({ref:(tile,mask)},wood,oak,moss,palette,palette)[ref]
                 path.parent.mkdir(parents=True,exist_ok=True)
+                if form=="shutter":
+                    write_regular_shutter(path, wood, tile, provider, ns)
+                    return dest
+                assert form in ("planks_path","louvered_shutter")
+                mask={(x,y) for y in range(16) for x in range(16) if tile.getpixel((x,y))[3]==255}
+                palette=wood_tile(provider,native(plank))
+                art=transfer({ref:(tile,mask)},wood,oak,moss,palette,palette)[ref]
                 art.save(path)
                 return dest
             models=set()

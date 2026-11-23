@@ -1,4 +1,4 @@
-"""C33 packaged-graph, artwork and predecessor checks; write private comparison sheets."""
+"""C34 packaged-graph, artwork and predecessor checks; write private comparison sheets."""
 from contextlib import ExitStack
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -21,11 +21,39 @@ def placed(state):
     return list(state["variants"].values())
 
 
-def check(jar,old,windows,paths,vanilla,end,rib,folder):
+def compare_shutters(current, previous, folder):
+    sheet = Image.new("RGB", (615, 450), "#25292e")
+    draw = ImageDraw.Draw(sheet)
+    for x, label in zip((115, 233, 355, 478), ("C33 front", "Owner front", "C34 front", "C34 atlas")):
+        draw.text((x, 10), label, fill="white")
+    front = (0, 1, 11, 16)
+    for row, (wood, namespace) in enumerate(MATERIALS.items()):
+        entry = f"resourcepacks/{namespace}/assets/{NS}/textures/block/{wood}_shutter.png"
+        with previous.open(entry) as stream, Image.open(stream) as image:
+            before = image.convert("RGBA")
+        with current.open(entry) as stream, Image.open(stream) as image:
+            after = image.convert("RGBA")
+        full = wood in ("veiled", "mossy_oak")
+        filename = wood + ("_full_texture.png" if full else "_front_panel.png")
+        with Image.open(Path(__file__).with_name("shutter_art") / filename) as image:
+            owner = image.convert("RGBA")
+        y = 32 + row * 104
+        draw.text((8, y + 36), wood.replace("_", " ").title(), fill="white")
+        panels = (before.crop(front), owner.crop(front) if full else owner, after.crop(front), after)
+        for x, panel in zip((126, 244, 366, 488), panels):
+            enlarged = panel.resize((panel.width * 6, panel.height * 6), Image.Resampling.NEAREST)
+            sheet.paste(enlarged, (x, y), enlarged)
+    sheet.save(folder / "regular_shutters.png")
+
+
+def check(jar,previous,old,windows,paths,vanilla,end,rib,folder):
     prev,curr=files(old),files(jar)
     assert prev<=curr
     delta={n for n in prev if old.read(n)!=jar.read(n)}
     assert len(curr-prev)==260 and len(delta)==8,delta
+    shutters = {f"resourcepacks/{ns}/assets/{NS}/textures/block/{wood}_shutter.png" for wood, ns in MATERIALS.items()}
+    assert files(previous) == curr
+    assert {n for n in curr if previous.read(n) != jar.read(n)} == shutters | {"fabric.mod.json"}
     ids={NS+":"+w+"_"+("stem_parapet" if w in STEMS and f=="log_parapet" else f)
          for w in MATERIALS for f in FORMS+(("button","pressure_plate") if w=="mossy_oak" else ())}
     for n in delta:
@@ -38,6 +66,7 @@ def check(jar,old,windows,paths,vanilla,end,rib,folder):
     for kind in ("blockstates","items","recipe","loot_table/blocks"):
         assert {NS+":"+Path(n).stem for n in curr-prev if "/"+kind+"/" in n}==ids
     folder.mkdir(exist_ok=True,parents=True)
+    compare_shutters(jar, previous, folder)
     total=0
     for wood,ns in MATERIALS.items():
         provider=rib if ns=="ribbits" else end
@@ -103,16 +132,16 @@ def check(jar,old,windows,paths,vanilla,end,rib,folder):
                         assert art.getpixel((x,y))==(*rgb,pixel[3])
             if form=="shutter":
                 art=texture(NS+":block/"+wood+"_shutter")
-                assert art.crop((11,0,14,16)).tobytes()==texture("mcwwindows:block/oak_shutter").crop((11,0,14,16)).tobytes()
-                tile=texture(ns+":block/"+wood+("_trapdoor" if ns=="enderscape" else "_door_top"))
-                if ns=="enderscape":
-                    assert art.crop((14,0,16,16)).tobytes()==tile.crop((14,0,16,16)).tobytes()
-                    assert set(art.crop((0,1,11,16)).getdata())<=set(tile.getdata())
-                    openings=sum(p[3]==0 for p in art.crop((0,1,11,16)).getdata())
-                    assert (openings>0)==(wood!="celestial")
+                entry = prefix + resource(NS + ":block/" + wood + "_shutter", "textures", "png")
+                owner = Path(__file__).with_name("shutter_art")
+                if wood in ("veiled", "mossy_oak"):
+                    assert jar.read(entry) == (owner / f"{wood}_full_texture.png").read_bytes()
                 else:
-                    assert art.crop((1,3,10,12)).tobytes()==tile.crop((4,7,13,16)).tobytes()
-                    assert art.crop((8,12,11,15)).tobytes()==texture(ns+":block/mossy_oak_door_bottom").crop((12,5,15,8)).tobytes()
+                    with previous.open(entry) as stream, Image.open(stream) as old_atlas:
+                        expected = old_atlas.convert("RGBA")
+                    with Image.open(owner / f"{wood}_front_panel.png") as panel:
+                        expected.paste(panel.convert("RGBA"), (0, 1))
+                    assert art.tobytes() == expected.tobytes()
             recipe_prefix="resourcepacks/ribbits_trapdoors/" if wood=="mossy_oak" and form=="shutter" else prefix
             name=target.split(":")[1]
             assert read(jar,recipe_prefix+f"data/{NS}/recipe/{name}.json")["result"]["id"]==target
@@ -123,18 +152,19 @@ def check(jar,old,windows,paths,vanilla,end,rib,folder):
                 draw.text((x,y+73),["Ref item","AMC item","Placed 1","Placed 2","Placed 3"][col],fill="white")
             total+=len(placed(new))
         canvas.save(folder/(wood+".png"))
-    print(f"C33: 30 pairs, {total} state branches; {len(prev)-len(delta)} unchanged C32 files, {len(delta)} changed and {len(curr-prev)} added.")
+    print(f"C34: 30 pairs, {total} state branches; {len(prev)-len(delta)} unchanged C32 files, {len(delta)} changed and {len(curr-prev)} added.")
 
 
 if __name__=="__main__":
     if not __debug__:sys.exit("Assertions required")
-    current,*history,previous=map(Path,sys.argv[1:])
+    current,*history,previous,c33=map(Path,sys.argv[1:])
     assert hashlib.sha256(previous.read_bytes()).hexdigest()=="632c4423c016ebeb7057559efa0494f680c93efdf1cd79e7ee25cd4708111f7c"
+    assert hashlib.sha256(c33.read_bytes()).hexdigest()=="9c4385405ad0e2eb0b91dbb2ed8a0a50ce56680204a4cd1f8e3c9d59d7ea5ded"
     with TemporaryDirectory(dir=current.parent.parent) as temp:
         baseline=Path(temp)/"libs"/previous.name
         baseline.parent.mkdir()
         copyfile(previous,baseline)
         subprocess.run([sys.executable,"-B",Path(__file__).with_name("verify_bamboo.py"),baseline,*history],check=True)
     with ExitStack() as stack:
-        jars=[stack.enter_context(ZipFile(p)) for p in (current,previous,history[0],history[3],history[1],history[6],history[12])]
+        jars=[stack.enter_context(ZipFile(p)) for p in (current,c33,previous,history[0],history[3],history[1],history[6],history[12])]
         check(*jars,current.parent.parent/"previews")
