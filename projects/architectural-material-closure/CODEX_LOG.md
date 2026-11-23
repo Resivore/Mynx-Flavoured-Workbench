@@ -383,3 +383,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Artifact: `AMC C30.jar`, 3,354,328 bytes, SHA-256 `f0b4a7f464026a1c021d7004d81a18b9896cfd428018887e2bf69f1fdbe43462`, built_at `2026-11-22T15:15:59.1229257Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare the four local preview sheets and placed doors with the Macaw references using TESTING.md and record owner observations against the C30 hash.
+
+## 2026-11-23T00:19:06Z — AMC C31 Macaw wood trapdoors
+
+- Revision: 32
+- Source checkpoint: `6ae507318691e703fd84afc5f1518137186165fe`
+- Changes: Added 17 Macaw designs per wood (68 block/item pairs). The reference JAR (`mcwtrpdoors` 1.1.5, SHA-256 `6411cb0ff6c6cc4312deed48c3ca69cdbcbae72e80ff4ed0269f2d0a78acd32d`) registers 192 wood variants and three fixed metal trapdoors. Classic uses Spruce. Bark and Ranch use Oak for log woods and Warped for stem woods. Mossy Oak Bark uses four Ribbits slabs in the log slots and two glass panes to yield two. Ranch uses four Ribbits planks and five sticks to yield two. TESTING.md lists every source and destination.
+- Build/static: Java 25 build and historical resource checks passed. Verified 1,088 placed model branches, 68 item/model graphs, 61 generated sprites and all 15,616 RGBA texels. Compared the exact C30 JAR (`f0b4a7f464026a1c021d7004d81a18b9896cfd428018887e2bf69f1fdbe43462`): 6,589 prior payloads byte-identical, three changed (Fabric metadata and the two wood-provider initialization hooks), 483 additions. Local comparison sheets are under `build/c31/previews/` for all four woods. With Macaw's Doors installed, GameTests passed both with and without Macaw's Trapdoors in each wood configuration: both woods 294/294, Enderscape only 290/290, Ribbits only 232/232, neither 228/228. With both woods and Macaw's Trapdoors but without Macaw's Doors, 294/294 also passed. Checked exact registries, effective tags, class, block-set type, state shapes, rotation, sound type, actual wet/dry placements, toggles, redstone, drops and selected recipe yields. The Ribbits test fixture retains its existing ignored uppercase help-text warnings.
+- Runtime: Owner visual and gameplay verification and acceptance pending.
+- Artifact: `AMC C31.jar`, 3,639,775 bytes, SHA-256 `b1d7cb016e806b32bee2c299df1af57239130c040c7bdd3b203991448d492fdb`, built_at `2026-11-23T00:12:04.7397649Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Compare the four preview sheets and the corresponding inventory and placed trapdoors using TESTING.md. Bind owner observations to the C31 hash.

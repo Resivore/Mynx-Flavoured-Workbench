@@ -35,7 +35,8 @@
       "Use the matching AMC Column cap sprite on all Purpur and Dusk Purpur Button surfaces and inventory previews at vanilla Button UV scale.",
       "Provide all 30 forms for vanilla Calcite and optional Enderscape Block of Shadoline. Use full Calcite in slab slots and enderscape:shadoline_block_slab for the corresponding Shadoline recipes. Both shutters use the C9 Stone template and the full native material palette.",
       "Adds six BBB-style Mossy Oak forms when Ribbits is installed.",
-      "Provide 88 optional Macaw doors using the original door classes, authored model parents, item art, crafting patterns and wood-specific material masks. Veiled and Mossy Oak have Bark Glass. Celestial and Murublight have Stem Glass."
+      "Provide 88 optional Macaw doors using the original door classes, authored model parents, item art, crafting patterns and wood-specific material masks. Veiled and Mossy Oak have Bark Glass. Celestial and Murublight have Stem Glass.",
+      "Provide 17 Macaw trapdoor designs each for Veiled, Celestial, Murublight and Mossy Oak when Macaw's Trapdoors and the matching wood provider are present. Preserve the actual Macaw block types, state/model graphs, protected artwork and recipe grids."
     ],
     "boundaries": {
       "owned_paths": [
@@ -100,27 +101,33 @@
         "identifier": "mcwdoors",
         "requirement": "optional (*)",
         "reason": "Supplies the wood door classes, model parents, prints and interactions used with Enderscape or Ribbits. Controlled reference was Macaw's Doors 1.1.5 for Fabric 26.2."
+      },
+      {
+        "type": "MOD",
+        "identifier": "mcwtrpdoors",
+        "requirement": "optional (*)",
+        "reason": "Supplies the trapdoor reference blocks, models and crafting prints. Controlled reference was Macaw's Trapdoors 1.1.5 for Fabric 26.2."
       }
     ]
   },
   "state": {
-    "milestone": "C30 passed controlled checks for all 88 doors, four Enderscape/Ribbits combinations and the optional Macaw-absent configuration. Owner visual and gameplay verification and acceptance are pending.",
+    "milestone": "C31 passed the package and pixel comparisons and nine controlled provider configurations. Owner visual and gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C30 (0.1.0-canary30)",
-        "canary": 30,
-        "embedded_version": "0.1.0-canary30",
+        "version": "C31 (0.1.0-canary31)",
+        "canary": 31,
+        "embedded_version": "0.1.0-canary31",
         "artifact": {
-          "filename": "AMC C30.jar",
-          "sha256": "f0b4a7f464026a1c021d7004d81a18b9896cfd428018887e2bf69f1fdbe43462"
+          "filename": "AMC C31.jar",
+          "sha256": "b1d7cb016e806b32bee2c299df1af57239130c040c7bdd3b203991448d492fdb"
         },
-        "built_at": "2026-11-22T15:15:59.1229257Z",
-        "source_commit": "7451efce247ff1ae9720adf86ff02f23e3a87ea8",
+        "built_at": "2026-11-23T00:12:04.7397649Z",
+        "source_commit": "6ae507318691e703fd84afc5f1518137186165fe",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 22 Macaw door designs each for Veiled, Celestial, Murublight and Mossy Oak when their providers are installed."
+        "summary": "Adds 68 Macaw trapdoors across Veiled, Celestial, Murublight and Mossy Oak with provider-specific recipes and artwork."
       },
       "accepted": null,
       "rollback": null,
@@ -134,10 +141,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 31,
-    "activity_at": "2026-11-22T15:18:20Z",
-    "updated_at": "2026-11-22T15:18:20Z",
-    "last_codex_at": "2026-11-22T15:18:20Z",
-    "source_commit": "7451efce247ff1ae9720adf86ff02f23e3a87ea8"
+    "revision": 32,
+    "activity_at": "2026-11-23T00:19:06Z",
+    "updated_at": "2026-11-23T00:19:06Z",
+    "last_codex_at": "2026-11-23T00:19:06Z",
+    "source_commit": "6ae507318691e703fd84afc5f1518137186165fe"
   }
 }
