@@ -1,13 +1,15 @@
-# BGE × CTM Canary 12 manual verification
+# BGE × CTM Canary 13 manual verification
 
-Current candidate: `bge-ctm-0.12.0-canary12.jar`
+Current candidate: `bge-ctm-0.13.0-canary13.jar`
 
-- SHA-256: `a2b44e09dd333e8bb6cca0ded9501878e37dafaf9c1557a28644c58c0acd3b75`
-- Source checkpoint: `8f059adcd967696c2b2b58b3ac6c09acd6afa974`
+- SHA-256: `82756a80e721f866cbaf3030219c67284f157630364349b7c5af881c9fab2e60`
+- Source checkpoint: `ebc70aaa0baa305ac32c50d25d63a433b9274080`
 - Use Minecraft Java 26.2, Fabric Loader 0.19.3+, exact Continuity `3.0.1+26.2`, and BGE `>=4.2.22-bge.canary78.stair-wall-surface-authority+26.2` (exact `BGE C78.jar`, SHA-256 `ed2f5592b699532174bc63672f69c3574f01eb752175126bbc702e9cc86a07f0`, is the controlled baseline).
 - Lifecycle/evidence: `ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED`.
 
 Diagnostics are off by default. Enable bounded diagnostics only after a failed row with `-Dbge_ctm.diagnostics=true`; `-Dbge_ctm.diagnostics.disable=true` remains an explicit override. Unit tests and dedicated-server GameTests do not execute or visually validate the real client-only Continuity render path, depth buffer, or shader stack.
+
+For a diagnostic comparison, repeat a regular connection, an exact contact veto and a clipped Standard Overlay with the same states and camera. Compare the visible result with diagnostics off and on. With diagnostics on, check that the contact reason agrees with the result and that the emitted cell bounds and UVs agree with the selected footprint. A geometry stage skipped after an earlier rejection reports `NOT_EVALUATED`.
 
 ## Supplied Canary 11 observations
 
@@ -72,4 +74,4 @@ Confirm the shared-tessellation overlay remains stable and that the shader does 
 
 After a failure, retain the relevant bounded `APPEARANCE`, `RULE_SELECTION`, `REGULAR`, `OVERLAY`, and `OVERLAY_EMIT` lines with exact physical states, canonical states, native/canonical semantic decisions, contact decision, positions, rendered and canonical face, contribution reason, resource-pack order, and shader state. `RULE_SELECTION reason=NO_PROCESSOR`, `CANONICAL_SEMANTIC_REJECT`, `CARRIER_REJECTION_PROMOTED`, BGE geometry reasons, and `SHARED_TESSELLATION` distinguish the principal paths.
 
-Record only observed rows against the exact Canary 12/BGE C78 identities. Manual testing does not accept the project automatically.
+Record only observed rows against the exact Canary 13/BGE C78 identities. Manual testing does not accept the project automatically.

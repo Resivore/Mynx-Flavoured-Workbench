@@ -43,13 +43,13 @@
         "type": "PROJECT",
         "identifier": "4b2342fc-7bdf-5ba6-9f37-d551109d214c",
         "requirement": ">=4.2.22-bge.canary78.stair-wall-surface-authority+26.2",
-        "reason": "BGE C78 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry including all 40 resolved Stair states and all 161 nonempty Wall states, and typed terrain-height relation consumed generically by Canary 12; exact C78 is the controlled validation baseline."
+        "reason": "BGE C78 owns the authoritative canonical binding, state projection, canonical material-face semantics, exposed patch geometry including all 40 resolved Stair states and all 161 nonempty Wall states, and typed terrain-height relation consumed generically by Canary 13; exact C78 is the controlled validation baseline."
       },
       {
         "type": "MOD",
         "identifier": "continuity",
         "requirement": "=3.0.1+26.2",
-        "reason": "Canary 12 decorates the exact Continuity 3.0.1+26.2 connection-predicate, processor-slice, quad-context, per-probe Standard Overlay contact, SpriteCollector contribution assembly, processQuadInner emission, and final buffered output seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
+        "reason": "Canary 13 decorates the exact Continuity 3.0.1+26.2 connection-predicate, processor-slice, quad-context, per-probe Standard Overlay contact, SpriteCollector contribution assembly, processQuadInner emission, and final buffered output seams; required mixins and the controlled input hash fail closed on an incompatible implementation."
       },
       {
         "type": "MOD",
@@ -78,17 +78,17 @@
     ]
   },
   "state": {
-    "milestone": "Canary 12 updates the controlled provider to exact BGE C78 and consumes every supported canonically bound surface model through one geometry-agnostic resolver, including all 40 resolved Stair states and all 161 nonempty Wall states without Stair/Wall connection branches. C11 per-logical-sprite side/corner provenance, canonical material-face semantics, exact contact planes, typed terrain inset presentation, and receiver-local clipping remain intact. Exact Continuity 3.0.1 source and bytecode show that native Standard Overlay adds no RenderMaterial, decal, blend, depth-bias, or polygon-offset state beyond square geometry, sprite UV, tint, block atlas, animation, chunk layer, item render type, ambient occlusion and emission; C11 already preserved those non-geometric attributes. The remaining render-path difference was differently tessellated coplanar geometry: native full-face overlay and receiver share identical triangles, whereas a clipped projected overlay covered part of one larger receiver triangle pair. C12 delays managed overlay emission, partitions each retained receiver and every represented logical overlay at the same authoritative edges, and emits exact shared cells without epsilon offsets; nominal terrain overlays share their own unchanged presentation-plane grid. Owner evidence is recorded as six individual observations in TESTING.md and CODEX_LOG.md without an aggregate result. C12 has no Minecraft client visual evidence, so shader-off and Complementary depth stability remain owner-runtime checks.",
+    "milestone": "Canary 13 preserves C12 canonical material semantics, geometry-wide patch contact and shared overlay tessellation. Bounded diagnostics observe the actual regular and overlay decisions and emitted projection. Both JVM modes passed the controlled geometry and overlay suites. Minecraft client and shader observations are pending.",
     "releases": {
       "current": {
-        "version": "0.12.0-canary12",
-        "canary": 12,
+        "version": "0.13.0-canary13",
+        "canary": 13,
         "artifact": {
-          "filename": "bge-ctm-0.12.0-canary12.jar",
-          "sha256": "a2b44e09dd333e8bb6cca0ded9501878e37dafaf9c1557a28644c58c0acd3b75"
+          "filename": "bge-ctm-0.13.0-canary13.jar",
+          "sha256": "82756a80e721f866cbaf3030219c67284f157630364349b7c5af881c9fab2e60"
         },
-        "built_at": "2026-09-19T04:28:12.4920702Z",
-        "source_commit": "8f059adcd967696c2b2b58b3ac6c09acd6afa974",
+        "built_at": "2026-11-23T20:37:08.768737Z",
+        "source_commit": "ebc70aaa0baa305ac32c50d25d63a433b9274080",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -99,7 +99,7 @@
               "predicate": "~26.2",
               "reason": "The appearance bridge is compiled against the Minecraft 26.2 block-state and Fabric appearance method descriptors and must remain on the controlled target release.",
               "regression_evidence": [
-                "Canary 12 cleanly compiles and its 22/22 focused headless GameTests plus 40/40 unit tests execute against Minecraft 26.2 and Fabric API 0.156.0+26.2 with exact BGE C78."
+                "Canary 13 passed all 41 unit tests and 23 dedicated-server GameTests with diagnostics off and on using exact BGE C78, Minecraft 26.2 and Fabric API 0.156.0+26.2."
               ]
             },
             {
@@ -107,14 +107,14 @@
               "relationship": "depends",
               "dependency_id": "continuity",
               "predicate": "=3.0.1+26.2",
-              "reason": "Canary 12 injects exact Continuity 3.0.1+26.2 canonical connection-predicate, processor-slice, quad-context, StandardOverlayQuadProcessor unit-square/source-full-collision/final-contact, side/corner probe retention, SpriteCollector add assembly, processQuadInner QuadUtil.emitOverlayQuad, and final ProcessingContextImpl output seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
+              "reason": "Canary 13 injects exact Continuity 3.0.1+26.2 canonical connection-predicate, processor-slice, quad-context, StandardOverlayQuadProcessor unit-square/source-full-collision/final-contact, side/corner probe retention, SpriteCollector add assembly, processQuadInner QuadUtil.emitOverlayQuad, and final ProcessingContextImpl output seams; required mixins and the controlled input hash fail closed rather than guessing across an incompatible implementation.",
               "regression_evidence": [
                 "The exact Continuity 3.0.1+26.2 input is SHA-256 controlled; source and bytecode confirm side/corner probe selection, SpriteCollector assembly, the processQuadInner sprite loop, QuadUtil's complete non-geometric overlay attribute set with no hidden material/depth seam, and final buffered output; every decorated seam is verified as a required client mixin target."
               ]
             }
           ]
         },
-        "summary": "Consumes BGE C78 Stairs, Walls, and the complete supported geometry catalog through one surface contract and gives clipped Standard Overlays receiver-matched tessellation without offsets."
+        "summary": "Reuses exact contact decisions and emitted overlay projections for opt-in diagnostics and avoids allocating diagnostic budgets when disabled."
       },
       "accepted": null,
       "rollback": null,
@@ -128,10 +128,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 14,
-    "activity_at": "2026-09-19T04:28:12.4920702Z",
-    "updated_at": "2026-09-19T04:28:12.4920702Z",
-    "last_codex_at": "2026-09-19T04:28:12.4920702Z",
-    "source_commit": "8f059adcd967696c2b2b58b3ac6c09acd6afa974"
+    "revision": 15,
+    "activity_at": "2026-11-23T20:37:08.768737Z",
+    "updated_at": "2026-11-23T20:37:08.768737Z",
+    "last_codex_at": "2026-11-23T20:37:08.768737Z",
+    "source_commit": "ebc70aaa0baa305ac32c50d25d63a433b9274080"
   }
 }
