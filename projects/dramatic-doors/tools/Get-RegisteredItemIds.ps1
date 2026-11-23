@@ -60,6 +60,9 @@ $ids = @($keys | ForEach-Object {
     $names[$_]
 } | Sort-Object -Unique)
 
+$audit = Join-Path $projectRoot 'fabric/src/main/resources/dramaticdoors/amc_macaw_doors.tsv'
+$amcIds = @(Import-Csv -LiteralPath $audit -Delimiter "`t" | ForEach-Object { $_.tall.Split(':')[1] })
+$ids = @(($ids + $amcIds) | Sort-Object)
 if (-not $ValidateDefinitions) {
     $ids
     return
@@ -79,8 +82,13 @@ $definitionIds = if (Test-Path -LiteralPath $definitionRoot) {
 
 $packRoot = Join-Path $projectRoot 'common/src/main/resources/resourcepacks'
 $packedDefinitions = @{}
-foreach ($pack in Get-ChildItem -Directory -LiteralPath $packRoot) {
+$amcRoot = Join-Path $projectRoot 'fabric/build/generated/amcMacawDoors/resourcepacks'
+foreach ($pack in Get-ChildItem -Directory -LiteralPath $packRoot,$amcRoot) {
     $assets = Join-Path $pack.FullName 'assets/dramaticdoors'
+    $locale = Join-Path $assets 'lang/en_us.json'
+    if (Test-Path -LiteralPath $locale) {
+        $languageKeys += @((Get-Content -Raw -LiteralPath $locale | ConvertFrom-Json).PSObject.Properties.Name)
+    }
     foreach ($definition in Get-ChildItem -LiteralPath (Join-Path $assets 'items') -Filter '*.json') {
         $packedDefinitions.Add($definition.BaseName, $assets)
         $definitionIds += $definition.BaseName
@@ -117,7 +125,9 @@ foreach ($id in $ids) {
     }
     if ($model.textures.layer0 -match '^dramaticdoors:item/(.+)$') {
         $texturePath = Join-Path $textureRoot "item/$($Matches[1]).png"
-        if ($packedDefinitions.ContainsKey($id)) {
+        if ($id -in $amcIds) {
+            $texturePath = Join-Path $packedDefinitions[$id] "textures/item/$($Matches[1]).png"
+        } elseif ($packedDefinitions.ContainsKey($id)) {
             $relative = $packedDefinitions[$id].Substring($packRoot.Length + 1)
             $generated = Join-Path $projectRoot 'fabric/build/generated/nativeDoorArtwork/resourcepacks'
             $texturePath = Join-Path $generated "$relative/textures/item/${id}.png"

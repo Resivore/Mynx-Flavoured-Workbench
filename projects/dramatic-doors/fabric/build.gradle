@@ -111,7 +111,21 @@ def doorArtwork = tasks.register('generateNativeDoorArtwork', Exec) {
     executable javaToolchains.launcherFor(java.toolchain).get().executablePath.asFile
     args artTool, veiledSourceJar, mossyOakSourceJar, output.get().asFile
 }
+def mcArtJar = new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/26.2/minecraft-client.jar')
+def macawArtJar = rootProject.file('../../originals/mods/mcw-doors-1.1.5-mc26.2fabric.jar')
+def amcArtJar = rootProject.file('../architectural-material-closure/artifacts/AMC C30.jar')
+def ddArtJar = rootProject.file('artifacts/DD C11.jar')
+def amcTool = rootProject.file('tools/amc_macaw.py')
+def mapping = file('src/main/resources/dramaticdoors/amc_macaw_doors.tsv')
+def amcArtwork = tasks.register('generateAmcMacawDoors', Exec) {
+    def output = layout.buildDirectory.dir('generated/amcMacawDoors')
+    inputs.files(amcTool, mapping, mcArtJar, macawArtJar, amcArtJar, ddArtJar, veiledSourceJar, mossyOakSourceJar)
+    outputs.dir(output)
+    commandLine providers.gradleProperty('doorArtPython').getOrElse('python'), '-B', amcTool, mapping,
+            ddArtJar, amcArtJar, macawArtJar, mcArtJar, veiledSourceJar, mossyOakSourceJar, output.get().asFile
+}
 processResources {
+    from amcArtwork
     from doorArtwork
     from project(":common").sourceSets.main.resources
 }

@@ -54,6 +54,7 @@ public final class NativeDoorGameTests {
                 testReloadIds(helper, recipes, server.getRecipeManager().getRecipes().stream().map(r -> r.id()));
                 testReloadIds(helper, advancements, server.getAdvancements().getAllAdvancements().stream().map(a -> a.id()));
             }
+            AmcDoorChecks.check(helper);
             checkPair(helper, "minecraft:oak_door", "oak", true);
             checkPair(helper, "minecraft:pale_oak_door", "pale_oak", true);
             checkPair(helper, "enderscape:celestial_door", "celestial", enderscape);
@@ -76,49 +77,52 @@ public final class NativeDoorGameTests {
         var floor = base.below();
         level.setBlockAndUpdate(floor, Blocks.STONE.defaultBlockState());
         var hit = new BlockHitResult(Vec3.atCenterOf(floor).relative(Direction.UP, 0.5), Direction.UP, floor, false);
+        var ids = new java.util.ArrayList<>(AmcDoorChecks.doors());
         for (String material : List.of("pale_oak", "celestial", "murushroom", "veiled", "mossy_oak")) {
             for (String height : List.of("short", "tall")) {
-                var id = Identifier.parse("dramaticdoors:" + height + "_" + material + "_door");
-                if (BuiltInRegistries.ITEM.getOptional(id).isEmpty()) continue;
-                var item = (BlockItem) BuiltInRegistries.ITEM.getValue(id);
-                int count = height.equals("short") ? 1 : 3;
-                // Break every segment independently after actual item placement and interaction.
-                for (int segment = 0; segment < count; segment++) {
-                    level.setBlockAndUpdate(base, Blocks.WATER.defaultBlockState());
-                    var stack = item.getDefaultInstance();
-                    player.setYRot(90 * segment);
-                    item.place(new BlockPlaceContext(player, InteractionHand.MAIN_HAND, stack, hit));
-                    var first = level.getBlockState(base);
-                    test.assertTrue(first.is(item.getBlock()) && first.getValue(BlockStateProperties.WATERLOGGED), "Wet placement " + id);
-                    var target = base.above(segment);
-                    var use = new BlockHitResult(Vec3.atCenterOf(target), Direction.NORTH, target, false);
-                    level.getBlockState(target).useWithoutItem(level, player, use);
-                    for (int y = 0; y < count; y++) {
-                        var state = level.getBlockState(base.above(y));
-                        test.assertTrue(state.is(item.getBlock()) && state.getValue(BlockStateProperties.OPEN)
-                                && state.getValue(BlockStateProperties.HORIZONTAL_FACING) == first.getValue(BlockStateProperties.HORIZONTAL_FACING)
-                                && state.getValue(BlockStateProperties.DOOR_HINGE) == first.getValue(BlockStateProperties.DOOR_HINGE)
-                                && state.isPathfindable(PathComputationType.LAND), "Hand, orientation and path " + id);
-                        var saved = net.minecraft.nbt.NbtUtils.writeBlockState(state);
-                        test.assertTrue(net.minecraft.nbt.NbtUtils.readBlockState(level.registryAccess().lookupOrThrow(Registries.BLOCK),
-                                saved) == state, "Block state save/load " + id);
-                        if (count == 3) test.assertTrue(state.getValue(TallDoorBlock.THIRD) ==
-                                List.of(TripleBlockPart.LOWER, TripleBlockPart.MIDDLE, TripleBlockPart.UPPER).get(y), "Third " + id);
-                    }
-                    level.setBlockAndUpdate(target.east(), Blocks.REDSTONE_BLOCK.defaultBlockState());
-                    test.assertTrue(level.getBlockState(base).getValue(BlockStateProperties.POWERED), "Power " + id);
-                    level.setBlockAndUpdate(target.east(), Blocks.AIR.defaultBlockState());
-                    test.assertFalse(level.getBlockState(base).getValue(BlockStateProperties.OPEN), "Unpower " + id);
-                    level.destroyBlock(target, true);
-                    for (int y = 0; y < count; y++) {
-                        test.assertFalse(level.getBlockState(base.above(y)).is(item.getBlock()), "Break cleanup " + id);
-                    }
-                    var drops = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
-                            new net.minecraft.world.phys.AABB(base).inflate(3), drop -> drop.getItem().is(item));
-                    test.assertTrue(drops.stream().mapToInt(drop -> drop.getItem().getCount()).sum() == 1,
-                            "One drop breaking segment " + segment + " of " + id);
-                    drops.forEach(drop -> drop.discard());
+                ids.add(Identifier.parse("dramaticdoors:" + height + "_" + material + "_door"));
+            }
+        }
+        for (var id : ids) {
+            if (BuiltInRegistries.ITEM.getOptional(id).isEmpty()) continue;
+            var item = (BlockItem) BuiltInRegistries.ITEM.getValue(id);
+            int count = id.getPath().startsWith("short_") ? 1 : 3;
+            // Break every segment independently after actual item placement and interaction.
+            for (int segment = 0; segment < count; segment++) {
+                level.setBlockAndUpdate(base, Blocks.WATER.defaultBlockState());
+                var stack = item.getDefaultInstance();
+                player.setYRot(90 * segment);
+                item.place(new BlockPlaceContext(player, InteractionHand.MAIN_HAND, stack, hit));
+                var first = level.getBlockState(base);
+                test.assertTrue(first.is(item.getBlock()) && first.getValue(BlockStateProperties.WATERLOGGED), "Wet placement " + id);
+                var target = base.above(segment);
+                var use = new BlockHitResult(Vec3.atCenterOf(target), Direction.NORTH, target, false);
+                level.getBlockState(target).useWithoutItem(level, player, use);
+                for (int y = 0; y < count; y++) {
+                    var state = level.getBlockState(base.above(y));
+                    test.assertTrue(state.is(item.getBlock()) && state.getValue(BlockStateProperties.OPEN)
+                            && state.getValue(BlockStateProperties.HORIZONTAL_FACING) == first.getValue(BlockStateProperties.HORIZONTAL_FACING)
+                            && state.getValue(BlockStateProperties.DOOR_HINGE) == first.getValue(BlockStateProperties.DOOR_HINGE)
+                            && state.isPathfindable(PathComputationType.LAND), "Hand, orientation and path " + id);
+                    var saved = net.minecraft.nbt.NbtUtils.writeBlockState(state);
+                    test.assertTrue(net.minecraft.nbt.NbtUtils.readBlockState(level.registryAccess().lookupOrThrow(Registries.BLOCK),
+                            saved) == state, "Block state save/load " + id);
+                    if (count == 3) test.assertTrue(state.getValue(TallDoorBlock.THIRD) ==
+                            List.of(TripleBlockPart.LOWER, TripleBlockPart.MIDDLE, TripleBlockPart.UPPER).get(y), "Third " + id);
                 }
+                level.setBlockAndUpdate(target.east(), Blocks.REDSTONE_BLOCK.defaultBlockState());
+                test.assertTrue(level.getBlockState(base).getValue(BlockStateProperties.POWERED), "Power " + id);
+                level.setBlockAndUpdate(target.east(), Blocks.AIR.defaultBlockState());
+                test.assertFalse(level.getBlockState(base).getValue(BlockStateProperties.OPEN), "Unpower " + id);
+                level.destroyBlock(target, true);
+                for (int y = 0; y < count; y++) {
+                    test.assertFalse(level.getBlockState(base.above(y)).is(item.getBlock()), "Break cleanup " + id);
+                }
+                var drops = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                        new net.minecraft.world.phys.AABB(base).inflate(3), drop -> drop.getItem().is(item));
+                test.assertTrue(drops.stream().mapToInt(drop -> drop.getItem().getCount()).sum() == 1,
+                        "One drop breaking segment " + segment + " of " + id);
+                drops.forEach(drop -> drop.discard());
             }
         }
         test.succeed();

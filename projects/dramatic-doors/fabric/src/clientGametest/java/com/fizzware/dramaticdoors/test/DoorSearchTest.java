@@ -56,6 +56,23 @@ public final class DoorSearchTest implements IModPlugin, FabricClientGameTest {
                             }
                         }
                     }
+                    int amcCount = 0;
+                    for (var id : AmcDoorChecks.doors()) {
+                        var block = BuiltInRegistries.BLOCK.getOptional(id);
+                        if (block.isEmpty()) continue;
+                        var item = BuiltInRegistries.ITEM.getOptional(id).orElseThrow();
+                        String name = I18n.get(item.getDescriptionId());
+                        if (!name.startsWith("Tall ") || models.getItemModel(id) == missingItem
+                                || block.get().getStateDefinition().getPossibleStates().stream()
+                                .anyMatch(state -> states.get(state) == states.missingModel())
+                                || trees.creativeNameSearch().search(name.toLowerCase(Locale.ROOT)).stream().noneMatch(stack -> stack.is(item))) {
+                            throw new AssertionError("Missing AMC state, item model, translation or Creative Search entry " + id);
+                        }
+                        filter.setFilterText(name);
+                        if (filter.getFilteredItemStacks().stream().noneMatch(stack -> stack.is(item))) throw new AssertionError("Missing JEI entry " + id);
+                        amcCount++;
+                    }
+                    com.fizzware.dramaticdoors.DramaticDoors.LOGGER.info("Verified {} AMC tall doors in both search indexes and baked models.", amcCount);
                     com.fizzware.dramaticdoors.DramaticDoors.LOGGER.info("Verified all ten native doors in Creative Search, JEI and baked client models.");
                 } finally {
                     filter.setFilterText(previous);
