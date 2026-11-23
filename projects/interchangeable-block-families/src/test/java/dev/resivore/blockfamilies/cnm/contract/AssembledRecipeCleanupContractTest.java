@@ -159,9 +159,9 @@ class AssembledRecipeCleanupContractTest {
                         Map.entry("three_high_doors", 217L),
                         Map.entry("fence_gates", 24L),
                         Map.entry("vanilla_building_accessories", 42L)));
-        if (AMC_PRESENT) expectedCorpus.put("amc_families", 705L);
+        if (AMC_PRESENT) expectedCorpus.put("amc_families", 773L);
         assertEquals(expectedCorpus, countByCorpus(recipes));
-        assertEquals(AMC_PRESENT ? 2_277 : 1_572, recipes.size());
+        assertEquals(AMC_PRESENT ? 2_345 : 1_572, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -183,7 +183,7 @@ class AssembledRecipeCleanupContractTest {
         }
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
-        if (AMC_PRESENT) expectedRemoved.put("amc_families", 547L);
+        if (AMC_PRESENT) expectedRemoved.put("amc_families", 598L);
         expectedRemoved.put("two_high_doors", 260L);
         expectedRemoved.put("macaws_paths", 142L);
         expectedRemoved.put("trapdoors", 195L);
@@ -195,7 +195,7 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(AMC_PRESENT ? 1_676L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(AMC_PRESENT ? 1_727L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -485,7 +485,7 @@ class AssembledRecipeCleanupContractTest {
     private static List<RecipeFixture> amcRecipes() throws Exception {
         String namespace = "architectural_material_closure";
         var recipes = new ArrayList<>(recipesFromJar("amcReferenceJar", namespace, "amc_families"));
-        for (String pack : List.of("enderscape", "ribbits", "enderscape_doors", "ribbits_doors")) {
+        for (String pack : List.of("enderscape", "ribbits", "enderscape_doors", "ribbits_doors", "enderscape_trapdoors", "ribbits_trapdoors")) {
             recipes.addAll(recipesFromJarResults("amcReferenceJar", namespace, "amc_families",
                     null, "resourcepacks/" + pack + "/data/" + namespace + "/recipe/"));
         }

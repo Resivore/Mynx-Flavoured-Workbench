@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 259;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 1_977;
+    public static final int EXPECTED_FAMILY_COUNT = 262;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 2_031;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 23;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -839,7 +839,61 @@ public final class AuditedShapeFamilies {
             family("cnm/trapdoor/iron", TRAPDOOR, minecraft("iron_trapdoor"),
                     mcwTrapdoors("metal_full_trapdoor"),
                     mcwTrapdoors("metal_trapdoor"),
-                    mcwTrapdoors("metal_warning_trapdoor"))
+                    mcwTrapdoors("metal_warning_trapdoor")),
+            enderscapeFamily("cnm/trapdoor/enderscape_veiled", TRAPDOOR, enderscape("veiled_trapdoor"),
+                    amc("veiled_bamboo_trapdoor"),
+                    amc("veiled_bark_trapdoor"),
+                    amc("veiled_barn_trapdoor"),
+                    amc("veiled_barred_trapdoor"),
+                    amc("veiled_barrel_trapdoor"),
+                    amc("veiled_beach_trapdoor"),
+                    amc("veiled_blossom_trapdoor"),
+                    amc("veiled_classic_trapdoor"),
+                    amc("veiled_cottage_trapdoor"),
+                    amc("veiled_four_panel_trapdoor"),
+                    amc("veiled_glass_trapdoor"),
+                    amc("veiled_mystic_trapdoor"),
+                    amc("veiled_paper_trapdoor"),
+                    amc("veiled_ranch_trapdoor"),
+                    amc("veiled_swamp_trapdoor"),
+                    amc("veiled_tropical_trapdoor"),
+                    amc("veiled_whispering_trapdoor")),
+            enderscapeFamily("cnm/trapdoor/enderscape_celestial", TRAPDOOR, enderscape("celestial_trapdoor"),
+                    amc("celestial_bamboo_trapdoor"),
+                    amc("celestial_bark_trapdoor"),
+                    amc("celestial_barn_trapdoor"),
+                    amc("celestial_barred_trapdoor"),
+                    amc("celestial_barrel_trapdoor"),
+                    amc("celestial_beach_trapdoor"),
+                    amc("celestial_blossom_trapdoor"),
+                    amc("celestial_classic_trapdoor"),
+                    amc("celestial_cottage_trapdoor"),
+                    amc("celestial_four_panel_trapdoor"),
+                    amc("celestial_glass_trapdoor"),
+                    amc("celestial_mystic_trapdoor"),
+                    amc("celestial_paper_trapdoor"),
+                    amc("celestial_ranch_trapdoor"),
+                    amc("celestial_swamp_trapdoor"),
+                    amc("celestial_tropical_trapdoor"),
+                    amc("celestial_whispering_trapdoor")),
+            enderscapeFamily("cnm/trapdoor/enderscape_murublight", TRAPDOOR, enderscape("murublight_trapdoor"),
+                    amc("murublight_bamboo_trapdoor"),
+                    amc("murublight_bark_trapdoor"),
+                    amc("murublight_barn_trapdoor"),
+                    amc("murublight_barred_trapdoor"),
+                    amc("murublight_barrel_trapdoor"),
+                    amc("murublight_beach_trapdoor"),
+                    amc("murublight_blossom_trapdoor"),
+                    amc("murublight_classic_trapdoor"),
+                    amc("murublight_cottage_trapdoor"),
+                    amc("murublight_four_panel_trapdoor"),
+                    amc("murublight_glass_trapdoor"),
+                    amc("murublight_mystic_trapdoor"),
+                    amc("murublight_paper_trapdoor"),
+                    amc("murublight_ranch_trapdoor"),
+                    amc("murublight_swamp_trapdoor"),
+                    amc("murublight_tropical_trapdoor"),
+                    amc("murublight_whispering_trapdoor"))
     );
 
     private static final List<AuditedShapeFamily> WINDOWS = List.of(

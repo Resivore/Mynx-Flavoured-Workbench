@@ -122,11 +122,6 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "enderscape:murublight_wall_sign", "enderscape:murublight_wall_hanging_sign"
     );
 
-    private static final List<String> C8_ENDERSCAPE_DOOR_TRAPDOOR_EXCLUSIONS = List.of(
-            "enderscape:veiled_trapdoor",
-            "enderscape:celestial_trapdoor",
-            "enderscape:murublight_trapdoor"
-    );
 
     private static final List<String> C9_CANONICAL_RESULT_RECIPE_IDS = List.of(
             "minecraft:oak_sign",
@@ -272,7 +267,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 259 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 262 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -299,7 +294,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 1_977 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_031 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -395,22 +390,12 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     }
 
     @GameTest(maxTicks = 40)
-    public void c8EnderscapeDoorsAndTrapdoorsRemainOutsideDisplayCatalog(GameTestHelper helper) {
-        Set<Identifier> approved = approvedIds();
-        for (String value : C8_ENDERSCAPE_DOOR_TRAPDOOR_EXCLUSIONS) {
-            Identifier itemId = id(value);
-            helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(itemId)
-                            && BuiltInRegistries.ITEM.containsKey(itemId),
-                    "Pinned Enderscape no longer registers audited door/trapdoor " + itemId);
-            helper.assertTrue(!approved.contains(itemId),
-                    "Enderscape door/trapdoor entered the display catalog " + itemId);
-
-            Set<Identifier> intersection = new HashSet<>(ids(
-                    ShapeMap.getShapes(requiredItem(itemId))));
-            intersection.retainAll(approved);
-            helper.assertTrue(intersection.isEmpty(),
-                    "Enderscape door/trapdoor joined an approved ShapeMap component: "
-                            + itemId + " -> " + intersection);
+    public void enderscapeTrapdoorsStaySeparateFromDoorsAndDisplayFixtures(GameTestHelper helper) {
+        for (String wood : List.of("veiled", "celestial", "murublight")) {
+            String trapdoor = "enderscape:" + wood + "_trapdoor";
+            helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(id(trapdoor)), "Missing block " + trapdoor);
+            assertSeparate(helper, trapdoor, "enderscape:" + wood + "_door", "Trapdoor joined full-height doors");
+            assertSeparate(helper, trapdoor, "enderscape:" + wood + "_sign", "Trapdoor joined display fixtures");
         }
         helper.succeed();
     }
@@ -1239,7 +1224,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 }
                 continue;
             }
-            if (!amc && family.category() == AuditedShapeFamily.Category.TWO_HIGH_DOOR
+            if (!amc && (family.category() == AuditedShapeFamily.Category.TWO_HIGH_DOOR
+                    || family.category() == AuditedShapeFamily.Category.TRAPDOOR)
                     && !family.canonicalParent().getNamespace().equals("minecraft")) {
                 Item nativeDoor = requiredItem(family.canonicalParent());
                 helper.assertTrue(registered.equals(List.of(family.canonicalParent()))
@@ -1258,12 +1244,13 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         }
         checkMossyOak(helper);
         checkWoodDoors(helper, amc, enderscape);
+        checkWoodTrapdoors(helper, amc, enderscape);
         if (enderscape) {
             helper.assertTrue(hasRecipe(helper, "enderscape:murublight_door_from_celestial_door"),
                     "Lost Enderscape's native door conversion");
         }
-        int expectedFamilies = enderscape ? (amc ? 259 : 181) : (amc ? 222 : 164);
-        int expectedItems = enderscape ? (amc ? 1977 : 1397) : (amc ? 1733 : 1348);
+        int expectedFamilies = enderscape ? (amc ? 262 : 181) : (amc ? 222 : 164);
+        int expectedItems = enderscape ? (amc ? 2031 : 1397) : (amc ? 1733 : 1348);
         helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
                 "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
 
@@ -1436,6 +1423,40 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         }
     }
 
+    private static void checkWoodTrapdoors(GameTestHelper helper, boolean amc, boolean enderscape) {
+        for (String wood : List.of("veiled", "celestial", "murublight", "mossy_oak")) {
+            boolean mossyOak = wood.equals("mossy_oak");
+            String parent = (mossyOak ? "ribbits:" : "enderscape:") + wood + "_trapdoor";
+            boolean hasParent = enderscape && !mossyOak;
+            helper.assertTrue(BuiltInRegistries.ITEM.containsKey(id(parent)) == hasParent
+                            && BuiltInRegistries.BLOCK.containsKey(id(parent)) == hasParent,
+                    "Unexpected native trapdoor registration: " + parent);
+            var members = new java.util.ArrayList<>(List.of(parent));
+            for (String style : List.of("bamboo", "bark", "barn", "barred", "barrel", "beach", "blossom",
+                    "classic", "cottage", "four_panel", "glass", "mystic", "paper", "ranch", "swamp",
+                    "tropical", "whispering")) {
+                String alternate = "architectural_material_closure:" + wood + "_" + style + "_trapdoor";
+                boolean registered = amc && (enderscape || mossyOak);
+                helper.assertTrue(BuiltInRegistries.ITEM.containsKey(id(alternate)) == registered
+                                && BuiltInRegistries.BLOCK.containsKey(id(alternate)) == registered,
+                        "Unexpected AMC trapdoor registration: " + alternate);
+                if (registered && mossyOak) {
+                    Item item = requiredItem(alternate);
+                    helper.assertTrue(!AuditedShapeRuntime.isAudited(item) && !ShapeMap.isShape(item)
+                                    && hasRecipe(helper, alternate), "Lost independent Mossy Oak trapdoor: " + alternate);
+                }
+                members.add(alternate);
+            }
+            if (hasParent) {
+                if (amc) assertSelectorRoundTrip(helper, members);
+                else helper.assertTrue(!AuditedShapeRuntime.isAudited(requiredItem(parent)) && hasRecipe(helper, parent),
+                        "Lost standalone native trapdoor: " + parent);
+            }
+        }
+        if (enderscape) helper.assertTrue(hasRecipe(helper, "enderscape:murublight_trapdoor_from_celestial_trapdoor"),
+                "Lost Enderscape's native trapdoor conversion");
+    }
+
     private static void checkWoodDoors(GameTestHelper helper, boolean amc, boolean enderscape) {
         for (String wood : List.of("veiled", "celestial", "murublight", "mossy_oak")) {
             boolean mossyOak = wood.equals("mossy_oak");
@@ -1482,13 +1503,16 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         for (int index = 1; index < members.size(); index++) {
             ItemStack next = ShapeMap.transferStack(stack, index);
             assertTransferred(helper, stack, next, requiredItem(members.get(index)), members.get(index));
-            assertTransferred(helper, next, ShapeMap.transferStack(next, index - 1), stack.getItem(),
-                    "Reverse transfer to " + members.get(index - 1));
             helper.assertTrue(!hasRecipe(helper, members.get(index)),
                     "CNM retained an alternate recipe for " + members.get(index));
             stack = next;
         }
         assertTransferred(helper, stack, ShapeMap.transferStack(stack, 0), parent, "Return to " + parentId);
+        for (int index = members.size() - 2; index >= 0; index--) {
+            ItemStack previous = ShapeMap.transferStack(stack, index);
+            assertTransferred(helper, stack, previous, requiredItem(members.get(index)), "Reverse to " + members.get(index));
+            stack = previous;
+        }
         helper.assertTrue(hasRecipe(helper, parentId), "Canonical recipe missing for " + parentId);
     }
 

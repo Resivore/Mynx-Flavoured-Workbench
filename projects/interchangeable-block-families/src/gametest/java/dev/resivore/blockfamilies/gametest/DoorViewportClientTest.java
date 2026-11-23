@@ -32,7 +32,10 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
                     ClutterNoMoreClient.showTooltip = true;
                     for (String parent : List.of("enderscape:veiled_door", "enderscape:celestial_door",
                             "enderscape:murublight_door", "ribbits:mossy_oak_door")) {
-                        checkDoor(client, BuiltInRegistries.ITEM.getOptional(Identifier.parse(parent)).orElseThrow());
+                        checkFamily(client, parent, 23);
+                    }
+                    for (String wood : List.of("veiled", "celestial", "murublight")) {
+                        checkFamily(client, "enderscape:" + wood + "_trapdoor", 18);
                     }
                 } finally {
                     ClutterNoMoreClient.showTooltip = previous;
@@ -46,12 +49,13 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
         }
     }
 
-    private static void checkDoor(Minecraft client, Item parent) {
+    private static void checkFamily(Minecraft client, String parentId, int expectedSize) {
+        Item parent = BuiltInRegistries.ITEM.getOptional(Identifier.parse(parentId)).orElseThrow();
         ItemStack held = new ItemStack(parent, 7);
         client.player.setItemInHand(InteractionHand.MAIN_HAND, held);
         var overlay = new ShapeSwitcherOverlay(client, held, true);
         List<Item> members = ShapeMap.getShapes(parent);
-        if (members.size() != 23) throw new AssertionError("Expected 23 doors for " + parent);
+        if (members.size() != expectedSize) throw new AssertionError("Wrong selector size for " + parent);
         var stacks = members.stream().map(Item::getDefaultInstance).toList();
         var missing = client.getModelManager().getItemModel(Identifier.parse("interchangeable_block_families:missing"));
         for (int i = 0; i < members.size(); i++) {
@@ -74,7 +78,7 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
                 throw new AssertionError("Tooltip did not display " + expected + " inside its 12-icon viewport");
             }
         }
-        com.mojang.logging.LogUtils.getLogger().info("Verified 23 overlay and tooltip positions for {}", parent);
+        com.mojang.logging.LogUtils.getLogger().info("Verified {} overlay and tooltip positions for {}", expectedSize, parent);
     }
 
     private static final class DoorGraphics extends GuiGraphicsExtractor {
