@@ -312,3 +312,14 @@
 - Artifact: `IBF C29.jar` (embedded `0.1.0-canary29`, 67,091 bytes), SHA-256 `b5ef2765538d49ce46b8d51b97873026e03143350819ebbe82c8cf44f1ab4f97`, built at `2026-11-23T00:09:12.2693718Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of GUI scale, placement, drops and reload behavior in TESTING.md.
+
+## 2026-11-23T00:28:01Z — IBF C30 adds three native-parent Enderscape trapdoor selectors
+
+- Revision: 30
+- Source checkpoint: `56a00a6b97fe36813b82354fae45b64473930bf7`
+- Changes: Verified all 68 registered AMC C31 wood trapdoors. Integrated 51 alternatives under the native Veiled, Celestial and Murublight trapdoors in Macaw design order. The pinned Ribbits C17 and current C27 lack a native Mossy Oak trapdoor, so all 17 AMC Mossy Oak variants remain independent. Removing just the three new keys from the compiled catalog reproduces the ordered C29 digest `b5de8591c11d72b86fa78ca954988fb7328a77c713638159b6f0d1e1c302df58`.
+- Build/static: Both 55-test JUnit suites, Gradle build and archive isolation passed. With Enderscape, 38/38 server GameTests passed with and without AMC (262 families / 2,031 unique items and 181 / 1,397). Without Enderscape, both focused runs passed (222 / 1,733 and 164 / 1,348). Fabric rejected the missing required Ribbits provider at startup. Forward and reverse traversal preserved names, counts and component patches. The 51 new alternate recipes were removed, all 17 Mossy Oak recipes and all three native parent recipes survived, and Enderscape retained its trapdoor conversion. The assembled audit recorded 1,727 alternate removals with AMC and 1,114 without, zero canonical removals and zero surviving literal ingredient rewrites. The controlled client reached all 18 positions of each new selector and all 23 positions of the four prior door selectors in both the overlay and tooltip.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Artifact: `IBF C30.jar`, embedded version `0.1.0-canary30`, 67,883 bytes, SHA-256 `e8a48fdd1f6dd0bf7b9d1b9a544401067b24fdfab1424955031358901ed9d2ab`, built at `2026-11-23T00:25:33.4821112Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of GUI scale, placement, redstone interactions, recipe availability and reload behavior in TESTING.md.
