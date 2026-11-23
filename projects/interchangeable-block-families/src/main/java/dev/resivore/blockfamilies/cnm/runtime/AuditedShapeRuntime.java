@@ -124,6 +124,17 @@ public final class AuditedShapeRuntime {
                 || category == AuditedShapeFamily.Category.THREE_HIGH_DOOR;
     }
 
+    /** Single-block DD doors keep their own loot and need no multi-segment break handling. */
+    public static boolean isAuditedShortDoor(Item item) {
+        ResolvedCatalog catalog = resolvedCatalog;
+        if (catalog == null) return false;
+        ResolvedFamily family = catalog.byMember().get(item);
+        if (family == null || family.definition().category() != AuditedShapeFamily.Category.BUILDING_ACCESSORY
+                || family.members().getLast() != item) return false;
+        Identifier id = BuiltInRegistries.ITEM.getKey(item);
+        return id.getNamespace().equals("dramaticdoors") && id.getPath().startsWith("short_");
+    }
+
     public static boolean inSameFamily(Item first, Item second) {
         ResolvedCatalog catalog = resolvedCatalog;
         if (catalog == null) {

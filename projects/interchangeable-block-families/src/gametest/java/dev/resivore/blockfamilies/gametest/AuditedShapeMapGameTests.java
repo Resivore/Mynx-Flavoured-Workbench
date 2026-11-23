@@ -86,7 +86,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     "architectural_material_closure:veiled_blinds",
                     "architectural_material_closure:veiled_curtain_rod",
                     "architectural_material_closure:veiled_shutter",
-                    "architectural_material_closure:veiled_louvered_shutter"),
+                    "architectural_material_closure:veiled_louvered_shutter",
+                    "dramaticdoors:short_veiled_door"),
             List.of("enderscape:celestial_button", "enderscape:celestial_pressure_plate",
                     "architectural_material_closure:celestial_planks_path",
                     "architectural_material_closure:celestial_stem_parapet",
@@ -94,7 +95,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     "architectural_material_closure:celestial_blinds",
                     "architectural_material_closure:celestial_curtain_rod",
                     "architectural_material_closure:celestial_shutter",
-                    "architectural_material_closure:celestial_louvered_shutter"),
+                    "architectural_material_closure:celestial_louvered_shutter",
+                    "dramaticdoors:short_celestial_door"),
             List.of("enderscape:murublight_button", "enderscape:murublight_pressure_plate",
                     "architectural_material_closure:murublight_planks_path",
                     "architectural_material_closure:murublight_stem_parapet",
@@ -102,7 +104,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     "architectural_material_closure:murublight_blinds",
                     "architectural_material_closure:murublight_curtain_rod",
                     "architectural_material_closure:murublight_shutter",
-                    "architectural_material_closure:murublight_louvered_shutter"),
+                    "architectural_material_closure:murublight_louvered_shutter",
+                    "dramaticdoors:short_murushroom_door"),
             List.of("enderscape:polished_end_stone_button",
                     "enderscape:polished_end_stone_pressure_plate",
                     "architectural_material_closure:end_stone_bricks_parapet",
@@ -315,7 +318,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_176 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_192 : 1_412;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -511,7 +514,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 "mcwwindows:oak_blinds",
                 "mcwwindows:oak_curtain_rod",
                 "mcwwindows:oak_shutter",
-                "mcwwindows:oak_louvered_shutter"));
+                "mcwwindows:oak_louvered_shutter", "dramaticdoors:short_oak_door"));
         assertExactShapeSet(helper, "mcwpaths:stone_running_bond_path", List.of(
                 "mcwpaths:stone_running_bond_path",
                 "mcwpaths:stone_strewn_rocky_path",
@@ -1269,14 +1272,33 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             var family = AuditedShapeFamilies.families().stream().filter(f -> f.key().getPath().equals(key)).findFirst().orElseThrow();
             assertSelectorRoundTrip(helper, family.availableMembers(amc).stream().map(Identifier::toString).toList());
         }
-        for (String wood : List.of("veiled", "celestial", "murublight", "mossy_oak")) {
+        for (String wood : List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove",
+                "cherry", "pale_oak", "bamboo", "crimson", "warped", "veiled", "celestial", "murublight", "mossy_oak")) {
             boolean mossyOak = wood.equals("mossy_oak");
-            if (mossyOak ? !amc : !enderscape) continue;
-            String path = "cnm/building_accessory/" + (mossyOak ? "ribbits_" : "enderscape_") + wood;
+            boolean endWood = List.of("veiled", "celestial", "murublight").contains(wood);
+            String shortId = "dramaticdoors:short_" + (wood.equals("murublight") ? "murushroom" : wood) + "_door";
+            if (endWood && !enderscape) {
+                helper.assertTrue(!BuiltInRegistries.ITEM.containsKey(id(shortId)), "Unexpected " + shortId);
+                continue;
+            }
+            var item = requiredItem(shortId);
+            var block = BuiltInRegistries.BLOCK.getOptional(id(shortId)).orElseThrow();
+            helper.assertTrue(item instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() == block,
+                    "Wrong DD BlockItem for " + shortId);
+            var drops = net.minecraft.world.level.block.Block.getDrops(block.defaultBlockState(), helper.getLevel(),
+                    helper.absolutePos(new BlockPos(2, 1, 2)), null);
+            helper.assertTrue(drops.size() == 1 && drops.getFirst().is(item) && drops.getFirst().getCount() == 1,
+                    "Lost native DD drop for " + shortId + ": " + drops);
+            if (mossyOak && !amc) {
+                helper.assertTrue(!ShapeMap.isShape(item) && hasRecipe(helper, shortId), "Lost independent " + shortId);
+                continue;
+            }
+            String path = "cnm/building_accessory/" + (mossyOak ? "ribbits_" : endWood ? "enderscape_" : "") + wood;
             var family = AuditedShapeFamilies.families().stream()
                     .filter(candidate -> candidate.key().getPath().equals(path)).findFirst().orElseThrow();
             var members = family.availableMembers(amc).stream().map(Identifier::toString).toList();
-            helper.assertTrue(members.size() == (amc ? 9 : 2), "Accessory provider count for " + path);
+            int size = amc ? 10 : endWood ? 3 : wood.equals("bamboo") ? 5 : 10;
+            helper.assertTrue(members.size() == size && members.getLast().equals(shortId), "Accessory order for " + path);
             assertSelectorRoundTrip(helper, members);
         }
         checkWoodTrapdoors(helper, amc, enderscape);
@@ -1285,7 +1307,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                     "Lost Enderscape's native door conversion");
         }
         int expectedFamilies = enderscape ? (amc ? 268 : 181) : (amc ? 225 : 164);
-        int expectedItems = enderscape ? (amc ? 2176 : 1397) : (amc ? 1788 : 1348);
+        int expectedItems = enderscape ? (amc ? 2192 : 1412) : (amc ? 1801 : 1360);
         helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
                 "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
 
@@ -1514,8 +1536,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             helper.assertTrue(BuiltInRegistries.ITEM.containsKey(id(tallParent)) == (enderscape || mossyOak),
                     "Unexpected native tall door " + tallParent);
             if (enderscape || mossyOak) {
-                helper.assertTrue(hasRecipe(helper, "dramaticdoors:short_" + nativeWood + "_door")
-                        && hasRecipe(helper, tallParent), "Missing native conversion for " + parent);
+                helper.assertTrue(hasRecipe(helper, tallParent), "Missing native tall conversion for " + parent);
                 if (amc) {
                     assertSelectorRoundTrip(helper, tallMembers);
                     assertSeparate(helper, parent, tallParent, "Door heights merged for " + wood);
@@ -1557,20 +1578,16 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             helper.assertTrue(item instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() == block,
                     "Door block/item " + key);
             var level = helper.getLevel();
-            var recipe = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, key)).orElseThrow().value();
-            ItemStack output;
-            if (height.equals("tall")) {
-                var grid = net.minecraft.world.item.crafting.CraftingInput.of(1, 3, List.of(input, input, input));
-                var shaped = (net.minecraft.world.item.crafting.ShapedRecipe) recipe;
-                helper.assertTrue(shaped.matches(grid, level), "Vertical Pale Oak conversion");
-                output = shaped.assemble(grid);
-                helper.assertTrue(ShapeMap.getShapes(item).size() <= 1, "Unexpected tall Pale Oak alternatives");
-            } else {
-                var single = new net.minecraft.world.item.crafting.SingleRecipeInput(input);
-                var cut = (net.minecraft.world.item.crafting.StonecutterRecipe) recipe;
-                helper.assertTrue(cut.matches(single, level), "Pale Oak stonecutting");
-                output = cut.assemble(single);
+            if (height.equals("short")) {
+                helper.assertTrue(!hasRecipe(helper, key.toString()), "Retained Pale Oak short-door recipe");
+                continue;
             }
+            var recipe = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, key)).orElseThrow().value();
+            var grid = net.minecraft.world.item.crafting.CraftingInput.of(1, 3, List.of(input, input, input));
+            var shaped = (net.minecraft.world.item.crafting.ShapedRecipe) recipe;
+            helper.assertTrue(shaped.matches(grid, level), "Vertical Pale Oak conversion");
+            ItemStack output = shaped.assemble(grid);
+            helper.assertTrue(ShapeMap.getShapes(item).size() <= 1, "Unexpected tall Pale Oak alternatives");
             helper.assertTrue(output.is(item) && output.getCount() == 2, "Pale Oak output " + key);
         }
         helper.succeed();

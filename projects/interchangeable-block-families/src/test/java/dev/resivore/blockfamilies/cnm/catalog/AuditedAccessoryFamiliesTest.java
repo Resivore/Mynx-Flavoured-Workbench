@@ -82,7 +82,8 @@ final class AuditedAccessoryFamiliesTest {
                         id("mcwwindows:oak_blinds"),
                         id("mcwwindows:oak_curtain_rod"),
                         id("mcwwindows:oak_shutter"),
-                        id("mcwwindows:oak_louvered_shutter")),
+                        id("mcwwindows:oak_louvered_shutter"),
+                        id("dramaticdoors:short_oak_door")),
                 family("oak").members());
         assertEquals(List.of(
                         id("minecraft:spruce_button"),
@@ -93,7 +94,8 @@ final class AuditedAccessoryFamiliesTest {
                         id("mcwwindows:spruce_blinds"),
                         id("mcwwindows:spruce_curtain_rod"),
                         id("mcwwindows:spruce_shutter"),
-                        id("mcwwindows:spruce_louvered_shutter")),
+                        id("mcwwindows:spruce_louvered_shutter"),
+                        id("dramaticdoors:short_spruce_door")),
                 family("spruce").members());
         assertEquals(List.of(
                         id("minecraft:bamboo_button"),
@@ -104,7 +106,8 @@ final class AuditedAccessoryFamiliesTest {
                         id("architectural_material_closure:bamboo_blinds"),
                         id("architectural_material_closure:bamboo_curtain_rod"),
                         id("mcwwindows:bamboo_shutter"),
-                        id("architectural_material_closure:bamboo_louvered_shutter")),
+                        id("architectural_material_closure:bamboo_louvered_shutter"),
+                        id("dramaticdoors:short_bamboo_door")),
                 family("bamboo").members());
         assertEquals(List.of(
                         id("minecraft:polished_blackstone_button"),
@@ -132,7 +135,7 @@ final class AuditedAccessoryFamiliesTest {
                 "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
                 "mangrove", "cherry", "pale_oak", "bamboo", "crimson", "warped")) {
             for (Identifier member : family(wood).members()) {
-                assertTrue(member.getPath().startsWith(wood + "_"),
+                assertTrue(member.getPath().startsWith(wood + "_") || member.equals(id("dramaticdoors:short_" + wood + "_door")),
                         family(wood).key() + " crosses its species boundary at " + member);
             }
         }
@@ -141,7 +144,7 @@ final class AuditedAccessoryFamiliesTest {
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
         assertEquals(72, accessories.size());
-        assertEquals(571, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(587, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }

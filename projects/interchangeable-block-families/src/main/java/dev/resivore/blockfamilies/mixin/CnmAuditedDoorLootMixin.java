@@ -42,7 +42,7 @@ abstract class CnmAuditedDoorLootMixin {
         Item sourceItem = state.getBlock().asItem();
         if (AuditedDoorBreakContext.suppressesSegmentDrop(sourceItem)) {
             cir.setReturnValue(List.of());
-        } else if (AuditedShapeRuntime.isAuditedAlternateDoor(sourceItem)) {
+        } else if (AuditedShapeRuntime.isAuditedAlternateDoor(sourceItem) || AuditedShapeRuntime.isAuditedShortDoor(sourceItem)) {
             cir.setReturnValue(providerDrops);
         }
     }

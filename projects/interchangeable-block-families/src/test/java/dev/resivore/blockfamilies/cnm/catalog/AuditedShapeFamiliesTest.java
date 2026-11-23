@@ -31,7 +31,7 @@ class AuditedShapeFamiliesTest {
     @Test
     void exposesExactAuditedTotals() {
         assertEquals(268, AuditedShapeFamilies.families().size());
-        assertEquals(2_176, AuditedShapeFamilies.uniqueMemberCount());
+        assertEquals(2_192, AuditedShapeFamilies.uniqueMemberCount());
         assertEquals(23, AuditedShapeFamilies.largestFamilySize());
         assertEquals(AuditedShapeFamilies.EXPECTED_FAMILY_COUNT, AuditedShapeFamilies.families().size());
         assertEquals(AuditedShapeFamilies.EXPECTED_UNIQUE_MEMBER_COUNT,
@@ -61,7 +61,7 @@ class AuditedShapeFamiliesTest {
                 FENCE_GATE, 64,
                 BAR_CHAIN, 30,
                 BBB_DETAIL, 225,
-                BUILDING_ACCESSORY, 571);
+                BUILDING_ACCESSORY, 587);
 
         for (AuditedShapeFamily.Category category : AuditedShapeFamily.Category.values()) {
             List<AuditedShapeFamily> families = AuditedShapeFamilies.families(category);
@@ -89,7 +89,7 @@ class AuditedShapeFamiliesTest {
         assertFalse(keys.contains(id("interchangeable_block_families", "cnm/building_accessory/end_stone_bricks_button")));
         assertTrue(members.stream().noneMatch(member -> member.getNamespace().equals("extshape")));
         assertEquals(268, keys.size());
-        assertEquals(2_176, members.size());
+        assertEquals(2_192, members.size());
     }
 
     @Test
@@ -136,7 +136,7 @@ class AuditedShapeFamiliesTest {
         assertEquals(Map.of(4, 16L), sizeDistribution(FENCE_GATE));
         assertEquals(Map.of(2, 1L, 3, 8L, 4, 1L), sizeDistribution(BAR_CHAIN));
         assertEquals(Map.of(4, 16L, 5, 1L, 6, 26L), sizeDistribution(BBB_DETAIL));
-        assertEquals(Map.of(4, 27L, 9, 16L, 11, 29L),
+        assertEquals(Map.of(4, 27L, 10, 16L, 11, 29L),
                 sizeDistribution(BUILDING_ACCESSORY));
     }
 
@@ -161,7 +161,7 @@ class AuditedShapeFamiliesTest {
                 id("dramaticdoors", "tall_copper_door"),
                 id("dramaticdoors", "tall_waxed_oxidized_copper_door"),
                 id("dramaticdoors", "tall_pale_oak_door"),
-                id("dramaticdoors", "short_oak_door"),
+                id("dramaticdoors", "short_iron_door"),
                 id("dramaticdoors", "tall_macaw_oak_classic_door"),
                 id("dramaticdoors", "tall_macaw_spruce_cottage_door"),
                 id("dramaticdoors", "tall_macaw_birch_paper_door"),
@@ -228,13 +228,32 @@ class AuditedShapeFamiliesTest {
 
     @Test
     void canonicalExpandedCatalogHasStableDigest() throws NoSuchAlgorithmException {
-        assertEquals("5C6AF4BA1753335290C1BC61E50BF5E5FAB576BB4B93E7079895AF1C992E6AAD",
+        assertEquals("A8511CC3B72BC72FDBFC69252983352D5B53CA7411682CBDB642A7C55CA10F3B",
                 digest(AuditedShapeFamilies.families()));
     }
 
     @Test
     void earlierCanaryCatalogsKeepTheirExactOrderAndMembership() throws NoSuchAlgorithmException {
-        var c32 = previousCatalog(AuditedShapeFamilies.families(), Set.of("cnm/building_accessory/ribbits_mossy_oak"), Map.of())
+        var shortDoors = Map.ofEntries(
+                Map.entry("cnm/building_accessory/oak", 1),
+                Map.entry("cnm/building_accessory/spruce", 1),
+                Map.entry("cnm/building_accessory/birch", 1),
+                Map.entry("cnm/building_accessory/jungle", 1),
+                Map.entry("cnm/building_accessory/acacia", 1),
+                Map.entry("cnm/building_accessory/dark_oak", 1),
+                Map.entry("cnm/building_accessory/mangrove", 1),
+                Map.entry("cnm/building_accessory/cherry", 1),
+                Map.entry("cnm/building_accessory/pale_oak", 1),
+                Map.entry("cnm/building_accessory/bamboo", 1),
+                Map.entry("cnm/building_accessory/crimson", 1),
+                Map.entry("cnm/building_accessory/warped", 1),
+                Map.entry("cnm/building_accessory/enderscape_veiled", 1),
+                Map.entry("cnm/building_accessory/enderscape_celestial", 1),
+                Map.entry("cnm/building_accessory/enderscape_murublight", 1),
+                Map.entry("cnm/building_accessory/ribbits_mossy_oak", 1));
+        var c33 = previousCatalog(AuditedShapeFamilies.families(), Set.of(), shortDoors);
+        assertEquals("5C6AF4BA1753335290C1BC61E50BF5E5FAB576BB4B93E7079895AF1C992E6AAD", digest(c33));
+        var c32 = previousCatalog(c33, Set.of("cnm/building_accessory/ribbits_mossy_oak"), Map.of())
                 .stream().map(family -> switch (family.key().getPath()) {
                     case "cnm/building_accessory/enderscape_veiled","cnm/building_accessory/enderscape_celestial",
                             "cnm/building_accessory/enderscape_murublight" -> new AuditedShapeFamily(

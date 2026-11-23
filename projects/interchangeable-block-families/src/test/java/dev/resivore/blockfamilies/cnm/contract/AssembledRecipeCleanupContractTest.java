@@ -135,8 +135,7 @@ class AssembledRecipeCleanupContractTest {
         recipes.addAll(recipesFromJar("macawsPathsReferenceJar", "mcwpaths", "macaws_paths"));
         recipes.addAll(recipesFromJar("macawsTrapdoorsReferenceJar", "mcwtrpdoors", "trapdoors"));
         recipes.addAll(recipesFromJar("macawsWindowsReferenceJar", "mcwwindows", "windows_and_shutters"));
-        recipes.addAll(recipesFromJar(
-                "dramaticDoorsReferenceJar", "dramaticdoors", "dramatic_packaged_static"));
+
         recipes.addAll(recipesFromJarResults(
                 "minecraftReferenceJar", "minecraft", "minecraft_display_fixtures",
                 MINECRAFT_DISPLAY_RESULTS));
@@ -148,6 +147,8 @@ class AssembledRecipeCleanupContractTest {
             recipes.addAll(amcRecipes());
             recipes.addAll(ddAmcTallRecipes());
         }
+        recipes.addAll(recipesFromJar("dramaticDoorsReferenceJar", "dramaticdoors", "dramatic_packaged_static"));
+        recipes.addAll(nativeDoorCuttingRecipes());
         recipes.addAll(dynamicAndModeledRecipes());
 
         Map<String, Long> expectedCorpus = new LinkedHashMap<>(Map.ofEntries(
@@ -156,6 +157,7 @@ class AssembledRecipeCleanupContractTest {
                         Map.entry("trapdoors", 207L),
                         Map.entry("windows_and_shutters", 335L),
                         Map.entry("dramatic_packaged_static", 59L),
+                        Map.entry("dd_native_cutting", 5L),
                         Map.entry("minecraft_display_fixtures", 36L),
                         Map.entry("enderscape_approved_families", 40L),
                         Map.entry("bbb_enderscape_families", 18L),
@@ -165,7 +167,7 @@ class AssembledRecipeCleanupContractTest {
         if (AMC_PRESENT) expectedCorpus.put("dd_amc_tall", 88L);
         if (AMC_PRESENT) expectedCorpus.put("amc_families", 809L);
         assertEquals(expectedCorpus, countByCorpus(recipes));
-        assertEquals(AMC_PRESENT ? 2_469 : 1_572, recipes.size());
+        assertEquals(AMC_PRESENT ? 2_474 : 1_577, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -189,6 +191,8 @@ class AssembledRecipeCleanupContractTest {
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
         if (AMC_PRESENT) expectedRemoved.put("dd_amc_tall", 88L);
         if (AMC_PRESENT) expectedRemoved.put("amc_families", 649L);
+        expectedRemoved.put("dramatic_packaged_static", 11L);
+        expectedRemoved.put("dd_native_cutting", AMC_PRESENT ? 5L : 4L);
         expectedRemoved.put("two_high_doors", 260L);
         expectedRemoved.put("macaws_paths", 142L);
         expectedRemoved.put("trapdoors", 195L);
@@ -200,7 +204,7 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(AMC_PRESENT ? 1_866L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(AMC_PRESENT ? 1_882L : 1_129L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -222,6 +226,8 @@ class AssembledRecipeCleanupContractTest {
             recipes.addAll(amcRecipes());
             recipes.addAll(ddAmcTallRecipes());
         }
+        recipes.addAll(recipesFromJar("dramaticDoorsReferenceJar", "dramaticdoors", "dramatic_packaged_static"));
+        recipes.addAll(nativeDoorCuttingRecipes());
         recipes.addAll(dynamicAndModeledRecipes());
 
         ShapeFamilies shapes = ShapeFamilies.fromCatalog();
@@ -262,7 +268,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(AMC_PRESENT ? 781 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(AMC_PRESENT ? 797 : 301, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",
@@ -491,6 +497,16 @@ class AssembledRecipeCleanupContractTest {
                 "data/" + namespace + "/recipe/");
     }
 
+    // DDCompatRecipe.createNativeWoodRecipes uses stonecutting on the controlled provider stack.
+    private static List<RecipeFixture> nativeDoorCuttingRecipes() {
+        return Map.of("pale_oak", "minecraft:pale_oak_door", "veiled", "enderscape:veiled_door",
+                "celestial", "enderscape:celestial_door", "murushroom", "enderscape:murublight_door",
+                "mossy_oak", "ribbits:mossy_oak_door").entrySet().stream().map(entry -> {
+            String id = "dramaticdoors:short_" + entry.getKey() + "_door";
+            return new RecipeFixture("dd_native_cutting", id, id, List.of(entry.getValue()), true);
+        }).toList();
+    }
+
     private static List<RecipeFixture> ddAmcTallRecipes() throws Exception {
         try (JarFile jar = new JarFile(requiredPath("dramaticDoorsReferenceJar").toFile());
              var input = jar.getInputStream(jar.getJarEntry("dramaticdoors/amc_macaw_doors.tsv"));
@@ -547,7 +563,14 @@ class AssembledRecipeCleanupContractTest {
                         : resultElement.getAsString();
                 if (allowedResults != null && !allowedResults.contains(result)) continue;
                 String type = json.get("type").getAsString();
-                boolean cleanupEligible = !type.equals("enderscape:void_lachryma");
+                // Woodworks is absent from this provider matrix. DD ships its conditional sawmill
+                // alternatives alongside the stonecutting files in the static archive.
+                boolean gatedSawmill = type.equals("woodworks:sawmill");
+                if (gatedSawmill) {
+                    assertEquals("woodworks", json.getAsJsonObject("fabric:load_conditions")
+                            .getAsJsonArray("values").get(0).getAsString(), recipeId);
+                }
+                boolean cleanupEligible = !gatedSawmill && !type.equals("enderscape:void_lachryma");
                 recipes.add(new RecipeFixture(
                         corpus, recipeId, result, ingredientSlots(json, recipeId), cleanupEligible));
             }

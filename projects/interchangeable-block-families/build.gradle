@@ -126,7 +126,7 @@ def cnmReferenceJar = referenceJar(
         '../../originals/mods/clutternomore-2.0.7+26.2-fabric.jar')
 def dramaticDoorsReferenceJar = referenceJar(
         'dramatic_doors_reference_jar',
-        '../dramatic-doors/artifacts/DD C12.jar')
+        '../dramatic-doors/artifacts/DD C14.jar')
 def nibaruReferenceJar = referenceJar(
         'nibaru_reference_jar',
         '../nibaru/artifacts/more-slabs-stairs-and-walls-4.2.0+26.2-port-canary43-native-directional-material-axis.jar')

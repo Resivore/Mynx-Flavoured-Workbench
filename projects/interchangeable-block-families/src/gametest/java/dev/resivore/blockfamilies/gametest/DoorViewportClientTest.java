@@ -31,11 +31,14 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
             var server = world.getServer();
             var families = new LinkedHashMap<String, Integer>();
             families.put("architectural_material_closure:mossy_oak_classic_trapdoor", 17);
-            families.put("minecraft:bamboo_button", 9);
-            for (String wood : List.of("veiled", "celestial", "murublight")) {
-                families.put("enderscape:" + wood + "_button", 9);
+            for (String wood : List.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+                    "mangrove", "cherry", "pale_oak", "bamboo", "crimson", "warped")) {
+                families.put("minecraft:" + wood + "_button", 10);
             }
-            families.put("architectural_material_closure:mossy_oak_button", 9);
+            for (String wood : List.of("veiled", "celestial", "murublight")) {
+                families.put("enderscape:" + wood + "_button", 10);
+            }
+            families.put("architectural_material_closure:mossy_oak_button", 10);
             families.put("minecraft:bamboo_trapdoor", 18);
             for (String wood : List.of("veiled", "celestial", "murushroom", "mossy_oak")) {
                 families.put("dramaticdoors:tall_" + wood + "_door", 23);
@@ -75,8 +78,11 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
                     }
                     before.forEach((parent, members) -> {
                         if (!members.equals(ShapeMap.getShapes(parent))) throw new AssertionError("Client reload order differs for " + parent);
-                        checkFamily(client, BuiltInRegistries.ITEM.getKey(parent).toString(), members.size());
+                        if (members.size() != 10) {
+                            checkFamily(client, BuiltInRegistries.ITEM.getKey(parent).toString(), members.size());
+                        }
                     });
+                    checkShortDoorScales(client, families);
                     for (String parent : List.of("enderscape:veiled_door", "enderscape:celestial_door",
                             "enderscape:murublight_door", "ribbits:mossy_oak_door")) {
                         checkFamily(client, parent, 23);
@@ -96,9 +102,37 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
         }
     }
 
+    private static void checkShortDoorScales(Minecraft client, Map<String, Integer> families) {
+        var scale = client.options.guiScale();
+        int restore = scale.get();
+        int narrow = client.getWindow().calculateScale(0, client.options.forceUnicodeFont().get());
+        if (narrow <= 1) throw new AssertionError("Test window must support two GUI scales");
+        try {
+            for (int setting : List.of(1, narrow)) {
+                scale.set(setting);
+                client.resizeGui();
+                if (client.getWindow().getGuiScale() != setting) throw new AssertionError("GUI scale " + setting);
+                int width = client.getWindow().getGuiScaledWidth();
+                families.forEach((parent, size) -> {
+                    if (size == 10) checkFamily(client, parent, size, width);
+                });
+                com.mojang.logging.LogUtils.getLogger().info("Checked 16 short-door selectors at GUI scale {} (width {})", setting, width);
+            }
+        } finally {
+            scale.set(restore);
+            client.resizeGui();
+        }
+    }
+
     private static void checkFamily(Minecraft client, String parentId, int expectedSize) {
+        checkFamily(client, parentId, expectedSize, 320);
+    }
+
+    private static void checkFamily(Minecraft client, String parentId, int expectedSize, int guiWidth) {
         Item parent = BuiltInRegistries.ITEM.getOptional(Identifier.parse(parentId)).orElseThrow();
         ItemStack held = new ItemStack(parent, 7);
+        held.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Viewport transfer"));
+        held.set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE, 37);
         client.player.setItemInHand(InteractionHand.MAIN_HAND, held);
         var overlay = new ShapeSwitcherOverlay(client, held, true);
         List<Item> members = ShapeMap.getShapes(parent);
@@ -110,15 +144,28 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
             if (client.getModelManager().getItemModel(BuiltInRegistries.ITEM.getKey(expected)) == missing) {
                 throw new AssertionError("Missing client door model: " + expected);
             }
+            if (expectedSize == 10 && i == 9) {
+                String wood = Identifier.parse(parentId).getPath().replaceFirst("_button$", "");
+                var expectedId = Identifier.parse("dramaticdoors:short_" + (wood.equals("murublight") ? "murushroom" : wood) + "_door");
+                String name = "Short " + java.util.Arrays.stream(wood.split("_"))
+                        .map(part -> Character.toUpperCase(part.charAt(0)) + part.substring(1))
+                        .collect(java.util.stream.Collectors.joining(" ")) + " Door";
+                ItemStack result = ShapeMap.transferStack(held, i);
+                if (!BuiltInRegistries.ITEM.getKey(result.getItem()).equals(expectedId) || !result.is(expected)
+                        || !result.getItemName().getString().equals(name) || !result.getHoverName().equals(held.getHoverName())
+                        || result.getCount() != 7 || !result.getComponentsPatch().equals(held.getComponentsPatch())) {
+                    throw new AssertionError("Wrong tenth item, name, count or components for " + expectedId);
+                }
+            }
             if (i > 0) overlay.onMouseScrolled(-1);
-            var graphics = new DoorGraphics(client, expectedSize > 12);
+            var graphics = new DoorGraphics(client, expectedSize > 12, guiWidth);
             overlay.render(graphics, 1.0F);
             if (overlay.selectedIndex != i || Math.abs(graphics.x(expected) - (graphics.guiWidth() / 2 - 8)) > 1) {
                 throw new AssertionError("Overlay did not center " + expected);
             }
 
             var tooltip = new ClientShapeTooltip(new ShapeTooltip(stacks, i));
-            graphics = new DoorGraphics(client, true);
+            graphics = new DoorGraphics(client, true, guiWidth);
             int width = tooltip.getWidth(client.font);
             tooltip.extractImage(client.font, 0, 0, width, tooltip.getHeight(client.font), graphics);
             int visible = Math.min(12, expectedSize);
@@ -134,14 +181,17 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
 
         final boolean checkAllBounds;
 
-        DoorGraphics(Minecraft client, boolean checkAllBounds) {
+        final int width;
+
+        DoorGraphics(Minecraft client, boolean checkAllBounds, int width) {
             super(client, new GuiRenderState(), 0, 0);
             this.checkAllBounds = checkAllBounds;
+            this.width = width;
         }
 
         @Override
         public int guiWidth() {
-            return 320;
+            return width;
         }
 
         @Override
