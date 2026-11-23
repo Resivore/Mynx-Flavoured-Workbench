@@ -1,0 +1,86 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 3,
+  "identity": {
+    "uuid": "4bd5655d-0cbc-429d-a071-ea178e10fb92",
+    "name": "Croak Soldier Piglins",
+    "project_id": "croak-soldier-piglins",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Render ordinary adult piglins using the Croak Soldier rig, atlas, and authored keyframes."
+    ],
+    "scope": [
+      "Client-side external archive binding, animation state selection, and exact entity/render-state dispatch."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/croak-soldier-piglins"
+      ],
+      "exclusions": [
+        "Equipment fitting, other piglin variants, gameplay logic, third-party asset redistribution, and testing profiles."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "=26.2",
+        "reason": "Target client renderer ABI."
+      },
+      {
+        "type": "MOD",
+        "identifier": "fabricloader",
+        "requirement": ">=0.19.3",
+        "reason": "Client mixin loading."
+      },
+      {
+        "type": "MOD",
+        "identifier": "geckolib",
+        "requirement": "Compatible Fabric 26.2 provider",
+        "reason": "Bakes the original rig and evaluates per-entity animation controllers."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Canary 1 passed off-game bake and archive checks. In-game appearance, transitions and EMF/ETF coexistence await owner observations.",
+    "releases": {
+      "current": {
+        "version": "C1",
+        "canary": 1,
+        "embedded_version": "0.1.0+26.2-canary1",
+        "artifact": {
+          "filename": "croak-soldier-piglins-0.1.0+26.2-canary1.jar",
+          "sha256": "0c0ae5382fa1fb8e7952f45fa38836b756d90ec7b9f46978a1a6b5ab5e113a32"
+        },
+        "built_at": "2026-11-23T07:17:33.145103Z",
+        "source_commit": "db298f859c11c2da95bdb3ea9e482174e0606887",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        },
+        "summary": "Renders ordinary adult piglins using the original Croak Soldier assets and five animation clips from a user-supplied archive."
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-11-23T07:19:03.151172Z",
+    "updated_at": "2026-11-23T07:19:03.151172Z",
+    "last_codex_at": "2026-11-23T07:19:03.151172Z",
+    "source_commit": "db298f859c11c2da95bdb3ea9e482174e0606887"
+  }
+}
