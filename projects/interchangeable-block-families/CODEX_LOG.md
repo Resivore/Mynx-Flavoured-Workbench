@@ -345,3 +345,14 @@
 - Artifact: `IBF C32.jar`, embedded version `0.1.0-canary32`, 70,066 bytes, SHA-256 `e4a02b12fc5fbe549c30d982f64566a05a7d5dfd38a573c138c2a3c832f562dd`, built at `2026-11-23T01:14:33.7787367Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of crafting, selection at gameplay GUI scales, placement, redstone, drops and reload in TESTING.md.
+
+## 2026-11-23T02:06:47Z — IBF C33 wood accessories
+
+- Revision: 33
+- Source checkpoint: `979d2b7f941285f56b85afe0957b473465beb6ef`
+- Changes: Extend the three Enderscape accessory families with seven AMC shapes each and introduce the nine-member Ribbits Mossy Oak accessory family. Preserve native Enderscape control pairs when AMC is absent and omit Mossy Oak when its canonical AMC Button is unavailable.
+- Build/static: Verified exact retained AMC C33 (SHA-256 9c4385405ad0e2eb0b91dbb2ed8a0a50ce56680204a4cd1f8e3c9d59d7ea5ded), DD C12, Java 25, JUnit, production archive isolation, and compiled catalog comparison with C32. Only the four intended families changed. Catalog totals in AMC/Enderscape present, Enderscape only, AMC only and neither were 268/2176, 181/1397, 225/1788 and 164/1348 families/items. Fabric GameTests passed 39/39, 39/39, 1/1 and 1/1, including switching named stacks with a component patch and all canonical recipes. Full corpus suppresses 1,866 alternate recipes with AMC, 1,114 without. Controlled client verified all 36 new selector positions in the overlay and tooltip after reload. Removing required Ribbits, Macaw Doors, Windows or Trapdoors individually produced the expected loader diagnostic. DD short/tall Pale Oak recipes yielded two, both client models resolved, and no other qualifying tall Pale Oak member was found.
+- Runtime: Owner visual and gameplay verification and acceptance pending.
+- Artifact: `IBF C33.jar`, 70,509 bytes, SHA-256 `6654289b34e9003619a9a91c8ae2ea9646b15ceaa0761c2dbff7cc5b4f974d62`, built_at `2026-11-23T01:57:07.7536411Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of placed accessories, shutter motifs, controls and nine-position selectors against both C33 artifacts.
