@@ -1,6 +1,18 @@
-# Testing Foundation v9
+# Testing Foundation v10
 
-Use `Foundation v9.zip`, Canary 5, SHA-256 `ecab2e5963df45805947b12a96dce8c586969ec2ba70737dd49b6d6b60946b2d`. In an owner-directed Minecraft Java 26.2 session, give Foundation higher priority than Matcha Flavoured 1.12. Foundation includes the Matcha Overlays v37 resources. The native catalog below was checked against BBB Canary 9 (dev.7) and Macaw's Windows 2.4.2. Use the pack stack's connected-texture renderer for the overlay checks and AMC for its six additional forms.
+Use `Foundation v10.zip`, Canary 6, SHA-256 `ebf0a92e954392544299d762900030f7c4c7fc975574795b19c4aacf987be769`. In an owner-directed Minecraft Java 26.2 session, give Foundation higher priority than Matcha Flavoured 1.12. Foundation includes the Matcha Overlays v37 resources. The native catalog below was checked against BBB Canary 9 (dev.7) and Macaw's Windows 2.4.2. Use the pack stack's connected-texture renderer for the overlay checks and AMC for its six additional forms.
+
+## Cut Red Sandstone transitions
+
+1. Build a vertical wall of Smooth Red Sandstone. Viewed head-on, place a column of Cut Red Sandstone immediately to the right of the smooth faces. Inspect the one-pixel edge on the smooth side and follow it across a horizontal block joint. Its grain and reddish-brown shades should line up with the Matcha cut side artwork.
+2. Extend the cut blocks across the bottom of the smooth area to form an inside corner. Then remove the bottom cut row and stop the cut column above a row of smooth blocks to form an outside corner. The original mask is asymmetric. Check the right edge and the open space at the turn against the static comparison sheet.
+3. Repeat on the four side orientations and with bottom, top and double Smooth Red Sandstone slabs. Record which slab faces receive an overlay with the installed renderer. Top and bottom faces fall outside this rule. Inspect ordinary Cut Sandstone next to Smooth Sandstone as an unchanged control.
+
+From the canonical checkout, this command recreates the nearest-neighbor comparison, rule/tile inventory and exact archive diff. The sheet uses the archived PNGs in static side-face layouts. Pass `--continuity <path-to-continuity-3.0.1+26.2.jar>` to include the six built-in rule exclusions in the inventory.
+
+```sh
+python -B resourcepacks/foundation/tools/build_foundation_v10.py --reports .tmp/foundation-v10
+```
 
 ## Native Red Sandstone blocks
 
@@ -20,7 +32,7 @@ Compare every inventory preview and placed form with Matcha Cut Red Sandstone un
 
 The Macaw frames keep their original grain with Matcha's color mapping. Check glass transparency through each opening. Compare a regular Sandstone window and BBB Sandstone carving as controls.
 
-To reproduce the static evidence from a checkout retaining the inputs, run the following with Python and Pillow. The three reports list every selector and parent chain, the pixel counts and shade mapping for each sprite, and the SHA-256 of every changed ZIP member.
+To reproduce the retained v9 native-provider checks with Python and Pillow, run the following from a checkout retaining the inputs. The three reports list every selector and parent chain, the pixel counts and shade mapping for each sprite, and the SHA-256 of every changed v9 ZIP member.
 
 ```sh
 python -B resourcepacks/foundation/tools/build_foundation_v9.py --reports .tmp/foundation-v9

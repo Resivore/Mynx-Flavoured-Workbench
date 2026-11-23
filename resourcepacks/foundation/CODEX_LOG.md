@@ -125,3 +125,27 @@ A assets/mcwwindows/models/block/window_barred/red_sandstone_window.json
 A assets/mcwwindows/models/block/window_barred/red_sandstone_window_open.json
 M pack.mcmeta
 ```
+
+## 2026-11-23T05:17:52.770698Z — Correct Cut Red Sandstone overlay artwork in Foundation v10 Canary 6
+
+- Revision: 6
+- Source checkpoint: `12dba51f6b6dad81ca1f6f14a6b9914770886718`
+- Changes: The merged Matcha Overlays v37 rule at `assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/0.properties` and all 17 of its tiles were byte-identical in v9 to the v37 source. The rule paints side faces on Smooth Red Sandstone blocks and slabs from a Cut Red Sandstone neighbor. Its independent tile PNGs retained the old orange edge after the block artwork changed. Copied the exact `assets/minecraft/textures/block/cut_red_sandstone.png` Matcha 1.12 RGB at the original UVs into the material pixels of tiles 3, 5, 7, 8, 10, 12 and 13. Tiles 0, 1, 2, 4, 6, 9, 11, 14, 15 and 16 are fully transparent. The 62 other Foundation rules mentioning Red Sandstone use it as a receiving surface. Continuity's six built-in vanilla/Programmer Art definitions require source packs that lose precedence to Foundation or Matcha.
+- Build/static: Repeated builds from verified v9 produced identical bytes. Audited all 151 CTM definitions and 2,550 CTM PNGs. Checked all 112 stone pixels against Matcha at the same (x,y), all 4,352 alpha values, all transparent RGBs, and the 14 shared non-material corner marks against v9 and the corresponding Cut Sandstone marks. Verified 128 horizontal/vertical tile pairs (4,096 boundary texels) and the complete straight, inside-corner and outside-corner fixtures. All 17 target tiles resolve. The legacy waterlogged chain and lantern rules already reference absent `chain/0.png` and `chain/1.png` in the inspected stack. All CTM property bytes, including selectors and priorities, and the full ZIP entry order match v9. Verified ZIP layout/CRCs, 2,739 JSON/metadata files, 156 properties files, 5,052 PNGs and every ZIP member against v9. The BBB, Macaw and AMC resources, Nether/End restorations, translations and leaf models are byte-identical.
+- Runtime: RUNTIME_UNTESTED for v10.
+- Artifact: `Foundation v10.zip`, SHA-256 `ebf0a92e954392544299d762900030f7c4c7fc975574795b19c4aacf987be769`, 15,386,288 bytes, finalized `2026-11-23T05:14:43.5628632Z`.
+- Result: ACTIVE / STATIC_PASS / RUNTIME_UNTESTED. Repository validation passed for 65 manifests and one Foundation transition. Artifact retention verified the complete ZIP in the primary checkout.
+- Next state: Check the cut-to-smooth side edge, inside and outside turns, rotated walls and slab faces using TESTING.md.
+
+**v9 to v10 archive paths** · 8 modified, 0 added, 0 removed, 7,972 byte-identical.
+
+```text
+M pack.mcmeta
+M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/10.png
+M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/12.png
+M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/13.png
+M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/3.png
+M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/5.png
+M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/7.png
+M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/8.png
+```

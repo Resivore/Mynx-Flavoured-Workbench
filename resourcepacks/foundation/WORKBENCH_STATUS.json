@@ -17,7 +17,8 @@
     "scope": [
       "Maintain the consolidated Foundation and Matcha Overlays resources, including the v7 leaf inventory previews.",
       "Restore vanilla 26.2 Netherrack, Nether Bricks and End Stone Bricks above Matcha Flavoured and supply Matcha Red Sandstone artwork for AMC's Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter.",
-      "Recolor all five native BBB and four native Macaw's Windows Red Sandstone forms in Foundation, retaining provider geometry, state selection and decorative artwork."
+      "Recolor all five native BBB and four native Macaw's Windows Red Sandstone forms in Foundation, retaining provider geometry, state selection and decorative artwork.",
+      "Maintain the existing Cut Red Sandstone side overlay on smooth blocks and slabs using the exact Matcha side artwork and the original per-tile masks."
     ],
     "boundaries": {
       "owned_paths": [
@@ -32,15 +33,15 @@
     "dependencies": [
       {
         "type": "RESOURCE_PACK",
-        "identifier": "Foundation v8.zip",
-        "requirement": "Exact build input, SHA-256 6ff2d732ab196204e0cfe7d1057953b5ce0d0ac09b10d476a234966913f36f92",
-        "reason": "Supplies the complete v8 pack, including the six AMC forms, vanilla material restorations and merged CTMs."
+        "identifier": "Foundation v9.zip",
+        "requirement": "Exact build input, SHA-256 ecab2e5963df45805947b12a96dce8c586969ec2ba70737dd49b6d6b60946b2d",
+        "reason": "Supplies the complete v9 pack, including the original CTM masks and the retained BBB, Macaw and AMC Red Sandstone work."
       },
       {
         "type": "RESOURCE_PACK",
         "identifier": "Matcha_Flavoured_1_12.zip",
         "requirement": "Artwork reference, SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
-        "reason": "Supplies the Red Sandstone artwork. Matching cut and chiseled sprites establish its seven-shade stone palette at corresponding vanilla pixel coordinates."
+        "reason": "Supplies the side artwork for the Cut Red Sandstone overlay and the Red Sandstone reference textures used by the retained provider forms."
       },
       {
         "type": "MOD",
@@ -69,23 +70,23 @@
     ]
   },
   "state": {
-    "milestone": "Foundation v9 passed static checks for every native Red Sandstone blockstate and inventory selector from BBB and Macaw's Windows. In-game visual verification is pending.",
+    "milestone": "Foundation v10 passed static mask, source-pixel and seam checks for the Cut Red Sandstone overlay. In-game visual verification is pending.",
     "releases": {
       "current": {
-        "version": "v9",
-        "canary": 5,
-        "embedded_version": "v9",
+        "version": "v10",
+        "canary": 6,
+        "embedded_version": "v10",
         "artifact": {
-          "filename": "Foundation v9.zip",
-          "sha256": "ecab2e5963df45805947b12a96dce8c586969ec2ba70737dd49b6d6b60946b2d"
+          "filename": "Foundation v10.zip",
+          "sha256": "ebf0a92e954392544299d762900030f7c4c7fc975574795b19c4aacf987be769"
         },
-        "built_at": "2026-11-21T11:03:29.8425399Z",
-        "source_commit": "d11d14d45f41c2ac89a34b58a7be19377df7927c",
+        "built_at": "2026-11-23T05:14:43.5628632Z",
+        "source_commit": "12dba51f6b6dad81ca1f6f14a6b9914770886718",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Brings Matcha Red Sandstone to all five native BBB masonry forms and four Macaw's Windows blocks while preserving their carved details and moving parts."
+        "summary": "Matches Cut Red Sandstone transitions on Smooth Red Sandstone blocks and slabs to the Matcha side texture."
       },
       "accepted": null,
       "rollback": null,
@@ -99,10 +100,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-11-21T11:07:14.350054Z",
-    "updated_at": "2026-11-21T11:07:14.350054Z",
-    "last_codex_at": "2026-11-21T11:07:14.350054Z",
-    "source_commit": "d11d14d45f41c2ac89a34b58a7be19377df7927c"
+    "revision": 6,
+    "activity_at": "2026-11-23T05:17:52.770698Z",
+    "updated_at": "2026-11-23T05:17:52.770698Z",
+    "last_codex_at": "2026-11-23T05:17:52.770698Z",
+    "source_commit": "12dba51f6b6dad81ca1f6f14a6b9914770886718"
   }
 }
