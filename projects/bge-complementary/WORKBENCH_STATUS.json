@@ -27,7 +27,7 @@
     ],
     "scope": [
       "Provide a client-only Fabric bridge for BGE's canonical-binding capability/API contract and Iris 1.11.2+mc26.2 that augments completed Iris material and layer maps at their narrow RETURN seams.",
-      "Canary 5 preserves Canary 4's universal authoritative canonical-parent rule and adds bounded post-bridge spruce material/layer trace rows selected solely from BGE canonical bindings.",
+      "Apply universal authoritative canonical-parent inheritance while preserving explicit physical material and layer assignments.",
       "Retain Translucent Glass and BGE × CTM as adjacent diagnostic context only; this project does not own their rendering or Continuity behavior."
     ],
     "boundaries": {
@@ -75,29 +75,29 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "=25.0.4.1",
-        "reason": "Java 25 baseline used for the clean Canary 5 compile and tests."
+        "reason": "Java 25 baseline used for the clean Canary 6 compile and tests."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1",
-        "reason": "Tracked Workbench Gradle wrapper baseline used for Canary 5."
+        "reason": "Tracked Workbench Gradle wrapper baseline used for Canary 6."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 5 is an ACTIVE client-only BGE canonical-binding API/Iris 1.11.2 bridge. It preserves universal completed-map canonical-parent inheritance, explicit physical precedence, and BGE release-string independence. Its new bounded trace reports native spruce and every binding canonically projected from spruce after the bridge: state-map origin/value summaries and block-wide `layer.*` origin/value. Static validation uses the exact observed BGE C97 artifact; no runtime shader/material conclusion is claimed.",
+    "milestone": "Canary 6 removes unconditional spruce tracing and aggregate map-build accounting. Both completed-map hooks still check the BGE API and inherit missing physical assignments from the active pack. The C97 baseline and 13 focused tests passed. Shader and client observations are pending.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary5",
-        "canary": 5,
-        "embedded_version": "0.1.0+26.2-canary5",
+        "version": "0.1.0+26.2-canary6",
+        "canary": 6,
+        "embedded_version": "0.1.0+26.2-canary6",
         "artifact": {
-          "filename": "bge-complementary-0.1.0+26.2-canary5.jar",
-          "sha256": "250c272c3a2d3066c358f8bf0e08c1df51bd27f800c0e95f9f95c35cccfcca44"
+          "filename": "bge-complementary-0.1.0+26.2-canary6.jar",
+          "sha256": "0fb76735d1dea4d6261ae14d985c721799af42e101e573c1dbafce12c7de4ace"
         },
-        "built_at": "2026-09-23T02:08:11.1095373Z",
-        "source_commit": "f247dda15222e83afe57354ac1b5b1bb4fba4646",
+        "built_at": "2026-11-23T20:29:59.663580Z",
+        "source_commit": "9bcd4eee1eebfb37e03f64677d386af126b8b311",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -106,9 +106,9 @@
               "relationship": "depends",
               "dependency_id": "cnm_terrain_slabs_compat",
               "predicate": "present BgeMaterialBindings canonical-binding API; no release-number predicate",
-              "reason": "Canary 5 invokes only BgeMaterialBindings.all() and Binding#physicalBlock(), #canonicalMaterial(), and #canonicalState(BlockState), then observes exact spruce results after the completed-map fallback. Its Mixin plugin has no BGE probe and does not compare a BGE version string.",
+              "reason": "The bridge uses BgeMaterialBindings.all() and Binding#physicalBlock(), #canonicalMaterial(), and #canonicalState(BlockState) after Iris constructs each map. The bootstrap plugin checks the exact Iris hook version.",
               "regression_evidence": [
-                "Clean Canary 5 verification uses exact observed BGE C97 SHA-256 3e13d6f4dfe46edea753926da4e1168515e8432dce85d63a29b360a6aefc9408, requires BgeMaterialBindings.class, proves the API shape, preserves bootstrap isolation, guards late linkage failure as a no-op, and runs focused universal-inheritance plus observational-trace coverage."
+                "The clean C6 build verifies BGE C97 SHA-256 3e13d6f4dfe46edea753926da4e1168515e8432dce85d63a29b360a6aefc9408. Tests cover the API shape, bootstrap isolation, late linkage failure, explicit entries, missing mappings and state-specific inheritance."
               ]
             },
             {
@@ -123,7 +123,7 @@
             }
           ]
         },
-        "summary": "Adds bounded exact-spruce completed-Iris material and layer map traces while preserving universal canonical material/layer inheritance."
+        "summary": "Removes spruce tracing and map-build counters while preserving Iris material and layer inheritance and the compatibility warning."
       },
       "accepted": null,
       "rollback": null,
@@ -137,10 +137,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-23T02:08:11.1095373Z",
-    "updated_at": "2026-09-23T02:08:11.1095373Z",
-    "last_codex_at": "2026-09-23T02:08:11.1095373Z",
-    "source_commit": "f247dda15222e83afe57354ac1b5b1bb4fba4646"
+    "revision": 10,
+    "activity_at": "2026-11-23T20:29:59.663580Z",
+    "updated_at": "2026-11-23T20:29:59.663580Z",
+    "last_codex_at": "2026-11-23T20:29:59.663580Z",
+    "source_commit": "9bcd4eee1eebfb37e03f64677d386af126b8b311"
   }
 }

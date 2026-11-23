@@ -90,3 +90,14 @@
 - Artifact: `bge-complementary-0.1.0+26.2-canary5.jar`, 23,969 bytes, SHA-256 `250c272c3a2d3066c358f8bf0e08c1df51bd27f800c0e95f9f95c35cccfcca44`, finalized `2026-09-23T02:08:11.1095373Z`.
 - Result: `ACTIVE / STATIC_PASS / RUNTIME_UNTESTED / NO_ACCEPTED / NO_ROLLBACK`.
 - Next state: Under explicit runtime ownership, retain paired Sodium and Iris trace rows for native and exact derived spruce before deciding whether a shader-side distinction remains.
+
+## 2026-11-23T20:29:59.663580Z — Canary 6 production diagnostics cleanup
+
+- Revision: 10
+- Source checkpoint: `9bcd4eee1eebfb37e03f64677d386af126b8b311`
+- Changes: Removed both spruce traces, aliased snapshots, per-target scans and maps, per-state result counters and aggregate success logs. Each completed Iris map now takes one functional binding pass. The late API/linkage guard and one-time compatibility warning remain.
+- Build/static: Clean Java 25 / Gradle 9.5.1 check and staging passed against the verified BGE C97 baseline. All 13 tests passed, including explicit zero, missing projection/parent, state-specific materials, layer precedence and late capability failure. Packaged Iris mixin, plugin and capability probe class bytes match C5.
+- Runtime: No client or shader validation was performed.
+- Artifact: Current `0.1.0+26.2-canary6` is `bge-complementary-0.1.0+26.2-canary6.jar`, 11,444 bytes, SHA-256 `0fb76735d1dea4d6261ae14d985c721799af42e101e573c1dbafce12c7de4ace`, finalized 2026-11-23T20:29:59.663580Z.
+- Result: ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.
+- Next state: Run the owner-directed visual checks in TESTING.md.
