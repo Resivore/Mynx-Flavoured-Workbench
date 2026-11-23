@@ -96,7 +96,6 @@ tasks.register('verifyBridge') {
         try {
             ['fabric.mod.json', 'bge_complementary.client.mixins.json',
              'dev/resivore/bgecomplementary/BgeShaderMaterialBridge.class',
-             'dev/resivore/bgecomplementary/SpruceIrisMaterialTrace.class',
              'dev/resivore/bgecomplementary/BgeCanonicalBindingApi.class',
              'dev/resivore/bgecomplementary/BgeLateRuntimeBridge.class',
              'dev/resivore/bgecomplementary/IrisBgeMixinPlugin.class',
@@ -107,6 +106,9 @@ tasks.register('verifyBridge') {
             }
             bridge.entries().each { entry ->
                 def name = entry.name.toLowerCase(java.util.Locale.ROOT)
+                if (name.contains('spruceirismaterialtrace') || name.endsWith('shadermaterialinheritance$result.class')) {
+                    throw new GradleException("Packaged bridge contains obsolete map diagnostics: ${entry.name}")
+                }
                 if (name.contains('net/irisshaders/') || name.contains('complementaryunbound') || name.endsWith('.zip')) {
                     throw new GradleException("Packaged bridge contains forbidden external content: ${entry.name}")
                 }

@@ -15,19 +15,14 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class BgeShaderMaterialBridge {
     private BgeShaderMaterialBridge() {}
 
-    public static ShaderMaterialInheritance.Result inheritMaterialIds(
+    public static void inheritMaterialIds(
             Object2IntMap<BlockState> materialIds) {
-        SpruceIrisMaterialTrace.MaterialSnapshot spruceBefore =
-                SpruceIrisMaterialTrace.beforeMaterialInheritance(materialIds);
-        ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.Result.empty();
         for (Binding binding : BgeMaterialBindings.all()) {
             List<BlockState> physicalStates = binding.physicalBlock().getStateDefinition()
                     .getPossibleStates();
-            result = result.plus(ShaderMaterialInheritance.inheritMissing(
-                    materialIds, physicalStates, binding::canonicalState));
+            ShaderMaterialInheritance.inheritMissing(
+                    materialIds, physicalStates, binding::canonicalState);
         }
-        SpruceIrisMaterialTrace.afterMaterialInheritance(materialIds, spruceBefore);
-        return result;
     }
 
     /**
@@ -35,18 +30,13 @@ public final class BgeShaderMaterialBridge {
      * explicit BGE block directive authoritative while every BGE-bound physical block follows
      * its authoritative canonical material's render-type override when one exists.
      */
-    public static <T> ShaderMaterialInheritance.Result inheritLayerTypes(
+    public static <T> void inheritLayerTypes(
             Map<Block, T> layerTypes) {
-        SpruceIrisMaterialTrace.LayerSnapshot spruceBefore =
-                SpruceIrisMaterialTrace.beforeLayerInheritance(layerTypes);
-        ShaderMaterialInheritance.Result result = ShaderMaterialInheritance.Result.empty();
         for (Binding binding : BgeMaterialBindings.all()) {
             Block physical = binding.physicalBlock();
-            result = result.plus(ShaderMaterialInheritance.inheritMissing(
+            ShaderMaterialInheritance.inheritMissing(
                     layerTypes, List.of(physical),
-                    ignored -> java.util.Optional.of(binding.canonicalMaterial())));
+                    ignored -> java.util.Optional.of(binding.canonicalMaterial()));
         }
-        SpruceIrisMaterialTrace.afterLayerInheritance(layerTypes, spruceBefore);
-        return result;
     }
 }

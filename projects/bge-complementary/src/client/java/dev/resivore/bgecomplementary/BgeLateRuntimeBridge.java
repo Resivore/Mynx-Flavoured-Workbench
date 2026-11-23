@@ -15,16 +15,14 @@ public final class BgeLateRuntimeBridge {
 
     public static void inheritMaterialIds(Object2IntMap<BlockState> materialIds) {
         if (!runIfSupported(BgeCanonicalBindingApi::isAvailable,
-                () -> BgeComplementaryLog.materialMap(
-                        BgeShaderMaterialBridge.inheritMaterialIds(materialIds)))) {
+                () -> BgeShaderMaterialBridge.inheritMaterialIds(materialIds))) {
             BgeComplementaryLog.unavailableCanonicalBindingApi();
         }
     }
 
     public static void inheritLayerTypes(Map<Block, Object> layerTypes) {
         if (!runIfSupported(BgeCanonicalBindingApi::isAvailable,
-                () -> BgeComplementaryLog.layerMap(
-                        BgeShaderMaterialBridge.inheritLayerTypes(layerTypes)))) {
+                () -> BgeShaderMaterialBridge.inheritLayerTypes(layerTypes))) {
             BgeComplementaryLog.unavailableCanonicalBindingApi();
         }
     }
