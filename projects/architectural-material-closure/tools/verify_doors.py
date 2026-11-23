@@ -95,7 +95,7 @@ class Resources:
         return door
 
 
-def check_pixels(res, material, bindings, fingerprints):
+def check_pixels(res, material, bindings, fingerprints, *, darken_only=False):
     palette_groups = defaultdict(set)
     material_pixels = {}
     for src,(dest,wood) in bindings.items():
@@ -133,7 +133,10 @@ def check_pixels(res, material, bindings, fingerprints):
                         uv = ((x-3)*16//10%16,(y-2)*32//14%16) if ":item/" in src else (x,y)
                         before,after = oak.getpixel(uv),substrate.getpixel(uv)
                         if before != after:
-                            base = tuple(min(255,round(c*(lum(base)/lum(before)))) for c in after[:3])
+                            gain = lum(base)/lum(before)
+                            if darken_only:
+                                gain = min(1.0, gain)
+                            base = tuple(min(255,round(c*gain)) for c in after[:3])
                     expected = (*base,old[3])
                 assert result.getpixel((x,y)) == expected,(src,dest,x,y)
                 count += 1

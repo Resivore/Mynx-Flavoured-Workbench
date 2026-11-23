@@ -178,8 +178,8 @@ class Resources(unittest.TestCase):
             for ref in json.loads(p.read_text()).get('textures',{}).values():
                 if ref.startswith('mynx_trees:'):self.assertTrue((OUT/('assets/mynx_trees/textures/'+ref.split(':',1)[1]+'.png')).exists(),ref)
     def test_final_jar_exact_assets_and_no_reference_binaries(self):
-        jars=list((ROOT/'build/libs').glob('mynx-trees-private-*.jar'));self.assertEqual(1,len(jars))
-        with zipfile.ZipFile(jars[0]) as z:
+        version = next(line.split('=',1)[1] for line in (ROOT/'gradle.properties').read_text().splitlines() if line.startswith('mod_version='))
+        with zipfile.ZipFile(ROOT/'build/libs'/f'mynx-trees-private-{version}.jar') as z:
             for p in OUT.rglob('*'):
                 if p.is_file():self.assertEqual(p.read_bytes(),z.read(p.relative_to(OUT).as_posix()))
             self.assertFalse(any(n.endswith('.jar') for n in z.namelist()));self.assertFalse(any(n.startswith(('assets/minecraft/','io/github/uhq_games/','com/nemonotfound/')) for n in z.namelist()))

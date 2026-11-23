@@ -1,5 +1,9 @@
 # Architectural Material Closure verification
 
+## Canary 37 Mossy Oak
+
+With Ribbits installed, inspect BBB Trim edges, sign boards, shelf recesses, lantern fittings, Macaw doors and vertically flipped trapdoors. Check both boat items, hulls and paddles, plus the chest, lock and hinges. Compare the darkest grooves and lightest wood with the retained final sheets. Verify the owner shutter separately.
+
 ## Canary 36 wood families
 
 Match AMC C36 and Mynx Trees C9 to their manifest hashes. With BBB, Macaw's Windows and Paths installed, check each new species' 7 BBB forms, 7 accessories and 12 windows. With Doors and Trapdoors installed, add 22 doors and 17 trapdoors per species. Place windows in connected runs, lattice leaves in each available state, lanterns on both supports, shutters open and closed, and stable and sliding doors next to the provider originals. Compare Wisteria's regular shutter to the supplied sprite.

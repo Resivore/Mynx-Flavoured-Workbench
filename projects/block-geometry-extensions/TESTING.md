@@ -1,5 +1,9 @@
 # BGE geometry verification
 
+## Canary 112 Mossy Oak
+
+Rotate raw and stripped log and wood slabs, stairs and walls across all axes. Compare inventory and placed faces with the source pillar. Inspect the separate Ribbits beam side and end on joined walls and slabs. Repeat the timber comparison with Foundation v12 above Matcha and with Foundation disabled.
+
 ## Canary 111 timber and beam geometry
 
 Match BGE C111 and Mynx Trees C9 to their manifests. For Silver Birch, Wisteria and Mossy Oak, cycle the 18 Log/Wood roles and the separate 18 Stripped Log/Stripped Wood roles. Place every shape on multiple axes, then axe-strip the raw counterpart. Verify its axis, geometry, neighbor connections and drops. In particular, a Silver Birch Log cut uses the owner's rounded end texture and Silver Birch Wood exposes bark on every face.

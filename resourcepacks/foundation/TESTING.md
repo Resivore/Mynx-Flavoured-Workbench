@@ -1,5 +1,9 @@
 # Foundation verification
 
+## Canary 8 / v12 Mossy Oak
+
+Enable Foundation v12 above Matcha Flavoured 1.12. Place raw and stripped logs on three axes, both six-sided wood blocks, BGE timber shapes and AMC log parapets. Inspect their inventory models. Compare against the four Foundation surfaces in the final preview. Disable Foundation, reload, and repeat with the standalone timber. The stripped side uses Matcha’s vanilla fallback in both stacks. Check existing plank overlays at corners and confirm ordinary Oak keeps its original appearance.
+
 ## Canary 7 material comparison
 
 Use Foundation v11 above Matcha Flavoured 1.12. Compare ordinary Birch, Goop-derived Silver Birch and muted Wisteria side by side. Inspect planks, logs, doors, boats, signs, shelves, BBB beams and Macaw and Dramatic Doors designs. Check the Birch bark overlay and the straight edges, corners and isolated transitions of all three plank overlays. Examine plank/beam geometry with Continuity active. Compare with Foundation disabled to check that the private mod assets render independently.

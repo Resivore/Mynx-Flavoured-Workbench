@@ -34,7 +34,7 @@ def light(color):
     return sum(a*b for a,b in zip(color,(299,587,114)))
 
 
-def pixels(graph, original, actual, wood, design, target):
+def pixels(graph, original, actual, wood, design, target, *, darken_only=False):
     def get(ref):
         tile = graph.get(ref,"textures","png")
         assert tile.size == (16,16)
@@ -60,6 +60,8 @@ def pixels(graph, original, actual, wood, design, target):
                 uv = i if design=="stripped" else (15-i//16)*16+i%16
                 if oak[uv]!=moss[uv]:
                     gain = light(expected)/light(oak[uv])
+                    if darken_only:
+                        gain = min(1.0, gain)
                     expected = tuple(min(255,round(v*gain)) for v in moss[uv][:3])
             else:
                 expected = mapped

@@ -82,8 +82,8 @@
       "usage": "Private reference for existing wood artwork"
     },
     {
-      "source": "projects/architectural-material-closure/artifacts/AMC C35.jar",
-      "sha256": "b1d5fd2bb5f1980ac470b8e273216396989330e801f87c7621b80bf16ca790d8",
+      "source": "projects/ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar",
+      "sha256": "088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd",
       "usage": "Private reference for existing wood artwork"
     },
     {
@@ -593,7 +593,7 @@
         16,
         16
       ],
-      "sha256": "29384d2a83cf1221429e83653292a48b8360c43d6059fc38a8437e3e7cbf4c05"
+      "sha256": "c1c58abe96d383545779b5faf8b988edfb1f32f7cd907418eb4e3bd105ee10d0"
     },
     {
       "source": "tools/native_wood_resources.py (pinned inputs)",
@@ -602,7 +602,7 @@
         16,
         16
       ],
-      "sha256": "d91629616c4a3da7016a980ebca0a670dda0dd666bebc9a479bd557678d286e3"
+      "sha256": "2a225126e8d4045c03d281d7b23762338ae96852a443e43fc0610430b70f238f"
     },
     {
       "source": "tools/native_wood_resources.py (pinned inputs)",
@@ -683,7 +683,7 @@
         16,
         16
       ],
-      "sha256": "3cba4cbdc81abccdd8cabc0f331582138b3042b5efd23315ee97ac73cea50b13"
+      "sha256": "d183793c9ee9e5ece8a4e27fcb87c6bcf5aaa2b5a633b60d827b0191240b8b29"
     },
     {
       "source": "tools/native_wood_resources.py (pinned inputs)",
@@ -692,7 +692,7 @@
         16,
         16
       ],
-      "sha256": "9ab62795046dcf222c6ec8b96c187fcd8e09ee5297443da3110d951be03ee0ff"
+      "sha256": "b4bd9300ddf6681f2a1505a63c6bdddcc1c5adff217cc0c835be53cefa22cd7e"
     },
     {
       "source": "tools/native_wood_resources.py (pinned inputs)",

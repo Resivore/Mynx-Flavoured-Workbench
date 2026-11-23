@@ -157,6 +157,8 @@ class Material:
         self.ns = "ribbits" if wood == "mossy_oak" else "enderscape"
         if wood in ("silver_birch","wisteria"):
             self.amc, self.ns, end = new_amc, "mynx_trees", trees
+        if wood == "mossy_oak":
+            self.amc = new_amc
         self.prefix = f"resourcepacks/{self.ns}_doors/"
         self.root = root / "resourcepacks" / ("amc_" + wood + "_doors")
         self.base = image(self.mc, "minecraft:block/oak_planks")
@@ -334,7 +336,8 @@ class Material:
                         uv = x, y
                     before, after = self.base.getpixel(uv), self.moss.getpixel(uv)
                     if before != after and after[0] - after[1] <= 13:
-                        color = tuple(min(255, round(c*luma(color)/luma(before))) for c in after[:3])
+                        gain = min(1.0, luma(color) / luma(before))
+                        color = tuple(round(c*gain) for c in after[:3])
                 out.putpixel((x, y), (*color, p[3]))
             self.save(ref, out)
 

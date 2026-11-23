@@ -1,5 +1,9 @@
 # Dramatic Doors verification
 
+## Canary 16 Mossy Oak
+
+With AMC C37, Ribbits and Macaw installed, inspect tall Classic, Barn, Western and Whispering doors and inventory sprites. Inspect upper, middle and lower panels from both sides with the door open and closed. Compare hinges, glass and the separate owner-authored Ribbits short and tall doors.
+
 ## Canary 15 Silver Birch and Wisteria
 
 Use DD C15 with Mynx Trees C9. Cut each native door into short doors and craft three vertically into two tall doors. Check facing, waterlogging, opening, redstone, all three break positions and single drops. Identify the Mynx Wisteria doors as `dramaticdoors:short_mynx_wisteria_door` and `dramaticdoors:tall_mynx_wisteria_door`. Compare all three front panels to the owner's tall sheet and the short front to the separate sprite.

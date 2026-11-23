@@ -137,7 +137,7 @@ def archive_diff(candidate, old):
     print(f"C11 comparison: {len(prev)-len(changed):,} identical, {len(changed)} changed, {len(new-prev):,} added.")
 
 
-def verify_art(graph, wood, jars):
+def verify_art(graph, wood, jars, *, darken_only=False):
     # Compare actual output pixels to the pre-transfer tall masks in their own UV space.
     from amc_macaw import luma, palette, ranked, rename_wood
     dd, amc, macaw, mc, end, rib = jars
@@ -194,7 +194,10 @@ def verify_art(graph, wood, jars):
                 clean, green = oak.getpixel(uv), moss.getpixel(uv)
                 expected = classic[path.split("/")[0]][before[:3]] if srcwood == "spruce" else before[:3]
                 if green != clean and green[0]-green[1] <= 13:
-                    expected = tuple(min(255, round(c*luma(expected)/luma(clean))) for c in green[:3])
+                    gain = luma(expected)/luma(clean)
+                    if darken_only:
+                        gain = min(1.0, gain)
+                    expected = tuple(min(255,round(c*gain)) for c in green[:3])
                     mossy += 1
                 assert after[:3] == expected, (ref, xy)
             count += 1

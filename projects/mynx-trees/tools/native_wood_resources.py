@@ -1,7 +1,10 @@
 """Build native timber resources from the target client and the owner's private artwork."""
 from io import BytesIO
 import json
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "architectural-material-closure/tools"))
+from mossy_oak import moss_sheet
 from zipfile import ZipFile
 from PIL import Image
 
@@ -56,7 +59,7 @@ def transfer(raw, palette, *, wood_only=False):
 def stage_art(mc, common, write):
     folder = common / "originals/assets/wisteria assets"
     goop = common / "originals/resourcepacks/Foundation v2.zip"
-    old_amc = common / "projects/architectural-material-closure/artifacts/AMC C35.jar"
+    ribbits = common / "projects/ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar"
     def save(name, data):
         write(TEXTURES + name + ".png", data)
     with ZipFile(goop) as pack, ZipFile(folder / "codex generated muted-violet-willow-textures.zip") as willow:
@@ -87,12 +90,12 @@ def stage_art(mc, common, write):
                     raw = mc.read(path)
                     fixed[key] = pack.read(path) if wood == "silver_birch" and path in pack.NameToInfo else transfer(raw, plank, wood_only=True)
                 save(key.replace("birch", wood), fixed[key])
-    with ZipFile(old_amc) as amc:
-        prefix = "resourcepacks/ribbits/assets/architectural_material_closure/textures/block/"
-        for name in ("mossy_oak_log", "mossy_oak_log_top", "stripped_mossy_oak_log"):
-            save("block/"+name, amc.read(prefix+name+".png"))
-        save("block/stripped_mossy_oak_log_top", transfer(mc.read("assets/minecraft/textures/block/stripped_oak_log_top.png"),
-                                                        amc.read(prefix+"stripped_mossy_oak_log.png")))
+    with ZipFile(ribbits) as archive:
+        moss = pixels(archive.read("assets/ribbits/textures/block/mossy_oak_planks.png"))
+        oak = pixels(mc.read("assets/minecraft/textures/block/oak_planks.png"))
+        for name in ("oak_log", "oak_log_top", "stripped_oak_log", "stripped_oak_log_top"):
+            target = pixels(mc.read(f"assets/minecraft/textures/block/{name}.png"))
+            save("block/" + name.replace("oak", "mossy_oak"), png(moss_sheet(target, oak, moss, ())))
 
 
 def stage(mc, common, out, write):

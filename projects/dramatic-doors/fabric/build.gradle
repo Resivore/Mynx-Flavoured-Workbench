@@ -116,7 +116,7 @@ def macawArtJar = rootProject.file('../../originals/mods/mcw-doors-1.1.5-mc26.2f
 def amcArtJar = rootProject.file('../architectural-material-closure/artifacts/AMC C30.jar')
 def ddArtJar = rootProject.file('artifacts/DD C11.jar')
 def treesJar = rootProject.file(providers.gradleProperty('treesJar').getOrElse('../mynx-trees/artifacts/mynx-trees-private-0.1.0+26.2-canary9.jar'))
-def newAmcJar = rootProject.file(providers.gradleProperty('newAmcJar').getOrElse('../architectural-material-closure/artifacts/AMC C36.jar'))
+def newAmcJar = rootProject.file(providers.gradleProperty('newAmcJar').getOrElse('../architectural-material-closure/artifacts/AMC C37.jar'))
 def treeDoorArt = rootProject.file('tools/tree_door_art.py')
 def treeAssets = rootProject.file('../../originals/assets/wisteria assets')
 def amcTool = rootProject.file('tools/amc_macaw.py')
@@ -135,6 +135,10 @@ def treeArtwork = tasks.register('generateTreeDoorArtwork', Exec) {
     commandLine providers.gradleProperty('doorArtPython').getOrElse('python'), '-B', treeDoorArt, ddArtJar, treesJar, treeAssets, output.get().asFile
 }
 processResources {
+    inputs.property 'doorTableLineEndings', 'crlf'
+    filesMatching('dramaticdoors/amc_macaw_doors.tsv') {
+        filter(eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance('crlf'), org.apache.tools.ant.filters.FixCrLfFilter)
+    }
     from treeArtwork
     from amcArtwork
     from doorArtwork

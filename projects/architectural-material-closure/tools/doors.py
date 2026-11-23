@@ -124,7 +124,7 @@ def transfer(sheets, material, oak, moss, planks, bark):
                 uv = moss_uv(*xy, ":item/" in src)
                 before, after = oak.getpixel(uv), moss.getpixel(uv)
                 if after[0] - after[1] <= 13 and after != before:
-                    gain = light(base) / light(before)
+                    gain = min(1.0, light(base) / light(before))
                     base = tuple(min(255, round(c * gain)) for c in after[:3])
             else:
                 base = mapping[original[:3]]

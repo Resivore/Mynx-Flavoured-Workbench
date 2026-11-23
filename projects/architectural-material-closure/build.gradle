@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary36'
+version = '0.1.0-canary37'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c36')
+layout.buildDirectory = layout.projectDirectory.dir('build/c37')
 
 repositories {
     mavenCentral()
@@ -64,14 +64,17 @@ processResources {
     inputs.property 'historicalProviderMetadataEol', 'crlf'
     // Preserve the historical packaged bytes on both LF and CRLF checkouts.
     filesMatching(['amc.enderscape.mixins.json', 'resourcepacks/enderscape/pack.mcmeta',
-                   'amc.ribbits.mixins.json', 'resourcepacks/ribbits/pack.mcmeta']) {
+                   'amc.ribbits.mixins.json', 'resourcepacks/ribbits/pack.mcmeta',
+                   'resourcepacks/mossy_oak_legacy_recipes/pack.mcmeta', 'resourcepacks/mossy_oak_timber/pack.mcmeta',
+                   'resourcepacks/mynx_trees/pack.mcmeta', 'resourcepacks/mynx_trees_doors/pack.mcmeta',
+                   'resourcepacks/mynx_trees_trapdoors/pack.mcmeta']) {
         filter(eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance('crlf'), org.apache.tools.ant.filters.FixCrLfFilter)
     }
     filesMatching('fabric.mod.json') { expand version: project.version }
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C36.jar'
+    archiveFileName = 'AMC C37.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
@@ -79,10 +82,16 @@ tasks.register('verifyAmcJar', Exec) {
     inputs.dir('tools/shutter_art')
     inputs.files('tools/verify_wood_matrix.py', file('artifacts/AMC C34.jar'), 'tools/verify_accessories.py', c33Jar, c32Jar, 'tools/verify_bamboo.py', c31Jar, 'tools/verify_trapdoors.py', 'tools/trapdoor_previews.py', trapdoorsJar, c30Jar, 'tools/verify_doors.py', doorsJar, c29Jar, 'tools/verify_oak.py', ribbitsJar, c28Jar, 'tools/verify_c28.py', c27Jar, 'tools/verify_c27.py', c26Jar, 'tools/verify_c26.py', c25Jar, 'tools/verify_c25.py', c24Jar, 'tools/verify_c24.py', c23Jar, enderscapeJar, 'tools/verify_c22.py', previousJar, 'tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
     inputs.files('tools/verify_tree_architecture.py', treesJar, file('artifacts/AMC C35.jar'))
-    commandLine python, 'tools/verify_tree_architecture.py', jar.archiveFile.get().asFile, treesJar, file('artifacts/AMC C35.jar'), file('artifacts/AMC C34.jar'), providerJar, clientJar, bbbJar, pathsJar, previousJar, c23Jar, enderscapeJar, c24Jar, c25Jar, c26Jar, c27Jar, c28Jar, ribbitsJar, c29Jar, doorsJar, c30Jar, trapdoorsJar, c31Jar, c32Jar, c33Jar
+    inputs.file file('artifacts/AMC C36.jar')
+    commandLine python, 'tools/verify_tree_architecture.py', file('artifacts/AMC C36.jar'), treesJar, file('artifacts/AMC C35.jar'), file('artifacts/AMC C34.jar'), providerJar, clientJar, bbbJar, pathsJar, previousJar, c23Jar, enderscapeJar, c24Jar, c25Jar, c26Jar, c27Jar, c28Jar, ribbitsJar, c29Jar, doorsJar, c30Jar, trapdoorsJar, c31Jar, c32Jar, c33Jar
 }
 
-check.dependsOn 'verifyAmcJar'
+tasks.register('verifyDarkMoss', Exec) {
+    dependsOn jar
+    inputs.files('tools/verify_dark_moss.py', jar.archiveFile, file('artifacts/AMC C36.jar'), clientJar, ribbitsJar, doorsJar, trapdoorsJar, 'tools/verify_doors.py', 'tools/verify_trapdoors.py')
+    commandLine python, '-B', 'tools/verify_dark_moss.py', jar.archiveFile.get().asFile, file('artifacts/AMC C36.jar'), clientJar, ribbitsJar, doorsJar, trapdoorsJar
+}
+check.dependsOn 'verifyAmcJar', 'verifyDarkMoss'
 
 fabricApi {
     configureTests {

@@ -5,6 +5,22 @@ from mossy_oak import FORMS, moss_sheet
 from wood_matrix import copy_tags, remap
 
 
+def boat_wood_uvs():
+    # Native BoatModel cuboids as (texture U, V, width, height, depth).
+    # The two end faces occupy the upper strip; four side faces share the lower.
+    # Keep native atlas UV orientation and tile origin on every rendered face.
+    boxes = [(0, 0, 28, 16, 3), (0, 19, 18, 6, 2), (0, 27, 16, 6, 2),
+             (0, 35, 28, 6, 2), (0, 43, 28, 6, 2)]
+    for v in (0, 20):
+        boxes.extend([(62, v, 2, 2, 18), (62, v, 1, 6, 7)])
+    points = set()
+    for u, v, width, height, depth in boxes:
+        for x0, y0, w, h in ((u+depth, v, 2*width, depth),
+                             (u, v+depth, 2*(width+depth), height)):
+            points.update((x,y) for y in range(y0,y0+h) for x in range(x0,x0+w))
+    return points
+
+
 def stage_details(root, vanilla, bbb, trees, ribbits, unlock):
     pack=root/"resourcepacks/mynx_trees"
     labels={}
@@ -84,16 +100,20 @@ def stage_details(root, vanilla, bbb, trees, ribbits, unlock):
             labels[f"{prefix}.{NS}.{name}"]=name.replace("_"," ").title()
         for src,dest in (("item/"+old,"item/"+name),("entity/"+kind+"/oak","entity/"+kind+"/mossy_oak")):
             art=wood_tile(vanilla,"minecraft:"+src)
-            # The chest occupies the lower half of the chest boat sheet. Keep its UV islands intact.
-            for y in range(0, min(art.height,64),16):
-                for x in range(0,art.width,16):
-                    tile=art.crop((x,y,x+16,y+16))
-                    treated=moss_sheet(tile,oak,moss,())
-                    if kind=="chest_boat" and src.startswith("item/"):
-                        for xy in ((xx,yy) for yy in range(16) for xx in range(16)):
-                            if tile.getpixel(xy) != wood_tile(vanilla,"minecraft:item/oak_boat").getpixel(xy):
-                                treated.putpixel(xy,tile.getpixel(xy))
-                    art.paste(treated,(x,y))
+            plain = wood_tile(vanilla, "minecraft:item/oak_boat")
+            if src.startswith("entity/"):
+                wood = boat_wood_uvs()
+            else:
+                wood = {(x,y) for y in range(art.height) for x in range(art.width)
+                        if kind == "boat" or art.getpixel((x,y)) == plain.getpixel((x,y))}
+            original = art.copy()
+            for x0,y0 in sorted({(x//16*16,y//16*16) for x,y in wood}):
+                tile = original.crop((x0,y0,x0+16,y0+16))
+                treated = moss_sheet(tile,oak,moss,())
+                for y in range(16):
+                    for x in range(16):
+                        if (x0+x,y0+y) in wood:
+                            art.putpixel((x0+x,y0+y), treated.getpixel((x,y)))
             f=pack/resource(NS+":"+dest,"textures","png");f.parent.mkdir(parents=True,exist_ok=True);art.save(f)
     copy_tags(pack,vanilla,{k:v for k,v in pairs.items() if k.endswith("_boat") and "/" not in k}, kinds=("/tags/item/","/tags/entity_type/"))
     write(pack,labels_path.relative_to(pack).as_posix(),labels)

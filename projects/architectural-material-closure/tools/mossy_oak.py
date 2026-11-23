@@ -42,7 +42,7 @@ def moss_sheet(sheet, oak, moss, rectangles):
         before, after = oak.getpixel(uv), moss.getpixel(uv)
         # Four olive shades. Even the greenest native oak has R-G >= 23.
         if pixel[3] and after[0]-after[1] <= 13 and before != after:
-            gain = light(pixel) / light(before)
+            gain = min(1.0, light(pixel) / light(before))
             result.putpixel(xy, (*[min(255, round(c*gain)) for c in after[:3]], pixel[3]))
     return result
 

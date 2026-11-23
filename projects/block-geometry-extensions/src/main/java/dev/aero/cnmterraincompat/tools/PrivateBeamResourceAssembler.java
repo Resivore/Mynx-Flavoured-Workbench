@@ -109,7 +109,7 @@ public final class PrivateBeamResourceAssembler {
             int source = beam.getRGB(x, y), before = oak.getRGB(x, y), after = moss.getRGB(x, y);
             int pixel = source;
             if (source >>> 24 != 0 && before != after && ((after >> 16) & 255) - ((after >> 8) & 255) <= 13) {
-                double gain = luminance(source) / (double) luminance(before);
+                double gain = Math.min(1.0, luminance(source) / (double) luminance(before));
                 pixel = source & 0xff000000;
                 for (int shift : List.of(16, 8, 0))
                     pixel |= Math.min(255, (int) Math.rint(((after >> shift) & 255) * gain)) << shift;

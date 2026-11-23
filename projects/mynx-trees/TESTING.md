@@ -1,6 +1,10 @@
 # Mynx Trees verification
 
-Match the candidate to Canary 10 in WORKBENCH_STATUS.json and record its SHA-256 with observations. Canary 8's owner acceptance applies to that earlier release. Use an owner-selected Minecraft Java 26.2 Fabric world for these checks.
+## Canary 11 Mossy Oak
+
+Check raw and stripped logs on X, Y and Z and compare both cut ends to the final previews. Check all six faces of each wood block and the inventory icons. Repeat with Foundation v12 above Matcha and with Foundation disabled.
+
+Match the candidate to Canary 11 in WORKBENCH_STATUS.json and record its SHA-256 with observations. Canary 8's owner acceptance applies to that earlier release. Use an owner-selected Minecraft Java 26.2 Fabric world for these checks.
 
 ## Timber, crafting and fixtures
 
