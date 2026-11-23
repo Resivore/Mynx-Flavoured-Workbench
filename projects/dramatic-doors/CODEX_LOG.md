@@ -82,3 +82,14 @@
 - Artifact: `DD C13.jar`, 14,077,144 bytes, SHA-256 `50a5cc25d3da52ebf0edb5763383c7b594add063f327f925e57b97d12e6884e2`, built_at `2026-11-23T03:48:17.7405918Z`. Embedded version `1.20.1-3.3.3+26.2-workbench-canary13`. Runtime dependency policy CAPABILITY_OR_PROVIDER, no exceptions.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner visual and gameplay checks and acceptance.
+
+## 2026-11-23T04:08:56Z — DD C14 door display names
+
+- Revision: 9
+- Source checkpoint: `b4f33ed3bcb9a46434934fd853ec56ec69b3be42`
+- Changes: The owner reported raw legacy door item keys, including `item.dramaticdoors.tall_dark_oak_door`. In the isolated C13 English client, 257 of 355 installed DD items displayed raw keys. Both legacy factory overloads used Minecraft’s default item description prefix. The blocks and newer item factories already used the translated block keys. C14 shares the block description prefix across both legacy overloads. The packaged audit covers 1,125 tall and 561 short legacy entries plus 10 native and 88 AMC entries that already resolved correctly. English names are byte-identical to C13. Added 463 missing Russian and 606 missing Simplified Chinese block names. The registration and item-definition checker now verifies compiled factories, all three packaged locales and the per-pack resource lookup.
+- Build/static: Controlled evidence includes the Java 25 Fabric build, four JUnit tests and both combined-provider server GameTests. On the isolated 26.2 English client with JEI, Macaw’s Doors, AMC C30, Enderscape and Ribbits, all 355 block names, stack names, first tooltip lines and JEI ingredient names matched. Both search indexes returned each item by name. The 98 previously correct names matched C13. All 1,784 catalog rows passed static checks, including integrations absent from this client. C13 archive comparison found 30,415 identical file payloads. Only `DDRegistry.class`, the Fabric version and the base `ru_ru.json` and `zh_cn.json` files changed. The local full catalog, affected list and client observations are in `build/c14/`. The catalog is reproducible using the procedure in TESTING.md.
+- Artifact: `DD C14.jar`, 14,088,746 bytes, SHA-256 `9623cdcdf79ce449a3c0832fefda9276fa37435611d496dbd40eea7392052ddd`, finalized `2026-11-23T04:07:47.055514Z`, embedded version `1.20.1-3.3.3+26.2-workbench-canary14`. Runtime dependency policy CAPABILITY_OR_PROVIDER, no exceptions.
+- Runtime: RUNTIME_UNTESTED for owner gameplay.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS. C8 remains the accepted rollback.
+- Next state: Owner checks inventory, tooltips, Creative Search and JEI on the installed stack against the C14 hash.

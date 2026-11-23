@@ -1,10 +1,24 @@
-# Testing Dramatic Doors C13
+# Testing Dramatic Doors C14
 
-C13 targets Minecraft Java 26.2 Fabric and awaits owner gameplay verification. Match the JAR hash to the current entry in WORKBENCH_STATUS.json. C8 is the accepted rollback.
+C14 targets Minecraft Java 26.2 Fabric and awaits owner gameplay verification. Match the JAR hash to the current entry in WORKBENCH_STATUS.json. C8 is the accepted rollback.
+
+## Door display names
+
+Set the client language to English (US). In Creative Search, enter each of `Short Dark Oak Door`, `Tall Dark Oak Door`, `Short Oak Door`, `Tall Oak Door`, `Short Pale Oak Door` and `Tall Pale Oak Door`. Repeat in JEI. Hover each returned DD stack and check the first tooltip line. With advanced tooltips enabled, the identifier below the name can be used to distinguish DD doors from other mods. With Veiled, Celestial, Murublight, Mossy Oak or AMC variants installed, check their names in the same way. For a Russian or Simplified Chinese setup, switch the client language and search for the localized name from the catalog report. Record the exact C14 hash, language, provider, registry ID and the visible name for any mismatch.
+
+For build coverage, use JDK 25, set `JAVA_HOME` or put `javap` on PATH, and build the Fabric JAR. From this project directory run:
+
+```powershell
+./tools/Get-RegisteredItemIds.ps1 -ValidateDefinitions -Artifact 'artifacts/DD C14.jar' -PreviousArtifact 'artifacts/DD C13.jar' -NameReport 'build/c14/door-name-audit.tsv'
+```
+
+The report has one row per registration declaration, including optional integrations. It records the previous and current item keys, block key, exact names in each supported locale and which locale entries were added. Filter on differing item keys for the complete affected list. The checker reads the compiled item factories and looks up each name in the base resources plus that door’s own built-in resource pack.
+
+Run the combined Fabric client GameTest described below with JEI and both wood providers. It enumerates the live DD registry, compares block, inventory, first tooltip line and JEI names, searches for each exact item in both indexes, and writes `fabric/build/native-door-tests/client/door-name-audit.tsv`. The English client run covers the installed providers. The packaged catalog check also covers providers absent from that run.
 
 ## Murublight owner artwork
 
-Use Enderscape 3.0.2 with DD C13. Compare the native two-block Murublight door and the DD short and tall Murushroom doors under the same lighting. Check the full face on both hinges, both open positions, the shared edge strips and the joins at rows 16 and 32. Inspect both item icons in the inventory and hand. Craft, place, activate with a hand and redstone, save, reload and check drops. Record owner observations against the C13 hash.
+Use Enderscape 3.0.2 with the current DD build. Compare the native two-block Murublight door and the DD short and tall Murushroom doors under the same lighting. Check the full face on both hinges, both open positions, the shared edge strips and the joins at rows 16 and 32. Inspect both item icons in the inventory and hand. Craft, place, activate with a hand and redstone, save, reload and check drops. Record owner observations against the hash tested.
 
 For the pixel and model checks, run `python -B tools/verify_murublight_art.py <DD-C12> <DD-C13> <Minecraft-26.2-client> <Enderscape-3.0.2> build/c13/previews/murublight_doors.png`. The sheet shows the native door, both previous and current faces, and the new inventory sprites. The supplied short face retains the filename `short_oak_door_front.png`; its target is `dramaticdoors:short_murushroom_door`.
 

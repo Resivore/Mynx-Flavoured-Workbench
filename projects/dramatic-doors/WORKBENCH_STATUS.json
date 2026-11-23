@@ -100,23 +100,23 @@
     ]
   },
   "state": {
-    "milestone": "Updates the short and tall native Murushroom doors and both inventory icons with the owner’s Murublight designs. Controlled validation passed. Owner visual and gameplay verification and acceptance are pending.",
+    "milestone": "C14 restores legacy door item names. The packaged catalog passed in all three maintained locales, and all 355 doors loaded in the controlled English client passed Creative Search and JEI checks. Owner verification is pending.",
     "releases": {
       "current": {
-        "version": "C13",
-        "canary": 13,
-        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary13",
+        "version": "C14",
+        "canary": 14,
+        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary14",
         "artifact": {
-          "filename": "DD C13.jar",
-          "sha256": "50a5cc25d3da52ebf0edb5763383c7b594add063f327f925e57b97d12e6884e2"
+          "filename": "DD C14.jar",
+          "sha256": "9623cdcdf79ce449a3c0832fefda9276fa37435611d496dbd40eea7392052ddd"
         },
-        "built_at": "2026-11-23T03:48:17.7405918Z",
-        "source_commit": "d18e0f8e95d2e22d4efb3543469937c1631a3a56",
+        "built_at": "2026-11-23T04:07:47.055514Z",
+        "source_commit": "b4f33ed3bcb9a46434934fd853ec56ec69b3be42",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Updates the short and tall native Murushroom doors and both inventory icons with the owner’s Murublight designs."
+        "summary": "Restores the established display names for legacy short and tall door items and fills missing Russian and Simplified Chinese door names."
       },
       "accepted": {
         "version": "C8 (legacy Canary 7)",
@@ -160,10 +160,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-11-23T03:50:47Z",
-    "updated_at": "2026-11-23T03:50:47Z",
-    "last_codex_at": "2026-11-23T03:50:47Z",
-    "source_commit": "d18e0f8e95d2e22d4efb3543469937c1631a3a56"
+    "revision": 9,
+    "activity_at": "2026-11-23T04:08:56Z",
+    "updated_at": "2026-11-23T04:08:56Z",
+    "last_codex_at": "2026-11-23T04:08:56Z",
+    "source_commit": "b4f33ed3bcb9a46434934fd853ec56ec69b3be42"
   }
 }
