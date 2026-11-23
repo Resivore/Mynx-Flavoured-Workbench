@@ -1,4 +1,28 @@
-# BGE C109 patterned geometry verification
+# BGE geometry verification
+
+## Canary 110 Mossy Oak
+
+Match `BGE C110.jar` to its manifest and enable Ribbits C27. Obtain Mossy Oak Planks. Cycle a named stack through all 18 entries. Each group of nine follows Full, Slab, Stairs, Wall, Vertical Slab, Step, Corner, Quarter Column and Layer. The Planks group precedes Beam. Repeat from the final entry and check the count, custom components and inventory icons.
+
+Place Beam blocks and shapes along X, Y and Z. Check both slab halves, stair turns and halves, wall arms next to solids and other walls, connected straight runs, isolated posts, end grain, side bands, culling and waterlogging. Compare against the original BBB Oak Beam in the same lighting. The thin wooden Beam Wall has a visible center and narrow arms. Check its collision in a straight run, corner and junction, then compare the ordinary Planks Wall. In survival place and break each shape. With CNM loot inheritance enabled, each returns the canonical Ribbits plank. Without Ribbits check that its 18-member selector is absent.
+
+Run Java 25 `gradlew build`, `tools/Test-MaterialProfileArchitecture.ps1` and `tools/Verify-UnifiedArtifact.ps1` against the retained source jars. The server regression compares BBB's actual wall models and exercises all 324 selector transfers, single-block placement, inherited loot and each geometry's direct loot table. Record resource packs and renderer for owner visual observations.
+
+### Registered selector order
+
+| Role | Positions 1–9, Planks | Positions 10–18, Beam |
+| --- | --- | --- |
+| Full block | 1. `ribbits:mossy_oak_planks` | 10. `cnm_terrain_slabs_compat:ribbits/mossy_oak_beam` |
+| Horizontal slab | 2. `ribbits:mossy_oak_planks_slab` | 11. `cnm_terrain_slabs_compat:ribbits/mossy_oak_beam_slab` |
+| Stairs | 3. `ribbits:mossy_oak_planks_stairs` | 12. `cnm_terrain_slabs_compat:ribbits/mossy_oak_beam_stairs` |
+| Wall | 4. `cnm_terrain_slabs_compat:ribbits/mossy_oak_planks_wall` | 13. `cnm_terrain_slabs_compat:ribbits/mossy_oak_beam_wall` |
+| Vertical slab | 5. `clutternomore:ribbits/vertical_mossy_oak_planks_slab` | 14. `clutternomore:cnm_terrain_slabs_compat/vertical_ribbits/mossy_oak_beam_slab` |
+| Step | 6. `clutternomore:ribbits/mossy_oak_planks_step` | 15. `clutternomore:cnm_terrain_slabs_compat/ribbits/mossy_oak_beam_step` |
+| Corner | 7. `cnm_terrain_slabs_compat:ribbits/mossy_oak_planks_corner` | 16. `cnm_terrain_slabs_compat:cnm_terrain_slabs_compat/ribbits/mossy_oak_beam_corner` |
+| Quarter column | 8. `cnm_terrain_slabs_compat:ribbits/mossy_oak_planks_quarter_column` | 17. `cnm_terrain_slabs_compat:cnm_terrain_slabs_compat/ribbits/mossy_oak_beam_quarter_column` |
+| Layer | 9. `cnm_terrain_slabs_compat:ribbits/mossy_oak_planks_layer` | 18. `cnm_terrain_slabs_compat:cnm_terrain_slabs_compat/ribbits/mossy_oak_beam_layer` |
+
+## Previous C109 patterned geometry reference
 
 Use the private local `BGE C109.jar` and the SHA-256 and source checkpoint in `WORKBENCH_STATUS.json`. The controlled reference provider is `AMC C28.jar`, SHA-256 `c90194fb12306d1c47b22023eab23e62869f8310a56ab2c322c8f635bbce7fa9`. Use Enderscape 3.0.2 for the twenty Enderscape-backed patterns. Keep the JARs local.
 

@@ -20,7 +20,7 @@ final class PrivateBeamGeneratedResources {
             String model = id.getNamespace() + ":block/" + id.getPath();
             JsonObject variants = new JsonObject();
             variants.add("axis=y", selection(model, 0, 0));
-            variants.add("axis=z", selection(model, 90, 0));
+            variants.add("axis=z", selection(model, 90, binding.spec().provider().equals("ribbits") ? 180 : 0));
             variants.add("axis=x", selection(model, 90, 90));
             JsonObject blockState = new JsonObject();
             blockState.add("variants", variants);

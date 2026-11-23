@@ -149,10 +149,10 @@ public final class RenderingContractGameTests implements CustomTestMethodInvoker
                 .clientFixtureManagerForBbbBeamResourceRegression();
         ExternalMaterialGeneratedResources.generate(manager);
         BlockPos pos = helper.absolutePos(BlockPos.ZERO);
-        for (String family : List.of("veiled", "celestial", "murublight")) {
-            ExternalMaterialFamilies.Binding planks = external("enderscape:" + family + "_planks");
-            ExternalMaterialFamilies.Binding beam = external(
-                    CnmTerrainCompat.MOD_ID + ":enderscape/" + family + "_beam");
+        for (var definition : PrivateBeamFamilies.definitions()) {
+            String family = definition.family();
+            ExternalMaterialFamilies.Binding planks = external(definition.planks().toString());
+            ExternalMaterialFamilies.Binding beam = external(definition.root().toString());
             helper.assertTrue(planks.wall() instanceof WallBlock
                             && !(planks.wall() instanceof WoodenPlankWallBlock)
                             && beam.wall() instanceof WoodenPlankWallBlock,
@@ -191,6 +191,20 @@ public final class RenderingContractGameTests implements CustomTestMethodInvoker
                                     .equals(beam.profile().textureRoles().top()),
                     family + " Beam wall model dimensions, GUI transform or end/side grain aliases drifted");
 
+            if (family.equals("mossy_oak")) {
+                try (var jar = new java.util.zip.ZipFile(System.getProperty("bge.oakBeamReference"))) {
+                    for (String suffix : List.of("", "_side")) {
+                        var entry = jar.getEntry("assets/bbb/models/block/wall/oak" + suffix + ".json");
+                        try (var stream = jar.getInputStream(entry)) {
+                            String source = new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8)
+                                    .replace("bbb:block/beam/oak_top", beam.profile().textureRoles().top())
+                                    .replace("bbb:block/beam/oak", beam.profile().textureRoles().side());
+                            helper.assertTrue(JsonParser.parseString(source).equals(suffix.isEmpty() ? post : side),
+                                    "BBB Oak wall model or UV drift " + suffix);
+                        }
+                    }
+                } catch (java.io.IOException e) { throw new IllegalStateException(e); }
+            }
             JsonObject item = generatedJson(itemResource(beamWall));
             helper.assertTrue(item.getAsJsonObject("model").get("model").getAsString()
                             .equals(model(beamWall) + "_post"),
@@ -204,6 +218,13 @@ public final class RenderingContractGameTests implements CustomTestMethodInvoker
             BlockState cross = wall(base, WallSide.LOW, WallSide.LOW,
                     WallSide.LOW, WallSide.LOW);
             VoxelShape center = Block.box(4, 0, 4, 12, 16, 12);
+            var collisionPost = Block.box(4, 0, 4, 12, 24, 12);
+            for (var sample : List.of(straight, tee, cross, straight.setValue(WallBlock.UP, false))) {
+                var collision = sample.getCollisionShape(helper.getLevel(), pos, CollisionContext.empty());
+                boolean occupied = !Shapes.joinIsNotEmpty(collisionPost, collision, BooleanOp.ONLY_FIRST);
+                helper.assertTrue(occupied == (sample == tee || !sample.getValue(WallBlock.UP)),
+                        family + " BBB collision center " + sample);
+            }
             helper.assertTrue(!covers(beam.wall(), straight, center, helper, pos)
                             && covers(beam.wall(), tee, center, helper, pos)
                             && !covers(beam.wall(), cross, center, helper, pos),
@@ -250,9 +271,9 @@ public final class RenderingContractGameTests implements CustomTestMethodInvoker
                 CatalogItemGeneratedResources.generate(manager);
         helper.assertTrue(summary.roles().equals(expectedRoles),
                 "Final item pass did not cover the exact four visible roles of every ShapeMap variation");
-        helper.assertTrue(expectedRoles.size() == 1968
+        helper.assertTrue(expectedRoles.size() == 1972
                         && summary.itemDefinitionCount() == expectedRoles.size()
-                        && summary.beamItemModelCount() == 30,
+                        && summary.beamItemModelCount() == 32,
                 "Final item pass count drifted: roles=" + expectedRoles.size()
                         + " items=" + summary.itemDefinitionCount()
                         + " Beam models=" + summary.beamItemModelCount());
@@ -373,8 +394,8 @@ public final class RenderingContractGameTests implements CustomTestMethodInvoker
                 beamWalls++;
             }
         }
-        helper.assertTrue(beamItems == 30 && beamWalls == 3
-                        && beamSides.size() == 15 && beamEnds.size() == 15,
+        helper.assertTrue(beamItems == 32 && beamWalls == 4
+                        && beamSides.size() == 16 && beamEnds.size() == 16,
                 "Did not cover every BBB/private Beam item/material independently: items="
                         + beamItems + " walls=" + beamWalls + " sides=" + beamSides.size()
                         + " ends=" + beamEnds.size());
@@ -680,6 +701,10 @@ public final class RenderingContractGameTests implements CustomTestMethodInvoker
                     canonicalParent.getPath().length() - "_beam".length());
             String side = CnmTerrainCompat.MOD_ID
                     + ":block/private/enderscape/" + family + "_beam";
+            return List.of(side, side + "_top");
+        }
+        if (canonicalParent.equals(Identifier.parse(CnmTerrainCompat.MOD_ID + ":ribbits/mossy_oak_beam"))) {
+            String side = CnmTerrainCompat.MOD_ID + ":block/private/ribbits/mossy_oak_beam";
             return List.of(side, side + "_top");
         }
         throw new IllegalStateException("No exact Beam texture contract for " + canonicalParent);

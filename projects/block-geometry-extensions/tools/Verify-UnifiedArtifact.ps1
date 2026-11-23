@@ -1,9 +1,9 @@
 param(
-    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C109.jar'),
+    [string]$UnifiedJar = (Join-Path $PSScriptRoot '..\build\libs\BGE C110.jar'),
     [string]$AcceptedJar = (Join-Path $PSScriptRoot '..\artifacts\cnm-nibaru-integration-4.2.2-bge.canary58.glass-corner-uv+26.2.jar'),
     [string]$PredecessorJar = (Join-Path $PSScriptRoot '..\artifacts\BGE C78.jar'),
     [string]$C92Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C92.jar'),
-    [string]$C108Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C108.jar'),
+    [string]$C109Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C109.jar'),
     [string]$C93Jar = (Join-Path $PSScriptRoot '..\artifacts\BGE C93.jar'),
     [string]$BbbJar = (Join-Path $PSScriptRoot '..\..\building-but-better\artifacts\bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar')
 )
@@ -118,6 +118,8 @@ function Assert-BeamCenterBand([System.IO.Compression.ZipArchiveEntry]$Entry, [s
 }
 
 function Test-AllowedChangedEntry([string]$Name) {
+    if ($Name -in @('dev/aero/cnmterraincompat/ExternalMaterialGeneratedData.class',
+                    'dev/aero/cnmterraincompat/ExternalMaterialGeneratedData$GenerationSummary.class')) { return $true }
     return $Name -eq 'fabric.mod.json' -or $Name -eq 'META-INF/MANIFEST.MF' -or
             $Name -match '^dev/aero/cnmterraincompat/(?:BgeColumnBlock|BgeCornerBlock|BgeLayerSpecializedBlocks|ExternalMaterialBlocks|ExternalMaterialCatalog|ExternalMaterialFamilies|InsetModelContract)(?:\$.*)?\.class$' -or
             $Name -eq 'dev/aero/cnmterraincompat/BgeBlockItem.class' -or
@@ -192,7 +194,7 @@ function Test-AllowedNewEntry([string]$Name) {
             $Name -match '^dev/aero/cnmterraincompat/(?:PrivateBeamFamilies|WoodenPlankWallBlock)(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/client/PrivateBeamGeneratedResources(?:\$.*)?\.class$' -or
             $Name -match '^dev/aero/cnmterraincompat/tools/PrivateBeamResourceAssembler(?:\$.*)?\.class$' -or
-            $Name -match '^assets/cnm_terrain_slabs_compat/textures/block/private/enderscape/(?:veiled|celestial|murublight)_beam(?:_top)?\.png$' -or
+            $Name -match '^assets/cnm_terrain_slabs_compat/textures/block/private/(?:enderscape/(?:veiled|celestial|murublight)|ribbits/mossy_oak)_beam(?:_top)?\.png$' -or
             $Name -match '^games/twinhead/moreslabsstairsandwalls/api/material/CanonicalPillarTextureResolver(?:\$.*)?\.class$' -or
             $Name -match '^assets/more_slabs_stairs_and_walls/blockstates/purpur_pillar_(?:slab|stairs)\.json$' -or
             $Name -match '^assets/more_slabs_stairs_and_walls/models/block/purpur_pillar_(?:slab|stairs)(?:_.*)?\.json$' -or
@@ -219,11 +221,11 @@ Require ((Get-FileSha256 $c93Path) -eq '16087d67acb3554f8a6aeee3652f4d75ff00b8a0
         'Exact BGE C93 placed-resource baseline hash mismatch'
 Require ((Get-FileSha256 $bbbPath) -eq '0d54034725c3e354515c78bcee32ab2cb5ce764a33e0602419e26c78aaef8c5a') `
         'Exact locally supplied BBB Beam source artifact hash mismatch'
-Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C109.jar') `
-        'Private local-only artifact filename is not exactly BGE C109.jar'
+Require ([System.IO.Path]::GetFileName($unifiedPath) -ceq 'BGE C110.jar') `
+        'Private local-only artifact filename is not exactly BGE C110.jar'
 
-Require ((Get-FileSha256 $C108Jar) -eq '7ce394afaee22797af2cf952036876efcb2354ead32222402088d48d5b1ebde0') 'Current C108 baseline hash mismatch'
-$c108 = [System.IO.Compression.ZipFile]::OpenRead($C108Jar)
+Require ((Get-FileSha256 $C109Jar) -eq '7efd346718e4e941e6c55906663517bc212c128764605aab956eae7858825897') 'Current C109 baseline hash mismatch'
+$c109 = [System.IO.Compression.ZipFile]::OpenRead($C109Jar)
 $unified = [System.IO.Compression.ZipFile]::OpenRead($unifiedPath)
 $accepted = [System.IO.Compression.ZipFile]::OpenRead($acceptedPath)
 $predecessor = [System.IO.Compression.ZipFile]::OpenRead($predecessorPath)
@@ -232,16 +234,18 @@ $c93 = [System.IO.Compression.ZipFile]::OpenRead($c93Path)
 $bbb = [System.IO.Compression.ZipFile]::OpenRead($bbbPath)
 try {
     $unifiedMap = Get-EntryMap $unified
-    $baseline = Get-EntryMap $c108
+    $baseline = Get-EntryMap $c109
     $added = @($unifiedMap.Keys | Where-Object { -not $baseline.ContainsKey($_) })
-    Require ($added.Count -eq 0) 'Unexpected C109 addition'
-    $changedFromC108 = @()
+    $mossyBeamSprites = @('assets/cnm_terrain_slabs_compat/textures/block/private/ribbits/mossy_oak_beam.png',
+            'assets/cnm_terrain_slabs_compat/textures/block/private/ribbits/mossy_oak_beam_top.png')
+    Require ((New-StringSet $added).SetEquals([string[]]$mossyBeamSprites)) 'Unexpected C110 addition'
+    $changedFromC109 = @()
     foreach ($name in $baseline.Keys) {
-        Require $unifiedMap.ContainsKey($name) "C109 removed $name"
+        Require $unifiedMap.ContainsKey($name) "C110 removed $name"
         if ((Get-EntrySha256 $baseline[$name]) -eq (Get-EntrySha256 $unifiedMap[$name])) { continue }
-        $changedFromC108 += $name
+        $changedFromC109 += $name
         Require ($name -ceq 'fabric.mod.json' -or
-                $name -cmatch '^dev/aero/cnmterraincompat/ExternalMaterialCatalog(?:\$.*)?\.class$') "Unexpected C109 change to $name"
+                $name -cmatch '^dev/aero/cnmterraincompat/(?:ExternalMaterialCatalog|ExternalMaterialGeneratedData|ExplicitShapeMapFamilies|PrivateBeamFamilies|client/PrivateBeamGeneratedResources|tools/PrivateBeamResourceAssembler)(?:\$.*)?\.class$') "Unexpected C110 change to $name"
     }
     $acceptedMap = Get-EntryMap $accepted
     $predecessorMap = Get-EntryMap $predecessor
@@ -332,6 +336,8 @@ try {
     }
 
     $expectedPrivateBeamDigests = [ordered]@{
+        'assets/cnm_terrain_slabs_compat/textures/block/private/ribbits/mossy_oak_beam.png' = 'e707e3b01b3a2a28633ef3aa17bc857417165da772f4b5acd9eb6e8e3fc4d7d3'
+        'assets/cnm_terrain_slabs_compat/textures/block/private/ribbits/mossy_oak_beam_top.png' = '9689695cdb8feb92a7088c2a054daa6a9a95199e1698e9a2d5cfeff03c928f91'
         'assets/cnm_terrain_slabs_compat/textures/block/private/enderscape/veiled_beam.png' = '4892134c555f0a308ecfca910d14bf5290623573cc03d4a70efb597db135d0c8'
         'assets/cnm_terrain_slabs_compat/textures/block/private/enderscape/veiled_beam_top.png' = '55b8b4b41f7e7fc4f912a0c8d40316d06c9f4af850fca7812dd8dab79da3a68e'
         'assets/cnm_terrain_slabs_compat/textures/block/private/enderscape/celestial_beam.png' = 'cf86b7d54cd5d675d7bf5d39a3db8b7ee57fd418ab62dd03f36a5adc8a4d3529'
@@ -342,7 +348,7 @@ try {
     $expectedPrivateBeamResources = New-StringSet @($expectedPrivateBeamDigests.Keys)
     $actualPrivateResources = New-StringSet @($unifiedMap.Keys | Where-Object { $_ -match '(?:^|/)private/' })
     Require ($actualPrivateResources.SetEquals($expectedPrivateBeamResources)) `
-            "C94 private resource set is not exactly the six approved Beam derivatives: $(@($actualPrivateResources) -join ', ')"
+            "C94 private resource set is not exactly the eight approved Beam derivatives: $(@($actualPrivateResources) -join ', ')"
     $providerResourceEntries = @($unifiedMap.Keys | Where-Object { $_ -match '^(?:assets|data)/(?:bbb|enderscape)/' })
     Require ($providerResourceEntries.Count -eq 0) `
             "Provider-owned BBB/Enderscape resource bytes leaked into C94: $($providerResourceEntries -join ', ')"
@@ -373,10 +379,10 @@ try {
     $metadataText = Get-EntryText $unifiedMap['fabric.mod.json']
     $metadata = $metadataText | ConvertFrom-Json
     Require ($metadata.id -eq 'cnm_terrain_slabs_compat') 'Unified primary Fabric ID changed'
-    Require ($metadata.version -eq '4.2.53-bge.canary109.amc-calcite-shadoline+26.2') `
-            'Unified Fabric version is not exact C109'
-    Require ($metadata.name -eq ('Block Geometry Extensions Canary 109 ' + [char]0x2014 + ' AMC Calcite and Shadoline Patterns')) `
-            'Unified Fabric display name is not exact C109'
+    Require ($metadata.version -eq '4.2.54-bge.canary110.mossy-oak-beam+26.2') `
+            'Unified Fabric version is not exact C110'
+    Require ($metadata.name -eq ('Block Geometry Extensions Canary 110 ' + [char]0x2014 + ' Mossy Oak Beams')) `
+            'Unified Fabric display name is not exact C110'
     Require (@($metadata.provides).Count -eq 1 -and $metadata.provides[0] -eq 'more_slabs_stairs_and_walls') `
             'Unified descriptor must provide exactly the legacy Nibaru ID'
     Require ($metadata.PSObject.Properties.Name -notcontains 'jars') 'Unified descriptor must not declare nested JARs'
@@ -679,12 +685,12 @@ try {
 
     [ordered]@{
         result = 'PASS'
-        exact_c108_delta = [ordered]@{
+        exact_c109_delta = [ordered]@{
             added = $added
-            changed = @($changedFromC108 | Sort-Object)
-            byte_identical = $baseline.Count - $changedFromC108.Count
+            changed = @($changedFromC109 | Sort-Object)
+            byte_identical = $baseline.Count - $changedFromC109.Count
         }
-        c109 = [ordered]@{
+        c110 = [ordered]@{
             filename = [System.IO.Path]::GetFileName($unifiedPath)
             size = (Get-Item -LiteralPath $unifiedPath).Length
             sha256 = Get-FileSha256 $unifiedPath
@@ -749,7 +755,7 @@ try {
     $accepted.Dispose()
     $predecessor.Dispose()
     $c92.Dispose()
-    $c108.Dispose()
+    $c109.Dispose()
     $c93.Dispose()
     $bbb.Dispose()
 }

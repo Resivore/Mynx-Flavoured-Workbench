@@ -39,7 +39,7 @@ public final class ExternalMaterialCatalog {
     /** Called by optional pseudo-mixins after the named provider has registered its blocks. */
     public static synchronized void registerProvider(String provider) {
         if (!FabricLoader.getInstance().isModLoaded(provider) || !REGISTERED_PROVIDERS.add(provider)) return;
-        if (provider.equals("enderscape")) PrivateBeamFamilies.registerRoots();
+        PrivateBeamFamilies.registerRoots(provider);
         // AMC's original hook is the return from EndStoneBricksBlocks. Only the masonry
         // batch is ready there, including on versions predating BaseStoneFamilies.
         List<Spec> specs = provider.equals(AMC) ? AMC_MASONRY
@@ -99,6 +99,7 @@ public final class ExternalMaterialCatalog {
         result.addAll(AMC_OPTIONAL_ENDERSCAPE);
         result.addAll(bbbBeamSpecs());
         result.addAll(enderscapeSpecs());
+        result.addAll(PrivateBeamFamilies.specs());
         return List.copyOf(result);
     }
 
@@ -437,7 +438,6 @@ public final class ExternalMaterialCatalog {
                 "enderscape:block/stripped_murublight_stem_top"));
         result.add(pillar("enderscape:stripped_murublight_hyphae", "enderscape:block/stripped_murublight_stem",
                 "enderscape:block/stripped_murublight_stem"));
-        result.addAll(PrivateBeamFamilies.specs());
         return List.copyOf(result);
     }
 

@@ -226,6 +226,7 @@ public final class ExplicitShapeMapFamilies {
             result.add(ids("enderscape:" + wood + "_planks",
                     CnmTerrainCompat.MOD_ID + ":enderscape/" + wood + "_beam"));
         }
+        result.add(ids("ribbits:mossy_oak_planks", CnmTerrainCompat.MOD_ID + ":ribbits/mossy_oak_beam"));
         return result.stream().map(List::copyOf).toList();
     }
 

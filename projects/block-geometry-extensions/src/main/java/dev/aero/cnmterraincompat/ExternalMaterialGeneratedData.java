@@ -25,6 +25,12 @@ public final class ExternalMaterialGeneratedData {
         int lootCount = 0;
         for (ExternalMaterialFamilies.Binding binding : ExternalMaterialFamilies.all()) {
             Map<String, Block> roles = binding.roles();
+            if (binding.spec().provider().equals("ribbits") && PrivateBeamFamilies.isPrivateBeam(binding.spec().id())) {
+                Identifier root = binding.spec().id();
+                DataGenerator.writeServerData(root.withPath("loot_table/blocks/" + root.getPath() + ".json"), selfDrop(root, null));
+                add(blockTags, net.minecraft.tags.BlockTags.MINEABLE_WITH_AXE.location(), root);
+                lootCount++;
+            }
             for (Map.Entry<String, Block> role : roles.entrySet()) {
                 if (role.getKey().equals("block")) continue;
                 Identifier id = registeredId(role.getValue());

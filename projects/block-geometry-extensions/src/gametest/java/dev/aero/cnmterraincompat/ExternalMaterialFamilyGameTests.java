@@ -87,7 +87,7 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             GameTestHelper helper) {
         List<Identifier> sources = List.of(Identifier.parse("ribbits:red_toadstool"),
                 Identifier.parse("ribbits:brown_toadstool"), Identifier.parse("ribbits:toadstool_stem"));
-        helper.assertTrue(ExternalMaterialCatalog.sourceCount("ribbits") == 4,
+        helper.assertTrue(ExternalMaterialCatalog.sourceCount("ribbits") == 5,
                 "Ribbits provider catalog must contain mossy oak plus three huge-toadstools");
         for (Identifier sourceId : sources) {
             ExternalMaterialFamilies.Binding binding = ExternalMaterialFamilies.fromSource(sourceId).orElseThrow();
@@ -183,22 +183,22 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 212
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 213
                         && ExternalMaterialCatalog.sourceCount("architectural_material_closure") == 64,
-                "Expected 148 legacy sources and 64 AMC patterns");
+                "Expected 149 legacy sources and 64 AMC patterns");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
                         && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
-                        && ExternalMaterialCatalog.sourceCount("ribbits") == 4
+                        && ExternalMaterialCatalog.sourceCount("ribbits") == 5
                         && ExternalMaterialCatalog.sourceCount("bbb") == 12
                         && ExternalMaterialCatalog.sourceCount("enderscape") == 68
                         && ExternalMaterialCatalog.sourceCount("mossy_stone") == 1,
-                "Provider source partition is not 57/6/4/12/68/1");
-        helper.assertTrue(ExternalMaterialFamilies.all().size() == 148,
-                "Provider completion did not register all 148 allowlisted families: "
+                "Provider source partition is not 57/6/5/12/68/1");
+        helper.assertTrue(ExternalMaterialFamilies.all().size() == 149,
+                "Provider completion did not register all 149 allowlisted families: "
                         + ExternalMaterialFamilies.all().size());
         helper.assertTrue(NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() != null).count() == 314
                         && NibaruMaterialProfiles.all().stream().filter(profile -> profile.family() == null
-                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 146,
+                                && !profile.canonicalParentId().getNamespace().equals("minecraft")).count() == 147,
                 "External append changed the frozen native inventory or lost an external source");
 
         Set<Identifier> actual = new LinkedHashSet<>();
@@ -229,8 +229,8 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.assertTrue(actual.stream().filter(id -> id.getNamespace().equals("mcwpaths"))
                         .allMatch(ExternalMaterialFamilyGameTests::isRequestedMacawSource),
                 "Macaw family is outside the 52 full-pattern plus five plain-Path scope");
-        System.out.println("EXTERNAL_C93_INVENTORY|sources=148|mcwpaths=57"
-                + "|mynx_trees=6|ribbits=4|bbb=12|enderscape=68|mossy_stone=1|relations=1332");
+        System.out.println("EXTERNAL_C93_INVENTORY|sources=149|mcwpaths=57"
+                + "|mynx_trees=6|ribbits=5|bbb=12|enderscape=68|mossy_stone=1|relations=1341");
         helper.succeed();
     }
 
@@ -342,6 +342,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                     "C93 Beam/plank reference-wall or axis contract drifted for " + definition.family());
             List<Item> component = ShapeMap.getShapes(plank.source().asItem());
             List<Item> beamFamily = beam.roles().values().stream().map(Block::asItem).toList();
+            var ordered = new java.util.ArrayList<>(plank.roles().values().stream().map(Block::asItem).toList());
+            ordered.addAll(beamFamily);
+            helper.assertTrue(component.equals(ordered), "Expected exact 18 positions for " + definition.root());
             helper.assertTrue(component.indexOf(beam.source().asItem()) > component.indexOf(plank.source().asItem())
                             && beamFamily.stream().allMatch(component::contains),
                     "Private Beam family is not grouped after its plank root: " + definition.family());
@@ -676,6 +679,49 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         helper.succeed();
     }
 
+    @GameTest
+    public void mossyOakBeamTransfersAndSurvivalPlacement(GameTestHelper helper) {
+        var plank = external("ribbits:mossy_oak_planks");
+        var beam = external(CnmTerrainCompat.MOD_ID + ":ribbits/mossy_oak_beam");
+        var selector = ShapeMap.getShapes(plank.source().asItem());
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var support = new BlockPos(1, 1, 1);
+        helper.setBlock(support, Blocks.STONE);
+        for (Item from : selector) {
+            var sample = new ItemStack(from, 17);
+            sample.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
+                    net.minecraft.network.chat.Component.literal("Mossy Oak"));
+            for (int to = 0; to < 18; to++) {
+                helper.assertTrue(ItemStack.matches(ShapeMap.transferStack(sample, to),
+                        sample.transmuteCopy(selector.get(to), 17)), "Component transfer " + from + "/" + to);
+            }
+        }
+        for (var role : beam.roles().entrySet()) {
+            Block block = role.getValue();
+            helper.setBlock(support.above(), Blocks.AIR);
+            var stack = new ItemStack(block, 2);
+            player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+            helper.placeAt(player, stack, support, Direction.UP);
+            var state = helper.getBlockState(support.above());
+            helper.assertTrue(state.is(block) && stack.getCount() == 1, "Survival placement " + block);
+            var drops = Block.getDrops(state, helper.getLevel(), helper.absolutePos(support.above()), null,
+                    player, new ItemStack(net.minecraft.world.item.Items.IRON_AXE));
+            helper.assertTrue(drops.size() == 1 && drops.getFirst().is(plank.source().asItem())
+                    && drops.getFirst().getCount() == 1, "Inherited plank drop " + block + ": " + drops);
+            var params = new net.minecraft.world.level.storage.loot.LootParams.Builder(helper.getLevel())
+                    .withParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN,
+                            net.minecraft.world.phys.Vec3.atCenterOf(helper.absolutePos(support.above())))
+                    .withParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.TOOL,
+                            new ItemStack(net.minecraft.world.item.Items.IRON_AXE));
+            var ownDrops = state.getDrops(params);
+            Block expected = List.of("corner", "quarter_column", "layer").contains(role.getKey()) ? beam.source() : block;
+            helper.assertTrue(ownDrops.size() == 1 && ownDrops.getFirst().is(expected.asItem())
+                    && ownDrops.getFirst().getCount() == 1, "Direct Beam loot " + block + ": " + ownDrops);
+        }
+        System.out.println("MOSSY_OAK_SELECTOR " + selector.stream().map(BuiltInRegistries.ITEM::getKey).toList());
+        helper.succeed();
+    }
+
     @GameTest(maxTicks = 40)
     public void absentOptionalProviderIsANoOp(GameTestHelper helper) {
         int before = ExternalMaterialFamilies.all().size();
@@ -717,10 +763,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
         }
         CanonicalShapeMapAudit.Report audit = CanonicalShapeMapAudit.inspectExternalFamilies();
         CanonicalShapeMapAudit.ExactReport exact = CanonicalShapeMapAudit.inspectExplicitFamilies();
-        helper.assertTrue(relations == 1332 && canonicalDerived.size() == 1184 && bgeGenerated.size() == 982,
+        helper.assertTrue(relations == 1341 && canonicalDerived.size() == 1192 && bgeGenerated.size() == 990,
                 "C93 relation/canonical/generated identity count mismatch: " + relations + "/"
                         + canonicalDerived.size() + "/" + bgeGenerated.size());
-        helper.assertTrue(audit.variantCount() == 148 && audit.missing().isEmpty()
+        helper.assertTrue(audit.variantCount() == 149 && audit.missing().isEmpty()
                         && audit.duplicates().isEmpty(),
                 "Live ShapeMap canonical variant/role audit failed: " + audit);
         helper.assertTrue(exact.variationCount() == NibaruMaterialProfiles.all().size()
@@ -1079,15 +1125,15 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
             }
         }
         JsonObject walls = generatedServerJson(Identifier.parse("minecraft:tags/block/walls.json"));
-        helper.assertTrue(walls.getAsJsonArray("values").size() == 148,
+        helper.assertTrue(walls.getAsJsonArray("values").size() == 149,
                 "External wall classification does not contain every scoped full-parent family");
-        helper.assertTrue(loot == 544, "Expected 544 BGE-owned external loot tables, found " + loot);
-        System.out.println("EXTERNAL_C93_SERVER_RESOURCES|standardLoot=544|wallTags=148|materialFamilies=148");
+        helper.assertTrue(loot == 549, "Expected 549 BGE-owned external loot tables, found " + loot);
+        System.out.println("EXTERNAL_C93_SERVER_RESOURCES|standardLoot=549|wallTags=149|materialFamilies=149");
         helper.succeed();
     }
 
     @GameTest(maxTicks = 80)
-    public void actualClientWritersCloseAll982BgeOwnedGeometryResources(GameTestHelper helper) {
+    public void actualClientWritersCloseAll990BgeOwnedGeometryResources(GameTestHelper helper) {
         ResourceManager manager = clientFixtureManager();
         LayerGeneratedResources.GenerationSummary layers =
                 LayerGeneratedResources.generateExternalForValidation(manager);
@@ -1095,11 +1141,11 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 QuarterGeometryGeneratedResources.generateExternalForValidation(manager);
         ExternalMaterialGeneratedResources.GenerationSummary standard =
                 ExternalMaterialGeneratedResources.generate(manager);
-        helper.assertTrue(layers.familyCount() == 146
-                        && quarters.cornerFamilyCount() == 146
-                        && quarters.columnFamilyCount() == 146
-                        && standard.familyCount() == 148
-                        && standard.blockStateCount() == 544,
+        helper.assertTrue(layers.familyCount() == 147
+                        && quarters.cornerFamilyCount() == 147
+                        && quarters.columnFamilyCount() == 147
+                        && standard.familyCount() == 149
+                        && standard.blockStateCount() == 549,
                 "External client writers did not process every exact family/role");
 
         int generatedRelations = 0;
@@ -1126,10 +1172,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                 generatedRelations++;
             }
         }
-        helper.assertTrue(generatedRelations == 982 && resolvedModelReferences >= 982,
+        helper.assertTrue(generatedRelations == 990 && resolvedModelReferences >= 990,
                 "External client resource closure mismatch: relations=" + generatedRelations
                         + ", modelReferences=" + resolvedModelReferences);
-        System.out.println("EXTERNAL_C93_CLIENT_RESOURCES|generatedRelations=982|blockstates=982|items=982"
+        System.out.println("EXTERNAL_C93_CLIENT_RESOURCES|generatedRelations=990|blockstates=990|items=990"
                 + "|resolvedModelReferences=" + resolvedModelReferences);
         helper.succeed();
     }

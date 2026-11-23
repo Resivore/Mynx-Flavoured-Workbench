@@ -16,24 +16,26 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The three private Beam roots are BGE code identities whose texture bytes are assembled only into a
+ * The private Beam roots are BGE code identities whose texture bytes are assembled only into a
  * local private build.  This class intentionally contains identifiers and generation policy, not
  * any BBB model or texture bytes.
  */
 public final class PrivateBeamFamilies {
     private static final List<Definition> DEFINITIONS = List.of(
-            definition("veiled"), definition("celestial"), definition("murublight"));
+            definition("enderscape", "veiled"), definition("enderscape", "celestial"),
+            definition("enderscape", "murublight"), definition("ribbits", "mossy_oak"));
 
     private PrivateBeamFamilies() {}
 
-    /** Runs only after Enderscape has registered the exact plank parents. */
-    static void registerRoots() {
+    /** Runs only after the provider has registered the exact plank parents. */
+    static void registerRoots(String provider) {
         for (Definition definition : DEFINITIONS) {
+            if (!definition.planks().getNamespace().equals(provider)) continue;
             Block existing = BuiltInRegistries.BLOCK.getValue(definition.root());
             if (definition.root().equals(BuiltInRegistries.BLOCK.getKey(existing))) continue;
             Block plank = BuiltInRegistries.BLOCK.getValue(definition.planks());
             if (!definition.planks().equals(BuiltInRegistries.BLOCK.getKey(plank))) {
-                throw new IllegalStateException("Enderscape did not register private Beam plank parent "
+                throw new IllegalStateException("Provider did not register private Beam plank parent "
                         + definition.planks());
             }
             BlockBehaviour.Properties properties = BlockBehaviour.Properties.ofFullCopy(plank)
@@ -44,12 +46,12 @@ public final class PrivateBeamFamilies {
 
     static List<ExternalMaterialCatalog.Spec> specs() {
         return DEFINITIONS.stream().map(definition -> new ExternalMaterialCatalog.Spec(
-                definition.root(), "enderscape", definition.planks(),
-                Identifier.fromNamespaceAndPath("enderscape", definition.family() + "_beam"),
+                definition.root(), definition.planks().getNamespace(), definition.planks(),
+                Identifier.fromNamespaceAndPath(definition.planks().getNamespace(), definition.family() + "_beam"),
                 java.util.Map.of(), VisualProfile.PILLAR,
                 NibaruMaterialProfile.OrientationPolicy.AXIS_ALIGNED,
-                texture(definition.family(), ""), texture(definition.family(), "_top"),
-                texture(definition.family(), "_top"), "", TintProfile.NONE,
+                texture(definition, ""), texture(definition, "_top"),
+                texture(definition, "_top"), "", TintProfile.NONE,
                 NibaruMaterialProfile.RenderLayer.SOLID,
                 Set.of(BlockTags.MINEABLE_WITH_AXE, BlockTags.LOGS), Set.of(), List.of())).toList();
     }
@@ -72,14 +74,14 @@ public final class PrivateBeamFamilies {
 
     static List<Definition> definitions() { return DEFINITIONS; }
 
-    private static Definition definition(String family) {
-        return new Definition(family, Identifier.fromNamespaceAndPath("enderscape", family + "_planks"),
+    private static Definition definition(String provider, String family) {
+        return new Definition(family, Identifier.fromNamespaceAndPath(provider, family + "_planks"),
                 Identifier.fromNamespaceAndPath(CnmTerrainCompat.MOD_ID,
-                        "enderscape/" + family + "_beam"));
+                        provider + "/" + family + "_beam"));
     }
 
-    private static String texture(String family, String suffix) {
-        return CnmTerrainCompat.MOD_ID + ":block/private/enderscape/" + family + "_beam" + suffix;
+    private static String texture(Definition definition, String suffix) {
+        return CnmTerrainCompat.MOD_ID + ":block/private/" + definition.planks().getNamespace() + "/" + definition.family() + "_beam" + suffix;
     }
 
     record Definition(String family, Identifier planks, Identifier root) {}

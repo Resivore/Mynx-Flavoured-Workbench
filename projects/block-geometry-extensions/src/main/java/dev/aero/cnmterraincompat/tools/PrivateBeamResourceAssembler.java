@@ -26,11 +26,24 @@ public final class PrivateBeamResourceAssembler {
     private PrivateBeamResourceAssembler() {}
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 3) throw new IllegalArgumentException(
-                "Expected <bbb-jar> <enderscape-jar> <private-output-root>");
+        if (args.length != 6) throw new IllegalArgumentException(
+                "Expected <bbb-jar> <enderscape-jar> <output> <bbb-dev7> <ribbits> <vanilla-client>");
         Path bbb = Path.of(args[0]).toRealPath();
         Path enderscape = Path.of(args[1]).toRealPath();
         Path output = Path.of(args[2]).toAbsolutePath().normalize();
+        Path currentBbb = Path.of(args[3]);
+        Path ribbits = Path.of(args[4]);
+        requireSha256(currentBbb, "57ddb5dfe62f2eb9f4a2ce22fbeeb5cce4386bbd93aab3f7df0dd8e6d19ddaf0");
+        requireSha256(ribbits, "088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd");
+        try (ZipFile oak = new ZipFile(currentBbb.toFile()); ZipFile rib = new ZipFile(ribbits.toFile());
+             ZipFile vanilla = new ZipFile(args[5])) {
+            BufferedImage planks = image(vanilla, "assets/minecraft/textures/block/oak_planks.png");
+            BufferedImage moss = image(rib, "assets/ribbits/textures/block/mossy_oak_planks.png");
+            for (String suffix : List.of("", "_top")) {
+                BufferedImage beam = image(oak, "assets/bbb/textures/block/beam/oak" + suffix + ".png");
+                write(output, "ribbits/mossy_oak_beam" + suffix + ".png", mossTransfer(beam, planks, moss));
+            }
+        }
         requireSha256(bbb, BBB_SHA256);
         requireSha256(enderscape, ENDERSCAPE_SHA256);
         try (ZipFile bbbZip = new ZipFile(bbb.toFile()); ZipFile enderscapeZip = new ZipFile(enderscape.toFile())) {
@@ -41,14 +54,14 @@ public final class PrivateBeamResourceAssembler {
             for (String family : List.of("veiled", "celestial", "murublight")) {
                 BufferedImage palette = image(enderscapeZip,
                         "assets/enderscape/textures/block/" + family + "_planks.png");
-                write(output, family + "_beam.png", recolor(beam, palette));
-                write(output, family + "_beam_top.png", recolor(beamTop, palette));
+                write(output, "enderscape/" + family + "_beam.png", recolor(beam, palette));
+                write(output, "enderscape/" + family + "_beam_top.png", recolor(beamTop, palette));
             }
         }
     }
 
     private static void write(Path root, String file, BufferedImage image) throws IOException {
-        Path target = root.resolve("assets/cnm_terrain_slabs_compat/textures/block/private/enderscape/")
+        Path target = root.resolve("assets/cnm_terrain_slabs_compat/textures/block/private/")
                 .resolve(file);
         Files.createDirectories(target.getParent());
         if (!ImageIO.write(image, "PNG", target.toFile())) {
@@ -78,6 +91,29 @@ public final class PrivateBeamResourceAssembler {
             result.setRGB(x, y, (alpha << 24) | (color & 0x00ffffff));
         }
         return result;
+    }
+
+    // AMC mossy_oak.moss_sheet for native 16px UVs. Only the olive footprint in
+    // Ribbits' plank sprite changes, with the original Beam's per-texel luminance.
+    private static BufferedImage mossTransfer(BufferedImage beam, BufferedImage oak, BufferedImage moss) {
+        BufferedImage result = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        if (beam.getWidth() != 16 || beam.getHeight() != 16) throw new IllegalArgumentException("Expected 16px Beam tile");
+        for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) {
+            int source = beam.getRGB(x, y), before = oak.getRGB(x, y), after = moss.getRGB(x, y);
+            int pixel = source;
+            if (source >>> 24 != 0 && before != after && ((after >> 16) & 255) - ((after >> 8) & 255) <= 13) {
+                double gain = luminance(source) / (double) luminance(before);
+                pixel = source & 0xff000000;
+                for (int shift : List.of(16, 8, 0))
+                    pixel |= Math.min(255, (int) Math.rint(((after >> shift) & 255) * gain)) << shift;
+            }
+            result.setRGB(x, y, pixel);
+        }
+        return result;
+    }
+
+    private static int luminance(int rgb) {
+        return 299 * ((rgb >> 16) & 255) + 587 * ((rgb >> 8) & 255) + 114 * (rgb & 255);
     }
 
     private static List<Integer> palette(BufferedImage image) {

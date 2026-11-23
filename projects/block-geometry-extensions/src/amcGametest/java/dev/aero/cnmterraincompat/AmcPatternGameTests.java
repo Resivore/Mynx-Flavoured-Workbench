@@ -66,6 +66,10 @@ public final class AmcPatternGameTests {
     @GameTest
     public void productionPatternFamilies(GameTestHelper helper) throws Exception {
         var loader = FabricLoader.getInstance();
+        helper.assertTrue(!loader.isModLoaded("ribbits")
+                        && BuiltInRegistries.BLOCK.keySet().stream().noneMatch(id -> id.getPath().contains("mossy_oak_beam"))
+                        && BuiltInRegistries.ITEM.keySet().stream().noneMatch(id -> id.getPath().contains("mossy_oak_beam")),
+                "Ribbits-absent server registered a Mossy Oak Beam role");
         String version = System.getProperty("bge.amcVersion");
         boolean present = !version.equals("none");
         boolean enderscape = Boolean.getBoolean("bge.withEnderscape");
