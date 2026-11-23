@@ -100,3 +100,14 @@
 - Artifact: `mynx-trees-private-0.1.0+26.2-canary9.jar`, 268,765 bytes, SHA-256 `af6b077427faeb8c41f6aa8d42dd133880a67af1cb0f6c213cd64f3c02204200`, finalized `2026-11-23T06:50:15.9199823Z`, embedded version `0.1.0+26.2-canary9`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS.
 - Next state: Owner checks the exact artifact using TESTING.md.
+
+## 2026-11-23T17:27:31Z — Mynx Trees Canary 10
+
+- Revision: 11
+- Source checkpoint: `7c14937ce64238df0d139e7b28b1ebdc67baca30`
+- Changes: Random-tick and bonemeal Oak Sapling growth use the selected registered standing-tree feature at the sapling's position. Fancy Oak rolls one in ten per log. Provider-selected Swamp Oak rolls one in three. Ordinary Oak keeps its logs. Growth and feature selection remain with the installed grower.
+- Build/static: Java 25 build, 25 JUnit tests and 18 package checks passed. The C9 position sample selected 3,326/32,768 at one tenth and 10,982/32,768 at one third. Isolated 26.2 GameTests passed with neither provider, FarmTweaks 2.3 and MidnightLib 1.10.0, Replant Swamp Trees 0.0.3+26.1, and both providers. Paired seeded placements compared block states, axes, leaves, vines, bee nests, leaf litter and the next RNG draw. The suite covered ordinary, Fancy and genuine Swamp Oak, staging and blocked growth, Silver Birch and Wisteria saplings, all C9 natural oak configurations, and unscoped server feature placement. Both named growers were absent from the two local 26.2 pack export inventories.
+- Runtime: RUNTIME_UNTESTED. Owner gameplay evidence for C10 is pending.
+- Artifact: `mynx-trees-private-0.1.0+26.2-canary10.jar`, 271,527 bytes, SHA-256 `73b76789a25efd019f53069acb49835ad53fa41805296d71a6c1294b6f300c75`, finalized `2026-11-23T17:26:52.4743814Z`, embedded version `0.1.0+26.2-canary10`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS. Canary 8 remains accepted and available for rollback.
+- Next state: Owner checks the retained C10 artifact using TESTING.md.

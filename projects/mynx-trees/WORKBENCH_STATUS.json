@@ -22,7 +22,7 @@
       "Position-dependent compensated mustard-gold Silver Birch leaf tint with exact existing hue variation and saturation, a normal cube leaf item with one matching default tint, #B0C73A old-growth grass tint, separately namespaced Wisteria particles, and the standalone user-supplied Wisteria log-top texture.",
       "Optional client Iris material-map fallback: only absent Silver Birch states inherit corresponding loaded vanilla Birch Leaves state assignments, while only absent Wisteria states continue inheriting matching vanilla Cherry Leaves state IDs; no shader-pack/profile edits or fake animation.",
       "Client-only soil-dependent base bark on upright Silver Birch log sides, using the exact supplied packaged texture and extensible silver_birch_base_soils block tag; items use ordinary bark and both base-model ends use the namespaced owner sprite. Contextual geometry keys and resource/tag/neighbor rebuild handling preserve current placed trees without saved-state changes.",
-      "Native signs, shelves, boats and the full crafted families use dedicated identities. Mossy Oak supplies four timber forms with Ribbits-conditional plank recipes. Natural Swamp Oak and Fallen Oak use a one-third per-position roll, and the six Fancy Oak configurations use one tenth. Sapling growth and existing terrain retain their prior behavior."
+      "Native signs, shelves, boats and the full crafted families use dedicated identities. Mossy Oak supplies four timber forms with Ribbits-conditional plank recipes. Natural Swamp Oak and Fallen Oak use a one-third per-position roll, and the six Fancy Oak configurations use one tenth. Oak sapling growth uses those standing-tree rates only when its selected feature qualifies. Ordinary Oak retains native timber."
     ],
     "boundaries": {
       "owned_paths": [
@@ -62,23 +62,23 @@
     ]
   },
   "state": {
-    "milestone": "Adds native Silver Birch and Wisteria wood families, owner-authored rounded Silver Birch ends, and naturally occurring Mossy Oak timber. Owner gameplay and visual verification are pending.",
+    "milestone": "Sapling-grown Fancy Oak has a 1/10 Mossy Oak chance per log, and provider-selected Swamp Oak has a 1/3 chance per log. Owner gameplay verification is pending.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary9",
-        "canary": 9,
+        "version": "0.1.0+26.2-canary10",
+        "canary": 10,
         "artifact": {
-          "filename": "mynx-trees-private-0.1.0+26.2-canary9.jar",
-          "sha256": "af6b077427faeb8c41f6aa8d42dd133880a67af1cb0f6c213cd64f3c02204200"
+          "filename": "mynx-trees-private-0.1.0+26.2-canary10.jar",
+          "sha256": "73b76789a25efd019f53069acb49835ad53fa41805296d71a6c1294b6f300c75"
         },
-        "built_at": "2026-11-23T06:50:15.9199823Z",
-        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
+        "built_at": "2026-11-23T17:26:52.4743814Z",
+        "source_commit": "7c14937ce64238df0d139e7b28b1ebdc67baca30",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds native Silver Birch and Wisteria wood families, owner-authored rounded Silver Birch ends, and naturally occurring Mossy Oak timber.",
-        "embedded_version": "0.1.0+26.2-canary9"
+        "summary": "Sapling-grown Fancy Oak has a 1/10 Mossy Oak chance per log, and provider-selected Swamp Oak has a 1/3 chance per log.",
+        "embedded_version": "0.1.0+26.2-canary10"
       },
       "accepted": {
         "version": "0.1.0+26.2-canary8",
@@ -120,10 +120,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-11-23T07:04:23Z",
-    "updated_at": "2026-11-23T07:04:23Z",
-    "last_codex_at": "2026-11-23T07:04:23Z",
-    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
+    "revision": 11,
+    "activity_at": "2026-11-23T17:27:31Z",
+    "updated_at": "2026-11-23T17:27:31Z",
+    "last_codex_at": "2026-11-23T17:27:31Z",
+    "source_commit": "7c14937ce64238df0d139e7b28b1ebdc67baca30"
   }
 }
