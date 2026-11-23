@@ -6,10 +6,11 @@ import com.geckolib.loading.math.MathParser;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import java.util.*;
+import java.nio.file.*;
 
 /** Off-game resource enumeration and bake using the actual GeckoLib loader. */
 public final class SoldierBakeCheck {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         var pack = SoldierPack.load().orElseThrow();
         try (var resources = new MultiPackResourceManager(PackType.CLIENT_RESOURCES, List.of(pack))) {
             var loader = new GeckoLibGsonLoader();
@@ -32,6 +33,15 @@ public final class SoldierBakeCheck {
             if (!curves.containsAll(List.of(EasingType.EASE_IN_SINE, EasingType.EASE_OUT_SINE)))
                 throw new AssertionError("Original idle easing lost: " + curves);
             resources.getResource(SoldierPack.TEXTURE).orElseThrow();
+            if (args.length == 1) {
+                for (var id : List.of(SoldierPack.MODEL, SoldierPack.ANIMATION, SoldierPack.TEXTURE)) {
+                    var target = Path.of(args[0], "assets", id.getNamespace(), id.getPath());
+                    Files.createDirectories(target.getParent());
+                    try (var in = resources.getResource(id).orElseThrow().open()) {
+                        Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
         }
     }
 }

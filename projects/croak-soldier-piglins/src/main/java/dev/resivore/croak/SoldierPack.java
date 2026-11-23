@@ -31,15 +31,23 @@ public final class SoldierPack extends AbstractPackResources {
 
     public static Optional<SoldierPack> load() {
         String reference = System.getProperty("croakSoldier.referenceJar", "");
-        if (reference.isBlank()) return Optional.empty();
+        if (reference.isBlank()) {
+            if (SoldierPack.class.getResource("/assets/" + NS + "/" + MODEL.getPath()) != null)
+                LogUtils.getLogger().info("[Croak Soldier] Using private JAR client resources");
+            else
+                LogUtils.getLogger().warn("[Croak Soldier] Missing reference configuration; checking active resource packs");
+            return Optional.empty();
+        }
         try (ZipFile zip = new ZipFile(Path.of(reference).toFile())) {
-            return Optional.of(new SoldierPack(Map.of(
+            var pack = new SoldierPack(Map.of(
                 MODEL, read(zip, "geo/croakhelper.geo.json", "0c190875c6d5c8fc138383d6327f49507abc1d40a058d6a5000aaf7111b74783"),
                 ANIMATION, normalizeEasings(read(zip, "animations/croakhelper.animation.json", "f960274d68860f2e0deb3656ef06ebab1924095bbbfb174b4ad472bcaa833c18")),
                 TEXTURE, read(zip, "textures/entities/croakhelper.png", "726d86230a6cd30a8840af4d8955dd5346352d58bff3bc205d0b75dadf0174d9")
-            )));
+            ));
+            LogUtils.getLogger().info("[Croak Soldier] Verified external Soldier geometry, atlas and animations; mounting client pack");
+            return Optional.of(pack);
         } catch (IOException | GeneralSecurityException | IllegalArgumentException e) {
-            LogUtils.getLogger().warn("Could not load Croak Soldier reference; using vanilla piglins", e);
+            LogUtils.getLogger().warn("[Croak Soldier] Rejected external archive or assets; checking active resource packs", e);
             return Optional.empty();
         }
     }

@@ -11,7 +11,6 @@ import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.item.Items;
 
 public final class SoldierRenderer extends GeoReplacedEntityRenderer<Soldier, Piglin, SoldierRenderer.State> {
-    public static SoldierRenderer current;
 
     // GeckoLib adds GeoRenderState to EntityRenderState through its client mixin.
     public static class State extends PiglinRenderState {

@@ -2,7 +2,7 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 group = 'dev.resivore'
-version = '0.1.0+26.2-canary1'
+version = '0.1.0+26.2-canary2'
 repositories {
     maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
     mavenCentral()
@@ -23,13 +23,18 @@ processResources {
 }
 
 configurations.testImplementation.extendsFrom(configurations.compileOnly)
-tasks.register('checkSoldierBake', JavaExec) {
+def soldierBake = {
     dependsOn testClasses
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'dev.resivore.croak.SoldierBakeCheck'
     systemProperty 'croakSoldier.referenceJar', providers.gradleProperty('croaksJar')
         .getOrElse(file('../../originals/mods/croaks-2.0.0-neoforge-1.21.1.jar').absolutePath)
     workingDir = layout.buildDirectory.get().asFile
+}
+tasks.register('checkSoldierBake', JavaExec, soldierBake)
+tasks.register('preparePrivateAssets', JavaExec) {
+    configure(soldierBake)
+    args layout.buildDirectory.dir('private-resources').get().asFile.absolutePath
 }
 check.dependsOn checkSoldierBake
 
@@ -51,3 +56,41 @@ tasks.register('checkSoldierArchive') {
     }
 }
 check.dependsOn checkSoldierArchive
+
+// Supply the matching client libraries for an off-game production Fabric transformation test.
+tasks.register('checkProductionReload', JavaExec) {
+    dependsOn testClasses, jar
+    def mc = new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/26.2/minecraft-client.jar')
+    def mods = [file(providers.gradleProperty('geckolibJar').get())]
+    for (name in ['fabricApiJar','emfJar','etfJar']) mods.add(file(providers.gradleProperty(name).get()))
+    def privateMode = providers.gradleProperty('privateCandidate').isPresent()
+    if (privateMode) dependsOn 'privateTestJar'
+    def archiveTask = privateMode ? tasks.named('privateTestJar').get() : jar
+    def candidate = file(providers.gradleProperty('candidateJar').getOrElse(archiveTask.archiveFile.get().asFile.absolutePath))
+    mods.add(candidate)
+    args privateMode ? candidate.absolutePath : ''
+    classpath = files(sourceSets.test.output.classesDirs, configurations.testRuntimeClasspath.filter {
+        !it.name.startsWith('minecraft-merged-deobf') && !mods.contains(it)
+    }, mc, mods)
+    mainClass = 'dev.resivore.croak.ProductionReloadCheck'
+    workingDir = layout.buildDirectory.dir('reload-check')
+    doFirst { workingDir.mkdirs() }
+    systemProperty 'fabric.unitTest', 'true'
+    systemProperty 'fabric.gameJarPath', mc.absolutePath
+    systemProperty 'fabric.addMods', mods*.absolutePath.join(File.pathSeparator)
+    systemProperty 'mixin.debug.countInjections', 'true'
+    systemProperty 'croakSoldier.referenceJar', providers.gradleProperty('croaksJar')
+        .getOrElse(file('../../originals/mods/croaks-2.0.0-neoforge-1.21.1.jar').absolutePath)
+}
+
+tasks.register('privateTestJar', Jar) {
+    dependsOn preparePrivateAssets, checkSoldierArchive
+    archiveClassifier = 'private'
+    from(sourceSets.main.output)
+    from(layout.buildDirectory.dir('private-resources')) {
+        include 'assets/croak_soldier_piglins/geckolib/models/soldier.geo.json',
+            'assets/croak_soldier_piglins/geckolib/animations/soldier.animation.json',
+            'assets/croak_soldier_piglins/textures/entity/soldier.png'
+    }
+    from('notices/Croaks.txt') { into 'META-INF/notices' }
+}
