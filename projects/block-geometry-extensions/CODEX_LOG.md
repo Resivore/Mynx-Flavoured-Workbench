@@ -702,3 +702,14 @@
 - Artifact: PRIVATE_LOCAL_ONLY `BGE C109.jar`, 6,427,101 bytes, SHA-256 `7efd346718e4e941e6c55906663517bc212c128764605aab956eae7858825897`, finalized at `2026-11-21T18:50:49.9126982Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED. Accepted C70 and rollback C72 retain their recorded identities.
 - Next state: Verify the Calcite and Shadoline selectors, pattern alignment and survival behavior using TESTING.md and the retained C109 bytes.
+
+## 2026-11-23T05:39:35Z — BGE C110 wood matrix
+
+- Revision: 72
+- Source checkpoint: `24a96cb8b5261c9b0a1f1358fc4a6abd3bec8db2`
+- Changes: Appends nine selectively mossed BBB-style Beam forms to the nine existing Ribbits Mossy Oak Planks selector positions.
+- Build/static: All 164 server GameTests passed, including 324 component-preserving transfers, separate Planks and Beam walls, all Beam roles, survival placement, CNM's inherited plank drop and direct geometry loot. The absent-provider model audit and its four server tests passed. All 990 generated role blockstates and item definitions resolved with 11,618 model references. The Mossy Oak post and side models matched BBB geometry and UVs. Both 16 by 16 Beam sprites matched AMC's transfer pixel for pixel, changing 63 texels per sprite. Against C109, 11,246 payloads are identical, nine changed and two private PNGs were added. Architecture, native semantics, glass, Bookshelf and archive checks passed.
+- Runtime: Owner gameplay and visual verification pending.
+- Artifact: `BGE C110.jar`, 6,430,266 bytes, SHA-256 `aa2009705e0fa4ef309b79ccd1701edf4a82ee2a601beecb1d8924afbd90191d`, built_at `2026-11-23T05:22:26.7406677Z`, embedded version `4.2.54-bge.canary110.mossy-oak-beam+26.2`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify appearance and interaction in TESTING.md against these exact bytes.
