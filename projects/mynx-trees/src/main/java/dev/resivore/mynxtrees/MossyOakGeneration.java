@@ -3,6 +3,7 @@ package dev.resivore.mynxtrees;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -15,8 +16,16 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 public final class MossyOakGeneration {
     public static final ScopedValue<Integer> CHANCE = ScopedValue.newInstance();
 
-    public static int denominator(ConfiguredFeature<?, ?> feature, WorldGenLevel level) {
-        if (!(level instanceof WorldGenRegion) || (feature.feature() != Feature.TREE && feature.feature() != Feature.FALLEN_TREE)) return 0;
+    public record OakSapling(ServerLevel level, BlockPos pos) {}
+    public static final ScopedValue<OakSapling> SAPLING = ScopedValue.newInstance();
+
+    public static int denominator(ConfiguredFeature<?, ?> feature, WorldGenLevel level, BlockPos origin) {
+        if (feature.feature() != Feature.TREE && feature.feature() != Feature.FALLEN_TREE) return 0;
+        if (!(level instanceof WorldGenRegion)) {
+            OakSapling sapling = SAPLING.isBound() ? SAPLING.get() : null;
+            if (sapling == null || sapling.level() != level || !sapling.pos().equals(origin)
+                    || feature.feature() != Feature.TREE) return 0;
+        }
         Identifier id = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).getKey(feature);
         if (id == null || !id.getNamespace().equals("minecraft")) return 0;
         return switch (id.getPath()) {

@@ -1,6 +1,6 @@
 # Mynx Trees verification
 
-Match the candidate to Canary 9 in WORKBENCH_STATUS.json and record its SHA-256 with observations. Canary 8's owner acceptance applies to that earlier release. Use an owner-selected Minecraft Java 26.2 Fabric world for these checks.
+Match the candidate to Canary 10 in WORKBENCH_STATUS.json and record its SHA-256 with observations. Canary 8's owner acceptance applies to that earlier release. Use an owner-selected Minecraft Java 26.2 Fabric world for these checks.
 
 ## Timber, crafting and fixtures
 
@@ -12,10 +12,21 @@ Match the candidate to Canary 9 in WORKBENCH_STATUS.json and record its SHA-256 
 
 ## Generation and foliage
 
-1. In fresh chunks compare a fixed seed against an equivalent baseline. Survey Swamp Oak, Large/Fancy Oak and Fallen Oak separately. Count Oak and Mossy Oak log positions by feature. Expected long-run shares are one third, one tenth and one third. Inspect angled limbs, horizontal fallen logs and upright stumps, decorators, vines, leaves and neighboring tree density. Small ordinary oaks and planted oak saplings should retain native timber. Existing terrain has no conversion pass.
+1. In fresh chunks compare a fixed seed against an equivalent baseline. Survey Swamp Oak, Large/Fancy Oak and Fallen Oak separately. Count Oak and Mossy Oak log positions by feature. Expected long-run shares are one third, one tenth and one third. Inspect angled limbs, horizontal fallen logs and upright stumps, decorators, vines, leaves and neighboring tree density. Small ordinary oaks retain native timber. Existing terrain has no conversion pass.
 2. Inspect old-growth birch forest for Silver Birch standing and fallen forms. Grow a planted Silver Birch. Compare golden canopy variation at several X/Z positions, the inventory leaf cube, sapling, grass blending and shears or Silk Touch drops against accepted C8. Check decay with raw and stripped logs nearby.
 3. Observe ordinary cherry and Wisteria in fresh cherry groves and from planted saplings. Check the Wisteria selection, Sweet Violets, particles, saplings and leaves. Repeat the relevant checks with Nemo present and absent. With Iris and a compatible shader, compare leaf waving and lighting to matching Birch and Cherry states, including after resource reload.
+
+## Oak sapling growth
+
+1. In a well-lit clearing, let Oak Saplings grow by random ticks and grow a second group with bonemeal. Repeat with and without nearby flowers. Without a swamp-tree provider, ordinary Oak and its bee variant should contain only Oak Logs in plains and swamps. Across many Fancy Oaks, about one in ten log positions should be mossy, including eligible horizontal branches. Record the world seed and use different planting positions.
+2. If FarmTweaks has swamp saplings enabled, repeat in a swamp. If using Replant Swamp Trees, also repeat in a mangrove swamp. When the grower selects Swamp Oak, count about one mossy position in three. Compare vines, canopy, branch axes and any nests with the same provider and seed. A single short tree may contain zero Mossy Oak Logs. Check that a low obstruction still prevents growth and leaves the sapling in place.
 
 ## Build reproduction
 
 Use the Java 25 Gradle wrapper and the pinned Minecraft 26.2 client. Run `gradlew.bat build`. The private assembler reads the primary checkout's immutable references and `private/assets/silver-birch/{birch_log_top,stripped_birch_log_top}.png`. The input manifest records both owner files, their SHA-256 values and their namespaced package destinations. Package checks cover source bytes, native models and all log axes. The world-generation fixture samples 32,768 positions per probability and compares adjacent positions and independent world seeds.
+
+The isolated Fabric fixture runs with `gradlew.bat runGameTest`. For the FarmTweaks case, pass `-PfarmTweaksJar=<jar>` and `-PmidnightLibJar=<jar>`. For Replant Swamp Trees, pass `-PreplantJar=<jar>`. Pass all three for the combined case. The test classpath uses local reference JARs. The release has no dependency on either grower.
+
+The 26.2 random-tick and successful bonemeal paths both call `SaplingBlock.advanceTree`. The vanilla Oak grower selects ordinary or Fancy Oak, using their `_bees_005` variants near flowers. The fixture records the configured feature actually placed. It compares two attempts at the same position and seed with only the timber roll disabled for the control. Checks cover every occupied position and block state in the plot, the next growth RNG value, vines, nests, leaf litter, blocked growth, and direct feature placement outside sapling growth. Natural-feature checks exercise registered features in a FEATURES-step WorldGenRegion backed by the fixture's writable chunks.
+
+The local 26.2 pack exports (`Matcha Flavoured 26.2 1.0.0.mrpack` and `1.17.mrpack`) list neither candidate. On the isolated Fabric 0.19.3 test stack, FarmTweaks 2.3 with MidnightLib 1.10.0 selects a grower for `minecraft:swamp_oak` in swamps. Replant Swamp Trees 0.0.3+26.1 changes the selected key to `minecraft:swamp_oak` in swamps and mangrove swamps. Its published file targets 26.1 and its manifest permits 26.2. Live pack configuration and owner gameplay evidence remain unverified.

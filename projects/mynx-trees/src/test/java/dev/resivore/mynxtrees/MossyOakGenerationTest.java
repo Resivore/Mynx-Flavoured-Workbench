@@ -20,6 +20,9 @@ class MossyOakGenerationTest {
             }
             assertEquals(32768.0 / denominator, count, 150);
             assertEquals(32768.0 / (denominator * denominator), adjacent, 150);
+            // Pin the C9 sample as well as its distribution across neighboring positions.
+            assertEquals(denominator == 3 ? 10982 : 3326, count);
+            assertEquals(denominator == 3 ? 3563 : 337, adjacent);
             assertTrue(changedSeed > 4500);
         }
     }

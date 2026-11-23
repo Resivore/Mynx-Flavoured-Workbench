@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 abstract class ConfiguredOakMixin {
     @WrapMethod(method = "place")
     private boolean mynx$scope(WorldGenLevel level, ChunkGenerator gen, RandomSource random, BlockPos pos, Operation<Boolean> original) {
-        int chance = MossyOakGeneration.denominator((ConfiguredFeature<?, ?>)(Object)this, level);
+        int chance = MossyOakGeneration.denominator((ConfiguredFeature<?, ?>)(Object)this, level, pos);
         if (chance == 0 && !MossyOakGeneration.CHANCE.isBound()) return original.call(level, gen, random, pos);
         return ScopedValue.where(MossyOakGeneration.CHANCE, chance).call(() -> original.call(level, gen, random, pos));
     }

@@ -34,3 +34,29 @@ test { useJUnitPlatform(); systemProperty 'projectRoot', projectDir.absolutePath
 
 tasks.register('verifyPackage', Exec) { dependsOn jar; commandLine 'python', '-B', 'tools/verify_resources.py' }
 check.dependsOn verifyPackage
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = 'mynx-trees-tests'
+        enableGameTests = true
+        enableClientGameTests = false
+    }
+}
+
+def withFarmTweaks = providers.gradleProperty('farmTweaksJar').isPresent()
+def withReplant = providers.gradleProperty('replantJar').isPresent()
+if (withFarmTweaks) {
+    dependencies {
+        gametestRuntimeOnly files(project.property('farmTweaksJar'), project.property('midnightLibJar'))
+    }
+}
+if (withReplant) {
+    dependencies { gametestRuntimeOnly files(project.property('replantJar')) }
+}
+loom.runs.gameTest {
+    runDir "build/oak-tests-farm-${withFarmTweaks}-replant-${withReplant}"
+    vmArg "-Dmynx.test.farmtweaks=${withFarmTweaks}"
+    vmArg "-Dmynx.test.replant=${withReplant}"
+    vmArg '-Dfabric-api.gametest.filter=mynx-trees-tests:*'
+}

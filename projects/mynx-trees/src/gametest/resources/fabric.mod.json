@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "mynx-trees-tests",
+  "version": "1",
+  "name": "Mynx Trees sapling fixtures",
+  "entrypoints": {
+    "fabric-gametest": ["dev.resivore.mynxtrees.test.OakGrowthTests"]
+  },
+  "mixins": ["mynx_trees.tests.mixins.json"],
+  "depends": {"mynx_trees": "*"}
+}
