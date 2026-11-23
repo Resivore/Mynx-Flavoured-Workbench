@@ -6,7 +6,7 @@
   "environment": "*",
   "entrypoints": {
     "client": ["dev.resivore.amc.MossyOakClient"],
-    "main": ["dev.resivore.amc.StoneBlocks", "dev.resivore.amc.AndesiteBlocks", "dev.resivore.amc.MasonryBlocks", "dev.resivore.amc.MaterialFamilies", "dev.resivore.amc.MudBricksBlocks", "dev.resivore.amc.PrismarineBlocks", "dev.resivore.amc.SandstoneBlocks", "dev.resivore.amc.DeepslateQuartzNetherBlocks", "dev.resivore.amc.EndStoneBricksBlocks", "dev.resivore.amc.MossyStoneBricksBlocks", "dev.resivore.amc.BaseStoneFamilies"]
+    "main": ["dev.resivore.amc.StoneBlocks", "dev.resivore.amc.AndesiteBlocks", "dev.resivore.amc.MasonryBlocks", "dev.resivore.amc.MaterialFamilies", "dev.resivore.amc.MudBricksBlocks", "dev.resivore.amc.PrismarineBlocks", "dev.resivore.amc.SandstoneBlocks", "dev.resivore.amc.DeepslateQuartzNetherBlocks", "dev.resivore.amc.EndStoneBricksBlocks", "dev.resivore.amc.MossyStoneBricksBlocks", "dev.resivore.amc.BaseStoneFamilies", "dev.resivore.amc.BambooBlocks"]
   },
   "mixins": ["amc.enderscape.mixins.json", "amc.ribbits.mixins.json", "amc.doors.mixins.json", "amc.trapdoors.mixins.json"],
   "suggests": {"enderscape": "*", "ribbits": "*", "mcwdoors": "*", "mcwtrpdoors": "*"},

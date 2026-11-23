@@ -13,6 +13,7 @@ import masonry
 import moss
 import doors
 import trapdoors
+import bamboo
 import mossy_oak
 import paths
 
@@ -56,11 +57,11 @@ def remap_stone_shutter(source, client, dest, sprite, namespace="minecraft"):
     result.save(dest)
 
 
-def shade_shutter(provider, client, dest, substrate):
+def shade_shutter(provider, client, dest, substrate, reference="andesite"):
     def image(archive, path):
         return Image.open(io.BytesIO(archive.read(path))).convert("RGBA")
 
-    shutter = image(provider, "assets/mcwwindows/textures/block/andesite_louvered_shutter.png")
+    shutter = image(provider, f"assets/mcwwindows/textures/block/{reference}_louvered_shutter.png")
     base = image(client, f"assets/minecraft/textures/block/{substrate}.png")
     light = shutter.convert("L")
 
@@ -70,6 +71,21 @@ def shade_shutter(provider, client, dest, substrate):
         return median(light.getpixel((x, y)) for y in range(first_row, 16, 3) for x in columns)
 
     face = region_light(range(3, 9), 2)
+
+    if reference == "oak":
+        # Oak has an authored wood ramp across the frame and all five slats.
+        # Use the neutral slat face as the unit gain at native texel scale.
+        result = shutter.copy()
+        for y in range(shutter.height):
+            for x in range(shutter.width):
+                alpha = shutter.getpixel((x, y))[3]
+                if alpha:
+                    factor = light.getpixel((x, y)) / face
+                    rgb = base.getpixel((x, y))[:3]
+                    result.putpixel((x, y), (*[min(255, round(v * factor)) for v in rgb], alpha))
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        result.save(dest)
+        return
 
     def gain(columns, row):
         full_gain = (region_light(columns, row) / face) ** 2.25
@@ -503,3 +519,4 @@ if __name__ == "__main__":
                 doors.stage(root, client, macaw, end, ribbits)
                 with ZipFile(trapdoors_path) as traps:
                     trapdoors.stage(root, client, traps, end, ribbits)
+                    bamboo.stage(root, client, provider, traps, shade_shutter, recipe_unlock)

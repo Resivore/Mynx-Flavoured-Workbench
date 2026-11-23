@@ -30,6 +30,7 @@ public final class TrapdoorIntegration {
             "ranch", "swamp", "tropical", "whispering");
 
     public static void trapdoorsReady() {
+        BambooBlocks.registerRanch();
         macawReady = true;
         WOODS_READY.forEach(TrapdoorIntegration::registerPack);
     }

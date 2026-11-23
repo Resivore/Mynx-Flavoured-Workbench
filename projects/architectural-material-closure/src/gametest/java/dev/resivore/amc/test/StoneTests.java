@@ -172,6 +172,7 @@ public final class StoneTests {
         }
         DoorTests.checkRegistry(helper, ids, present, ribbits);
         TrapdoorTests.checkRegistry(helper, ids, present, ribbits);
+        BambooTests.checkRegistry(helper, ids);
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());

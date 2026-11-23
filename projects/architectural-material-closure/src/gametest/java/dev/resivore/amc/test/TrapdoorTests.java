@@ -110,7 +110,7 @@ public final class TrapdoorTests {
         h.succeed();
     }
 
-    private static void exercise(GameTestHelper h, TrapDoorBlock door, Direction face, double height, boolean wet) {
+    static void exercise(GameTestHelper h, TrapDoorBlock door, Direction face, double height, boolean wet) {
         var level = h.getLevel();
         var base = h.absolutePos(CENTER);
         var support = CENTER.relative(face.getOpposite());

@@ -1,8 +1,27 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 31
+## Owner verification for Canary 32
 
-Match the SHA-256 of `AMC C31.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 387 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. With Macaw’s Doors 1.1.5 also present, add 66 Enderscape doors and 22 Ribbits doors. All AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C32.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 392 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. With Macaw’s Doors 1.1.5 also present, add 66 Enderscape doors and 22 Ribbits doors. All AMC IDs use the namespace `architectural_material_closure`.
+
+### Bamboo additions
+
+All six registry paths below use the `architectural_material_closure` namespace. Compare them with the matching `oak_` designs in Macaw's Windows 2.4.2 or, for Ranch, Macaw's Trapdoors 1.1.5.
+
+| Bamboo registry path | Reference implementation | Crafting grid ingredients | Yield |
+|---|---|---|---:|
+| `bamboo_ranch_trapdoor` | Macaw Ranch's vanilla TrapDoorBlock and block-set type | Four Bamboo Blocks in the corners, five sticks in the cross | 2 |
+| `bamboo_log_parapet` | Parapet | Five sticks around a Bamboo Block in the lower middle of a 3×2 grid | 5 |
+| `bamboo_plank_parapet` | Parapet | Same pattern with Bamboo Planks in the lower middle | 5 |
+| `bamboo_blinds` | Blinds | Three Bamboo Slabs above two rows of three sticks | 3 |
+| `bamboo_curtain_rod` | CurtainRod | Stick, Bamboo Block, stick in one row | 5 |
+| `bamboo_louvered_shutter` | Shutter | Three Bamboo Slabs in a vertical column | 3 |
+
+1. Compare the six designs with the local `build/c32/previews/bamboo.png` sheet, in inventory and at normal viewing distance. Inspect Bamboo Block end grain on crosscuts and lengthwise side grain along the Ranch frame, diagonal rails, log shelf and tilted pot support. The Ranch uses the regular Bamboo Block on every wooden member. Plank Parapet, Blinds and Curtain Rod bind Bamboo Planks directly. The Louvered Shutter samples native Bamboo Planks at the Oak shutter's atlas coordinates, preserving its transparency and the light and shadow on all five slats.
+2. Place upper/lower Ranch trapdoors facing all four ways, underwater and dry. Toggle by hand and redstone, then check the drop. Place a flower pot above each parapet and remove it. Cycle joined Blinds through open, closed and raised states, place rods in every facing and toggle a stack of left- and right-hinged shutters. Craft every grid above. Compare with Macaw's ordinary Bamboo Shutter, vanilla Bamboo Button and Pressure Plate and the Macaw Bamboo Planks Path.
+3. With both wood providers and both Macaw door providers installed, check 699 AMC pairs. Remove Macaw's Trapdoors and check 630 pairs including all five Bamboo window forms. With neither wood provider, check 393 with Macaw's Trapdoors or 392 without it. Record owner observations against the C32 hash.
+
+The Java 25 `build` check revalidates the retained C31 and earlier packages, resolves the Bamboo model hierarchies and compares authored face UVs and the generated pixels. Use `-Pc31Jar=<path>` to select the retained C31 baseline. Run `runGameTest` both with and without `-PwithoutTrapdoors`, including `-PwithRibbits -PwithEnderscape` for full-provider coverage.
 
 ### Macaw wood trapdoors
 
@@ -34,7 +53,7 @@ Every destination below is an exact registry path in `architectural_material_clo
 
 1. Compare each row in the local `build/c31/previews/{veiled,celestial,murublight,mossy_oak}.png` sheets. Each shows the Macaw reference, the closed lower placement, an open placement and the packaged item's GUI model. Compare actual inventory and placed views in each wood. Inspect the clear Glass and Bark panes, Paper fittings, Barred openings, Barrel bands, Ranch diagonals and slat edges.
 2. Place each trapdoor in upper and lower positions in all four directions, including underwater. Compare the reference outline, collision, sounds, hand toggling and powered/unpowered transitions. Check the item drop and crafting output. Mossy Oak Bark uses four Ribbits Mossy Oak Slabs and two glass panes for two trapdoors. Glass uses planks. Ranch uses four Mossy Oak Planks and five sticks for two.
-3. Check all four wood-provider combinations with Macaw's Trapdoors installed and absent. With Macaw's Doors installed, the expected AMC totals are 693 with both woods, 648 with Enderscape, 432 with Ribbits, 387 with neither and 625 with both woods but without Macaw's Trapdoors. With Macaw's Trapdoors absent, the Enderscape-only, Ribbits-only and neither-wood totals are 597, 415 and 387. With both woods and only Macaw's Trapdoors installed among the two Macaw door providers, expect 605. Record observations against the exact C31 hash.
+3. Check all four wood-provider combinations with Macaw's Trapdoors installed and absent. With Macaw's Doors installed, the expected AMC totals are 699 with both woods, 654 with Enderscape, 438 with Ribbits, 393 with neither and 630 with both woods but without Macaw's Trapdoors. With Macaw's Trapdoors absent, the Enderscape-only, Ribbits-only and neither-wood totals are 602, 420 and 392. With both woods and only Macaw's Trapdoors installed among the two Macaw door providers, expect 611. Record observations against the exact C32 hash.
 
 The Java 25 `build` task runs the historical resource checks and the C31 artifact comparison. The texture checker uses Pillow and NumPy. Use `-PtrapdoorsJar=<path>` and `-Pc30Jar=<path>` to select retained inputs. Run `runGameTest` in each C30 wood configuration with and without `-PwithoutTrapdoors`, then run both woods with `-PwithoutDoors`. The 15 authored trapdoor tiles per wood use design-specific cross-wood masks. The upward face reverses the vertical texture coordinate for the selective moss footprint. Bark and Ranch reuse the actual model face slots and UVs, including the log/stem sides, stripped Ranch rails and glass. The effective vanilla wooden trapdoor and axe tags are carried through. The provider's legacy plural tag directories do not supply loaded 26.2 tags.
 
@@ -71,7 +90,7 @@ Each occupied cell below gives an exact AMC registry path in the `architectural_
 1. Open the four local sheets in `build/c30/previews/`. Each design shows its Macaw reference, the packaged AMC closed front and the AMC inventory sprite. Compare those against placed doors and inventory under the same light. Inspect the paper panels, glass reflections, Stable bars, hinges and handles. Mossy Oak should show separate moss patches while the grain and exposed fittings remain legible.
 2. Place left- and right-hinged doors facing each direction. Use each half, power and unpower from beside the lower half, break either half and rejoin. Compare the Shoji sliding motion and Stable behavior with the exact reference in the table.
 3. Craft all designs using their Macaw recipe grids. The Mossy Oak Bark Glass Door takes two Ribbits Mossy Oak Planks and four glass blocks and yields three. Confirm both Stable designs, including the Stable-to-Stable Horse conversion. Keep the four native door recipes available.
-4. With Macaw's Doors installed, check 387 AMC pairs with neither wood provider, 597 with Enderscape only, 415 with Ribbits only, and 625 with both. Check the absent providers' door items and recipes are absent. With both woods present and Macaw's Doors absent, check the C29 set of 537 pairs.
+4. With Macaw's Doors installed and Macaw's Trapdoors absent, check 392 AMC pairs with neither wood provider, 602 with Enderscape only, 420 with Ribbits only, and 630 with both. Check the absent providers' door items and recipes are absent. With both woods present and both Macaw door providers absent, check 542 AMC pairs.
 5. Record the exact C30 SHA-256, provider set, design, placement state and any visual or interaction differences. Owner gameplay and visual verification remain pending.
 
 ### Ribbits Mossy Oak
@@ -79,7 +98,7 @@ Each occupied cell below gives an exact AMC registry path in the `architectural_
 1. With Ribbits present, locate the six Mossy Oak items in Building Blocks. Compare each placed form and item preview with its BBB Oak counterpart and Ribbits Mossy Oak Planks under the same light. Check frame sticks, slat edges, wood shadows, lattice plant tints and transparent openings.
 2. Join and separate neighboring forms. Place them on different faces and in water. Cycle Frame, Balustrade, Support and Pallet options with the BBB hammer. Plant and shear a Lattice, and crouch-use a Pallet. Break each form and compare the result with its Oak reference.
 3. With AMC alone as the recipe provider, craft the Frame from Ribbits slabs and sticks. Use Ribbits planks in the Lattice, Trim, Support and Pallet grids. For six Balustrades, place three stripped Oak logs vertically with a moss block beside the middle log. With IBF C28 and CNM active, check the two canonical recipes and switch to the alternatives through their selectors.
-4. In an environment without Ribbits, check that all six items and their recipes are absent and earlier AMC forms remain available. Record observations against the exact C30 hash.
+4. In an environment without Ribbits, check that all six items and their recipes are absent and earlier AMC forms remain available. Record observations against the exact C32 hash.
 
 ### Calcite and Shadoline Block
 
@@ -107,7 +126,7 @@ Each occupied cell below gives an exact AMC registry path in the `architectural_
 2. Exercise all five BBB forms using the masonry procedure below, including connected column grain, planting, moulding corners, hammer-operated fence pillars and infill, and frame diagonals. Check Mirestone hardness and each family's placement sounds. Compare joining, glass, bars, locking, parapet supports and shutter hinges against Macaw's Windows.
 3. Craft the Frame with eight native slabs around an empty center (12), the Arrow Slit with four base blocks and two slabs (3), and the Shutter with three vertical slabs (3). Stonecut each unpolished base into its eleven thin forms (4 each) and four independent full patterns (1 each). Engrave and restore each full pattern and check weighted Strewn Rocky arrangements and Dumble orientation.
 4. Place a pair of each shutter beside the AMC Stone Shutter. Inspect all five slats, raised lips, recesses, open edges and transparent gaps in-world and in inventory. Toggle both hinges and stacked shutters, then save and rejoin.
-5. In a separate disposable world with Enderscape and Ribbits absent, check the 387 standalone AMC pairs, creative inventory and recipe loading. Use separate worlds for the two provider configurations. Record owner observations against the exact C30 hash.
+5. In a separate disposable world with Enderscape and Ribbits absent, check the 392 standalone AMC pairs with Macaw's Trapdoors absent, creative inventory and recipe loading. Use separate worlds for the two provider configurations. Record owner observations against the exact C32 hash.
 
 ### Tuff, Cinnabar, Sulfur and Smooth Basalt
 
@@ -151,7 +170,7 @@ Run these checks for both materials. Place the corresponding vanilla block along
 2. Face each Parapet in four directions and place and remove a flower pot above it. Inspect the top, underside and edge of both the ledge and support. Compare their shape and orientation with Macaw's Andesite Parapet.
 3. Compare both windows with the Macaw Stone Brick Gothic Window and Arrow Slit. Inspect the masonry cap and underside, the narrow faces of the opening, and the visible side bands. Form stacks, remove the middle block, then toggle the Gothic Window and check its glass and conditional iron bars in the reference states.
 4. Face the shutter in each direction, use both hinges and toggle a vertical pair. Compare its five shaded slats with the C9 Stone shutter. Compare the broad faces, narrow edges and underside with the top face of the corresponding vanilla block. Check that the smoother grain follows the original UVs, with the five slats, raised lips and dark recesses visible in open, closed and held views.
-5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C30 hash, orientation, state and screenshots for any visual differences.
+5. Craft each form, check self-drops, and rejoin with a stacked window and an open shutter in place. Record the exact C32 hash, orientation, state and screenshots for any visual differences.
 
 ### Prismarine Bricks and Dark Prismarine
 
