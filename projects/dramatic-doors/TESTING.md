@@ -1,6 +1,12 @@
-# Testing Dramatic Doors C12
+# Testing Dramatic Doors C13
 
-C12 targets Minecraft Java 26.2 Fabric and awaits owner gameplay verification. Match the JAR hash to the current entry in WORKBENCH_STATUS.json. C8 is the accepted rollback.
+C13 targets Minecraft Java 26.2 Fabric and awaits owner gameplay verification. Match the JAR hash to the current entry in WORKBENCH_STATUS.json. C8 is the accepted rollback.
+
+## Murublight owner artwork
+
+Use Enderscape 3.0.2 with DD C13. Compare the native two-block Murublight door and the DD short and tall Murushroom doors under the same lighting. Check the full face on both hinges, both open positions, the shared edge strips and the joins at rows 16 and 32. Inspect both item icons in the inventory and hand. Craft, place, activate with a hand and redstone, save, reload and check drops. Record owner observations against the C13 hash.
+
+For the pixel and model checks, run `python -B tools/verify_murublight_art.py <DD-C12> <DD-C13> <Minecraft-26.2-client> <Enderscape-3.0.2> build/c13/previews/murublight_doors.png`. The sheet shows the native door, both previous and current faces, and the new inventory sprites. The supplied short face retains the filename `short_oak_door_front.png`; its target is `dramaticdoors:short_murushroom_door`.
 
 ## AMC tall Macaw doors
 
