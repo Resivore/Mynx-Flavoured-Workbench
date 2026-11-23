@@ -14,6 +14,7 @@ import moss
 import doors
 import trapdoors
 import bamboo
+import wood_matrix
 import wood_accessories
 import mossy_oak
 import paths
@@ -522,3 +523,4 @@ if __name__ == "__main__":
                     trapdoors.stage(root, client, traps, end, ribbits)
                     bamboo.stage(root, client, provider, traps, shade_shutter, recipe_unlock)
                     wood_accessories.stage(root,client,provider,path_provider,end,ribbits,recipe_unlock)
+                    wood_matrix.stage(root, client, provider, bbb, ribbits, recipe_unlock)

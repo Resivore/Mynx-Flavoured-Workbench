@@ -49,7 +49,8 @@ public final class StoneTests {
             if (!key.getNamespace().equals(NAMESPACE)) continue;
             var item = BuiltInRegistries.ITEM.getValue(key);
             boolean control = key.getPath().endsWith("_button") || key.getPath().endsWith("_pressure_plate");
-            var target = control ? redstone : building;
+            boolean fixture = java.util.List.of("mossy_oak_sign", "mossy_oak_hanging_sign", "mossy_oak_shelf").contains(key.getPath());
+            var target = fixture ? tabs.getValueOrThrow(CreativeModeTabs.FUNCTIONAL_BLOCKS) : control ? redstone : building;
             var other = control ? building : redstone;
             helper.assertTrue(target.getDisplayItems().stream().filter(stack -> stack.is(item)).count() == 1
                     && other.getDisplayItems().stream().noneMatch(stack -> stack.is(item)), key + " creative tab");
@@ -174,10 +175,16 @@ public final class StoneTests {
         TrapdoorTests.checkRegistry(helper, ids, present, ribbits);
         BambooTests.checkRegistry(helper, ids);
         AccessoryTests.registry(helper, ids);
+        WoodMatrixTests.registry(helper, ids);
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());
-            helper.assertTrue(registered.equals(ids), "Unexpected AMC registry entries: " + registered);
+            var expected = new java.util.HashSet<>(ids);
+            if (registry == BuiltInRegistries.BLOCK && ribbits) {
+                expected.add(Identifier.fromNamespaceAndPath(NAMESPACE, "mossy_oak_wall_sign"));
+                expected.add(Identifier.fromNamespaceAndPath(NAMESPACE, "mossy_oak_wall_hanging_sign"));
+            }
+            helper.assertTrue(registered.equals(expected), "Unexpected AMC registry entries: " + registered);
         }
         for (String form : java.util.List.of("parapet", "louvered_shutter")) {
             var key = id(form);

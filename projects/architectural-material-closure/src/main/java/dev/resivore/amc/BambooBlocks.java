@@ -29,6 +29,7 @@ public final class BambooBlocks implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        WoodWindows.register("bamboo");
         register("log_parapet", BlockInit.OAK_LOG_PARAPET, Parapet::new);
         register("plank_parapet", BlockInit.OAK_PLANK_PARAPET, Parapet::new);
         register("blinds", BlockInit.OAK_BLINDS, Blinds::new);

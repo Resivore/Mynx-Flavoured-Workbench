@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 final class WoodAccessories {
     static void register(String wood) {
+        WoodWindows.register(wood);
         if (wood.equals("mossy_oak")) {
             register(wood,"button", Blocks.OAK_BUTTON,p -> new ButtonBlock(BlockSetType.OAK,30,p));
             register(wood,"pressure_plate", Blocks.OAK_PRESSURE_PLATE,p -> new PressurePlateBlock(BlockSetType.OAK,p));

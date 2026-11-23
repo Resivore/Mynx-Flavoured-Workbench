@@ -1,6 +1,15 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 34
+## Canary 35 wood windows and Mossy Oak fixtures
+
+Match `AMC C35.jar` to the current manifest. Use Macaw's Windows 2.4.2, BBB dev.7 and Minecraft 26.2. Repeat the window checks with Enderscape and Ribbits together, separately and both absent. Bamboo has 12 windows in every configuration. Enderscape adds 36 and Ribbits adds 12 windows and four fixtures.
+
+1. For Bamboo, Veiled, Celestial, Murublight and Mossy Oak, check timber, stripped timber and planks side by side. Within each finish place Window, Window 2, Four Window and Pane Window against their Oak Macaw references. Check facing, joined neighbors, open/closed interaction, water, outlines, drops, inventory icons and glass transparency. Compare Bamboo stalk direction on adjoining rails, end grain on cuts, and moss on the Mossy Oak frames.
+2. Craft a Mossy Oak Sign. Place a standing and a wall sign, edit both sides, wax it, unload the chunk and return. Repeat with a hanging sign underneath a support and on a wall. Inspect the editing screen, glyph contrast, supports, rotations and dropped items. Place a Shelf, load its three slots, check the displayed stacks and powered interaction, then reload and break it. Compare each step with the native Oak fixture.
+3. Place the Mossy Oak Lantern on and below supports. Compare it with the BBB Oak Lantern under the same lighting. Use the BBB Hammer, remove the support and collect the drop. Inspect metal and light pixels and compare the separate Ribbits Swamp Lantern.
+4. In Java 25 run the existing Gradle `build` with the local artwork sources and Python/Pillow. Run `runGameTest` with `-PwithEnderscape` and `-PwithRibbits` separately and together, supplying their existing test dependencies. The build audits the archive against C34 and traverses the 60 new Macaw graphs. Record owner observations against the manifest hash.
+
+## Previous C34 shutter and accessory checks
 
 Match the SHA-256 of `AMC C34.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 392 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. With Macaw’s Doors 1.1.5 also present, add 66 Enderscape doors and 22 Ribbits doors. All AMC IDs use the namespace `architectural_material_closure`.
 

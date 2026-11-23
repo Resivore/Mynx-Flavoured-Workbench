@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "name": "AMC controlled tests",
   "entrypoints": {
-    "fabric-gametest": ["dev.resivore.amc.test.StoneTests", "dev.resivore.amc.test.DirectFormTests", "dev.resivore.amc.test.DoorTests", "dev.resivore.amc.test.TrapdoorTests", "dev.resivore.amc.test.BambooTests", "dev.resivore.amc.test.AccessoryTests", "dev.resivore.amc.test.MasonryTests"${optionalTests}]
+    "fabric-gametest": ["dev.resivore.amc.test.StoneTests", "dev.resivore.amc.test.DirectFormTests", "dev.resivore.amc.test.DoorTests", "dev.resivore.amc.test.TrapdoorTests", "dev.resivore.amc.test.BambooTests", "dev.resivore.amc.test.AccessoryTests", "dev.resivore.amc.test.WoodMatrixTests", "dev.resivore.amc.test.MasonryTests"${optionalTests}]
   },
   "depends": {"architectural_material_closure": "*"}
 }

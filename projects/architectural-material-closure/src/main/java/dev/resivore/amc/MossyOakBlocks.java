@@ -46,7 +46,8 @@ public final class MossyOakBlocks {
         if (!ResourceLoader.registerBuiltinPack(Identifier.fromNamespaceAndPath(NS, "ribbits"),
                 container, PackActivationType.ALWAYS_ENABLED)) throw new IllegalStateException("Missing Ribbits pack");
         WoodAccessories.register("mossy_oak");
-        var items = List.of(register("frame", FrameBlock::new), register("lattice", LatticeBlock::new),
+        MossyOakFixtures.register();
+        var items = List.of(register("lantern", WoodenLanternBlock::new), register("frame", FrameBlock::new), register("lattice", LatticeBlock::new),
                 register("trim", FacingConnectingBlock::new), register("balustrade", BalustradeBlock::new),
                 register("support", SupportBlock::new), register("pallet", PalletBlock::new));
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS).register(out -> items.forEach(out::accept));
