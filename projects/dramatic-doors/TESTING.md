@@ -1,6 +1,42 @@
-# Testing Dramatic Doors C11
+# Testing Dramatic Doors C12
 
-C11 targets Minecraft Java 26.2 on Fabric. The candidate is ACTIVE and awaits owner gameplay testing. The manifest identifies the exact candidate and accepted C8 rollback.
+C12 targets Minecraft Java 26.2 Fabric and awaits owner gameplay verification. Match the JAR hash to the current entry in WORKBENCH_STATUS.json. C8 is the accepted rollback.
+
+## AMC tall Macaw doors
+
+The [88-row audit](fabric/src/main/resources/dramaticdoors/amc_macaw_doors.tsv) names each exact AMC ingredient, DD output, tall reference or source geometry, and block class. Each material has 22 designs. Enderscape supplies Veiled, Celestial and Murublight. Ribbits supplies Mossy Oak. Macaw’s Doors and Architectural Material Closure must both be loaded for these derivatives. AMC C30 defines the membership. C31 adds an independent trapdoor family.
+
+Stable and Stable Head use the DD stable class. Japanese and Japanese2 use the DD Macaw sliding class. The other 72 use the ordinary tall class. Bark Glass uses the actual Veiled or Mossy Oak log and vanilla glass. Stem Glass uses the Celestial or Murublight stem. Classic uses the Spruce tall Macaw template. For Whispering, the two Macaw halves match all 512 vanilla Pale Oak texel positions under a one-to-one palette change. C12 applies that mapping to DD’s tall Pale Oak layout. Western retains AMC’s stepped upper leaf, lower leaf, pins and handed open models. Its new middle joins the original two-texel-thick edge and continues the slats.
+
+### Controlled verification
+
+Use Java 25, Pillow, the Gradle wrapper and local reference artifacts. Supply `-PdoorArtPython=<Python with Pillow>` for Gradle tasks. Run `:fabric:test :fabric:build` and `tools/Get-RegisteredItemIds.ps1 -ValidateDefinitions`. Regenerate the four local comparison sheets from the candidate with the following positional arguments:
+
+```text
+python -B tools/verify_amc_macaw.py fabric/src/main/resources/dramaticdoors/amc_macaw_doors.tsv <DD-C11> <AMC-C30> <Macaw-Doors-1.1.5> <Minecraft-26.2-client> <Enderscape-3.0.2> <Ribbits-C27> <DD-C12> build/c12/previews
+```
+
+Each sheet shows the tall structural reference, actual AMC two-block model, C12 tall face and C12 inventory sprite. Western’s first column shows the original Macaw two-block geometry. The verifier checks 88 names in each of English, Russian and Simplified Chinese, resolves the model and texture dependencies for 4,224 placed states and 88 inventory items, checks the wood ramps, protected pixels and Western seam geometry, and compares every historical C11 archive payload. The artwork and preview sheets are local build outputs.
+
+Use `:fabric:runGameTest` with the existing `doorTestMatrix`, `doorTestJars` and `doorTestData` properties described below. Add AMC, Macaw’s Doors and AMC’s required Macaw’s Windows, Paths and Pavings, and Building But Better inputs per row. The server tests compare class, source properties, special collision shapes, Macaw creative-tab membership, exact recipe input and yield, recipe reward, two data reloads, actual wet placement and hand interaction, redstone, serialized state, and a single survival drop from each third. For the combined client, add `-PdoorTestJei=<JEI JAR>` and run `:fabric:runClientGameTest`.
+
+| AMC | Macaw’s Doors | Wood providers | Expected new tall doors |
+| --- | --- | --- | ---: |
+| Absent | Present | Both | 0 |
+| C30 | Absent | Both | 0 |
+| C30 | Present | Neither | 0 |
+| C30 | Present | Enderscape | 66 |
+| C30 | Present | Ribbits | 22 |
+| C30 or C31 | Present | Both | 88 |
+
+The controlled server returned the counts above before and after both reloads. C31’s two door registration classes and 1,130 door-pack files are byte-identical to C30. The combined C30 client found all 88 tall items and all ten native door items in Creative Search and JEI 30.18.0.144.
+
+### Owner visual and gameplay checks
+
+1. Compare the locally generated sheets for all four woods against the installed doors under your usual lighting and resource packs. Inspect front and back, both hinges and all facings, closed and open, and view the upper/middle and middle/lower joints at eye level.
+2. Check glass reflections, Shoji paper and grid spacing, stable ironwork and pulls. Compare Mossy Oak wood and the placement of its moss with the AMC source. Inspect Western’s stepped crown, hinge pins and uninterrupted slatted center, and the straps on Whispering.
+3. Search each material and design in Creative and JEI. Compare hotbar and held-item silhouettes with existing tall Macaw doors. Craft three corresponding AMC doors vertically for two tall doors, then verify the unlock after reload and reconnect.
+4. Operate Stable, Stable Head and both Japanese designs from both sides. Walk through open leaves, test collision and apply power beside each third. Repeat wet and dry, break each third in survival, then check drops and water restoration. Save, unload the chunks and restart to check existing and new placements.
 
 ## Expected native doors
 
@@ -16,9 +52,9 @@ Both output paths in each row belong to `dramaticdoors`. All five materials have
 
 ## Controlled checks
 
-Use Java 25 and the project Gradle wrapper. Run `:fabric:test :fabric:build`. The build composes eight block tiles and four flat item sprites from the exact local Enderscape 3.0.2 and Ribbits C27 inputs. The build checks the SHA-256 of all six source textures. To supply the same inputs from another path, set `-PveiledArtJar` and `-PmossyOakArtJar`. Keep the generated pixels and previews local.
+The C11 native pair workflow composes eight block tiles and four flat item sprites from the exact local Enderscape 3.0.2 and Ribbits C27 inputs. The build checks the SHA-256 of all six source textures. To supply the same inputs from another path, set `-PveiledArtJar` and `-PmossyOakArtJar`. Keep the generated pixels and previews local.
 
-Run `python tools/verify_native_assets.py <candidate> <minecraft-merged-26.2.jar> <enderscape.jar> <ribbits.jar> <C10.jar>`. It resolves all five native pairs, compares both affected blockstate graphs with Celestial for every facing, hinge, open state and third, and checks the exact C10-to-C11 archive differences. Run `tools/Get-RegisteredItemIds.ps1 -ValidateDefinitions` after building.
+For the C11-to-C10 historical asset comparison, run `python tools/verify_native_assets.py <C11.jar> <minecraft-merged-26.2.jar> <enderscape.jar> <ribbits.jar> <C10.jar>`. It resolves all five native pairs, compares both affected blockstate graphs with Celestial for every facing, hinge, open state and third, and checks the exact C10-to-C11 archive differences. Run `tools/Get-RegisteredItemIds.ps1 -ValidateDefinitions` after building.
 
 With Pillow available, run `python tools/preview_native_doors.py <candidate> <C10.jar> <enderscape.jar> <ribbits.jar> build/c11-art/door-comparison.png`. The local sheet shows the source faces, C10 closed-face UV projections, C11 block and inventory art, and existing Celestial variants. The script checks source landmarks at native resolution, the joins of the assembled tall faces, window transparency, and the short and tall inventory silhouettes.
 
@@ -37,7 +73,7 @@ The C11 server runs used Fabric Loader 0.19.3 and Fabric API 0.157.0+26.2. Both 
 | Ribbits C27 and its trade inputs | 2,305 | 1,761 |
 | Both providers and their dependencies | 2,678 | 2,149 |
 
-The combined client GameTest passed with JEI 30.18.0.144. It found all ten items by their English names in both search indexes and verified their baked item and block models.
+The C11 combined client GameTest passed with JEI 30.18.0.144. It found all ten items by their English names in both search indexes and verified their baked item and block models.
 
 ## Owner gameplay checks
 
