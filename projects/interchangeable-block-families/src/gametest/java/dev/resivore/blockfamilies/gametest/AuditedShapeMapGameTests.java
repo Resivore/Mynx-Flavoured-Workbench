@@ -267,7 +267,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 262 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 263 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -294,7 +294,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_031 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_048 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1249,8 +1249,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             helper.assertTrue(hasRecipe(helper, "enderscape:murublight_door_from_celestial_door"),
                     "Lost Enderscape's native door conversion");
         }
-        int expectedFamilies = enderscape ? (amc ? 262 : 181) : (amc ? 222 : 164);
-        int expectedItems = enderscape ? (amc ? 2031 : 1397) : (amc ? 1733 : 1348);
+        int expectedFamilies = enderscape ? (amc ? 263 : 181) : (amc ? 223 : 164);
+        int expectedItems = enderscape ? (amc ? 2048 : 1397) : (amc ? 1750 : 1348);
         helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
                 "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
 
@@ -1431,7 +1431,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             helper.assertTrue(BuiltInRegistries.ITEM.containsKey(id(parent)) == hasParent
                             && BuiltInRegistries.BLOCK.containsKey(id(parent)) == hasParent,
                     "Unexpected native trapdoor registration: " + parent);
-            var members = new java.util.ArrayList<>(List.of(parent));
+            var members = new java.util.ArrayList<String>();
+            if (!mossyOak) members.add(parent);
             for (String style : List.of("bamboo", "bark", "barn", "barred", "barrel", "beach", "blossom",
                     "classic", "cottage", "four_panel", "glass", "mystic", "paper", "ranch", "swamp",
                     "tropical", "whispering")) {
@@ -1440,16 +1441,13 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 helper.assertTrue(BuiltInRegistries.ITEM.containsKey(id(alternate)) == registered
                                 && BuiltInRegistries.BLOCK.containsKey(id(alternate)) == registered,
                         "Unexpected AMC trapdoor registration: " + alternate);
-                if (registered && mossyOak) {
-                    Item item = requiredItem(alternate);
-                    helper.assertTrue(!AuditedShapeRuntime.isAudited(item) && !ShapeMap.isShape(item)
-                                    && hasRecipe(helper, alternate), "Lost independent Mossy Oak trapdoor: " + alternate);
-                }
-                members.add(alternate);
+                if (mossyOak && style.equals("classic")) members.addFirst(alternate);
+                else members.add(alternate);
             }
-            if (hasParent) {
-                if (amc) assertSelectorRoundTrip(helper, members);
-                else helper.assertTrue(!AuditedShapeRuntime.isAudited(requiredItem(parent)) && hasRecipe(helper, parent),
+            if (amc && (mossyOak || enderscape)) {
+                assertSelectorRoundTrip(helper, members);
+            } else if (hasParent) {
+                helper.assertTrue(!AuditedShapeRuntime.isAudited(requiredItem(parent)) && hasRecipe(helper, parent),
                         "Lost standalone native trapdoor: " + parent);
             }
         }

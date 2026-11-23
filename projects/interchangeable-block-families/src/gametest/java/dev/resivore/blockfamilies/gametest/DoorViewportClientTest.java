@@ -11,7 +11,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,10 +28,30 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
         try (var world = context.worldBuilder().create()) {
             world.getConnection().waitForClientboundPackets();
             context.waitFor(client -> client.player != null && client.level != null);
+            var server = world.getServer();
+            var classicId = Identifier.parse("architectural_material_closure:mossy_oak_classic_trapdoor");
+            var classic = BuiltInRegistries.ITEM.getOptional(classicId).orElseThrow();
+            var before = server.computeOnServer(mc -> List.copyOf(ShapeMap.getShapes(classic)));
+            var reload = server.computeOnServer(mc -> mc.reloadResources(mc.getPackRepository().getSelectedIds()));
+            context.waitFor(client -> reload.isDone(), 1200);
+            reload.join();
+            world.getConnection().waitForClientboundPackets();
+            server.runOnServer(mc -> {
+                if (before.size() != 17 || before.getFirst() != classic || !before.equals(ShapeMap.getShapes(classic))) {
+                    throw new AssertionError("Reload changed the Mossy Oak trapdoor selector");
+                }
+                for (Item item : before) {
+                    var id = BuiltInRegistries.ITEM.getKey(item);
+                    boolean hasRecipe = mc.getRecipeManager().byKey(ResourceKey.create(Registries.RECIPE, id)).isPresent();
+                    if (hasRecipe != (item == classic)) throw new AssertionError("Wrong recipe after reload: " + id);
+                }
+            });
             context.runOnClient(client -> {
                 boolean previous = ClutterNoMoreClient.showTooltip;
                 try {
                     ClutterNoMoreClient.showTooltip = true;
+                    if (!before.equals(ShapeMap.getShapes(classic))) throw new AssertionError("Client reload order differs");
+                    checkFamily(client, classicId.toString(), 17);
                     for (String parent : List.of("enderscape:veiled_door", "enderscape:celestial_door",
                             "enderscape:murublight_door", "ribbits:mossy_oak_door")) {
                         checkFamily(client, parent, 23);

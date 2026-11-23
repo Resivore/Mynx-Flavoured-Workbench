@@ -1,4 +1,4 @@
-# C30 verification checklist
+# C31 verification checklist
 
 Use the exact current JAR, SHA-256, and source checkpoint in [WORKBENCH_STATUS.json](WORKBENCH_STATUS.json).
 
@@ -6,13 +6,13 @@ For the AMC-present controlled run, add `"-Pamc_reference_jar=../architectural-m
 
 The normal controlled tasks are `test runGameTest build stageCanaryArtifact`. Use the restored C9 dependencies: exact accepted Nibaru C45 and BGE C52, BBB Enderscape dev.7, Dramatic Doors C9, Ribbits C17, Quick Stack Nearby 0.4.0 with compatibility C6, and the audited external providers wired in `build.gradle`. Ribbits support is supplied through `ribbits_runtime_reference_jars`: YUNG's API compat.2, Trinkets Updated compatibility C5, GeckoLib 5.5.1, Cloth Config 26.2.155, Custom Portals C2, and Matcha Heart compatibility C11. Supply `matcha_food_resource_root` from the tracked Matcha Flavoured 1.12 data resource root. Enderscape uses the existing Lithostitched 1.7.13 and Trim Patcher 2.1 controlled inputs. These external inputs remain outside the production IBF archive. The exact BBB dependency predicate remains necessary because dev.7 contains the audited Enderscape package and its version is not ordered Fabric semantic versioning; the contract test rejects incompatible dev.6 before registry startup.
 
-Run the controlled graphical check with the same full-provider arguments and `-Pdoor_viewport_test runClientGameTest`. This exercises all 23 positions of each door selector and all 18 positions of each Enderscape trapdoor selector through the held-item overlay and inventory tooltip in a disposable Gradle test world.
+Run the controlled graphical check with the same full-provider arguments and `-Pdoor_viewport_test runClientGameTest`. This exercises the 17 Mossy Oak trapdoors, all 23 positions of each two-high door selector and all 18 positions of each Enderscape trapdoor selector after a server data reload through the held-item overlay and inventory tooltip in a disposable Gradle test world.
 
 ### Macaw wood trapdoors
 
 1. With AMC C31 and Enderscape, craft each native Veiled, Celestial and Murublight trapdoor. From a named stack of seven, switch through Bamboo, Bark, Barn, Barred, Barrel, Beach, Blossom, Classic, Cottage, Four Panel, Glass, Mystic, Paper, Ranch, Swamp, Tropical and Whispering. Return through every position in reverse. Check count, components and the highlighted icon at your usual GUI scale.
 2. After reload, verify each native crafting recipe and the Celestial-to-Murublight conversion. The 51 AMC alternatives should be accessible by switching. Check placement, opening and redstone on representatives.
-3. Ribbits supplies no native Mossy Oak Trapdoor. With AMC and Ribbits, check independent acquisition of all 17 Mossy Oak designs. Without AMC, each installed native trapdoor should keep its recipe and have no selector. Without Enderscape, repeat the Mossy Oak checks. Ribbits is required by IBF's Fabric metadata.
+3. With AMC and Ribbits, craft the AMC Classic Mossy Oak Trapdoor. Cycle a named stack of seven through the same designs in step 1, starting with Classic and skipping it between Blossom and Cottage. Check all 17 positions forward and backward, including Whispering in both the overlay and tooltip. Reload and verify Classic remains craftable and the 16 alternate crafting recipes are suppressed. Without AMC, each installed native trapdoor should keep its recipe and have no selector. Without Enderscape, repeat the Mossy Oak checks. Ribbits is required by IBF's Fabric metadata.
 
 ### Two-high wood doors
 
@@ -30,9 +30,9 @@ Run the controlled graphical check with the same full-provider arguments and `-P
 
 | AMC C31 | Enderscape 3.0.2 | Active families | Unique items | New selectors available |
 |---|---|---:|---:|---|
-| Present | Present | 262 | 2,031 | Four Calcite and four Shadoline Block |
+| Present | Present | 263 | 2,048 | Four Calcite and four Shadoline Block |
 | Absent | Present | 181 | 1,397 | None |
-| Present | Absent | 222 | 1,733 | Four Calcite |
+| Present | Absent | 223 | 1,750 | Four Calcite |
 | Absent | Absent | 164 | 1,348 | None |
 
 Repeat each applicable row for `calcite` and `shadoline_block`. Item IDs use `architectural_material_closure:<material>_<form>`. Open each selector from its canonical parent. Cycle a named stack of seven through each member and back, checking the item, count and components after every switch.
@@ -72,7 +72,7 @@ Repeat each row for `purpur`, `dusk_purpur`, `resin`, `tuff`, `cinnabar`, `sulfu
 | `cnm/window/<material>` | `window` | `window2`, `four_window`, `pane_window`, `gothic_window` |
 | `cnm/building_accessory/<material>` | `running_bond_path` | `strewn_rocky_path`, `windmill_weave_path`, `flagstone_path`, `crystal_floor_path`, `diamond_paving`, `basket_weave_paving`, `square_paving`, `honeycomb_paving`, `clover_paving`, `dumble_paving` |
 
-After reload, check each parent recipe and Column stonecutting. Verify alternate crafting and stonecutting results are suppressed. Find each material’s `running_bond`, `flagstone`, `windmill_weave` and `crystal_floor` full blocks in Building Blocks, obtain them from their own recipes and place each independently. Check its placed ID and confirm it stays outside the four selectors.
+After reload, check each parent recipe and Column stonecutting. Verify alternate crafting and stonecutting results are suppressed. Find each materialâ€™s `running_bond`, `flagstone`, `windmill_weave` and `crystal_floor` full blocks in Building Blocks, obtain them from their own recipes and place each independently. Check its placed ID and confirm it stays outside the four selectors.
 
 Check the vanilla Purpur and Resin Brick slabs and stairs and the Enderscape Dusk Purpur slab and stairs retain their own identities outside these selectors. Craft Resin Clumps from a single Resin Block and confirm the vanilla recipe survives reload.
 
@@ -185,7 +185,7 @@ Repeat without AMC. Neither Macaw item should expose a Mud Bricks selector, and 
 3. Recheck the existing Macaw ordinary and Dramatic Doors tall-door families, trapdoors, windows/shutters, the 77 audited Macaw thin Paths and 78 Pavings, Aurora lanterns, Ribbits, BBB, vanilla fences, bars/chains, and accessories. Confirm wood shutters/louvered shutters occur only with their Button-parent wood family; Stone Button is separate from Stone thin Paths; and the Nether Brick arrow slit still belongs to its original BBB detail family. Providers retain native placement, collision, redstone, recipe costs, drops, and copper behavior. CNM retains switching and recipe/equivalence ownership. Macaw path blocks and patterned full-block/slab/stair geometry remain outside IBF.
 4. Exercise all 15 literal display-fixture triples: Oak, Spruce, Birch, Jungle, Acacia, Dark Oak, Mangrove, Cherry, Pale Oak, Bamboo, Crimson, Warped, Veiled, Celestial, and Murublight. Each uses Sign as canonical, then Hanging Sign and Shelf. Wall Sign and Wall Hanging Sign placement blocks and ordinary geometry remain outside these triples.
 5. Verify Veiled, Celestial, and Murublight Fence/Fence Gate/BBB Frame/Lattice families; their three separate BBB Trim/Balustrade/Support/Pallet detail families; the seven Enderscape Button families (Polished End Stone also includes the AMC parapet and shutter when available); and Shadoline Bars/Chain. Confirm the original C7/C8 families and canonical parents remain intact without cross-material merging.
-6. After reload, check canonical acquisition and recipe cleanup. The controlled recipe corpus removes 1,727 alternate recipes with AMC and 1,114 without it. Both runs retain every canonical recipe. Stone Running Bond Path remains obtainable as the Stone Path parent, while Stone Strewn Rocky Path is removed. Five Enderscape `void_lachryma` conversions remain provider-owned at CNM's custom-recipe boundary. Recheck a pre-existing Macaw and BBB canonical recipe and the separate accepted Nibaru/BGE component.
+6. After reload, check canonical acquisition and recipe cleanup. The controlled recipe corpus removes 1,743 alternate recipes with AMC and 1,114 without it. Both runs retain every canonical recipe. Stone Running Bond Path remains obtainable as the Stone Path parent, while Stone Strewn Rocky Path is removed. Five Enderscape `void_lachryma` conversions remain provider-owned at CNM's custom-recipe boundary. Recheck a pre-existing Macaw and BBB canonical recipe and the separate accepted Nibaru/BGE component.
 7. Transfer component-bearing stacks through a vanilla, Enderscape, and BBB family; preserve exact count and component patch. Mismatched components and incompatible targets must fail closed. Check Quick Stack Nearby affinity and the selector viewport/transfer behavior for a 22-member family.
 8. Restart or reload once, repeat representative C7, C8, and C9 families, and report only observed missing members, duplicate membership, canonical-parent changes, cross-family matches, recipe drift, crashes, or reload errors against the exact release identity.
 

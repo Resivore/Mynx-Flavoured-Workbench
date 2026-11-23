@@ -183,7 +183,7 @@ class AssembledRecipeCleanupContractTest {
         }
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
-        if (AMC_PRESENT) expectedRemoved.put("amc_families", 598L);
+        if (AMC_PRESENT) expectedRemoved.put("amc_families", 614L);
         expectedRemoved.put("two_high_doors", 260L);
         expectedRemoved.put("macaws_paths", 142L);
         expectedRemoved.put("trapdoors", 195L);
@@ -195,7 +195,7 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(AMC_PRESENT ? 1_727L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(AMC_PRESENT ? 1_743L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -401,6 +401,7 @@ class AssembledRecipeCleanupContractTest {
         LinkedHashSet<String> parents = new LinkedHashSet<>();
         for (AuditedShapeFamily family : AuditedShapeFamilies.families(category)) {
             String parent = family.canonicalParent().toString();
+            if (!AMC_PRESENT && family.canonicalParent().getNamespace().equals("architectural_material_closure")) continue;
             if (!parent.equals(excluded)) parents.add(parent);
         }
         return parents;

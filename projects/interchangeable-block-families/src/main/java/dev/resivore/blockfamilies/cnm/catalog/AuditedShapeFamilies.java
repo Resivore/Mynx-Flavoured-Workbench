@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 262;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 2_031;
+    public static final int EXPECTED_FAMILY_COUNT = 263;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 2_048;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 23;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -893,7 +893,24 @@ public final class AuditedShapeFamilies {
                     amc("murublight_ranch_trapdoor"),
                     amc("murublight_swamp_trapdoor"),
                     amc("murublight_tropical_trapdoor"),
-                    amc("murublight_whispering_trapdoor"))
+                    amc("murublight_whispering_trapdoor")),
+            family("cnm/trapdoor/ribbits_mossy_oak", TRAPDOOR, amc("mossy_oak_classic_trapdoor"),
+                    amc("mossy_oak_bamboo_trapdoor"),
+                    amc("mossy_oak_bark_trapdoor"),
+                    amc("mossy_oak_barn_trapdoor"),
+                    amc("mossy_oak_barred_trapdoor"),
+                    amc("mossy_oak_barrel_trapdoor"),
+                    amc("mossy_oak_beach_trapdoor"),
+                    amc("mossy_oak_blossom_trapdoor"),
+                    amc("mossy_oak_cottage_trapdoor"),
+                    amc("mossy_oak_four_panel_trapdoor"),
+                    amc("mossy_oak_glass_trapdoor"),
+                    amc("mossy_oak_mystic_trapdoor"),
+                    amc("mossy_oak_paper_trapdoor"),
+                    amc("mossy_oak_ranch_trapdoor"),
+                    amc("mossy_oak_swamp_trapdoor"),
+                    amc("mossy_oak_tropical_trapdoor"),
+                    amc("mossy_oak_whispering_trapdoor"))
     );
 
     private static final List<AuditedShapeFamily> WINDOWS = List.of(
