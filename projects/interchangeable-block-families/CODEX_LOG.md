@@ -356,3 +356,14 @@
 - Artifact: `IBF C33.jar`, 70,509 bytes, SHA-256 `6654289b34e9003619a9a91c8ae2ea9646b15ceaa0761c2dbff7cc5b4f974d62`, built_at `2026-11-23T01:57:07.7536411Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of placed accessories, shutter motifs, controls and nine-position selectors against both C33 artifacts.
+
+## 2026-11-23T04:38:15Z — IBF C34 wooden Button selectors include native short doors
+
+- Revision: 34
+- Source checkpoint: `0ef0e81d94edb89261a2d5c0a950fc83f0587b17`
+- Changes: Appended the 16 DD C14 short wooden doors in position ten of their existing accessory families. Preserved the native item drop through the existing CNM loot hook. Removing the 16 tails from the compiled catalog reproduces the exact ordered C33 digest `5c6af4ba1753335290c1bc61e50bf5e5fab576bb4b93e7079895af1c992e6aad`.
+- Build/static: Both JUnit configurations passed 55/55, production build and archive isolation passed. With Enderscape, GameTests passed 39/39 both with AMC C34 (268 families / 2,192 items) and without (181 / 1,412). Both focused tests without Enderscape passed (225 / 1,801 with AMC and 164 / 1,360 without). All active short doors matched registered DD BlockItems, preserved their single-door drops, and supported forward/reverse named-stack transfers with unchanged counts and component patches. The recipe audit removed 1,882 alternates with AMC and 1,129 without; all active short-door stonecutting routes were suppressed, with zero canonical removals or surviving literal ingredient rewrites. Without AMC the Mossy Oak short-door recipe remained available. The graphical client checked all ten positions for all 16 families after data reload at GUI scales 1 (854 GUI pixels), 2 (427 GUI pixels); names, IDs, models, patches and counts matched.
+- Runtime: Owner verification of gameplay, visuals and acceptance pending.
+- Artifact: `IBF C34.jar`, embedded `0.1.0-canary34`, 71,011 bytes, SHA-256 `a512646d100882e878989c9e7fb4f65a445b3fb7a8bb54200e931f62feb08dd9`, built_at `2026-11-23T04:35:37.2740183Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of placement, collision, redstone, drops and selector presentation in TESTING.md.
