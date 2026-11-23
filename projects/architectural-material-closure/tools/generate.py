@@ -487,7 +487,7 @@ def generate_enderscape(root, enderscape, windows, client, bbb, path_provider, s
 
 
 if __name__ == "__main__":
-    provider_path, client_path, bbb_path, paths_path, stone_path, enderscape_path, ribbits_path, doors_path, trapdoors_path, root = map(Path, sys.argv[1:])
+    provider_path, client_path, bbb_path, paths_path, stone_path, enderscape_path, ribbits_path, doors_path, trapdoors_path, trees_path, root = map(Path, sys.argv[1:])
     if not root.resolve().is_relative_to(Path(__file__).resolve().parents[1] / "build"):
         sys.exit("Private derived assets must be generated under AMC's ignored build directory")
     if sys.platform == "win32":
@@ -517,10 +517,13 @@ if __name__ == "__main__":
             with ZipFile(enderscape_path) as enderscape:
                 generate_enderscape(root / "resourcepacks/enderscape", enderscape, provider, client,
                                     bbb, path_provider, stone_shutter)
-            with ZipFile(doors_path) as macaw, ZipFile(enderscape_path) as end, ZipFile(ribbits_path) as ribbits:
-                doors.stage(root, client, macaw, end, ribbits)
+            with ZipFile(doors_path) as macaw, ZipFile(enderscape_path) as end, ZipFile(ribbits_path) as ribbits, ZipFile(trees_path) as trees:
+                doors.stage(root, client, macaw, end, ribbits, trees)
                 with ZipFile(trapdoors_path) as traps:
-                    trapdoors.stage(root, client, traps, end, ribbits)
+                    trapdoors.stage(root, client, traps, end, ribbits, trees)
                     bamboo.stage(root, client, provider, traps, shade_shutter, recipe_unlock)
-                    wood_accessories.stage(root,client,provider,path_provider,end,ribbits,recipe_unlock)
+                    wood_accessories.stage(root,client,provider,path_provider,end,ribbits,trees,provider_path.parent.parent,recipe_unlock)
+                    from tree_architecture import stage_details, stage_mossy_recipes
+                    stage_details(root, client, bbb, trees, ribbits, recipe_unlock)
                     wood_matrix.stage(root, client, provider, bbb, ribbits, recipe_unlock)
+                    stage_mossy_recipes(root)

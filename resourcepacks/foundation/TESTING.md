@@ -1,6 +1,12 @@
-# Testing Foundation v10
+# Foundation verification
 
-Use `Foundation v10.zip`, Canary 6, SHA-256 `ebf0a92e954392544299d762900030f7c4c7fc975574795b19c4aacf987be769`. In an owner-directed Minecraft Java 26.2 session, give Foundation higher priority than Matcha Flavoured 1.12. Foundation includes the Matcha Overlays v37 resources. The native catalog below was checked against BBB Canary 9 (dev.7) and Macaw's Windows 2.4.2. Use the pack stack's connected-texture renderer for the overlay checks and AMC for its six additional forms.
+## Canary 7 material comparison
+
+Use Foundation v11 above Matcha Flavoured 1.12. Compare ordinary Birch, Goop-derived Silver Birch and muted Wisteria side by side. Inspect planks, logs, doors, boats, signs, shelves, BBB beams and Macaw and Dramatic Doors designs. Check the Birch bark overlay and the straight edges, corners and isolated transitions of all three plank overlays. Examine plank/beam geometry with Continuity active. Compare with Foundation disabled to check that the private mod assets render independently.
+
+The two rounded Silver Birch log ends belong to Mynx Trees. Changing ordinary Birch's pack priority must not change them. Recheck the existing Red Sandstone, Nether and End surfaces as described below.
+
+The following surfaces were introduced in Canary 6. Use the current pack for regression checks. In an owner-directed Minecraft Java 26.2 session, give Foundation higher priority than Matcha Flavoured 1.12. Foundation includes the Matcha Overlays v37 resources. The native catalog below was checked against BBB Canary 9 (dev.7) and Macaw's Windows 2.4.2. Use the pack stack's connected-texture renderer for the overlay checks and AMC for its six additional forms.
 
 ## Cut Red Sandstone transitions
 

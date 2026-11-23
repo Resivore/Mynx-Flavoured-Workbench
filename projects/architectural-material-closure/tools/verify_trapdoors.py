@@ -10,6 +10,9 @@ import subprocess
 import sys
 
 from doors import MATERIALS, NS, STEMS, read
+# This regression suite opens the historical pre-Trees artifacts.
+MATERIALS = {k:v for k,v in MATERIALS.items() if v != "mynx_trees"}
+
 from trapdoor_previews import Graph, sheet
 
 MACAW = "mcwtrpdoors"

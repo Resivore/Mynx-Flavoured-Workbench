@@ -11,6 +11,9 @@ from zipfile import ZipFile
 
 from PIL import Image, ImageDraw
 from doors import MATERIALS, STEMS, material_mask, read, reference, rename, resource
+# This regression suite opens the historical pre-Trees artifacts.
+MATERIALS = {k:v for k,v in MATERIALS.items() if v != "mynx_trees"}
+
 from masonry import NS, image
 
 STYLES = ("bamboo", "barn", "barn_glass", "beach", "classic", "cottage", "four_panel",

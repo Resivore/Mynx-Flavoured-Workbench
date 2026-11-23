@@ -55,6 +55,10 @@ public final class NativeDoorGameTests {
                 testReloadIds(helper, advancements, server.getAdvancements().getAllAdvancements().stream().map(a -> a.id()));
             }
             AmcDoorChecks.check(helper);
+            for (String wood : List.of("silver_birch", "wisteria")) {
+                String source = "mynx_trees:" + wood + "_door";
+                checkPair(helper, source, wood.equals("wisteria") ? "mynx_wisteria" : wood, BuiltInRegistries.ITEM.containsKey(Identifier.parse(source)));
+            }
             checkPair(helper, "minecraft:oak_door", "oak", true);
             checkPair(helper, "minecraft:pale_oak_door", "pale_oak", true);
             checkPair(helper, "enderscape:celestial_door", "celestial", enderscape);
@@ -78,7 +82,7 @@ public final class NativeDoorGameTests {
         level.setBlockAndUpdate(floor, Blocks.STONE.defaultBlockState());
         var hit = new BlockHitResult(Vec3.atCenterOf(floor).relative(Direction.UP, 0.5), Direction.UP, floor, false);
         var ids = new java.util.ArrayList<>(AmcDoorChecks.doors());
-        for (String material : List.of("pale_oak", "celestial", "murushroom", "veiled", "mossy_oak")) {
+        for (String material : List.of("pale_oak", "celestial", "murushroom", "veiled", "mossy_oak", "silver_birch", "mynx_wisteria")) {
             for (String height : List.of("short", "tall")) {
                 ids.add(Identifier.parse("dramaticdoors:" + height + "_" + material + "_door"));
             }

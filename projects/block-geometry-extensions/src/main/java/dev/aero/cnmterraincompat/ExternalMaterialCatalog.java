@@ -45,6 +45,11 @@ public final class ExternalMaterialCatalog {
         List<Spec> specs = provider.equals(AMC) ? AMC_MASONRY
                 : SPECS.stream().filter(spec -> spec.provider().equals(provider)).toList();
         if (specs.isEmpty()) throw new IllegalArgumentException("Unsupported external provider: " + provider);
+        if (provider.equals("mynx_trees")) {
+            boolean nativeWood = BuiltInRegistries.BLOCK.containsKey(Identifier.parse("mynx_trees:silver_birch_planks"));
+            specs = specs.stream().filter(s -> BuiltInRegistries.BLOCK.containsKey(s.id()))
+                    .map(s -> !nativeWood ? legacyTreePillar(s) : s).toList();
+        }
         CnmTerrainCompat.registerExternalFamilies(provider, specs);
     }
 
@@ -80,17 +85,21 @@ public final class ExternalMaterialCatalog {
                 hugeMushroom("ribbits:red_toadstool", "ribbits:block/red_toadstool"),
                 hugeMushroom("ribbits:brown_toadstool", "ribbits:block/brown_toadstool"),
                 hugeMushroom("ribbits:toadstool_stem", "ribbits:block/toadstool_stem"),
-                pillar("mynx_trees:wisteria_log", "mynx_trees:block/wisteria_log",
-                        "mynx_trees:block/wisteria_log_top", ModBlocks.PALE_OAK_LOG),
-                pillar("mynx_trees:wisteria_wood", "mynx_trees:block/wisteria_log",
-                        "mynx_trees:block/wisteria_log", ModBlocks.PALE_OAK_WOOD),
                 leaves("mynx_trees:wisteria_leaves", TintProfile.NONE),
-                pillar("mynx_trees:silver_birch_log", "mynx_trees:block/silver_birch_log",
-                        "minecraft:block/birch_log_top", ModBlocks.BIRCH_LOG),
-                pillar("mynx_trees:silver_birch_wood", "mynx_trees:block/silver_birch_log",
-                        "mynx_trees:block/silver_birch_log", ModBlocks.BIRCH_WOOD),
-                // This provider has a live custom color function, not vanilla birch foliage.
                 leaves("mynx_trees:silver_birch_leaves", TintProfile.SOURCE_PROVIDER)));
+        for (String tree : List.of("silver_birch", "wisteria", "mossy_oak")) {
+            for (String finish : List.of("", "stripped_")) {
+                String name = finish + tree;
+                String bark = "mynx_trees:block/" + name + "_log";
+                result.add(pillar("mynx_trees:" + name + "_log", bark, bark + "_top"));
+                result.add(pillar("mynx_trees:" + name + "_wood", bark, bark));
+            }
+            if (!tree.equals("mossy_oak")) {
+                result.add(uniform("mynx_trees:" + tree + "_planks", Set.of(BlockTags.MINEABLE_WITH_AXE), Map.of(
+                        "slab", Identifier.parse("mynx_trees:" + tree + "_slab"),
+                        "stairs", Identifier.parse("mynx_trees:" + tree + "_stairs"))));
+            }
+        }
         result.addAll(pathSpecs());
         result.addAll(AMC_MASONRY);
         result.addAll(AMC_BASE_STONE);
@@ -144,6 +153,16 @@ public final class ExternalMaterialCatalog {
                 VisualProfile.UNIFORM, NibaruMaterialProfile.OrientationPolicy.UNIFORM,
                 texture, texture, texture, "", TintProfile.NONE, NibaruMaterialProfile.RenderLayer.SOLID,
                 tags, Set.of(), List.of());
+    }
+
+    private static Spec legacyTreePillar(Spec s) {
+        return switch (s.id().getPath()) {
+            case "silver_birch_log" -> pillar(s.id().toString(), "mynx_trees:block/silver_birch_log", "minecraft:block/birch_log_top", ModBlocks.BIRCH_LOG);
+            case "silver_birch_wood" -> pillar(s.id().toString(), "mynx_trees:block/silver_birch_log", "mynx_trees:block/silver_birch_log", ModBlocks.BIRCH_WOOD);
+            case "wisteria_log" -> pillar(s.id().toString(), "mynx_trees:block/wisteria_log", "mynx_trees:block/wisteria_log_top", ModBlocks.PALE_OAK_LOG);
+            case "wisteria_wood" -> pillar(s.id().toString(), "mynx_trees:block/wisteria_log", "mynx_trees:block/wisteria_log", ModBlocks.PALE_OAK_WOOD);
+            default -> s;
+        };
     }
 
     private static Spec pillar(String id, String side, String end, ModBlocks strippedTarget) {

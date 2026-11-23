@@ -211,8 +211,11 @@ public final class ExplicitShapeMapFamilies {
             result.add(ids("minecraft:stripped_" + fungus + "_stem",
                     "minecraft:stripped_" + fungus + "_hyphae"));
         }
-        for (String tree : List.of("wisteria", "silver_birch")) {
+        for (String tree : List.of("wisteria", "silver_birch", "mossy_oak")) {
             result.add(ids("mynx_trees:" + tree + "_log", "mynx_trees:" + tree + "_wood"));
+            result.add(ids("mynx_trees:stripped_" + tree + "_log", "mynx_trees:stripped_" + tree + "_wood"));
+            if (!tree.equals("mossy_oak"))
+                result.add(ids("mynx_trees:" + tree + "_planks", CnmTerrainCompat.MOD_ID + ":mynx_trees/" + tree + "_beam"));
         }
         result.add(ids("enderscape:veiled_log", "enderscape:veiled_wood"));
         result.add(ids("enderscape:stripped_veiled_log", "enderscape:stripped_veiled_wood"));

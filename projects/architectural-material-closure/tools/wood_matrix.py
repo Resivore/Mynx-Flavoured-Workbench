@@ -50,9 +50,9 @@ def clone_graph(pack, jar, old, new, model_name, bind):
         write(pack, resource(new, kind, "json"), graph)
 
 
-def copy_tags(pack, jar, pairs):
+def copy_tags(pack, jar, pairs, kinds=("/tags/block/", "/tags/item/")):
     for path in jar.namelist():
-        if not path.endswith(".json") or not any(k in path for k in ("/tags/block/", "/tags/item/")):
+        if not path.endswith(".json") or not any(k in path for k in kinds):
             continue
         add = [pairs[v] for v in read(jar, path)["values"] if isinstance(v, str) and v in pairs]
         if add:

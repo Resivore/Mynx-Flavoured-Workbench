@@ -26,7 +26,7 @@ public final class PrivateBeamResourceAssembler {
     private PrivateBeamResourceAssembler() {}
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 6) throw new IllegalArgumentException(
+        if (args.length != 7) throw new IllegalArgumentException(
                 "Expected <bbb-jar> <enderscape-jar> <output> <bbb-dev7> <ribbits> <vanilla-client>");
         Path bbb = Path.of(args[0]).toRealPath();
         Path enderscape = Path.of(args[1]).toRealPath();
@@ -51,6 +51,13 @@ public final class PrivateBeamResourceAssembler {
             require(bbbZip, "assets/bbb/models/block/beam/oak_beam.json");
             BufferedImage beam = image(bbbZip, "assets/bbb/textures/block/beam/oak.png");
             BufferedImage beamTop = image(bbbZip, "assets/bbb/textures/block/beam/oak_top.png");
+            try (ZipFile trees = new ZipFile(args[6])) {
+                for (String family : List.of("silver_birch", "wisteria")) {
+                    BufferedImage palette = image(trees, "assets/mynx_trees/textures/block/" + family + "_planks.png");
+                    write(output, "mynx_trees/" + family + "_beam.png", recolor(beam, palette));
+                    write(output, "mynx_trees/" + family + "_beam_top.png", recolor(beamTop, palette));
+                }
+            }
             for (String family : List.of("veiled", "celestial", "murublight")) {
                 BufferedImage palette = image(enderscapeZip,
                         "assets/enderscape/textures/block/" + family + "_planks.png");

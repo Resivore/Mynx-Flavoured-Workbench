@@ -2,9 +2,9 @@ plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.19'
 }
 
-version = '0.1.0-canary35'
+version = '0.1.0-canary36'
 group = 'dev.resivore'
-layout.buildDirectory = layout.projectDirectory.dir('build/c35')
+layout.buildDirectory = layout.projectDirectory.dir('build/c36')
 
 repositories {
     mavenCentral()
@@ -34,6 +34,7 @@ def c23Jar = file(providers.gradleProperty('c23Jar').getOrElse('artifacts/AMC C2
 def previousJar = file(providers.gradleProperty('c22Jar').getOrElse('artifacts/AMC C22.jar'))
 def clientJar = file(providers.gradleProperty('vanillaClient').getOrElse(
         new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/26.2/minecraft-client.jar').path))
+def treesJar = file(providers.gradleProperty('treesJar').getOrElse('../mynx-trees/artifacts/mynx-trees-private-0.1.0+26.2-canary9.jar'))
 def python = providers.gradleProperty('python').getOrElse('python')
 def privateResources = layout.buildDirectory.dir('gen')
 
@@ -51,9 +52,9 @@ java {
 
 tasks.register('generateAmcResources', Exec) {
     inputs.dir('tools/shutter_art')
-    inputs.files('tools/wood_matrix.py', 'tools/wood_accessories.py', 'tools/bamboo.py', 'tools/trapdoors.py', trapdoorsJar, 'tools/doors.py', doorsJar, 'tools/mossy_oak.py', ribbitsJar, 'tools/generate.py', 'tools/moss.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar, stoneShutterJar, enderscapeJar)
+    inputs.files('tools/tree_architecture.py', treesJar, 'tools/wood_matrix.py', 'tools/wood_accessories.py', 'tools/bamboo.py', 'tools/trapdoors.py', trapdoorsJar, 'tools/doors.py', doorsJar, 'tools/mossy_oak.py', ribbitsJar, 'tools/generate.py', 'tools/moss.py', 'tools/masonry.py', 'tools/paths.py', pathsJar, providerJar, clientJar, bbbJar, stoneShutterJar, enderscapeJar)
     outputs.dir(privateResources)
-    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, stoneShutterJar, enderscapeJar, ribbitsJar, doorsJar, trapdoorsJar, privateResources.get().asFile
+    commandLine python, 'tools/generate.py', providerJar, clientJar, bbbJar, pathsJar, stoneShutterJar, enderscapeJar, ribbitsJar, doorsJar, trapdoorsJar, treesJar, privateResources.get().asFile
 }
 
 sourceSets.main.resources.srcDir(privateResources)
@@ -70,14 +71,15 @@ processResources {
 }
 
 tasks.named('jar') {
-    archiveFileName = 'AMC C35.jar'
+    archiveFileName = 'AMC C36.jar'
 }
 
 tasks.register('verifyAmcJar', Exec) {
     dependsOn jar
     inputs.dir('tools/shutter_art')
     inputs.files('tools/verify_wood_matrix.py', file('artifacts/AMC C34.jar'), 'tools/verify_accessories.py', c33Jar, c32Jar, 'tools/verify_bamboo.py', c31Jar, 'tools/verify_trapdoors.py', 'tools/trapdoor_previews.py', trapdoorsJar, c30Jar, 'tools/verify_doors.py', doorsJar, c29Jar, 'tools/verify_oak.py', ribbitsJar, c28Jar, 'tools/verify_c28.py', c27Jar, 'tools/verify_c27.py', c26Jar, 'tools/verify_c26.py', c25Jar, 'tools/verify_c25.py', c24Jar, 'tools/verify_c24.py', c23Jar, enderscapeJar, 'tools/verify_c22.py', previousJar, 'tools/verify.py', 'tools/verify_moss.py', 'tools/verify_masonry.py', 'tools/verify_mud.py', 'tools/verify_paths.py', pathsJar, providerJar, clientJar, bbbJar, jar.archiveFile)
-    commandLine python, 'tools/verify_wood_matrix.py', jar.archiveFile.get().asFile, file('artifacts/AMC C34.jar'), providerJar, clientJar, bbbJar, pathsJar, previousJar, c23Jar, enderscapeJar, c24Jar, c25Jar, c26Jar, c27Jar, c28Jar, ribbitsJar, c29Jar, doorsJar, c30Jar, trapdoorsJar, c31Jar, c32Jar, c33Jar
+    inputs.files('tools/verify_tree_architecture.py', treesJar, file('artifacts/AMC C35.jar'))
+    commandLine python, 'tools/verify_tree_architecture.py', jar.archiveFile.get().asFile, treesJar, file('artifacts/AMC C35.jar'), file('artifacts/AMC C34.jar'), providerJar, clientJar, bbbJar, pathsJar, previousJar, c23Jar, enderscapeJar, c24Jar, c25Jar, c26Jar, c27Jar, c28Jar, ribbitsJar, c29Jar, doorsJar, c30Jar, trapdoorsJar, c31Jar, c32Jar, c33Jar
 }
 
 check.dependsOn 'verifyAmcJar'
@@ -108,6 +110,9 @@ if (withDoors) {
     dependencies { gametestRuntimeOnly files(doorsJar) }
 }
 
+def withTrees = providers.gradleProperty('withTrees').isPresent()
+if (withTrees) { dependencies { gametestRuntimeOnly files(treesJar) } }
+
 def withRibbits = providers.gradleProperty('withRibbits').isPresent()
 if (withRibbits) {
     dependencies {
@@ -125,8 +130,9 @@ tasks.named('processGametestResources') {
     }
     inputs.property 'withEnderscape', withEnderscape
     inputs.property 'withRibbits', withRibbits
+    inputs.property 'withTrees', withTrees
     filesMatching('fabric.mod.json') {
-        expand optionalTests: (withEnderscape ? ', "dev.resivore.amc.test.EnderscapeTests"' : '') +
+        expand optionalTests: (withTrees ? ', "dev.resivore.amc.test.NativeTreeTests"' : '') + (withEnderscape ? ', "dev.resivore.amc.test.EnderscapeTests"' : '') +
                 (withRibbits ? ', "dev.resivore.amc.test.MossyOakTests"' : '')
     }
 }
@@ -142,7 +148,7 @@ loom.runs.named('gameTest') {
     vmArg "-Damc.test.trapdoors=${withTrapdoors}"
     def woods = withRibbits && withEnderscape ? 'both' : withRibbits ? 'ribbits' : withEnderscape ? 'present' : 'absent'
     def mode = !withTrapdoors ? "without-trapdoors-${woods}" : !withDoors ? "without-doors-${woods}" : woods
-    runDir "build/c35/gametest-${mode}"
+    runDir "build/c36/gametest-${mode}${withTrees ? '-trees' : ''}"
     vmArg "-Damc.test.enderscape=${withEnderscape}"
     vmArg '-Dfabric-api.gametest.filter=amc-tests:*'
 }

@@ -249,7 +249,10 @@ class AssembledRecipeCleanupContractTest {
         AuditedShapeFamilies.families(AuditedShapeFamily.Category.WINDOW).stream()
                 .filter(family -> family.canonicalParent().getNamespace().equals("architectural_material_closure"))
                 .forEach(newFamilies::add);
-        newFamilies.removeIf(family -> family.availableMembers(AMC_PRESENT).isEmpty());
+        // This pinned historical recipe corpus predates the optional Trees wood provider.
+        // Its successor provider matrix is covered against actual candidate archives.
+        newFamilies.removeIf(family -> family.key().getPath().contains("/mynx_trees_")
+                || family.availableMembers(AMC_PRESENT).isEmpty());
         for (AuditedShapeFamily family : newFamilies) {
             family.availableMembers(AMC_PRESENT).forEach(member -> newMembers.add(member.toString()));
         }

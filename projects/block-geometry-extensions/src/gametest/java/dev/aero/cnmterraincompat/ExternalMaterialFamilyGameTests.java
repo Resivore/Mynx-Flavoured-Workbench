@@ -183,16 +183,16 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
 
     @GameTest(maxTicks = 40)
     public void exactAllowlistAndProviderCompletionInventory(GameTestHelper helper) {
-        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 213
+        helper.assertTrue(ExternalMaterialCatalog.specs().size() == 225
                         && ExternalMaterialCatalog.sourceCount("architectural_material_closure") == 64,
-                "Expected 149 legacy sources and 64 AMC patterns");
+                "Expected 161 provider sources and 64 AMC patterns");
         helper.assertTrue(ExternalMaterialCatalog.sourceCount("mcwpaths") == 57
-                        && ExternalMaterialCatalog.sourceCount("mynx_trees") == 6
+                        && ExternalMaterialCatalog.sourceCount("mynx_trees") == 18
                         && ExternalMaterialCatalog.sourceCount("ribbits") == 5
                         && ExternalMaterialCatalog.sourceCount("bbb") == 12
                         && ExternalMaterialCatalog.sourceCount("enderscape") == 68
                         && ExternalMaterialCatalog.sourceCount("mossy_stone") == 1,
-                "Provider source partition is not 57/6/5/12/68/1");
+                "Provider source partition is not 57/18/5/12/68/1");
         helper.assertTrue(ExternalMaterialFamilies.all().size() == 149,
                 "Provider completion did not register all 149 allowlisted families: "
                         + ExternalMaterialFamilies.all().size());
@@ -216,7 +216,9 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                                     && !BuiltInRegistries.ITEM.containsKey(derived),
                             "Absent AMC role exposed " + derived);
                 }
-            } else expected.add(spec.id());
+            } else if (!spec.provider().equals("mynx_trees") ||
+                    java.util.Set.of("wisteria_log","wisteria_wood","wisteria_leaves","silver_birch_log","silver_birch_wood","silver_birch_leaves")
+                            .contains(spec.id().getPath())) expected.add(spec.id());
         }
         helper.assertTrue(BuiltInRegistries.BLOCK.keySet().stream().noneMatch(id ->
                         id.getPath().contains("architectural_material_closure/")),
@@ -329,6 +331,10 @@ public final class ExternalMaterialFamilyGameTests implements CustomTestMethodIn
                         && rawShadoline.roles().size() == 9,
                 "Block of Raw Shadoline did not retain its exact source texture/family");
         for (PrivateBeamFamilies.Definition definition : PrivateBeamFamilies.definitions()) {
+            if (definition.planks().getNamespace().equals("mynx_trees")) {
+                helper.assertTrue(ExternalMaterialFamilies.fromSource(definition.root()).isEmpty(), "Legacy C8 fixture registered a beam without planks");
+                continue;
+            }
             ExternalMaterialFamilies.Binding plank = external(definition.planks().toString());
             ExternalMaterialFamilies.Binding beam = external(definition.root().toString());
             helper.assertTrue(beam.profile().orientationPolicy()

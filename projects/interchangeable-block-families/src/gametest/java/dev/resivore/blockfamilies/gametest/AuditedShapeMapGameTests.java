@@ -292,6 +292,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
         int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 284 : 181;
+        expectedFamilies += treeFamilyCount();
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -319,6 +320,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         }
 
         int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_255 : 1_412;
+        expectedCount += treeItemCount();
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -332,7 +334,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         List<AuditedShapeFamily> actual = AuditedShapeFamilies.families(
                 AuditedShapeFamily.Category.DISPLAY_FIXTURE);
         assertExactFamilies(helper, "C8 display fixtures", actual.stream()
-                .filter(f -> !f.canonicalParent().getNamespace().equals("architectural_material_closure")).toList(), C8_DISPLAY_FIXTURE_FAMILIES);
+                .filter(f -> Set.of("minecraft","enderscape").contains(f.canonicalParent().getNamespace())).toList(), C8_DISPLAY_FIXTURE_FAMILIES);
 
         for (AuditedShapeFamily family : actual) {
             String path = family.canonicalParent().getPath();
@@ -681,7 +683,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         Set<Item> resolvedParents = new HashSet<>();
 
         for (AuditedShapeFamily family : families) {
-            Item representative = requiredItem(family.members().get(1));
+            Item representative = requiredItem(family.availableMembers(Boolean.getBoolean("ibf.test.amcExpected")).stream().filter(BuiltInRegistries.ITEM::containsKey).skip(1).findFirst().orElseThrow());
             Item resolvedParent = ShapeMap.getParent(representative);
             helper.assertTrue(resolvedParents.add(resolvedParent),
                     "Two approved families joined one ShapeMap component at " + family.key());
@@ -1033,9 +1035,19 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 label + ": " + first + " / " + second);
     }
 
+    private static int treeFamilyCount() {
+        if (!BuiltInRegistries.ITEM.containsKey(id("mynx_trees:wisteria_sign"))) return 0;
+        return Boolean.getBoolean("ibf.test.amcExpected") ? 20 : 6;
+    }
+
+    private static int treeItemCount() {
+        if (treeFamilyCount() == 0) return 0;
+        return Boolean.getBoolean("ibf.test.amcExpected") ? 194 : 16;
+    }
+
     private static List<AuditedShapeFamily> expectedActiveFamilies() {
         return AuditedShapeFamilies.families().stream()
-                .filter(family -> !family.availableMembers(Boolean.getBoolean("ibf.test.amcExpected")).isEmpty())
+                .filter(family -> family.availableMembers(Boolean.getBoolean("ibf.test.amcExpected")).stream().filter(BuiltInRegistries.ITEM::containsKey).count() >= 2)
                 .toList();
     }
 
@@ -1270,6 +1282,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 Item item = requiredItem(id);
                 helper.assertTrue(items.add(item) && AuditedShapeRuntime.isAudited(item), "Membership mismatch " + id);
             }
+            if (family.key().getPath().contains("/mynx_trees_")) {
+                assertSelectorRoundTrip(helper, registered.stream().map(Identifier::toString).toList());
+            }
             families++;
         }
         checkMossyOak(helper);
@@ -1339,6 +1354,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                         "Combined Ribbits/CNM loot " + member + ": " + drops);
             }
         }
+        if (treeFamilyCount() > 0 && Boolean.getBoolean("ibf.test.unifiedBge")) {
+            verifyTreeGeometry(helper);
+        }
         checkWoodTrapdoors(helper, amc, enderscape);
         if (enderscape) {
             helper.assertTrue(hasRecipe(helper, "enderscape:murublight_door_from_celestial_door"),
@@ -1346,6 +1364,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         }
         int expectedFamilies = enderscape ? (amc ? 284 : 181) : (amc ? 232 : 164);
         int expectedItems = enderscape ? (amc ? 2255 : 1412) : (amc ? 1828 : 1360);
+        expectedFamilies += treeFamilyCount();
+        expectedItems += treeItemCount();
         helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
                 "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
 
@@ -1548,6 +1568,35 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         }
         if (enderscape) helper.assertTrue(hasRecipe(helper, "enderscape:murublight_trapdoor_from_celestial_trapdoor"),
                 "Lost Enderscape's native trapdoor conversion");
+    }
+
+    private static void verifyTreeGeometry(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(2, 2, 2));
+        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var axe = net.minecraft.world.item.Items.IRON_AXE.getDefaultInstance();
+        player.setItemInHand(InteractionHand.MAIN_HAND, axe);
+        var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos),
+                Direction.NORTH, pos, false);
+        for (String wood : List.of("silver_birch","wisteria","mossy_oak")) {
+            var raw = ShapeMap.getShapes(requiredItem("mynx_trees:"+wood+"_log"));
+            var stripped = ShapeMap.getShapes(requiredItem("mynx_trees:stripped_"+wood+"_log"));
+            helper.assertTrue(raw.size()==18 && stripped.size()==18, "Log and wood geometry for "+wood);
+            for (int i=0;i<raw.size();i++) {
+                var state = Block.byItem(raw.get(i)).defaultBlockState();
+                var axis = net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS;
+                if (state.hasProperty(axis)) state=state.setValue(axis,Direction.Axis.X);
+                level.setBlock(pos,state,2);
+                axe.useOn(new net.minecraft.world.item.context.UseOnContext(player,InteractionHand.MAIN_HAND,hit));
+                var result = level.getBlockState(pos);
+                helper.assertTrue(result.is(Block.byItem(stripped.get(i))), "Wrong stripped geometry for "+raw.get(i));
+                if (state.hasProperty(axis)) helper.assertTrue(result.getValue(axis)==Direction.Axis.X, "Lost timber axis");
+            }
+            if (wood.equals("mossy_oak")) continue;
+            var planks = ShapeMap.getShapes(requiredItem("mynx_trees:"+wood+"_planks"));
+            helper.assertTrue(planks.size()==18 && planks.get(9)==requiredItem("cnm_terrain_slabs_compat:mynx_trees/"+wood+"_beam"),
+                    "Expected separate plank and thin beam geometry batches for "+wood);
+        }
     }
 
     private static void checkWoodDoors(GameTestHelper helper, boolean amc, boolean enderscape) {

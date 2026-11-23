@@ -12,7 +12,7 @@ MACAW = "mcwdoors"
 WOODS = ("acacia", "bamboo", "birch", "cherry", "crimson", "dark_oak", "jungle",
          "mangrove", "oak", "pale_oak", "spruce", "warped")
 MATERIALS = {"veiled": "enderscape", "celestial": "enderscape", "murublight": "enderscape",
-             "mossy_oak": "ribbits"}
+             "mossy_oak": "ribbits", "silver_birch":"mynx_trees", "wisteria":"mynx_trees"}
 STEMS = {"celestial", "murublight"}
 
 
@@ -133,7 +133,7 @@ def transfer(sheets, material, oak, moss, planks, bark):
     return result
 
 
-def stage(root, vanilla, macaw, enderscape, ribbits):
+def stage(root, vanilla, macaw, enderscape, ribbits, trees):
     if hashlib.sha256(Path(macaw.filename).read_bytes()).hexdigest() != "00e431d662489fe4a145f0e471837e1cd2bc9bcce5abe3f9f9941230765b2ded":
         raise ValueError("Expected the retained Macaw's Doors 1.1.5 Fabric 26.2 reference")
     oak = wood_tile(vanilla, "minecraft:block/oak_planks")
@@ -142,7 +142,7 @@ def stage(root, vanilla, macaw, enderscape, ribbits):
     provider_tags = {n: read(macaw,n)["values"] for n in macaw.namelist()
                      if n.endswith(".json") and "/tags/" in n}
     names = read(macaw, "assets/mcwdoors/lang/en_us.json")
-    for provider, archive in (("enderscape", enderscape), ("ribbits", ribbits)):
+    for provider, archive in (("enderscape", enderscape), ("ribbits", ribbits), ("mynx_trees", trees)):
         pack = root / "resourcepacks" / (provider + "_doors")
         tags, labels = defaultdict(list), {}
         for material, ns in MATERIALS.items():

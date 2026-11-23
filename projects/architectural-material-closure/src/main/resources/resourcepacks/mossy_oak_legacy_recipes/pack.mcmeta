@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "AMC Mossy Oak recipes for providers without native timber",
+    "min_format": 88,
+    "max_format": [
+      107,
+      1
+    ]
+  }
+}

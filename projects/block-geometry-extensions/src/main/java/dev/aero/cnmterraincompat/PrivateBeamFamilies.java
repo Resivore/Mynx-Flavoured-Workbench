@@ -23,7 +23,8 @@ import java.util.Set;
 public final class PrivateBeamFamilies {
     private static final List<Definition> DEFINITIONS = List.of(
             definition("enderscape", "veiled"), definition("enderscape", "celestial"),
-            definition("enderscape", "murublight"), definition("ribbits", "mossy_oak"));
+            definition("enderscape", "murublight"), definition("ribbits", "mossy_oak"),
+            definition("mynx_trees", "silver_birch"), definition("mynx_trees", "wisteria"));
 
     private PrivateBeamFamilies() {}
 
@@ -31,6 +32,7 @@ public final class PrivateBeamFamilies {
     static void registerRoots(String provider) {
         for (Definition definition : DEFINITIONS) {
             if (!definition.planks().getNamespace().equals(provider)) continue;
+            if (provider.equals("mynx_trees") && !BuiltInRegistries.BLOCK.containsKey(definition.planks())) continue;
             Block existing = BuiltInRegistries.BLOCK.getValue(definition.root());
             if (definition.root().equals(BuiltInRegistries.BLOCK.getKey(existing))) continue;
             Block plank = BuiltInRegistries.BLOCK.getValue(definition.planks());

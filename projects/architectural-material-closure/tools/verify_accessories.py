@@ -10,6 +10,9 @@ import subprocess
 import sys
 from PIL import Image, ImageDraw
 from doors import MATERIALS, NS, STEMS, read, resource
+# This regression suite opens the historical pre-Trees artifacts.
+MATERIALS = {k:v for k,v in MATERIALS.items() if v != "mynx_trees"}
+
 from trapdoor_previews import Graph
 from verify_bamboo import files
 from wood_accessories import FORMS

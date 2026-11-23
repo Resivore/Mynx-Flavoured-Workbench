@@ -86,14 +86,21 @@ def main():
     if not groups:
         parser.error("Supply the registration inventory on stdin")
     doors = read_catalog(args.jar, groups)
-    previous = read_catalog(args.previous, groups) if args.previous else {}
+    previous = {}
+    if args.previous:
+        with ZipFile(args.previous) as archive:
+            old_ids = {m[1] for name in archive.namelist() if
+                       (m := re.fullmatch(r"(?:resourcepacks/[^/]+/)?"+ASSETS+r"items/([^/]+)\.json", name))}
+        if not old_ids <= groups.keys():
+            raise ValueError(f"Lost previous door IDs: {sorted(old_ids-groups.keys())}")
+        previous = read_catalog(args.previous, {name:groups[name] for name in old_ids})
     rows = []
     for door in sorted(doors):
         item, block, names = doors[door]
         if item != block or any(not s.strip() or s.startswith(("block.", "item.")) for s in names.values()):
             raise ValueError(f"Unresolved name for {door}: item={item}, block={block}, translations={names}")
         old_item, _, old_names = previous.get(door, ("", "", {}))
-        added = ",".join(k for k in LOCALES if previous and not old_names[k])
+        added = ",".join(k for k in LOCALES if previous and not old_names.get(k))
         rows.append(("dramaticdoors:" + door, groups[door], old_item, item, block, *names.values(), added))
     if args.report:
         args.report.parent.mkdir(parents=True, exist_ok=True)

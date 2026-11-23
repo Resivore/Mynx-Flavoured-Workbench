@@ -17,15 +17,15 @@ class RecipeImpactContractTest {
     void fixedAuditIdentityAndFamilyTotalsAreVersionBound() throws Exception {
         Properties contract = AuditFixtures.contract();
 
-        assertEquals("ibf-cnm-shapemap-2026-11-22-canary35", contract.getProperty("audit.id"));
+        assertEquals("ibf-cnm-shapemap-2026-11-23-canary36", contract.getProperty("audit.id"));
         assertEquals("795c62b46d237a2e65929b5d01d927027c9801aa",
                 contract.getProperty("audit.starting_commit"));
         assertEquals("9ad4600e62808e5e976392a69b495a2fe4b5d47c",
                 contract.getProperty("audit.accepted_ibf_commit"));
         assertEquals("26.2", contract.getProperty("minecraft.version"));
-        assertEquals(284, integer(contract, "families.total"));
-        assertEquals(2_255, integer(contract, "members.total"));
-        assertEquals(2_255, integer(contract, "members.unique"));
+        assertEquals(304, integer(contract, "families.total"));
+        assertEquals(2_449, integer(contract, "members.total"));
+        assertEquals(2_449, integer(contract, "members.unique"));
         assertEquals(23, integer(contract, "family.largest"));
 
         for (String key : new String[]{

@@ -150,6 +150,10 @@ public final class RenderingContractGameTests implements CustomTestMethodInvoker
         ExternalMaterialGeneratedResources.generate(manager);
         BlockPos pos = helper.absolutePos(BlockPos.ZERO);
         for (var definition : PrivateBeamFamilies.definitions()) {
+            if (definition.planks().getNamespace().equals("mynx_trees")) {
+                helper.assertTrue(ExternalMaterialFamilies.fromSource(definition.root()).isEmpty(), "Legacy C8 fixture registered a beam without planks");
+                continue;
+            }
             String family = definition.family();
             ExternalMaterialFamilies.Binding planks = external(definition.planks().toString());
             ExternalMaterialFamilies.Binding beam = external(definition.root().toString());

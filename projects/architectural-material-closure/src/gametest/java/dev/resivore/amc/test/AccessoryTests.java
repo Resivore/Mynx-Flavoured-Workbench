@@ -71,7 +71,7 @@ public final class AccessoryTests {
         if (moss&&form.equals("shutter")&&!FabricLoader.getInstance().isModLoaded("mcwtrpdoors")) return;
         String ns=(moss?"ribbits:":"enderscape:")+wood;
         String slab=ns+(moss?"_planks_slab":"_slab");
-        String log=moss?slab:ns+(wood.equals("veiled")?"_log":"_stem");
+        String log=moss?(BuiltInRegistries.BLOCK.containsKey(Identifier.parse("mynx_trees:mossy_oak_log")) ? "mynx_trees:mossy_oak_log" : slab):ns+(wood.equals("veiled")?"_log":"_stem");
         String pattern=switch(form) {
             case "button" -> "P";case "pressure_plate" -> "PP";case "planks_path" -> "L";
             case "log_parapet","stem_parapet" -> "SSSSGS";case "plank_parapet" -> "SSSSPS";case "blinds" -> "LLLSSSSSS";

@@ -29,7 +29,12 @@ final class MacawDoorBlocks {
         if (!ResourceLoader.registerBuiltinPack(Identifier.fromNamespaceAndPath(AMC, provider + "_doors"),
                 container, PackActivationType.ALWAYS_ENABLED)) throw new IllegalStateException(provider + " door pack missing");
         var items = new ArrayList<Item>();
-        var woods = provider.equals("enderscape") ? List.of("veiled", "celestial", "murublight") : List.of("mossy_oak");
+        var woods = switch (provider) {
+            case "enderscape" -> List.of("veiled", "celestial", "murublight");
+            case "ribbits" -> List.of("mossy_oak");
+            case "mynx_trees" -> List.of("silver_birch", "wisteria");
+            default -> throw new IllegalArgumentException(provider);
+        };
         for (String wood : woods) {
             var glass = wood.equals("celestial") || wood.equals("murublight") ? "stem_glass" : "bark_glass";
             for (String design : List.of("bamboo", glass, "barn", "barn_glass", "beach", "classic",

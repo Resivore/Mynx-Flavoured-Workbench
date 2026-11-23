@@ -18,7 +18,15 @@ TOP_EDGE_COLUMNS = {
 }
 
 
-def write_regular_shutter(path, wood, template, provider, ns):
+def write_regular_shutter(path, wood, template, provider, ns, originals):
+    if ns == "mynx_trees":
+        if wood == "wisteria":
+            copyfile(originals / "assets/wisteria assets/wisteria shutter.png", path)
+        else:
+            from zipfile import ZipFile
+            with ZipFile(originals.parent / "resourcepacks/foundation/artifacts/Foundation v10.zip") as goop:
+                path.write_bytes(goop.read("assets/mcwwindows/textures/block/birch_shutter.png"))
+        return
     if wood in ("veiled", "mossy_oak"):
         copyfile(SHUTTER_ART / f"{wood}_full_texture.png", path)
         return
@@ -33,12 +41,12 @@ def write_regular_shutter(path, wood, template, provider, ns):
     atlas.save(path)
 
 
-def stage(root, vanilla, windows, paths, end, ribbits, unlock):
+def stage(root, vanilla, windows, paths, end, ribbits, trees, originals, unlock):
     oak=wood_tile(vanilla,"minecraft:block/oak_planks")
     moss=wood_tile(ribbits,"ribbits:block/mossy_oak_planks")
     for wood,ns in MATERIALS.items():
         rib=ns=="ribbits"
-        provider=ribbits if rib else end
+        provider={"ribbits":ribbits,"enderscape":end,"mynx_trees":trees}[ns]
         pack=root/"resourcepacks"/ns
         log=wood+("_stem" if wood in STEMS else "_log")
         plank=wood+"_planks"
@@ -81,7 +89,7 @@ def stage(root, vanilla, windows, paths, end, ribbits, unlock):
                 tile=wood_tile(jar,ref)
                 path.parent.mkdir(parents=True,exist_ok=True)
                 if form=="shutter":
-                    write_regular_shutter(path, wood, tile, provider, ns)
+                    write_regular_shutter(path, wood, tile, provider, ns, originals)
                     return dest
                 assert form in ("planks_path","louvered_shutter")
                 mask={(x,y) for y in range(16) for x in range(16) if tile.getpixel((x,y))[3]==255}

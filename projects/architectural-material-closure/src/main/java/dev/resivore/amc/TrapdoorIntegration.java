@@ -45,7 +45,12 @@ public final class TrapdoorIntegration {
         if (!ResourceLoader.registerBuiltinPack(pack, container, PackActivationType.ALWAYS_ENABLED))
             throw new IllegalStateException("Missing trapdoor pack " + pack);
         var items = new ArrayList<Item>();
-        var woods = provider.equals("enderscape") ? List.of("veiled", "celestial", "murublight") : List.of("mossy_oak");
+        var woods = switch (provider) {
+            case "enderscape" -> List.of("veiled", "celestial", "murublight");
+            case "ribbits" -> List.of("mossy_oak");
+            case "mynx_trees" -> List.of("silver_birch", "wisteria");
+            default -> throw new IllegalArgumentException(provider);
+        };
         for (String wood : woods) {
             boolean stem = wood.equals("celestial") || wood.equals("murublight");
             for (String design : DESIGNS) {

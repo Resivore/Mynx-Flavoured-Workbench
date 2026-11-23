@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 284;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 2_255;
+    public static final int EXPECTED_FAMILY_COUNT = 304;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 2_449;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 23;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -396,7 +396,53 @@ public final class AuditedShapeFamilies {
                     amc("mossy_oak_tropical_door"),
                     amc("mossy_oak_waffle_door"),
                     amc("mossy_oak_western_door"),
-                    amc("mossy_oak_whispering_door"))
+                    amc("mossy_oak_whispering_door")),
+            family("cnm/two_high_door/mynx_trees_silver_birch", TWO_HIGH_DOOR, mynxTrees("silver_birch_door"),
+                    amc("silver_birch_bamboo_door"),
+                    amc("silver_birch_bark_glass_door"),
+                    amc("silver_birch_barn_door"),
+                    amc("silver_birch_barn_glass_door"),
+                    amc("silver_birch_beach_door"),
+                    amc("silver_birch_classic_door"),
+                    amc("silver_birch_cottage_door"),
+                    amc("silver_birch_four_panel_door"),
+                    amc("silver_birch_glass_door"),
+                    amc("silver_birch_japanese_door"),
+                    amc("silver_birch_japanese2_door"),
+                    amc("silver_birch_modern_door"),
+                    amc("silver_birch_mystic_door"),
+                    amc("silver_birch_nether_door"),
+                    amc("silver_birch_paper_door"),
+                    amc("silver_birch_stable_door"),
+                    amc("silver_birch_stable_head_door"),
+                    amc("silver_birch_swamp_door"),
+                    amc("silver_birch_tropical_door"),
+                    amc("silver_birch_waffle_door"),
+                    amc("silver_birch_western_door"),
+                    amc("silver_birch_whispering_door")),
+            family("cnm/two_high_door/mynx_trees_wisteria", TWO_HIGH_DOOR, mynxTrees("wisteria_door"),
+                    amc("wisteria_bamboo_door"),
+                    amc("wisteria_bark_glass_door"),
+                    amc("wisteria_barn_door"),
+                    amc("wisteria_barn_glass_door"),
+                    amc("wisteria_beach_door"),
+                    amc("wisteria_classic_door"),
+                    amc("wisteria_cottage_door"),
+                    amc("wisteria_four_panel_door"),
+                    amc("wisteria_glass_door"),
+                    amc("wisteria_japanese_door"),
+                    amc("wisteria_japanese2_door"),
+                    amc("wisteria_modern_door"),
+                    amc("wisteria_mystic_door"),
+                    amc("wisteria_nether_door"),
+                    amc("wisteria_paper_door"),
+                    amc("wisteria_stable_door"),
+                    amc("wisteria_stable_head_door"),
+                    amc("wisteria_swamp_door"),
+                    amc("wisteria_tropical_door"),
+                    amc("wisteria_waffle_door"),
+                    amc("wisteria_western_door"),
+                    amc("wisteria_whispering_door"))
     );
 
     private static final List<AuditedShapeFamily> THREE_HIGH_DOORS = List.of(
@@ -720,7 +766,53 @@ public final class AuditedShapeFamilies {
                     dramaticDoors("tall_macaw_mossy_oak_tropical_door"),
                     dramaticDoors("tall_macaw_mossy_oak_waffle_door"),
                     dramaticDoors("tall_macaw_mossy_oak_western_door"),
-                    dramaticDoors("tall_macaw_mossy_oak_whispering_door"))
+                    dramaticDoors("tall_macaw_mossy_oak_whispering_door")),
+            family("cnm/three_high_door/mynx_trees_silver_birch", THREE_HIGH_DOOR, dramaticDoors("tall_silver_birch_door"),
+                    dramaticDoors("tall_macaw_silver_birch_bamboo_door"),
+                    dramaticDoors("tall_macaw_silver_birch_bark_glass_door"),
+                    dramaticDoors("tall_macaw_silver_birch_barn_door"),
+                    dramaticDoors("tall_macaw_silver_birch_barn_glass_door"),
+                    dramaticDoors("tall_macaw_silver_birch_beach_door"),
+                    dramaticDoors("tall_macaw_silver_birch_classic_door"),
+                    dramaticDoors("tall_macaw_silver_birch_cottage_door"),
+                    dramaticDoors("tall_macaw_silver_birch_four_panel_door"),
+                    dramaticDoors("tall_macaw_silver_birch_glass_door"),
+                    dramaticDoors("tall_macaw_silver_birch_japanese_door"),
+                    dramaticDoors("tall_macaw_silver_birch_japanese2_door"),
+                    dramaticDoors("tall_macaw_silver_birch_modern_door"),
+                    dramaticDoors("tall_macaw_silver_birch_mystic_door"),
+                    dramaticDoors("tall_macaw_silver_birch_nether_door"),
+                    dramaticDoors("tall_macaw_silver_birch_paper_door"),
+                    dramaticDoors("tall_macaw_silver_birch_stable_door"),
+                    dramaticDoors("tall_macaw_silver_birch_stable_head_door"),
+                    dramaticDoors("tall_macaw_silver_birch_swamp_door"),
+                    dramaticDoors("tall_macaw_silver_birch_tropical_door"),
+                    dramaticDoors("tall_macaw_silver_birch_waffle_door"),
+                    dramaticDoors("tall_macaw_silver_birch_western_door"),
+                    dramaticDoors("tall_macaw_silver_birch_whispering_door")),
+            family("cnm/three_high_door/mynx_trees_wisteria", THREE_HIGH_DOOR, dramaticDoors("tall_mynx_wisteria_door"),
+                    dramaticDoors("tall_macaw_wisteria_bamboo_door"),
+                    dramaticDoors("tall_macaw_wisteria_bark_glass_door"),
+                    dramaticDoors("tall_macaw_wisteria_barn_door"),
+                    dramaticDoors("tall_macaw_wisteria_barn_glass_door"),
+                    dramaticDoors("tall_macaw_wisteria_beach_door"),
+                    dramaticDoors("tall_macaw_wisteria_classic_door"),
+                    dramaticDoors("tall_macaw_wisteria_cottage_door"),
+                    dramaticDoors("tall_macaw_wisteria_four_panel_door"),
+                    dramaticDoors("tall_macaw_wisteria_glass_door"),
+                    dramaticDoors("tall_macaw_wisteria_japanese_door"),
+                    dramaticDoors("tall_macaw_wisteria_japanese2_door"),
+                    dramaticDoors("tall_macaw_wisteria_modern_door"),
+                    dramaticDoors("tall_macaw_wisteria_mystic_door"),
+                    dramaticDoors("tall_macaw_wisteria_nether_door"),
+                    dramaticDoors("tall_macaw_wisteria_paper_door"),
+                    dramaticDoors("tall_macaw_wisteria_stable_door"),
+                    dramaticDoors("tall_macaw_wisteria_stable_head_door"),
+                    dramaticDoors("tall_macaw_wisteria_swamp_door"),
+                    dramaticDoors("tall_macaw_wisteria_tropical_door"),
+                    dramaticDoors("tall_macaw_wisteria_waffle_door"),
+                    dramaticDoors("tall_macaw_wisteria_western_door"),
+                    dramaticDoors("tall_macaw_wisteria_whispering_door"))
     );
 
     private static final List<AuditedShapeFamily> TRAPDOORS = List.of(
@@ -1003,7 +1095,43 @@ public final class AuditedShapeFamilies {
                     amc("mossy_oak_ranch_trapdoor"),
                     amc("mossy_oak_swamp_trapdoor"),
                     amc("mossy_oak_tropical_trapdoor"),
-                    amc("mossy_oak_whispering_trapdoor"))
+                    amc("mossy_oak_whispering_trapdoor")),
+            family("cnm/trapdoor/mynx_trees_silver_birch", TRAPDOOR, mynxTrees("silver_birch_trapdoor"),
+                    amc("silver_birch_classic_trapdoor"),
+                    amc("silver_birch_bamboo_trapdoor"),
+                    amc("silver_birch_bark_trapdoor"),
+                    amc("silver_birch_barn_trapdoor"),
+                    amc("silver_birch_barred_trapdoor"),
+                    amc("silver_birch_barrel_trapdoor"),
+                    amc("silver_birch_beach_trapdoor"),
+                    amc("silver_birch_blossom_trapdoor"),
+                    amc("silver_birch_cottage_trapdoor"),
+                    amc("silver_birch_four_panel_trapdoor"),
+                    amc("silver_birch_glass_trapdoor"),
+                    amc("silver_birch_mystic_trapdoor"),
+                    amc("silver_birch_paper_trapdoor"),
+                    amc("silver_birch_ranch_trapdoor"),
+                    amc("silver_birch_swamp_trapdoor"),
+                    amc("silver_birch_tropical_trapdoor"),
+                    amc("silver_birch_whispering_trapdoor")),
+            family("cnm/trapdoor/mynx_trees_wisteria", TRAPDOOR, mynxTrees("wisteria_trapdoor"),
+                    amc("wisteria_classic_trapdoor"),
+                    amc("wisteria_bamboo_trapdoor"),
+                    amc("wisteria_bark_trapdoor"),
+                    amc("wisteria_barn_trapdoor"),
+                    amc("wisteria_barred_trapdoor"),
+                    amc("wisteria_barrel_trapdoor"),
+                    amc("wisteria_beach_trapdoor"),
+                    amc("wisteria_blossom_trapdoor"),
+                    amc("wisteria_cottage_trapdoor"),
+                    amc("wisteria_four_panel_trapdoor"),
+                    amc("wisteria_glass_trapdoor"),
+                    amc("wisteria_mystic_trapdoor"),
+                    amc("wisteria_paper_trapdoor"),
+                    amc("wisteria_ranch_trapdoor"),
+                    amc("wisteria_swamp_trapdoor"),
+                    amc("wisteria_tropical_trapdoor"),
+                    amc("wisteria_whispering_trapdoor"))
     );
 
     private static final List<AuditedShapeFamily> WINDOWS = List.of(
@@ -1273,10 +1401,22 @@ public final class AuditedShapeFamilies {
                     amc("murublight_plank_window2"), amc("murublight_plank_four_window"), amc("murublight_plank_pane_window")),
             family("cnm/window/mossy_oak_timber", WINDOW, amc("mossy_oak_window"),
                     amc("mossy_oak_window2"), amc("mossy_oak_four_window"), amc("mossy_oak_pane_window")),
+            family("cnm/window/mynx_trees_silver_birch_timber", WINDOW, amc("silver_birch_window"),
+                    amc("silver_birch_window2"), amc("silver_birch_four_window"), amc("silver_birch_pane_window")),
+            family("cnm/window/mynx_trees_wisteria_timber", WINDOW, amc("wisteria_window"),
+                    amc("wisteria_window2"), amc("wisteria_four_window"), amc("wisteria_pane_window")),
             family("cnm/window/mossy_oak_stripped", WINDOW, amc("stripped_mossy_oak_window"),
                     amc("stripped_mossy_oak_window2"), amc("stripped_mossy_oak_four_window"), amc("stripped_mossy_oak_pane_window")),
+            family("cnm/window/mynx_trees_silver_birch_stripped", WINDOW, amc("stripped_silver_birch_window"),
+                    amc("stripped_silver_birch_window2"), amc("stripped_silver_birch_four_window"), amc("stripped_silver_birch_pane_window")),
+            family("cnm/window/mynx_trees_wisteria_stripped", WINDOW, amc("stripped_wisteria_window"),
+                    amc("stripped_wisteria_window2"), amc("stripped_wisteria_four_window"), amc("stripped_wisteria_pane_window")),
             family("cnm/window/mossy_oak_planks", WINDOW, amc("mossy_oak_plank_window"),
-                    amc("mossy_oak_plank_window2"), amc("mossy_oak_plank_four_window"), amc("mossy_oak_plank_pane_window"))
+                    amc("mossy_oak_plank_window2"), amc("mossy_oak_plank_four_window"), amc("mossy_oak_plank_pane_window")),
+            family("cnm/window/mynx_trees_silver_birch_planks", WINDOW, amc("silver_birch_plank_window"),
+                    amc("silver_birch_plank_window2"), amc("silver_birch_plank_four_window"), amc("silver_birch_plank_pane_window")),
+            family("cnm/window/mynx_trees_wisteria_planks", WINDOW, amc("wisteria_plank_window"),
+                    amc("wisteria_plank_window2"), amc("wisteria_plank_four_window"), amc("wisteria_plank_pane_window"))
     );
 
     private static final List<AuditedShapeFamily> DISPLAY_FIXTURES = List.of(
@@ -1311,7 +1451,11 @@ public final class AuditedShapeFamilies {
             enderscapeFamily("cnm/display_fixture/enderscape_murublight", DISPLAY_FIXTURE, enderscape("murublight_sign"),
                     enderscape("murublight_hanging_sign"), enderscape("murublight_shelf")),
             family("cnm/display_fixture/ribbits_mossy_oak", DISPLAY_FIXTURE, amc("mossy_oak_sign"),
-                    amc("mossy_oak_hanging_sign"), amc("mossy_oak_shelf"))
+                    amc("mossy_oak_hanging_sign"), amc("mossy_oak_shelf")),
+            family("cnm/display_fixture/mynx_trees_silver_birch", DISPLAY_FIXTURE, mynxTrees("silver_birch_sign"),
+                    mynxTrees("silver_birch_hanging_sign"), mynxTrees("silver_birch_shelf")),
+            family("cnm/display_fixture/mynx_trees_wisteria", DISPLAY_FIXTURE, mynxTrees("wisteria_sign"),
+                    mynxTrees("wisteria_hanging_sign"), mynxTrees("wisteria_shelf"))
     );
 
     private static final List<AuditedShapeFamily> FENCE_GATES = List.of(
@@ -1342,6 +1486,12 @@ public final class AuditedShapeFamilies {
             family("cnm/fence_gate/ribbits_mossy_oak_planks", FENCE_GATE,
                     ribbits("mossy_oak_planks_fence"),
                     ribbits("mossy_oak_planks_fence_gate"), amc("mossy_oak_frame"), amc("mossy_oak_lattice")),
+            family("cnm/fence_gate/mynx_trees_silver_birch_planks", FENCE_GATE,
+                    mynxTrees("silver_birch_fence"),
+                    mynxTrees("silver_birch_fence_gate"), amc("silver_birch_frame"), amc("silver_birch_lattice")),
+            family("cnm/fence_gate/mynx_trees_wisteria_planks", FENCE_GATE,
+                    mynxTrees("wisteria_fence"),
+                    mynxTrees("wisteria_fence_gate"), amc("wisteria_frame"), amc("wisteria_lattice")),
             enderscapeFamily("cnm/fence_gate/enderscape_veiled", FENCE_GATE, enderscape("veiled_fence"),
                     enderscape("veiled_fence_gate"), bbb("veiled_frame"), bbb("veiled_lattice")),
             enderscapeFamily("cnm/fence_gate/enderscape_celestial", FENCE_GATE, enderscape("celestial_fence"),
@@ -1383,6 +1533,10 @@ public final class AuditedShapeFamilies {
             family("cnm/bbb_detail/wood/oak", BBB_DETAIL, bbb("oak_trim"), bbb("oak_balustrade"), bbb("oak_support"), bbb("oak_pallet")),
             family("cnm/bbb_detail/wood/ribbits_mossy_oak_planks", BBB_DETAIL, amc("mossy_oak_trim"),
                     amc("mossy_oak_balustrade"), amc("mossy_oak_support"), amc("mossy_oak_pallet")),
+            family("cnm/bbb_detail/wood/mynx_trees_silver_birch_planks", BBB_DETAIL, amc("silver_birch_trim"),
+                    amc("silver_birch_balustrade"), amc("silver_birch_support"), amc("silver_birch_pallet")),
+            family("cnm/bbb_detail/wood/mynx_trees_wisteria_planks", BBB_DETAIL, amc("wisteria_trim"),
+                    amc("wisteria_balustrade"), amc("wisteria_support"), amc("wisteria_pallet")),
             family("cnm/bbb_detail/wood/spruce", BBB_DETAIL, bbb("spruce_trim"), bbb("spruce_balustrade"), bbb("spruce_support"), bbb("spruce_pallet")),
             family("cnm/bbb_detail/wood/birch", BBB_DETAIL, bbb("birch_trim"), bbb("birch_balustrade"), bbb("birch_support"), bbb("birch_pallet")),
             family("cnm/bbb_detail/wood/jungle", BBB_DETAIL, bbb("jungle_trim"), bbb("jungle_balustrade"), bbb("jungle_support"), bbb("jungle_pallet")),
@@ -1963,6 +2117,28 @@ public final class AuditedShapeFamilies {
                     amc("mossy_oak_shutter"),
                     amc("mossy_oak_louvered_shutter"),
                     dramaticDoors("short_mossy_oak_door")),
+            family("cnm/building_accessory/mynx_trees_silver_birch", BUILDING_ACCESSORY,
+                    mynxTrees("silver_birch_button"),
+                    mynxTrees("silver_birch_pressure_plate"),
+                    amc("silver_birch_planks_path"),
+                    amc("silver_birch_log_parapet"),
+                    amc("silver_birch_plank_parapet"),
+                    amc("silver_birch_blinds"),
+                    amc("silver_birch_curtain_rod"),
+                    amc("silver_birch_shutter"),
+                    amc("silver_birch_louvered_shutter"),
+                    dramaticDoors("short_silver_birch_door")),
+            family("cnm/building_accessory/mynx_trees_wisteria", BUILDING_ACCESSORY,
+                    mynxTrees("wisteria_button"),
+                    mynxTrees("wisteria_pressure_plate"),
+                    amc("wisteria_planks_path"),
+                    amc("wisteria_log_parapet"),
+                    amc("wisteria_plank_parapet"),
+                    amc("wisteria_blinds"),
+                    amc("wisteria_curtain_rod"),
+                    amc("wisteria_shutter"),
+                    amc("wisteria_louvered_shutter"),
+                    dramaticDoors("short_mynx_wisteria_door")),
             enderscapeFamily("cnm/building_accessory/enderscape_polished_end_stone", BUILDING_ACCESSORY,
                     enderscape("polished_end_stone_button"), enderscape("polished_end_stone_pressure_plate"),
                     amc("end_stone_bricks_parapet"), amc("end_stone_bricks_louvered_shutter")),
@@ -2071,6 +2247,10 @@ public final class AuditedShapeFamilies {
 
     private static Identifier bbb(String path) {
         return Identifier.fromNamespaceAndPath("bbb", path);
+    }
+
+    private static Identifier mynxTrees(String path) {
+        return Identifier.fromNamespaceAndPath("mynx_trees", path);
     }
 
     private static Identifier ribbits(String path) {

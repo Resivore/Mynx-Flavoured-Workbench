@@ -1,6 +1,12 @@
-# Testing Dramatic Doors C14
+# Dramatic Doors verification
 
-C14 targets Minecraft Java 26.2 Fabric and awaits owner gameplay verification. Match the JAR hash to the current entry in WORKBENCH_STATUS.json. C8 is the accepted rollback.
+## Canary 15 Silver Birch and Wisteria
+
+Use DD C15 with Mynx Trees C9. Cut each native door into short doors and craft three vertically into two tall doors. Check facing, waterlogging, opening, redstone, all three break positions and single drops. Identify the Mynx Wisteria doors as `dramaticdoors:short_mynx_wisteria_door` and `dramaticdoors:tall_mynx_wisteria_door`. Compare all three front panels to the owner's tall sheet and the short front to the separate sprite.
+
+With AMC C36 and Macaw's Doors, check all 22 tall styles per new species, especially Japanese sliding and Stable upper/lower sections. Verify native names in Creative Search, the relevant optional pack, inventory icons and tooltip names after two resource reloads. Repeat with Mynx Trees absent and retain the existing Ribbits and Enderscape checks below. The combined JEI client harness passed with YACL 3.9.6. With YACL 3.9.7 the fixture failed during its ContainerEventHandler mixin transformation before model baking.
+
+The following naming regression originated with C14 on Minecraft Java 26.2 Fabric. Match the JAR hash to the current entry in WORKBENCH_STATUS.json. C8 is the accepted rollback.
 
 ## Door display names
 

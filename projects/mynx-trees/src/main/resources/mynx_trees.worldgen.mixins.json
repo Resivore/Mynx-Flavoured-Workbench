@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "dev.resivore.mynxtrees.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ConfiguredOakMixin",
+    "StandingOakMixin",
+    "FallenOakMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

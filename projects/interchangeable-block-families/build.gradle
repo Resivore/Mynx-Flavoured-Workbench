@@ -270,6 +270,11 @@ if (amcReferenceJar.isPresent()) {
     dependencies.add('gametestRuntimeOnly', files(amcReferenceJar.get()))
 }
 
+def treesReference = providers.gradleProperty('trees_reference_jar')
+if (treesReference.isPresent()) {
+    dependencies.add('gametestRuntimeOnly', files(treesReference.get()))
+}
+
 loom.runs.named('gameTest') {
     vmArg "-Dibf.test.amcExpected=${amcReferenceJar.isPresent()}"
     // Providers remain loaded so IBF exercises their live registrations. Limit
@@ -305,7 +310,7 @@ tasks.named('processGametestResources') {
             }
         }
     }
-    def versions = [version: project.version, ribbitsVersion: versionOf(ribbitsReferenceJar),
+    def versions = [version: project.version, ddVersion: versionOf(dramaticDoorsReferenceJar), ribbitsVersion: versionOf(ribbitsReferenceJar),
             bgeVersion: versionOf(unified ? file(unified) : cnmIntegrationReferenceJar),
             nibaruVersion: versionOf(unified ? file(unified) : nibaruReferenceJar)]
     inputs.properties versions

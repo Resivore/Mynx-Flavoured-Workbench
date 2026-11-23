@@ -34,6 +34,7 @@ def privateBeamResources = layout.buildDirectory.dir('generated/private-beam-res
 def pristineNibaruJar = layout.projectDirectory.file('build-inputs/nibaru/moreslabsstairsandwalls-4.2.0.jar')
 def privateBbbJar = layout.projectDirectory.file('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-pale-oak-dev.6.jar')
 def privateEnderscapeJar = layout.projectDirectory.file('../../originals/mods/enderscape-fabric-3.0.2+mc26.2.jar')
+def treesJar = file(providers.gradleProperty('treesJar').getOrElse('../mynx-trees/artifacts/mynx-trees-private-0.1.0+26.2-canary9.jar'))
 def mossyBeamBbb = file('../building-but-better/artifacts/bbb-fabric-26.2-2.0pre4+26.2-enderscape-dev.7.jar')
 def mossyBeamRibbits = file('../ribbits-26.2/artifacts/ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar')
 def minecraftClientArchive = gradle.gradleUserHomeDir.toPath().resolve('caches').resolve('fabric-loom')
@@ -111,8 +112,8 @@ tasks.register('generatePrivateBeamResources', JavaExec) {
     classpath = files(sourceSets.main.output.classesDirs) + configurations.runtimeClasspath
     mainClass = 'dev.aero.cnmterraincompat.tools.PrivateBeamResourceAssembler'
     args privateBbbJar.asFile.absolutePath, privateEnderscapeJar.asFile.absolutePath,
-            privateBeamResources.get().asFile.absolutePath, mossyBeamBbb, mossyBeamRibbits, minecraftClientArchive
-    inputs.files mossyBeamBbb, mossyBeamRibbits, minecraftClientArchive
+            privateBeamResources.get().asFile.absolutePath, mossyBeamBbb, mossyBeamRibbits, minecraftClientArchive, treesJar
+    inputs.files mossyBeamBbb, mossyBeamRibbits, minecraftClientArchive, treesJar
     inputs.file privateBbbJar
     inputs.file privateEnderscapeJar
     outputs.dir privateBeamResources

@@ -1,5 +1,11 @@
 # BGE geometry verification
 
+## Canary 111 timber and beam geometry
+
+Match BGE C111 and Mynx Trees C9 to their manifests. For Silver Birch, Wisteria and Mossy Oak, cycle the 18 Log/Wood roles and the separate 18 Stripped Log/Stripped Wood roles. Place every shape on multiple axes, then axe-strip the raw counterpart. Verify its axis, geometry, neighbor connections and drops. In particular, a Silver Birch Log cut uses the owner's rounded end texture and Silver Birch Wood exposes bark on every face.
+
+For Silver Birch and Wisteria Planks, the second nine-role batch is the corresponding Beam. Compare its post, arm width, joins and collision against the BBB beam wall at a straight run, corner and junction. Compare the Planks Wall separately. Check CTM seams, inventory UVs, slabs and stairs, then check the existing 18-position Ribbits plank/beam selector. Repeat with the tree provider omitted to check existing providers.
+
 ## Canary 110 Mossy Oak
 
 Match `BGE C110.jar` to its manifest and enable Ribbits C27. Obtain Mossy Oak Planks. Cycle a named stack through all 18 entries. Each group of nine follows Full, Slab, Stairs, Wall, Vertical Slab, Step, Corner, Quarter Column and Layer. The Planks group precedes Beam. Repeat from the final entry and check the count, custom components and inventory icons.

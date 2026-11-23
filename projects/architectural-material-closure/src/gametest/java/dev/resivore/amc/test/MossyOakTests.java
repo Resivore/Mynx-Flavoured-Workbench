@@ -137,11 +137,12 @@ public final class MossyOakTests {
 
     @GameTest
     public void sixCraftingGrids(GameTestHelper helper) {
+        boolean timber = BuiltInRegistries.BLOCK.containsKey(Identifier.parse("mynx_trees:mossy_oak_log"));
         var keys = Map.of('P', "ribbits:mossy_oak_planks", 'S', "minecraft:stick",
-                'L', "ribbits:mossy_oak_planks_slab", 'A', "minecraft:stripped_oak_log", 'M', "minecraft:moss_block");
+                'L', "ribbits:mossy_oak_planks_slab", 'A', timber ? "mynx_trees:stripped_mossy_oak_log" : "minecraft:stripped_oak_log", 'M', "minecraft:moss_block");
         record Grid(String form, int count, String... rows) {}
         var grids = List.of(new Grid("frame",12,"LLL","S S","LLL"), new Grid("lattice",6,"SPS","PSP","SPS"),
-                new Grid("trim",3,"P","P","P"), new Grid("balustrade",6,"A ","AM","A "),
+                new Grid("trim",3,"P","P","P"), new Grid("balustrade",6,timber ? new String[]{"A","A","A"} : new String[]{"A ","AM","A "}),
                 new Grid("support",4,"PP","PS"), new Grid("pallet",8,"SSS","PPP"));
         for (var grid : grids) {
             var stacks = new java.util.ArrayList<ItemStack>();

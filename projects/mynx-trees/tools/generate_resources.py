@@ -4,7 +4,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / 'build/generated/resources'
 COMMON = pathlib.Path(subprocess.check_output(['git','rev-parse','--path-format=absolute','--git-common-dir'], text=True).strip()).parent
 INPUTS = json.loads((ROOT/'build-inputs.json').read_text())
-MC = pathlib.Path(os.environ.get('MYNX_MINECRAFT_JAR', pathlib.Path.home()/'.gradle/caches/fabric-loom/26.2/minecraft-merged.jar'))
+MC = pathlib.Path(os.environ.get('MYNX_MINECRAFT_JAR', pathlib.Path.home()/'.gradle/caches/fabric-loom/26.2/minecraft-client.jar'))
 
 def write(path, value):
     target=OUT/path; target.parent.mkdir(parents=True,exist_ok=True)
@@ -25,7 +25,7 @@ def assemble():
         if hashlib.sha256(source.read_bytes()).hexdigest()!=entry['sha256']:raise ValueError('Changed immutable input: '+str(source))
     for name in ['log','log_base','leaves','sapling']:
         write('assets/mynx_trees/textures/block/silver_birch_'+name+'.png',(COMMON/('originals/assets/block_silver_birch_'+name+'.png')).read_bytes())
-    write('assets/mynx_trees/textures/block/wisteria_log_top.png',(COMMON/'originals/assets/block_wisteria_log_top.png').read_bytes())
+    write('assets/mynx_trees/textures/block/wisteria_log_top.png',(COMMON/'originals/assets/wisteria assets/wisteria top log.png').read_bytes())
     with zipfile.ZipFile(COMMON/'originals/assets/cherry-to-wisteria.zip') as pack:
         for folder,old,new in [('block','cherry_leaves','wisteria_leaves'),('block','cherry_log','wisteria_log'),('block','cherry_sapling','wisteria_sapling'),('block','pink_petals','sweet_violets'),('item','pink_petals','sweet_violets')]+[('particle','cherry_'+str(i),'wisteria_'+str(i)) for i in range(12)]:
             write(f'assets/mynx_trees/textures/{folder}/{new}.png',pack.read(f'cherry-to-wisteria/assets/minecraft/textures/{folder}/{old}.png'))
@@ -33,7 +33,7 @@ def assemble():
         def vanilla(path):return json.loads(mc.read(path))
         def data(kind,name,obj):write(f'data/mynx_trees/{kind}/{name}.json',obj)
         def asset(kind,name,obj):write(f'assets/mynx_trees/{kind}/{name}.json',obj)
-        asset('models/block','silver_birch_log_base',{'parent':'minecraft:block/cube_column','textures':{'side':'mynx_trees:block/silver_birch_log_base','end':'minecraft:block/birch_log_top'}})
+        asset('models/block','silver_birch_log_base',{'parent':'minecraft:block/cube_column','textures':{'side':'mynx_trees:block/silver_birch_log_base','end':'mynx_trees:block/silver_birch_log_top'}})
         data('tags/block','silver_birch_base_soils',{'replace':False,'values':['minecraft:'+n for n in ['grass_block','dirt','coarse_dirt','rooted_dirt','podzol','mycelium']]})
         names=[]
         for tree,wood in [('silver_birch','birch'),('wisteria','pale_oak')]:
@@ -41,9 +41,9 @@ def assemble():
                 name=tree+'_'+part;names.append(name);ident='mynx_trees:'+name
                 if part in ['log','wood']:
                     asset('blockstates',name,{'variants':{'axis=y':{'model':'mynx_trees:block/'+name},'axis=x':{'model':'mynx_trees:block/'+name,'x':90,'y':90},'axis=z':{'model':'mynx_trees:block/'+name,'x':90}}})
-                    end=('minecraft:block/birch_log_top' if tree=='silver_birch' else 'mynx_trees:block/wisteria_log_top') if part=='log' else 'mynx_trees:block/'+tree+'_log'
+                    end=('mynx_trees:block/silver_birch_log_top' if tree=='silver_birch' else 'mynx_trees:block/wisteria_log_top') if part=='log' else 'mynx_trees:block/'+tree+'_log'
                     asset('models/block',name,{'parent':'minecraft:block/cube_column','textures':{'side':'mynx_trees:block/'+tree+'_log','end':end}})
-                    data('recipe',name+'_planks',{'type':'minecraft:crafting_shapeless','category':'building','ingredients':[ident],'result':{'id':'minecraft:'+wood+'_planks','count':4}})
+                    data('recipe',name+'_planks',{'type':'minecraft:crafting_shapeless','category':'building','ingredients':[ident],'result':{'id':'mynx_trees:'+tree+'_planks','count':4}})
                     data('loot_table/blocks',name,{'type':'minecraft:block','pools':[{'rolls':1,'entries':[{'type':'minecraft:item','name':ident}],'conditions':[{'condition':'minecraft:survives_explosion'}]}]})
                 elif part=='leaves':
                     asset('blockstates',name,{'variants':{'':{'model':'mynx_trees:block/'+name}}})
@@ -85,8 +85,8 @@ def assemble():
                 write(f'data/minecraft/tags/{kind}/{tag}.json',{'replace':False,'values':values})
         for kind,tag,values in [('block','bee_attractive',['mynx_trees:sweet_violets','mynx_trees:wisteria_leaves']),('block','inside_step_sound_blocks',['mynx_trees:sweet_violets']),('item','bee_food',['mynx_trees:sweet_violets']),('block','overworld_natural_logs',['mynx_trees:silver_birch_log','mynx_trees:wisteria_log'])]:
             write(f'data/minecraft/tags/{kind}/{tag}.json',{'replace':False,'values':values})
-        # Recipe-book unlocks retain direct vanilla plank outputs.
-        for recipe in (OUT/'data/mynx_trees/recipe').glob('*.json'):
+        # Keep the released recipe identifiers and unlock their species-specific results.
+        for recipe in [OUT/f'data/mynx_trees/recipe/{tree}_{part}.json' for tree in ('wisteria','silver_birch') for part in ('sapling','wood','log_planks','wood_planks')]:
             obj=json.loads(recipe.read_text()); ingredient=obj.get('ingredients',[None])[0] or obj['key']['#']
             data('advancement/recipes',recipe.stem,{'parent':'minecraft:recipes/root','criteria':{'has_material':{'trigger':'minecraft:inventory_changed','conditions':{'items':[{'items':ingredient}]}},'has_recipe':{'trigger':'minecraft:recipe_unlocked','conditions':{'recipe':'mynx_trees:'+recipe.stem}}},'requirements':[['has_material','has_recipe']],'rewards':{'recipes':['mynx_trees:'+recipe.stem]}})
         # Derive the entire birch selector graph, including both fallen forms and per-branch survival filters.
@@ -106,5 +106,7 @@ def assemble():
         data('worldgen/configured_feature','grove_selection',{'type':'minecraft:random_selector','config':{'features':[{'chance':0.25,'feature':{'feature':'mynx_trees:wisteria_cherry_bees_005','placement':[]}}],'default':{'feature':'mynx_trees:cherry_cherry_bees_005','placement':[]}}})
         placed=vanilla('data/minecraft/worldgen/placed_feature/trees_cherry.json');placed['feature']='mynx_trees:grove_selection'
         data('worldgen/placed_feature','grove_trees',placed)
+        from native_wood_resources import stage
+        stage(mc, COMMON, OUT, write)
     print('Generated private textures and focused 26.2 resources; all supplied input hashes verified.')
 if __name__=='__main__':assemble()

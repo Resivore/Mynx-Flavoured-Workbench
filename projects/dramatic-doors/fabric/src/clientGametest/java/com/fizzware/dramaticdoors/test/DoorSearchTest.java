@@ -45,8 +45,11 @@ public final class DoorSearchTest implements IModPlugin, FabricClientGameTest {
                 String previous = filter.getFilterText();
                 try {
                     verifyDoorNames(client);
-                    for (String material : List.of("Pale Oak", "Veiled", "Celestial", "Murublight", "Mossy Oak")) {
-                        String path = material.equals("Murublight") ? "murushroom" : material.toLowerCase(Locale.ROOT).replace(' ', '_');
+                    var materials = new ArrayList<>(List.of("Pale Oak", "Veiled", "Celestial", "Murublight", "Mossy Oak"));
+                    if (BuiltInRegistries.ITEM.containsKey(Identifier.parse("mynx_trees:wisteria_door")))
+                        materials.addAll(List.of("Silver Birch","Wisteria"));
+                    for (String material : materials) {
+                        String path = material.equals("Murublight") ? "murushroom" : material.equals("Wisteria") ? "mynx_wisteria" : material.toLowerCase(Locale.ROOT).replace(' ', '_');
                         for (String height : List.of("Short", "Tall")) {
                             String name = height + " " + material + " Door";
                             Identifier id = Identifier.parse("dramaticdoors:" + height.toLowerCase(Locale.ROOT) + "_" + path + "_door");
@@ -66,6 +69,15 @@ public final class DoorSearchTest implements IModPlugin, FabricClientGameTest {
                             }
                         }
                     }
+                    for (var id : BuiltInRegistries.BLOCK.keySet()) {
+                        if (!id.getNamespace().equals("mynx_trees") && !(id.getNamespace().equals("architectural_material_closure")
+                                && (id.getPath().contains("silver_birch") || id.getPath().contains("wisteria")))) continue;
+                        var block = BuiltInRegistries.BLOCK.getOptional(id).orElseThrow();
+                        if (block.getStateDefinition().getPossibleStates().stream().anyMatch(s -> states.get(s)==states.missingModel()))
+                            throw new AssertionError("Missing wood state model " + id);
+                        if (BuiltInRegistries.ITEM.containsKey(id) && models.getItemModel(id)==missingItem)
+                            throw new AssertionError("Missing wood item model " + id);
+                    }
                     int amcCount = 0;
                     for (var id : AmcDoorChecks.doors()) {
                         var block = BuiltInRegistries.BLOCK.getOptional(id);
@@ -83,7 +95,7 @@ public final class DoorSearchTest implements IModPlugin, FabricClientGameTest {
                         amcCount++;
                     }
                     com.fizzware.dramaticdoors.DramaticDoors.LOGGER.info("Verified {} AMC tall doors in both search indexes and baked models.", amcCount);
-                    com.fizzware.dramaticdoors.DramaticDoors.LOGGER.info("Verified all ten native doors in Creative Search, JEI and baked client models.");
+                    com.fizzware.dramaticdoors.DramaticDoors.LOGGER.info("Verified native door searches and baked wood-family models.");
                 } finally {
                     filter.setFilterText(previous);
                 }

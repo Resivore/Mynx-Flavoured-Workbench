@@ -27,7 +27,7 @@ final class BuildingButBetterFamiliesTest {
     @Test
     void everyRegisteredWoodHasOneExactTrimDetailFamilyIncludingPaleOak() {
         Map<String, AuditedShapeFamily> details = detailsByPath();
-        assertEquals(43, details.size());
+        assertEquals(45, details.size());
         for (String wood : WOODS) {
             assertEquals(List.of(bbb(wood + "_trim"), bbb(wood + "_balustrade"),
                     bbb(wood + "_support"), bbb(wood + "_pallet")),
@@ -52,7 +52,7 @@ final class BuildingButBetterFamiliesTest {
     void existingFenceGateFamiliesAreExtendedInPlaceWithoutFabricatingMossyOak() {
         Map<String, AuditedShapeFamily> fences = AuditedShapeFamilies.families(FENCE_GATE).stream()
                 .collect(Collectors.toMap(family -> family.key().getPath(), family -> family));
-        assertEquals(16, fences.size());
+        assertEquals(18, fences.size());
         for (String wood : WOODS) {
             assertEquals(List.of(minecraft(wood + "_fence"), minecraft(wood + "_fence_gate"),
                     bbb(wood + "_frame"), bbb(wood + "_lattice")),
@@ -71,7 +71,7 @@ final class BuildingButBetterFamiliesTest {
     void enderscapeFenceGateFamiliesAreExtendedInPlaceWithOnlyFrameAndLattice() {
         Map<String, AuditedShapeFamily> fences = AuditedShapeFamilies.families(FENCE_GATE).stream()
                 .collect(Collectors.toMap(family -> family.key().getPath(), family -> family));
-        assertEquals(16, fences.size());
+        assertEquals(18, fences.size());
         for (String wood : ENDERSCAPE_WOODS) {
             AuditedShapeFamily family = fences.get("cnm/fence_gate/enderscape_" + wood);
             assertEquals(List.of(id("enderscape:" + wood + "_fence"),

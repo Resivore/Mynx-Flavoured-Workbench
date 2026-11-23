@@ -34,7 +34,67 @@
     {
       "source": "originals/assets/block_wisteria_log_top.png",
       "sha256": "68f630d51c1c900286def61b213b343dcfa5bc166fda85d5c0ade622e87b3d0b",
-      "usage": "private build input; supplied standalone replacement for Wisteria unstripped log top"
+      "usage": "C8 source preserved for reference; C9 uses the owner-finalized Wisteria top from wisteria assets"
+    },
+    {
+      "source": "originals/assets/wisteria assets/codex generated muted-violet-willow-textures.zip",
+      "sha256": "52d86dd7a4ff2c119080f2d10b86056276dcf06b092d814ccdca966769320a9e",
+      "usage": "Owner-supplied wood family artwork"
+    },
+    {
+      "source": "originals/assets/wisteria assets/short wisteria door.png",
+      "sha256": "be12fa1f33f2d397ec21f0f7983a55bdacd97261b0cba417e2ed85228ed0d22c",
+      "usage": "Owner-supplied wood family artwork"
+    },
+    {
+      "source": "originals/assets/wisteria assets/tall wisteria door.png",
+      "sha256": "7fff959d1554e93d44ac6fb8ba8a7b40ab0fba3a83dce000d2fd2f0ccbe48c59",
+      "usage": "Owner-supplied wood family artwork"
+    },
+    {
+      "source": "originals/assets/wisteria assets/wisteria planks.png",
+      "sha256": "2743aebaf22fc1a7019a75f2fe7052d87f327d0af777e0a3a5b154ff0982c031",
+      "usage": "Owner-supplied wood family artwork"
+    },
+    {
+      "source": "originals/assets/wisteria assets/wisteria shutter.png",
+      "sha256": "17035d40bae464354757a7db3a34827f155b7acbca8b308a343bdb9530434161",
+      "usage": "Owner-supplied wood family artwork"
+    },
+    {
+      "source": "originals/assets/wisteria assets/wisteria stripped side - needs luminance recolor.png",
+      "sha256": "8920bfb542b11bf895018ab23e91502d19f65d5de7dabb096b34f324496d9d3d",
+      "usage": "Owner-supplied wood family artwork"
+    },
+    {
+      "source": "originals/assets/wisteria assets/wisteria stripped top log.png",
+      "sha256": "2a95394a4b570594950541b695cde4eeb5048f3abe11fa4728b36e36c24ff73f",
+      "usage": "Owner-supplied wood family artwork"
+    },
+    {
+      "source": "originals/assets/wisteria assets/wisteria top log.png",
+      "sha256": "4a2265ef50d30a1fc8baa368b2b16e13991eedcf90f388e3380f29cbe6a34fce",
+      "usage": "Owner-supplied wood family artwork"
+    },
+    {
+      "source": "originals/resourcepacks/Foundation v2.zip",
+      "sha256": "d5a594b47501befacc3307e4ab8ac74dbc6a446966b66c31f830c21d064d7994",
+      "usage": "Private reference for existing wood artwork"
+    },
+    {
+      "source": "projects/architectural-material-closure/artifacts/AMC C35.jar",
+      "sha256": "b1d5fd2bb5f1980ac470b8e273216396989330e801f87c7621b80bf16ca790d8",
+      "usage": "Private reference for existing wood artwork"
+    },
+    {
+      "source": "private/assets/silver-birch/birch_log_top.png",
+      "sha256": "1bb732585bfff63d251076a45ed5631cae15dd9d33123fd8086ecd2794eda857",
+      "usage": "Owner-supplied rounded Silver Birch end grain; copy the PNG unchanged."
+    },
+    {
+      "source": "private/assets/silver-birch/stripped_birch_log_top.png",
+      "sha256": "726a6ae77cfc9bcfed4e8f355bbf13ab4227c5689ad26b1750c7d831bab573cc",
+      "usage": "Owner-supplied rounded Silver Birch end grain; copy the PNG unchanged."
     }
   ],
   "references": [
@@ -277,8 +337,8 @@
   ],
   "minecraft_baseline": {
     "version": "26.2",
-    "sha256": "f26880408f8c2404630293322fe5f5984e0a66409e31374ec51d29490660c1b4",
-    "location": "Gradle fabric-loom/26.2/minecraft-merged.jar",
+    "sha256": "40896ee9f1e2bec3c934daac7e93d41e9e3d9c2f8ae0ca366d52ffbfd1afa290",
+    "location": "Mojang 26.2 client distribution, fabric-loom/26.2/minecraft-client.jar",
     "usage": "Local generated JSON baseline only; no vanilla binary or pixels tracked."
   },
   "color_reference": {
@@ -507,9 +567,9 @@
       "png_color_type": 6
     },
     {
-      "source": "originals/assets/block_wisteria_log_top.png",
+      "source": "originals/assets/wisteria assets/wisteria top log.png",
       "target": "assets/mynx_trees/textures/block/wisteria_log_top.png",
-      "sha256": "68f630d51c1c900286def61b213b343dcfa5bc166fda85d5c0ade622e87b3d0b",
+      "sha256": "4a2265ef50d30a1fc8baa368b2b16e13991eedcf90f388e3380f29cbe6a34fce",
       "dimensions": [
         16,
         16
@@ -525,6 +585,375 @@
         16
       ],
       "png_color_type": 2
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/mossy_oak_log.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "29384d2a83cf1221429e83653292a48b8360c43d6059fc38a8437e3e7cbf4c05"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/mossy_oak_log_top.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "d91629616c4a3da7016a980ebca0a670dda0dd666bebc9a479bd557678d286e3"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/silver_birch_door_bottom.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "7d51c087f5fecf6963d94e85ff660a2e983430a622bbdf614a9e378f316d43f1"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/silver_birch_door_top.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "3be0ef31be0a6fb73227d1d6de4ca235d5c4e9aef9da2fd93a6e76a99c4ea795"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/silver_birch_hanging_sign.png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "sha256": "ef64a094fcecd748490bf713e26b814c583ce75726ddbb8f54ee4f573d8be91c"
+    },
+    {
+      "source": "private/assets/silver-birch/birch_log_top.png",
+      "target": "assets/mynx_trees/textures/block/silver_birch_log_top.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "1bb732585bfff63d251076a45ed5631cae15dd9d33123fd8086ecd2794eda857"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/silver_birch_planks.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "7677d92f6b5665a3fe77c508faf08642b061ab5cd0f2bb8c9a618bf6ab9303ba"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/silver_birch_shelf.png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "sha256": "5f33275af7356d4845fd705b3f07714c2714837ccf376b9d8ae3d0b119c20b7e"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/silver_birch_sign.png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "sha256": "d8bfb87c499546c92e45e38093a90043a060afdff987a746e0d44d3532c8cd87"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/silver_birch_trapdoor.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "586b59661c8cc05293b9d0d6c80901757314de1bd42c366206f83e0f7957ad62"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/stripped_mossy_oak_log.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "3cba4cbdc81abccdd8cabc0f331582138b3042b5efd23315ee97ac73cea50b13"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/stripped_mossy_oak_log_top.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "9ab62795046dcf222c6ec8b96c187fcd8e09ee5297443da3110d951be03ee0ff"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/stripped_silver_birch_log.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "fb90f29b8235b277d3eb7f7436ce2e5d051964212c736c011d7db7ad2bb5a5be"
+    },
+    {
+      "source": "private/assets/silver-birch/stripped_birch_log_top.png",
+      "target": "assets/mynx_trees/textures/block/stripped_silver_birch_log_top.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "726a6ae77cfc9bcfed4e8f355bbf13ab4227c5689ad26b1750c7d831bab573cc"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/stripped_wisteria_log.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "0cacfa842076beeb966b0ccd5a9986b81ee0d188c6e2a183c0ad27e38b9b7df1"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/stripped_wisteria_log_top.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "2a95394a4b570594950541b695cde4eeb5048f3abe11fa4728b36e36c24ff73f"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/wisteria_door_bottom.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "282d9278c95dab3481b3e4d428c853b5a8c28fb315baa87bf1a948340f9aff5d"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/wisteria_door_top.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "561e6226e94971fd160f4da21258d04562c80be35d06374eca93b772cdf559c7"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/wisteria_hanging_sign.png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "sha256": "73ffb407c1ee6fc79f92ce58c4e3ca18c15e664282209c2a4ad5db6170230cb8"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/wisteria_planks.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "2743aebaf22fc1a7019a75f2fe7052d87f327d0af777e0a3a5b154ff0982c031"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/wisteria_shelf.png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "sha256": "a92a590afc5ebfb818798243bb0d21982ac65f672d5fb9030eec35d125142d36"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/wisteria_sign.png",
+      "dimensions": [
+        32,
+        32
+      ],
+      "sha256": "67c565c4aa87e67d7c06123cbe798e84611032e21b78677986430c00995a5e7b"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/block/wisteria_trapdoor.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "8056339e50135caa3b38861093abbb7369407960073659ca6896660a38335872"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/entity/boat/silver_birch.png",
+      "dimensions": [
+        128,
+        64
+      ],
+      "sha256": "ea507abc19e6c38291f45dfc8f0a22e703c8814ef902b0e035dafaf5042ebc4d"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/entity/boat/wisteria.png",
+      "dimensions": [
+        128,
+        64
+      ],
+      "sha256": "b496b4975c3c7ef4d88c423f49400c9b503227782c66bd39112f7091bb9d8fe7"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/entity/chest_boat/silver_birch.png",
+      "dimensions": [
+        128,
+        128
+      ],
+      "sha256": "93fc99deb7a1edf0bb0cd1800c2b6fe256190323cc47984b77d6bcee5ceb9741"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/entity/chest_boat/wisteria.png",
+      "dimensions": [
+        128,
+        128
+      ],
+      "sha256": "e29ea338e59cf437cec774825e6723e4d997a295292b0e0e0f527479b6e622a2"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/gui/hanging_signs/silver_birch.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "7b0978e1d19e3dcc040f36b9473802cb2eabde6b3e6a3c35b04a4b3bf2265382"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/gui/hanging_signs/wisteria.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "7a56ecc54ee3e268ef64084d6dae0a51536f4deb5ff37ad65040f274b147f1ca"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/gui/signs/silver_birch.png",
+      "dimensions": [
+        24,
+        26
+      ],
+      "sha256": "041d293e4fbe4fe5c2d2e7c388de2e4a208c053bed2731ca9099896062ba5021"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/gui/signs/wisteria.png",
+      "dimensions": [
+        24,
+        26
+      ],
+      "sha256": "e2aed7810f27a0deb8ff672bf4f1d498d741140352b773d1dfc67704aa5e8a92"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/silver_birch_boat.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "5a9881473a0640c2d749ae80ebb4085930b02f8361e83fd7f095f1cd66c21540"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/silver_birch_chest_boat.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "7750d58f7815f18fd8a1697159e81666b5d18c4422a8f1460714b0692d05c778"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/silver_birch_door.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "e42ce2f9c91894d6e5264c35e61d5ed4b74c8df3ef2b3195d2dee6c8237fca58"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/silver_birch_hanging_sign.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "8e4ad10299c7b5d93e9c1cd3aba88b06516f611faa203a47b21e63a779bd86d5"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/silver_birch_sign.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "6c793d5dd2da6d88c102c79bdae6772f5a783f0179c533faa7b9674d669b1251"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/wisteria_boat.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "ab4527ca630541b303ff5497c518bd0f95c813a386aea0552cd37d28d0382a18"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/wisteria_chest_boat.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "5b6b4d13fb57c6a48af43b75cdbc02a4780421317085d19799d4f908d8eacd01"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/wisteria_door.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "fcc1b4cd0cd83e07a3780af65e0b41c0350dc43242453fad11b68257a385a636"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/wisteria_hanging_sign.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "6fa41322deb5af21fa58ce3c968e41f2010a038e89129fc68de6d9e97c5a22a6"
+    },
+    {
+      "source": "tools/native_wood_resources.py (pinned inputs)",
+      "target": "assets/mynx_trees/textures/item/wisteria_sign.png",
+      "dimensions": [
+        16,
+        16
+      ],
+      "sha256": "56bca6a7ff9b52c143fd5106c83b433824d93d5375502e893de4837598a66777"
     }
   ],
   "direct_log_recipe_audit": [

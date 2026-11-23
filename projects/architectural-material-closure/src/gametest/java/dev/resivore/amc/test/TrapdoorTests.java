@@ -154,7 +154,7 @@ public final class TrapdoorTests {
                     String ingredient = recipe.getAsJsonObject("key").get(String.valueOf(c)).getAsString();
                     if (ingredient.equals("minecraft:"+ref+"_planks")) ingredient = ns+":"+wood+"_planks";
                     else if (ingredient.equals("minecraft:"+ref+"_slab")) ingredient = ns+":"+wood+(ns.equals("ribbits")?"_planks_slab":"_slab");
-                    else if (ingredient.equals("minecraft:"+ref+"_log")) ingredient = ns+":"+wood+(ns.equals("ribbits")?(key.getPath().endsWith("_bark_trapdoor")?"_planks_slab":"_planks"):"_log");
+                    else if (ingredient.equals("minecraft:"+ref+"_log")) ingredient = ns.equals("ribbits") && BuiltInRegistries.BLOCK.containsKey(Identifier.parse("mynx_trees:mossy_oak_log")) ? "mynx_trees:mossy_oak_log" : ns+":"+wood+(ns.equals("ribbits")?(key.getPath().endsWith("_bark_trapdoor")?"_planks_slab":"_planks"):"_log");
                     else if (ingredient.equals("minecraft:"+ref+"_stem")) ingredient = ns+":"+wood+"_stem";
                     else if (ingredient.equals("mcwtrpdoors:"+ref+"_glass_trapdoor")) ingredient = AMC+":"+wood+"_glass_trapdoor";
                     stacks.add(BuiltInRegistries.ITEM.getOptional(Identifier.parse(ingredient)).orElseThrow().getDefaultInstance());

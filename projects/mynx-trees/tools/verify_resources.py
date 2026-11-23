@@ -2,21 +2,39 @@
 import json, pathlib, zipfile, hashlib, re, unittest
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 OUT=ROOT/'build/generated/resources'
-MC=pathlib.Path.home()/'.gradle/caches/fabric-loom/26.2/minecraft-merged.jar'
+MC=pathlib.Path.home()/'.gradle/caches/fabric-loom/26.2/minecraft-client.jar'
 class Resources(unittest.TestCase):
     def read(self,p):return json.loads((OUT/p).read_text())
     def test_exact_private_pixels(self):
         entries=json.loads((ROOT/'build-inputs.json').read_text())['packaged_assets']
         self.assertEqual({x['target'] for x in entries},{p.relative_to(OUT).as_posix() for p in OUT.rglob('*.png')})
         for e in entries:self.assertEqual(e['sha256'],hashlib.sha256((OUT/e['target']).read_bytes()).hexdigest(),e['source'])
+    def test_silver_birch_end_grain_and_six_sided_wood(self):
+        for prefix in ("", "stripped_"):
+            log = prefix + "silver_birch_log"
+            wood = prefix + "silver_birch_wood"
+            side = "mynx_trees:block/" + log
+            for block, end in ((log, side + "_top"), (wood, side)):
+                state = self.read(f"assets/mynx_trees/blockstates/{block}.json")
+                self.assertEqual({"axis=x","axis=y","axis=z"},set(state["variants"]))
+                for variant in state["variants"].values():
+                    path = variant["model"].split(":")[1]
+                    model = self.read(f"assets/mynx_trees/models/{path}.json")
+                    self.assertEqual({"side": side, "end": end}, model["textures"])
+                    self.assertIn(model["parent"], ("minecraft:block/cube_column", "minecraft:block/cube_column_horizontal"))
+        self.assertEqual("mynx_trees:block/silver_birch_log_top",
+                         self.read("assets/mynx_trees/models/block/silver_birch_log_base.json")["textures"]["end"])
+
     def test_no_vanilla_assets_or_foreign_runtime(self):
         self.assertFalse((OUT/'assets/minecraft').exists())
         for p in (OUT/'data/minecraft').rglob('*.json'):self.assertIn('/tags/',p.as_posix());self.assertIs(self.read(p.relative_to(OUT))['replace'],False)
         meta=json.loads((ROOT/'src/main/resources/fabric.mod.json').read_text());self.assertNotIn('regions_unexplored',meta['depends']);self.assertNotIn('nemos-blooming-blossom',meta['depends'])
         for p in (ROOT/'src/main/java').rglob('*.java'):self.assertNotIn('net.minecraft.client',p.read_text())
-    def test_nine_identities_and_resource_references(self):
+    def test_native_identities_and_resource_references(self):
         names=[t+'_'+part for t in ['silver_birch','wisteria'] for part in ['log','wood','leaves','sapling']]+['sweet_violets']
-        self.assertEqual(set(names),{p.stem for p in (OUT/'assets/mynx_trees/items').glob('*.json')})
+        from native_wood_resources import NATIVE, TIMBER
+        expected=set(names) | {n.replace('birch',wood) for wood,forms in [('silver_birch',NATIVE),('wisteria',NATIVE),('mossy_oak',TIMBER)] for n in forms if 'wall_' not in n}
+        self.assertEqual(expected,{p.stem for p in (OUT/'assets/mynx_trees/items').glob('*.json')})
         with zipfile.ZipFile(MC) as mc:
             def exists(ref,kind):
                 ns,path=ref.split(':',1);p=f'assets/{ns}/{kind}/{path}.json'
@@ -33,14 +51,14 @@ class Resources(unittest.TestCase):
                     for v in obj:walk(v)
             for p in (OUT/'assets/mynx_trees').rglob('*.json'):
                 if '/lang/' not in p.as_posix():walk(json.loads(p.read_text()))
-    def test_only_eight_unambiguous_direct_recipes(self):
-        self.assertEqual(8,len(list((OUT/'data/mynx_trees/recipe').glob('*.json'))))
+    def test_native_recipes_and_unlocks(self):
+        self.assertEqual(46,len(list((OUT/'data/mynx_trees/recipe').glob('*.json'))))
         for tree,wood in [('silver_birch','birch'),('wisteria','pale_oak')]:
             for part in ['log','wood']:
-                r=self.read(f'data/mynx_trees/recipe/{tree}_{part}_planks.json');self.assertEqual(['mynx_trees:'+tree+'_'+part],r['ingredients']);self.assertEqual({'id':'minecraft:'+wood+'_planks','count':4},r['result'])
+                r=self.read(f'data/mynx_trees/recipe/{tree}_{part}_planks.json');self.assertEqual(['mynx_trees:'+tree+'_'+part],r['ingredients']);self.assertEqual({'id':'mynx_trees:'+tree+'_planks','count':4},r['result'])
             r=self.read(f'data/mynx_trees/recipe/{tree}_wood.json');self.assertEqual(['##','##'],r['pattern']);self.assertEqual({'#':'mynx_trees:'+tree+'_log'},r['key']);self.assertEqual(3,r['result']['count'])
             r=self.read(f'data/mynx_trees/recipe/{tree}_sapling.json');self.assertEqual(['mynx_trees:'+tree+'_leaves'],r['ingredients']);self.assertEqual({'id':'mynx_trees:'+tree+'_sapling','count':1},r['result'])
-        self.assertEqual(8,len(list((OUT/'data/mynx_trees/advancement/recipes').glob('*.json'))))
+        self.assertEqual({p.stem for p in (OUT/'data/mynx_trees/recipe').glob('*.json')},{p.stem for p in (OUT/'data/mynx_trees/advancement/recipes').rglob('*.json')})
     def test_leaf_loot_has_only_tool_gated_leaf(self):
         with zipfile.ZipFile(MC) as mc:
             gate=json.loads(mc.read('data/minecraft/loot_table/blocks/birch_leaves.json'))['pools'][0]['entries'][0]['children'][0]['conditions']
@@ -83,22 +101,22 @@ class Resources(unittest.TestCase):
     def test_violet_states_loot_and_species_assets(self):
         states=self.read('assets/mynx_trees/blockstates/sweet_violets.json')['multipart'];self.assertEqual(16,len(states))
         loot=self.read('data/mynx_trees/loot_table/blocks/sweet_violets.json');functions=loot['pools'][0]['entries'][0]['functions'];self.assertEqual([1,2,3,4],[f['count'] for f in functions if 'count' in f]);self.assertNotIn('minecraft:pink_petals',json.dumps(loot))
-        log=self.read('assets/mynx_trees/models/block/silver_birch_log.json');self.assertEqual('minecraft:block/birch_log_top',log['textures']['end'])
+        log=self.read('assets/mynx_trees/models/block/silver_birch_log.json');self.assertEqual('mynx_trees:block/silver_birch_log_top',log['textures']['end'])
         log=self.read('assets/mynx_trees/models/block/wisteria_log.json');self.assertEqual('mynx_trees:block/wisteria_log_top',log['textures']['end'])
         inv=self.read('assets/mynx_trees/items/silver_birch_leaves.json');self.assertEqual('mynx_trees:block/silver_birch_leaves',inv['model']['model']);self.assertEqual([{'type':'minecraft:constant','value':-8034015}],inv['model']['tints']);self.assertFalse((OUT/'assets/mynx_trees/textures/item/silver_birch_leaves.png').exists());self.assertEqual('mynx_trees:block/silver_birch_leaves',self.read('assets/mynx_trees/models/item/silver_birch_leaves.json')['parent'])
     def test_bounded_deterministic_decoration_and_native_interactions(self):
         source=(ROOT/'src/main/java/dev/resivore/mynxtrees/GroveFlowers.java').read_text();self.assertIn('context.random()',source);self.assertIn('state.canSurvive',source);self.assertIn('!context.isAir(pos)',source);self.assertNotIn('new Random',source)
         common=(ROOT/'src/main/java/dev/resivore/mynxtrees/MynxTrees.java').read_text();self.assertIn('extends SaplingBlock',common);self.assertIn('extends FlowerBedBlock',common)
-        self.assertEqual(4,common.count('StrippableBlockRegistry.register('));self.assertIn('CompostableRegistry.INSTANCE.add(SWEET_VIOLETS, 0.3F)',common)
+        self.assertIn('NativeWoods.register()',common);self.assertIn('CompostableRegistry.INSTANCE.add(SWEET_VIOLETS, 0.3F)',common)
         self.assertIn('BiomeSelectors.includeByKey(Biomes.OLD_GROWTH_BIRCH_FOREST)',common);self.assertIn('BiomeSelectors.includeByKey(Biomes.CHERRY_GROVE)',common)
         self.assertIn('vanillaPlaced("flower_cherry")',common)
     def test_standalone_wisteria_top_and_no_flat_leaf_icon(self):
         manifest=json.loads((ROOT/'build-inputs.json').read_text())
         entries=manifest['packaged_assets'];top=[e for e in entries if e['target']=='assets/mynx_trees/textures/block/wisteria_log_top.png']
-        self.assertEqual(1,len(top));self.assertEqual('originals/assets/block_wisteria_log_top.png',top[0]['source']);self.assertEqual([16,16],top[0]['dimensions']);self.assertEqual('68f630d51c1c900286def61b213b343dcfa5bc166fda85d5c0ade622e87b3d0b',top[0]['sha256'])
+        self.assertEqual(1,len(top));self.assertEqual('originals/assets/wisteria assets/wisteria top log.png',top[0]['source']);self.assertEqual([16,16],top[0]['dimensions']);self.assertEqual('4a2265ef50d30a1fc8baa368b2b16e13991eedcf90f388e3380f29cbe6a34fce',top[0]['sha256'])
         self.assertFalse(any('item_silver_birch_leaves.png' in e['source'] or '/cherry_log_top.png' in e['source'] for e in entries))
     def test_optional_iris_hook_is_client_only_and_two_species_only(self):
-        meta=json.loads((ROOT/'src/main/resources/fabric.mod.json').read_text());self.assertNotIn('iris',meta['depends']);self.assertEqual([{'config':'mynx_trees.client.mixins.json','environment':'client'}],meta['mixins'])
+        meta=json.loads((ROOT/'src/main/resources/fabric.mod.json').read_text());self.assertNotIn('iris',meta['depends']);self.assertEqual([{'config':'mynx_trees.client.mixins.json','environment':'client'}],[config for config in meta['mixins'] if isinstance(config,dict)])
         cfg=json.loads((ROOT/'src/main/resources/mynx_trees.client.mixins.json').read_text());self.assertNotIn('mixins',cfg);self.assertEqual(['IrisLeafMaterialMixin'],cfg['client'])
         source=(ROOT/'src/client/java/dev/resivore/mynxtrees/mixin/IrisLeafMaterialMixin.java').read_text();self.assertEqual(2,source.count('LeafShaderAliases.inheritUnmapped('));self.assertEqual(2,source.count('.withPropertiesOf(state)'));self.assertIn('@At("RETURN")',source);self.assertIn('Blocks.BIRCH_LEAVES',source);self.assertNotRegex(source,r'\b1\d{4}\b');self.assertIn('@Pseudo',source)
         for state in ['Blocks.SUNFLOWER','Blocks.LILAC','Blocks.ROSE_BUSH','Blocks.PEONY']:self.assertNotIn(state,source)
@@ -126,7 +144,7 @@ class Resources(unittest.TestCase):
         ordinary=self.read('assets/mynx_trees/models/block/silver_birch_log.json')
         base=self.read('assets/mynx_trees/models/block/silver_birch_log_base.json')
         expected=json.loads(json.dumps(ordinary));expected['textures']['side']='mynx_trees:block/silver_birch_log_base'
-        self.assertEqual(expected,base);self.assertEqual('minecraft:block/birch_log_top',base['textures']['end'])
+        self.assertEqual(expected,base);self.assertEqual('mynx_trees:block/silver_birch_log_top',base['textures']['end'])
         self.assertEqual('minecraft:block/cube_column',base['parent'])
         item=self.read('assets/mynx_trees/items/silver_birch_log.json')
         self.assertEqual({'model':{'type':'minecraft:model','model':'mynx_trees:item/silver_birch_log'}},item)

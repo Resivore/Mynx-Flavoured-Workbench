@@ -1,5 +1,11 @@
 # IBF verification checklist
 
+## Canary 36 coordinated selectors
+
+Use IBF C36, Mynx Trees C9, AMC C36, BGE C111, Dramatic Doors C15 and Ribbits C27. With Enderscape and both optional Macaw door providers loaded, there are 304 selectors and 2,449 distinct inventory members. Silver Birch and Wisteria each contribute ten selectors and 97 members. Cycle the two door heights separately, then trapdoors, three window finishes, fences, details, button/accessories and sign/hanging sign/shelf. Use named stacks, check forward and reverse order, and compare GUI scales. Confirm the matching DD short door sits last in the accessory selector. The Mynx short/tall Wisteria items use the material key `mynx_wisteria` in their DD identifiers.
+
+Craft the canonical items, test alternate acquisition and drops with CNM enabled, and repeat after a reload. The corresponding native two-high and tall doors have their own acquisition. Repeat without AMC and without Enderscape. With BGE, check its separate 18-position log/wood and plank/beam groups and axe-strip each raw geometry. The combined Gradle harness accepts `-Ptrees_reference_jar`, `-Pamc_reference_jar`, `-Pdramatic_doors_reference_jar`, `-Punified_bge_jar` and `-Pribbits_reference_jar` as paths to the exact artifacts.
+
 ## Canary 35 wood matrix
 
 Use the current manifest hash, AMC C35, BGE C110, Ribbits C27, BBB dev.7, Dramatic Doors C14 and Macaw's Windows 2.4.2. For each of Bamboo, Veiled, Celestial, Murublight and Mossy Oak, craft the canonical Window for timber, stripped timber and planks. Cycle a named stack through Window, Window 2, Four Window and Pane Window in both directions. Compare the held overlay, inventory tooltip, actual result, count and components at normal and narrow GUI scales. The 15 selectors are independent. Craft a Mossy Oak Sign, cycle through Hanging Sign and Shelf, and check the lantern's separate recipe. Check again after a data reload.

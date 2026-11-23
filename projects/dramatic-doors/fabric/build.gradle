@@ -115,16 +115,27 @@ def mcArtJar = new File(gradle.gradleUserHomeDir, 'caches/fabric-loom/26.2/minec
 def macawArtJar = rootProject.file('../../originals/mods/mcw-doors-1.1.5-mc26.2fabric.jar')
 def amcArtJar = rootProject.file('../architectural-material-closure/artifacts/AMC C30.jar')
 def ddArtJar = rootProject.file('artifacts/DD C11.jar')
+def treesJar = rootProject.file(providers.gradleProperty('treesJar').getOrElse('../mynx-trees/artifacts/mynx-trees-private-0.1.0+26.2-canary9.jar'))
+def newAmcJar = rootProject.file(providers.gradleProperty('newAmcJar').getOrElse('../architectural-material-closure/artifacts/AMC C36.jar'))
+def treeDoorArt = rootProject.file('tools/tree_door_art.py')
+def treeAssets = rootProject.file('../../originals/assets/wisteria assets')
 def amcTool = rootProject.file('tools/amc_macaw.py')
 def mapping = file('src/main/resources/dramaticdoors/amc_macaw_doors.tsv')
 def amcArtwork = tasks.register('generateAmcMacawDoors', Exec) {
     def output = layout.buildDirectory.dir('generated/amcMacawDoors')
-    inputs.files(amcTool, mapping, mcArtJar, macawArtJar, amcArtJar, ddArtJar, veiledSourceJar, mossyOakSourceJar)
+    inputs.files(treesJar, newAmcJar, amcTool, mapping, mcArtJar, macawArtJar, amcArtJar, ddArtJar, veiledSourceJar, mossyOakSourceJar)
     outputs.dir(output)
     commandLine providers.gradleProperty('doorArtPython').getOrElse('python'), '-B', amcTool, mapping,
-            ddArtJar, amcArtJar, macawArtJar, mcArtJar, veiledSourceJar, mossyOakSourceJar, output.get().asFile
+            ddArtJar, amcArtJar, macawArtJar, mcArtJar, veiledSourceJar, mossyOakSourceJar, treesJar, newAmcJar, output.get().asFile
+}
+def treeArtwork = tasks.register('generateTreeDoorArtwork', Exec) {
+    def output = layout.buildDirectory.dir('generated/treeDoorArtwork')
+    inputs.files(treeDoorArt, ddArtJar, treesJar, treeAssets)
+    outputs.dir(output)
+    commandLine providers.gradleProperty('doorArtPython').getOrElse('python'), '-B', treeDoorArt, ddArtJar, treesJar, treeAssets, output.get().asFile
 }
 processResources {
+    from treeArtwork
     from amcArtwork
     from doorArtwork
     from project(":common").sourceSets.main.resources

@@ -21,6 +21,7 @@
     "fabric-api": ">=0.157.0"
   },
   "mixins": [
+    "mynx_trees.worldgen.mixins.json",
     {
       "config": "mynx_trees.client.mixins.json",
       "environment": "client"

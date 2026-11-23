@@ -23,9 +23,29 @@ public final class MossyOakBlocks {
 
     private static boolean bbbReady;
     private static boolean ribbitsReady;
+    private static boolean treesReady;
+
+    public static void afterTrees() {
+        if (!BuiltInRegistries.BLOCK.containsKey(Identifier.parse("mynx_trees:wisteria_planks"))) return;
+        treesReady = true;
+        if (bbbReady) registerTrees();
+        DoorIntegration.woodReady("mynx_trees");
+        TrapdoorIntegration.woodReady("mynx_trees");
+    }
+
+    private static void registerTrees() {
+        var container = FabricLoader.getInstance().getModContainer(NS).orElseThrow();
+        if (!ResourceLoader.registerBuiltinPack(Identifier.fromNamespaceAndPath(NS,"mynx_trees"),container,PackActivationType.ALWAYS_ENABLED))
+            throw new IllegalStateException("Missing Mynx Trees pack");
+        for (String wood : List.of("silver_birch", "wisteria")) {
+            WoodAccessories.register(wood);
+            details(wood);
+        }
+    }
 
     public static void afterBbb() {
         bbbReady = true;
+        if (treesReady) registerTrees();
         if (ribbitsReady) register();
     }
 
@@ -45,17 +65,28 @@ public final class MossyOakBlocks {
         var container = FabricLoader.getInstance().getModContainer(NS).orElseThrow();
         if (!ResourceLoader.registerBuiltinPack(Identifier.fromNamespaceAndPath(NS, "ribbits"),
                 container, PackActivationType.ALWAYS_ENABLED)) throw new IllegalStateException("Missing Ribbits pack");
+        // Exactly one recipe per ID, independent of pack sorting or initializer order.
+        boolean nativeTimber = FabricLoader.getInstance().getModContainer("mynx_trees")
+                .flatMap(mod -> mod.findPath("assets/mynx_trees/blockstates/mossy_oak_log.json")).isPresent();
+        String recipes = nativeTimber ? "mossy_oak_timber" : "mossy_oak_legacy_recipes";
+        if (!ResourceLoader.registerBuiltinPack(Identifier.fromNamespaceAndPath(NS, recipes), container, PackActivationType.ALWAYS_ENABLED))
+            throw new IllegalStateException("Missing recipe pack " + recipes);
         WoodAccessories.register("mossy_oak");
         MossyOakFixtures.register();
-        var items = List.of(register("lantern", WoodenLanternBlock::new), register("frame", FrameBlock::new), register("lattice", LatticeBlock::new),
-                register("trim", FacingConnectingBlock::new), register("balustrade", BalustradeBlock::new),
-                register("support", SupportBlock::new), register("pallet", PalletBlock::new));
+        WoodBoats.register("mossy_oak");
+        details("mossy_oak");
+    }
+
+    private static void details(String wood) {
+        var items = List.of(register(wood, "lantern", WoodenLanternBlock::new), register(wood, "frame", FrameBlock::new), register(wood, "lattice", LatticeBlock::new),
+                register(wood, "trim", FacingConnectingBlock::new), register(wood, "balustrade", BalustradeBlock::new),
+                register(wood, "support", SupportBlock::new), register(wood, "pallet", PalletBlock::new));
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.BUILDING_BLOCKS).register(out -> items.forEach(out::accept));
     }
 
-    private static Item register(String form, Function<BlockBehaviour.Properties, Block> factory) {
+    private static Item register(String wood, String form, Function<BlockBehaviour.Properties, Block> factory) {
         var oak = BuiltInRegistries.BLOCK.getOptional(Identifier.fromNamespaceAndPath("bbb", "oak_" + form)).orElseThrow();
-        var id = Identifier.fromNamespaceAndPath(NS, "mossy_oak_" + form);
+        var id = Identifier.fromNamespaceAndPath(NS, wood + "_" + form);
         var key = ResourceKey.create(Registries.BLOCK, id);
         var block = Registry.register(BuiltInRegistries.BLOCK, key, factory.apply(BlockBehaviour.Properties.ofFullCopy(oak).setId(key)));
         var item = ResourceKey.create(Registries.ITEM, id);

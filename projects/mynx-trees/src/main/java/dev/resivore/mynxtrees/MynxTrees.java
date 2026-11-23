@@ -35,7 +35,7 @@ public final class MynxTrees implements ModInitializer {
     public static ResourceKey<ConfiguredFeature<?, ?>> configured(String path) { return ResourceKey.create(Registries.CONFIGURED_FEATURE, id(path)); }
     private static ResourceKey<PlacedFeature> placed(String path) { return ResourceKey.create(Registries.PLACED_FEATURE, id(path)); }
     private static ResourceKey<PlacedFeature> vanillaPlaced(String path) { return ResourceKey.create(Registries.PLACED_FEATURE, Identifier.withDefaultNamespace(path)); }
-    private static Block block(String name, Function<BlockBehaviour.Properties, Block> factory, Block base) {
+    static Block block(String name, Function<BlockBehaviour.Properties, Block> factory, Block base) {
         var key = ResourceKey.create(Registries.BLOCK, id(name));
         var block = Registry.register(BuiltInRegistries.BLOCK, key, factory.apply(BlockBehaviour.Properties.ofFullCopy(base).setId(key)));
         Registry.register(BuiltInRegistries.ITEM, id(name), new BlockItem(block, new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id(name))).useBlockDescriptionPrefix()));
@@ -44,11 +44,7 @@ public final class MynxTrees implements ModInitializer {
     @Override public void onInitialize() {
         Registry.register(BuiltInRegistries.FEATURE, id("material_tree"), new MaterialTreeFeature());
         GroveFlowers.register();
-        StrippableBlockRegistry.register(SILVER_LOG, Blocks.STRIPPED_BIRCH_LOG);
-        StrippableBlockRegistry.register(SILVER_WOOD, Blocks.STRIPPED_BIRCH_WOOD);
-        StrippableBlockRegistry.register(WISTERIA_LOG, Blocks.STRIPPED_PALE_OAK_LOG);
-        StrippableBlockRegistry.register(WISTERIA_WOOD, Blocks.STRIPPED_PALE_OAK_WOOD);
-        for (Block b : List.of(SILVER_LOG, SILVER_WOOD, WISTERIA_LOG, WISTERIA_WOOD)) FlammableBlockRegistry.getDefaultInstance().add(b, 5, 5);
+        NativeWoods.register();
         for (Block b : List.of(SILVER_LEAVES, WISTERIA_LEAVES)) {
             FlammableBlockRegistry.getDefaultInstance().add(b, 30, 60);
             CompostableRegistry.INSTANCE.add(b, 0.3F);

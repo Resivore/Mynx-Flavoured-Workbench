@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": "AMC Mossy Oak doors",
+    "min_format": 88,
+    "max_format": [
+      107,
+      1
+    ]
+  }
+}

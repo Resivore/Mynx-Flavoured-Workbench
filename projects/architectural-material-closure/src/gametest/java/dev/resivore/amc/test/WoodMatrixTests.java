@@ -73,6 +73,11 @@ public final class WoodMatrixTests {
 
     @GameTest public void nativeSignPlacements(GameTestHelper h) {
         if (!present("mossy_oak")) { h.succeed(); return; }
+        signPlacements(h, "architectural_material_closure:mossy_oak_");
+        h.succeed();
+    }
+
+    static void signPlacements(GameTestHelper h, String prefix) {
         var player = h.makeMockPlayer(GameType.SURVIVAL);
         for (String form : List.of("sign", "hanging_sign")) {
             for (Direction face : List.of(form.equals("sign") ? Direction.UP : Direction.DOWN, Direction.NORTH)) {
@@ -80,29 +85,33 @@ public final class WoodMatrixTests {
                 h.setBlock(support, Blocks.STONE);
                 player.setYRot(0);
                 player.setXRot(face == Direction.UP ? 80 : face == Direction.DOWN ? -80 : 0);
-                var item = BuiltInRegistries.ITEM.getOptional(id("mossy_oak_" + form)).orElseThrow();
+                var item = BuiltInRegistries.ITEM.getOptional(Identifier.parse(prefix + form)).orElseThrow();
                 var stack = new ItemStack(item, 2);
                 player.setItemInHand(InteractionHand.MAIN_HAND, stack);
                 h.placeAt(player, stack, support, face);
                 var block = h.getBlockState(POS).getBlock();
                 String placed = (face == Direction.NORTH ? "wall_" : "") + form;
-                h.assertTrue(BuiltInRegistries.BLOCK.getKey(block).equals(id("mossy_oak_" + placed))
+                h.assertTrue(BuiltInRegistries.BLOCK.getKey(block).equals(Identifier.parse(prefix + placed))
                         && stack.getCount() == 1, "Sign placement " + placed + " got " + block);
                 h.setBlock(POS, Blocks.AIR);
                 h.setBlock(support, Blocks.AIR);
             }
         }
-        h.succeed();
     }
 
     @GameTest public void mossyFixtures(GameTestHelper h) {
         if (!present("mossy_oak")) { h.succeed(); return; }
+        fixtures(h, "architectural_material_closure:mossy_oak_", "architectural_material_closure:mossy_oak_");
+        h.succeed();
+    }
+
+    static void fixtures(GameTestHelper h, String prefix, String lantern) {
         var level = h.getLevel();
         var pos = h.absolutePos(POS);
         var player = h.makeMockPlayer(GameType.SURVIVAL);
         var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.NORTH, pos, false);
         for (String form : List.of("sign", "wall_sign", "hanging_sign", "wall_hanging_sign", "shelf", "lantern")) {
-            var own = BuiltInRegistries.BLOCK.getOptional(id("mossy_oak_" + form)).orElseThrow();
+            var own = BuiltInRegistries.BLOCK.getOptional(Identifier.parse((form.equals("lantern") ? lantern : prefix) + form)).orElseThrow();
             var ref = BuiltInRegistries.BLOCK.getOptional(Identifier.parse((form.equals("lantern") ? "bbb" : "minecraft") + ":oak_" + form)).orElseThrow();
             h.assertTrue(own.getClass() == ref.getClass() && own.asItem().getClass() == ref.asItem().getClass()
                     && own.asItem().getDefaultMaxStackSize() == ref.asItem().getDefaultMaxStackSize(), "Native fixture " + form);
@@ -144,7 +153,6 @@ public final class WoodMatrixTests {
             h.assertTrue(drops.stream().anyMatch(s -> s.is(own.asItem())), "Drop " + form);
             h.setBlock(POS, Blocks.AIR);
         }
-        h.succeed();
     }
 }
 

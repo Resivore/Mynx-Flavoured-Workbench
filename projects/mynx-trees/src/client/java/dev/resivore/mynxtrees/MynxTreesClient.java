@@ -22,6 +22,7 @@ public final class MynxTreesClient implements ClientModInitializer {
     }
     @Override public void onInitializeClient() {
         SilverBirchBaseModels.register();
+        WoodBoatModels.register();
         BlockColorRegistry.register(List.of(new BlockTintSource() {
             @Override public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) { return golden(pos.getX(),pos.getZ()); }
             @Override public int color(BlockState state) { return golden(0,0); }

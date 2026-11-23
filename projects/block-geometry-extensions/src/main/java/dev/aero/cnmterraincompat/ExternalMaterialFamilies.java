@@ -33,6 +33,7 @@ import java.util.function.Supplier;
 public final class ExternalMaterialFamilies {
     private static final Map<Identifier, Pending> PENDING = new LinkedHashMap<>();
     private static final Map<Identifier, Binding> BY_SOURCE = new LinkedHashMap<>();
+    private static final Set<Identifier> STRIPPING_REGISTERED = new LinkedHashSet<>();
     private static final Map<Block, StandardFuelTrait> STANDARD_FUEL = new IdentityHashMap<>();
 
     private ExternalMaterialFamilies() {}
@@ -113,6 +114,18 @@ public final class ExternalMaterialFamilies {
             pending.spec().materialStateBridge().validateDerived(pending.spec().id(), binding.roles());
             BY_SOURCE.put(pending.spec().id(), binding);
             copyFireToAll(binding);
+        }
+        for (String tree : List.of("silver_birch", "wisteria", "mossy_oak")) {
+            for (String form : List.of("_log", "_wood")) {
+                Binding raw = BY_SOURCE.get(Identifier.parse("mynx_trees:" + tree + form));
+                Binding stripped = BY_SOURCE.get(Identifier.parse("mynx_trees:stripped_" + tree + form));
+                if (raw == null || stripped == null || !STRIPPING_REGISTERED.add(raw.spec().id())) continue;
+                var roles = stripped.roles();
+                raw.roles().forEach((role, block) -> {
+                    if (!role.equals("block"))
+                        StrippableBlockRegistry.registerCopyState(block, roles.get(role));
+                });
+            }
         }
     }
 

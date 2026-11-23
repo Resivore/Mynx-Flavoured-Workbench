@@ -185,6 +185,14 @@ public final class AuditedShapeRuntime {
         for (AuditedShapeFamily definition : definitions) {
             if (definition.requiresEnderscape() && !enderscapeLoaded) continue;
             List<Identifier> available = definition.availableMembers(amcLoaded);
+            if (definition.key().getPath().contains("/mynx_trees_")) {
+                if (!BuiltInRegistries.ITEM.containsKey(definition.canonicalParent())) continue;
+                // Each provider owns a complete ordered batch. Older providers may supply none.
+                var candidates = available;
+                available = candidates.stream().filter(id -> candidates.stream()
+                        .anyMatch(peer -> peer.getNamespace().equals(id.getNamespace()) && BuiltInRegistries.ITEM.containsKey(peer))).toList();
+                if (available.size() < 2) continue;
+            }
             if (definition.key().getPath().endsWith("/ribbits_mossy_oak_planks")) {
                 // Older AMC releases supply neither the detail parent nor the two fence extensions.
                 if (!BuiltInRegistries.ITEM.containsKey(definition.canonicalParent())) continue;

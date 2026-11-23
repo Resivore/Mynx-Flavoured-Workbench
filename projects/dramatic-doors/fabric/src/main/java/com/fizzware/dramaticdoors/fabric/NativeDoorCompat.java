@@ -24,6 +24,10 @@ final class NativeDoorCompat {
             watch("enderscape:murublight_door", DDNames.SHORT_MURUSHROOM, DDNames.TALL_MURUSHROOM);
             watch("enderscape:veiled_door", DDNames.SHORT_VEILED, DDNames.TALL_VEILED);
         }
+        if (FabricUtils.INSTANCE.isModLoaded("mynx_trees")) {
+            watch("mynx_trees:silver_birch_door", DDNames.SHORT_SILVER_BIRCH, DDNames.TALL_SILVER_BIRCH);
+            watch("mynx_trees:wisteria_door", DDNames.SHORT_MYNX_WISTERIA, DDNames.TALL_MYNX_WISTERIA);
+        }
         if (FabricUtils.INSTANCE.isModLoaded("ribbits")) {
             watch("ribbits:mossy_oak_door", DDNames.SHORT_MOSSY_OAK, DDNames.TALL_MOSSY_OAK);
         }
@@ -50,7 +54,7 @@ final class NativeDoorCompat {
         registerDoor(shortName, source, false, id.getNamespace().equals("ribbits"));
         registerDoor(tallName, source, true, id.getNamespace().equals("ribbits"));
         DDCompatRecipe.createNativeWoodRecipes(shortName, tallName, id);
-        if (shortName.equals(DDNames.SHORT_VEILED) || shortName.equals(DDNames.SHORT_MOSSY_OAK)) {
+        if (id.getNamespace().equals("mynx_trees") || shortName.equals(DDNames.SHORT_VEILED) || shortName.equals(DDNames.SHORT_MOSSY_OAK)) {
             Identifier pack = Identifier.fromNamespaceAndPath("dramaticdoors", id.getPath());
             if (!ResourceLoader.registerBuiltinPack(pack, FabricLoader.getInstance().getModContainer("dramaticdoors").orElseThrow(),
                     Component.literal("Dramatic Doors / " + id), PackActivationType.ALWAYS_ENABLED)) {

@@ -24,7 +24,7 @@ import java.util.List;
 final class AmcDoorChecks {
     static List<Identifier> doors() {
         var ids = new ArrayList<Identifier>();
-        for (String wood : List.of("veiled", "celestial", "murublight", "mossy_oak")) {
+        for (String wood : List.of("veiled", "celestial", "murublight", "mossy_oak", "silver_birch", "wisteria")) {
             String glass = wood.equals("celestial") || wood.equals("murublight") ? "stem_glass" : "bark_glass";
             for (String design : List.of("bamboo", glass, "barn", "barn_glass", "beach", "classic", "cottage",
                     "four_panel", "glass", "japanese", "japanese2", "modern", "mystic", "nether", "paper", "stable",
@@ -45,7 +45,9 @@ final class AmcDoorChecks {
             String path = id.getPath().substring("tall_macaw_".length());
             var key = Identifier.parse("architectural_material_closure:" + path);
             boolean expected = loader.isModLoaded("architectural_material_closure") && loader.isModLoaded("mcwdoors")
-                    && loader.isModLoaded(path.startsWith("mossy_oak_") ? "ribbits" : "enderscape");
+                    && (path.startsWith("silver_birch_") || path.startsWith("wisteria_")
+                        ? BuiltInRegistries.ITEM.containsKey(Identifier.parse("mynx_trees:wisteria_door"))
+                        : loader.isModLoaded(path.startsWith("mossy_oak_") ? "ribbits" : "enderscape"));
             var source = BuiltInRegistries.BLOCK.getOptional(key);
             var block = BuiltInRegistries.BLOCK.getOptional(id);
             var item = BuiltInRegistries.ITEM.getOptional(id);
@@ -92,6 +94,6 @@ final class AmcDoorChecks {
             test.assertTrue(shaped.matches(grid, level) && out.is(item.orElseThrow()) && out.getCount() == 2
                     && unlock.value().rewards().recipes().equals(List.of(recipeKey)), "Exact AMC recipe and reward " + id);
         }
-        com.fizzware.dramaticdoors.DramaticDoors.LOGGER.info("Verified {} AMC tall doors across 88 source IDs", count);
+        com.fizzware.dramaticdoors.DramaticDoors.LOGGER.info("Verified {} AMC tall doors across 132 source IDs", count);
     }
 }

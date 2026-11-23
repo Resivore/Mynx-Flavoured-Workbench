@@ -46,7 +46,11 @@ final class AmcMacawDoors {
             reader.readLine();
             for (String line; (line = reader.readLine()) != null;) {
                 var fields = line.split("\t");
-                if (!loader.isModLoaded(fields[0].equals("mossy_oak") ? "ribbits" : "enderscape")) continue;
+                if (!loader.isModLoaded(switch (fields[0]) {
+                    case "mossy_oak" -> "ribbits";
+                    case "silver_birch", "wisteria" -> "mynx_trees";
+                    default -> "enderscape";
+                })) continue;
                 var entry = new Entry(fields[0], Identifier.parse(fields[1]), Identifier.parse(fields[2]), fields[4]);
                 if (pending.put(entry.source(), entry) != null) throw new IllegalStateException(line);
             }

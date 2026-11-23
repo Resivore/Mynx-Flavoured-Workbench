@@ -90,7 +90,8 @@ $definitionIds = if (Test-Path -LiteralPath $definitionRoot) {
 $packRoot = Join-Path $projectRoot 'common/src/main/resources/resourcepacks'
 $packedDefinitions = @{}
 $amcRoot = Join-Path $projectRoot 'fabric/build/generated/amcMacawDoors/resourcepacks'
-foreach ($pack in Get-ChildItem -Directory -LiteralPath $packRoot,$amcRoot) {
+$treeRoot = Join-Path $projectRoot 'fabric/build/generated/treeDoorArtwork/resourcepacks'
+foreach ($pack in Get-ChildItem -Directory -LiteralPath $packRoot,$amcRoot,$treeRoot) {
     $assets = Join-Path $pack.FullName 'assets/dramaticdoors'
     $locale = Join-Path $assets 'lang/en_us.json'
     if (Test-Path -LiteralPath $locale) {
@@ -132,7 +133,7 @@ foreach ($id in $ids) {
     }
     if ($model.textures.layer0 -match '^dramaticdoors:item/(.+)$') {
         $texturePath = Join-Path $textureRoot "item/$($Matches[1]).png"
-        if ($id -in $amcIds) {
+        if ($id -in $amcIds -or ($packedDefinitions.ContainsKey($id) -and $packedDefinitions[$id].StartsWith($treeRoot))) {
             $texturePath = Join-Path $packedDefinitions[$id] "textures/item/$($Matches[1]).png"
         } elseif ($packedDefinitions.ContainsKey($id)) {
             $relative = $packedDefinitions[$id].Substring($packRoot.Length + 1)

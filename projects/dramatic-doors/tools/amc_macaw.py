@@ -152,14 +152,16 @@ def western_icon(src):
 
 class Material:
     def __init__(self, jars, wood, root):
-        self.dd, self.amc, self.macaw, self.mc, end, rib = jars
+        self.dd, self.amc, self.macaw, self.mc, end, rib, trees, new_amc = jars
         self.wood = wood
         self.ns = "ribbits" if wood == "mossy_oak" else "enderscape"
+        if wood in ("silver_birch","wisteria"):
+            self.amc, self.ns, end = new_amc, "mynx_trees", trees
         self.prefix = f"resourcepacks/{self.ns}_doors/"
         self.root = root / "resourcepacks" / ("amc_" + wood + "_doors")
         self.base = image(self.mc, "minecraft:block/oak_planks")
         self.moss = image(rib, "ribbits:block/mossy_oak_planks")
-        self.plank = self.base if self.ns == "ribbits" else image(end, "enderscape:block/" + wood + "_planks")
+        self.plank = self.base if self.ns == "ribbits" else image(end, self.ns+":block/" + wood + "_planks")
         suffix = "_stem" if wood in ("celestial", "murublight") else "_log"
         self.bark_ref = (AMC if self.ns == "ribbits" else self.ns) + ":block/" + wood + suffix
         self.bark = image(self.mc, "minecraft:block/oak_log") if self.ns == "ribbits" else image(end, self.bark_ref)
@@ -287,10 +289,10 @@ class Material:
         else:
             assert ru.startswith(("дубовая ", "еловая ")), ru
             ru = ru.split(" ", 1)[1]
-        adjective = {"veiled": "вуальная ", "celestial": "поднебесная ", "murublight": "мурутравная ", "mossy_oak": ""}[self.wood]
-        self.labels["ru_ru"][key] = "Высокая " + adjective + ru + (" из замшелого дуба" if self.wood == "mossy_oak" else "")
+        adjective = {"veiled": "вуальная ", "celestial": "поднебесная ", "murublight": "мурутравная ", "mossy_oak": "", "silver_birch": "", "wisteria": ""}[self.wood]
+        self.labels["ru_ru"][key] = "Высокая " + adjective + ru + {"mossy_oak":" из замшелого дуба","silver_birch":" из серебристой берёзы","wisteria":" из глицинии"}.get(self.wood,"")
         native = self.wood if self.wood != "murublight" else "murushroom"
-        chinese = self.dd_zh["block.dramaticdoors.tall_" + native + "_door"].removesuffix("门")
+        chinese = "高银桦木" if self.wood=="silver_birch" else self.dd_zh["block.dramaticdoors.tall_" + native + "_door"].removesuffix("门")
         if design in ("western", "whispering"):
             zh = self.macaw_zh["block.mcwdoors." + suffix].removeprefix("橡木")
         else:
@@ -340,11 +342,13 @@ class Material:
 def entries(path):
     with Path(path).open(encoding="utf8") as stream:
         rows = list(csv.DictReader(stream, delimiter="\t"))
-    assert len(rows) == len({r["source"] for r in rows}) == len({r["tall"] for r in rows}) == 88
+    assert len(rows) == len({r["source"] for r in rows}) == len({r["tall"] for r in rows}) == 132
     return rows
 
 
 def generate(mapping, paths, root):
+    if sys.platform == "win32":
+        root = Path("//?/" + root.resolve().as_posix())
     for path, expected in zip(paths, HASHES):
         with Path(path).open("rb") as stream:
             assert hashlib.file_digest(stream, "sha256").hexdigest() == expected, path
@@ -360,4 +364,4 @@ def generate(mapping, paths, root):
 
 
 if __name__ == "__main__":
-    generate(sys.argv[1], sys.argv[2:8], Path(sys.argv[8]))
+    generate(sys.argv[1], sys.argv[2:10], Path(sys.argv[10]))

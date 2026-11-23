@@ -50,7 +50,8 @@ public record AuditedShapeFamily(
     public boolean requiresAmcDoorPack() {
         return switch (key.getPath()) {
             case "cnm/three_high_door/enderscape_veiled", "cnm/three_high_door/enderscape_celestial",
-                    "cnm/three_high_door/enderscape_murublight", "cnm/three_high_door/ribbits_mossy_oak" -> true;
+                    "cnm/three_high_door/enderscape_murublight", "cnm/three_high_door/ribbits_mossy_oak",
+                    "cnm/three_high_door/mynx_trees_silver_birch", "cnm/three_high_door/mynx_trees_wisteria" -> true;
             default -> false;
         };
     }

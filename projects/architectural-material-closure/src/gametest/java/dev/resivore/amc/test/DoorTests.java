@@ -151,7 +151,7 @@ public final class DoorTests {
                     String ingredient = recipe.getAsJsonObject("key").get(String.valueOf(c)).getAsString();
                     if (ingredient.equals("minecraft:"+ref+"_planks")) ingredient = ns+":"+wood+"_planks";
                     else if (ingredient.equals("minecraft:"+ref+"_slab")) ingredient = ns+":"+wood+(ns.equals("ribbits")?"_planks_slab":"_slab");
-                    else if (ingredient.equals("minecraft:"+ref+"_log")) ingredient = ns+":"+wood+(ns.equals("ribbits")?"_planks":"_log");
+                    else if (ingredient.equals("minecraft:"+ref+"_log")) ingredient = ns.equals("ribbits") && BuiltInRegistries.BLOCK.containsKey(Identifier.parse("mynx_trees:mossy_oak_log")) ? "mynx_trees:mossy_oak_log" : ns+":"+wood+(ns.equals("ribbits")?"_planks":"_log");
                     else if (ingredient.equals("minecraft:"+ref+"_stem")) ingredient = ns+":"+wood+"_stem";
                     else if (ingredient.equals("mcwdoors:"+ref+"_stable_door")) ingredient = AMC+":"+wood+"_stable_door";
                     stacks.add(BuiltInRegistries.ITEM.getOptional(Identifier.parse(ingredient)).orElseThrow().getDefaultInstance());

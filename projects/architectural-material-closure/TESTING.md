@@ -1,8 +1,14 @@
 # Architectural Material Closure verification
 
+## Canary 36 wood families
+
+Match AMC C36 and Mynx Trees C9 to their manifest hashes. With BBB, Macaw's Windows and Paths installed, check each new species' 7 BBB forms, 7 accessories and 12 windows. With Doors and Trapdoors installed, add 22 doors and 17 trapdoors per species. Place windows in connected runs, lattice leaves in each available state, lanterns on both supports, shutters open and closed, and stable and sliding doors next to the provider originals. Compare Wisteria's regular shutter to the supplied sprite.
+
+Craft Mossy Oak frames with Ribbits slabs. With C9 and Ribbits present, craft bark-glass doors, bark/ranch trapdoors, log parapets, curtain rods, windows, balustrades, hanging signs and shelves with the indicated native timber. Repeat with Ribbits alone to verify its earlier acquisition paths. Use the two Mossy Oak boat items on water and in a dispenser, open the chest, reload and break each boat. Check that a missing optional provider removes its own additions. Record packs, provider versions and observed item IDs.
+
 ## Canary 35 wood windows and Mossy Oak fixtures
 
-Match `AMC C35.jar` to the current manifest. Use Macaw's Windows 2.4.2, BBB dev.7 and Minecraft 26.2. Repeat the window checks with Enderscape and Ribbits together, separately and both absent. Bamboo has 12 windows in every configuration. Enderscape adds 36 and Ribbits adds 12 windows and four fixtures.
+The following cases were introduced in C35 and carry forward. Use Macaw's Windows 2.4.2, BBB dev.7 and Minecraft 26.2. Repeat the window checks with Enderscape and Ribbits together, separately and both absent. Bamboo has 12 windows in every configuration. Enderscape adds 36 and Ribbits adds 12 windows and four fixtures.
 
 1. For Bamboo, Veiled, Celestial, Murublight and Mossy Oak, check timber, stripped timber and planks side by side. Within each finish place Window, Window 2, Four Window and Pane Window against their Oak Macaw references. Check facing, joined neighbors, open/closed interaction, water, outlines, drops, inventory icons and glass transparency. Compare Bamboo stalk direction on adjoining rails, end grain on cuts, and moss on the Mossy Oak frames.
 2. Craft a Mossy Oak Sign. Place a standing and a wall sign, edit both sides, wax it, unload the chunk and return. Repeat with a hanging sign underneath a support and on a wall. Inspect the editing screen, glyph contrast, supports, rotations and dropped items. Place a Shelf, load its three slots, check the displayed stacks and powered interaction, then reload and break it. Compare each step with the native Oak fixture.

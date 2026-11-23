@@ -12,6 +12,9 @@ from zipfile import ZipFile
 from doors import resource, read
 from trapdoor_previews import Graph
 from wood_matrix import WOODS, FIXTURES, NS, entries, nodes
+# This regression suite opens the historical pre-Trees artifacts.
+WOODS = {k:v for k,v in WOODS.items() if v != "mynx_trees"}
+
 
 
 def check(current, baseline, windows, client, bbb, end, rib):

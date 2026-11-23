@@ -857,6 +857,11 @@ public class DDNames
     public static final String TALL_PREAM = "tall_pream_door";
     
     //Ribbits
+    public static final String SHORT_SILVER_BIRCH = "short_silver_birch_door";
+    public static final String TALL_SILVER_BIRCH = "tall_silver_birch_door";
+    public static final String SHORT_MYNX_WISTERIA = "short_mynx_wisteria_door";
+    public static final String TALL_MYNX_WISTERIA = "tall_mynx_wisteria_door";
+
     public static final String SHORT_MOSSY_OAK = "short_mossy_oak_door";
     public static final String TALL_MOSSY_OAK = "tall_mossy_oak_door";
 

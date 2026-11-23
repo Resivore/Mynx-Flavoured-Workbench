@@ -50,7 +50,7 @@ public final class StoneTests {
             var item = BuiltInRegistries.ITEM.getValue(key);
             boolean control = key.getPath().endsWith("_button") || key.getPath().endsWith("_pressure_plate");
             boolean fixture = java.util.List.of("mossy_oak_sign", "mossy_oak_hanging_sign", "mossy_oak_shelf").contains(key.getPath());
-            var target = fixture ? tabs.getValueOrThrow(CreativeModeTabs.FUNCTIONAL_BLOCKS) : control ? redstone : building;
+            var target = item instanceof net.minecraft.world.item.BoatItem ? tabs.getValueOrThrow(CreativeModeTabs.TOOLS_AND_UTILITIES) : fixture ? tabs.getValueOrThrow(CreativeModeTabs.FUNCTIONAL_BLOCKS) : control ? redstone : building;
             var other = control ? building : redstone;
             helper.assertTrue(target.getDisplayItems().stream().filter(stack -> stack.is(item)).count() == 1
                     && other.getDisplayItems().stream().noneMatch(stack -> stack.is(item)), key + " creative tab");
@@ -176,10 +176,30 @@ public final class StoneTests {
         BambooTests.checkRegistry(helper, ids);
         AccessoryTests.registry(helper, ids);
         WoodMatrixTests.registry(helper, ids);
+        if (BuiltInRegistries.ITEM.containsKey(Identifier.parse("mynx_trees:wisteria_planks"))) {
+            for (String wood : java.util.List.of("silver_birch","wisteria")) {
+                for (String form : java.util.List.of("frame","lattice","trim","balustrade","support","pallet","lantern",
+                        "planks_path","log_parapet","plank_parapet","blinds","curtain_rod","shutter","louvered_shutter"))
+                    ids.add(Identifier.fromNamespaceAndPath(NAMESPACE,wood+"_"+form));
+                for (String prefix : java.util.List.of(wood,"stripped_"+wood,wood+"_plank"))
+                    for (String form : java.util.List.of("window","window2","pane_window","four_window"))
+                        ids.add(Identifier.fromNamespaceAndPath(NAMESPACE,prefix+"_"+form));
+                if (Boolean.getBoolean("amc.test.doors"))
+                    for (String design : "bamboo bark_glass barn barn_glass beach classic cottage four_panel glass japanese japanese2 modern mystic nether paper stable stable_head swamp tropical waffle western whispering".split(" "))
+                        ids.add(Identifier.fromNamespaceAndPath(NAMESPACE,wood+"_"+design+"_door"));
+                if (Boolean.getBoolean("amc.test.trapdoors"))
+                    for (String design : "bamboo bark barn barred barrel beach blossom classic cottage four_panel glass mystic paper ranch swamp tropical whispering".split(" "))
+                        ids.add(Identifier.fromNamespaceAndPath(NAMESPACE,wood+"_"+design+"_trapdoor"));
+            }
+        }
         for (var registry : java.util.List.of(BuiltInRegistries.BLOCK, BuiltInRegistries.ITEM)) {
             var registered = registry.keySet().stream().filter(key -> NAMESPACE.equals(key.getNamespace()))
                     .collect(Collectors.toSet());
             var expected = new java.util.HashSet<>(ids);
+            if (registry == BuiltInRegistries.ITEM && ribbits) {
+                expected.add(Identifier.fromNamespaceAndPath(NAMESPACE,"mossy_oak_boat"));
+                expected.add(Identifier.fromNamespaceAndPath(NAMESPACE,"mossy_oak_chest_boat"));
+            }
             if (registry == BuiltInRegistries.BLOCK && ribbits) {
                 expected.add(Identifier.fromNamespaceAndPath(NAMESPACE, "mossy_oak_wall_sign"));
                 expected.add(Identifier.fromNamespaceAndPath(NAMESPACE, "mossy_oak_wall_hanging_sign"));

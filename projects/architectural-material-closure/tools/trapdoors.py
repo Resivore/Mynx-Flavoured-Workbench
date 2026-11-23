@@ -44,14 +44,14 @@ def mask(macaw, ref, wood, design):
     return tile, masks[0]
 
 
-def stage(root, vanilla, macaw, enderscape, ribbits):
+def stage(root, vanilla, macaw, enderscape, ribbits, trees):
     assert hashlib.sha256(Path(macaw.filename).read_bytes()).hexdigest() == SHA
     oak = wood_tile(vanilla, "minecraft:block/oak_planks")
     moss = wood_tile(ribbits, "ribbits:block/mossy_oak_planks")
     labels = read(macaw,"assets/mcwtrpdoors/lang/en_us.json")
     tags = {n:read(macaw,n)["values"] for n in macaw.namelist()
             if n.startswith("data/minecraft/tags/") and n.endswith(".json")}
-    for provider, archive in (("enderscape",enderscape), ("ribbits",ribbits)):
+    for provider, archive in (("enderscape",enderscape), ("ribbits",ribbits), ("mynx_trees",trees)):
         pack = root / "resourcepacks" / (provider+"_trapdoors")
         names, members = {}, defaultdict(list)
         for wood, namespace in MATERIALS.items():
