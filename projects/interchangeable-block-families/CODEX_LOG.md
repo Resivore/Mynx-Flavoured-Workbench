@@ -367,3 +367,14 @@
 - Artifact: `IBF C34.jar`, embedded `0.1.0-canary34`, 71,011 bytes, SHA-256 `a512646d100882e878989c9e7fb4f65a445b3fb7a8bb54200e931f62feb08dd9`, built_at `2026-11-23T04:35:37.2740183Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of placement, collision, redstone, drops and selector presentation in TESTING.md.
+
+## 2026-11-23T05:39:35Z — IBF C35 wood matrix
+
+- Revision: 35
+- Source checkpoint: `cbaae6dde05529af9f5d24c5f206eaf743603f53`
+- Changes: Adds 15 four-member wood window selectors and the Mossy Oak Sign, Hanging Sign and Shelf selector.
+- Build/static: The Java 25 build, 55 JUnit tests and production isolation check passed. All 39 controlled GameTests passed with AMC and Enderscape, all 39 without AMC, and the focused matrix test passed in both Enderscape-absent cases. The combined current AMC C35, BGE C110 and Ribbits C27 server passed all 39 tests. The canonical window, sign and lantern grids produced the expected items and counts. C34's full 268-family projection and all sixteen ten-member Button selectors matched the historical order. The automated client checked all 16 additions and the 16 short-door selectors after reload at GUI scales 1 and 2.
+- Runtime: Owner gameplay and visual verification pending.
+- Artifact: `IBF C35.jar`, 72,042 bytes, SHA-256 `6fe15df5178bfc9ff1285128229d0bdadebe35d39c2f925da3c85af1a570dc67`, built_at `2026-11-23T05:28:22.4615899Z`, embedded version `0.1.0-canary35`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify appearance and interaction in TESTING.md against these exact bytes.
