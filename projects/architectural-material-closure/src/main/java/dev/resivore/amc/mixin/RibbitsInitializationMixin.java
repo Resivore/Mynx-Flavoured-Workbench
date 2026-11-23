@@ -1,6 +1,7 @@
 package dev.resivore.amc.mixin;
 
 import dev.resivore.amc.DoorIntegration;
+import dev.resivore.amc.TrapdoorIntegration;
 import dev.resivore.amc.MossyOakBlocks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -15,5 +16,6 @@ abstract class RibbitsInitializationMixin {
     private void amc$registerMossyOakBlocks(CallbackInfo ci) {
         MossyOakBlocks.afterRibbits();
         DoorIntegration.woodReady("ribbits");
+        TrapdoorIntegration.woodReady("ribbits");
     }
 }

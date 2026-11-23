@@ -1,8 +1,42 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 30
+## Owner verification for Canary 31
 
-Match the SHA-256 of `AMC C30.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 387 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. With Macaw’s Doors 1.1.5 also present, add 66 Enderscape doors and 22 Ribbits doors. All AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C31.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 387 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. With Macaw’s Doors 1.1.5 also present, add 66 Enderscape doors and 22 Ribbits doors. All AMC IDs use the namespace `architectural_material_closure`.
+
+### Macaw wood trapdoors
+
+Macaw's Trapdoors 1.1.5 for Fabric 26.2 provides 195 registered trapdoors. Its 192 wood entries span 17 designs, including the standalone bamboo cane recipe. Three fixed Metal designs have no wood series. None of the 68 combinations below was registered by Macaw, Enderscape, Ribbits or C30. Enderscape's three native trapdoors remain separate. The 51 new Enderscape pairs require Enderscape and Macaw's Trapdoors. The 17 Mossy Oak pairs require Ribbits and Macaw's Trapdoors. Macaw's Doors is independently optional.
+
+Every destination below is an exact registry path in `architectural_material_closure`. In the two rows with two sources, Oak supplies Veiled and Mossy Oak. Warped supplies the Celestial and Murublight stem models. Each other row has one source for all four destinations.
+
+| Macaw reference | Veiled | Celestial | Murublight | Mossy Oak |
+|---|---|---|---|---|
+| `mcwtrpdoors:oak_bamboo_trapdoor` | `veiled_bamboo_trapdoor` | `celestial_bamboo_trapdoor` | `murublight_bamboo_trapdoor` | `mossy_oak_bamboo_trapdoor` |
+| `mcwtrpdoors:oak_bark_trapdoor` / `mcwtrpdoors:warped_bark_trapdoor` | `veiled_bark_trapdoor` | `celestial_bark_trapdoor` | `murublight_bark_trapdoor` | `mossy_oak_bark_trapdoor` |
+| `mcwtrpdoors:oak_barn_trapdoor` | `veiled_barn_trapdoor` | `celestial_barn_trapdoor` | `murublight_barn_trapdoor` | `mossy_oak_barn_trapdoor` |
+| `mcwtrpdoors:oak_barred_trapdoor` | `veiled_barred_trapdoor` | `celestial_barred_trapdoor` | `murublight_barred_trapdoor` | `mossy_oak_barred_trapdoor` |
+| `mcwtrpdoors:oak_barrel_trapdoor` | `veiled_barrel_trapdoor` | `celestial_barrel_trapdoor` | `murublight_barrel_trapdoor` | `mossy_oak_barrel_trapdoor` |
+| `mcwtrpdoors:oak_beach_trapdoor` | `veiled_beach_trapdoor` | `celestial_beach_trapdoor` | `murublight_beach_trapdoor` | `mossy_oak_beach_trapdoor` |
+| `mcwtrpdoors:oak_blossom_trapdoor` | `veiled_blossom_trapdoor` | `celestial_blossom_trapdoor` | `murublight_blossom_trapdoor` | `mossy_oak_blossom_trapdoor` |
+| `mcwtrpdoors:spruce_classic_trapdoor` | `veiled_classic_trapdoor` | `celestial_classic_trapdoor` | `murublight_classic_trapdoor` | `mossy_oak_classic_trapdoor` |
+| `mcwtrpdoors:oak_cottage_trapdoor` | `veiled_cottage_trapdoor` | `celestial_cottage_trapdoor` | `murublight_cottage_trapdoor` | `mossy_oak_cottage_trapdoor` |
+| `mcwtrpdoors:oak_four_panel_trapdoor` | `veiled_four_panel_trapdoor` | `celestial_four_panel_trapdoor` | `murublight_four_panel_trapdoor` | `mossy_oak_four_panel_trapdoor` |
+| `mcwtrpdoors:oak_glass_trapdoor` | `veiled_glass_trapdoor` | `celestial_glass_trapdoor` | `murublight_glass_trapdoor` | `mossy_oak_glass_trapdoor` |
+| `mcwtrpdoors:oak_mystic_trapdoor` | `veiled_mystic_trapdoor` | `celestial_mystic_trapdoor` | `murublight_mystic_trapdoor` | `mossy_oak_mystic_trapdoor` |
+| `mcwtrpdoors:oak_paper_trapdoor` | `veiled_paper_trapdoor` | `celestial_paper_trapdoor` | `murublight_paper_trapdoor` | `mossy_oak_paper_trapdoor` |
+| `mcwtrpdoors:oak_ranch_trapdoor` / `mcwtrpdoors:warped_ranch_trapdoor` | `veiled_ranch_trapdoor` | `celestial_ranch_trapdoor` | `murublight_ranch_trapdoor` | `mossy_oak_ranch_trapdoor` |
+| `mcwtrpdoors:oak_swamp_trapdoor` | `veiled_swamp_trapdoor` | `celestial_swamp_trapdoor` | `murublight_swamp_trapdoor` | `mossy_oak_swamp_trapdoor` |
+| `mcwtrpdoors:oak_tropical_trapdoor` | `veiled_tropical_trapdoor` | `celestial_tropical_trapdoor` | `murublight_tropical_trapdoor` | `mossy_oak_tropical_trapdoor` |
+| `mcwtrpdoors:oak_whispering_trapdoor` | `veiled_whispering_trapdoor` | `celestial_whispering_trapdoor` | `murublight_whispering_trapdoor` | `mossy_oak_whispering_trapdoor` |
+
+#### Owner visual and interaction checks
+
+1. Compare each row in the local `build/c31/previews/{veiled,celestial,murublight,mossy_oak}.png` sheets. Each shows the Macaw reference, the closed lower placement, an open placement and the packaged item's GUI model. Compare actual inventory and placed views in each wood. Inspect the clear Glass and Bark panes, Paper fittings, Barred openings, Barrel bands, Ranch diagonals and slat edges.
+2. Place each trapdoor in upper and lower positions in all four directions, including underwater. Compare the reference outline, collision, sounds, hand toggling and powered/unpowered transitions. Check the item drop and crafting output. Mossy Oak Bark uses four Ribbits Mossy Oak Slabs and two glass panes for two trapdoors. Glass uses planks. Ranch uses four Mossy Oak Planks and five sticks for two.
+3. Check all four wood-provider combinations with Macaw's Trapdoors installed and absent. With Macaw's Doors installed, the expected AMC totals are 693 with both woods, 648 with Enderscape, 432 with Ribbits, 387 with neither and 625 with both woods but without Macaw's Trapdoors. With Macaw's Trapdoors absent, the Enderscape-only, Ribbits-only and neither-wood totals are 597, 415 and 387. With both woods and only Macaw's Trapdoors installed among the two Macaw door providers, expect 605. Record observations against the exact C31 hash.
+
+The Java 25 `build` task runs the historical resource checks and the C31 artifact comparison. The texture checker uses Pillow and NumPy. Use `-PtrapdoorsJar=<path>` and `-Pc30Jar=<path>` to select retained inputs. Run `runGameTest` in each C30 wood configuration with and without `-PwithoutTrapdoors`, then run both woods with `-PwithoutDoors`. The 15 authored trapdoor tiles per wood use design-specific cross-wood masks. The upward face reverses the vertical texture coordinate for the selective moss footprint. Bark and Ranch reuse the actual model face slots and UVs, including the log/stem sides, stripped Ranch rails and glass. The effective vanilla wooden trapdoor and axe tags are carried through. The provider's legacy plural tag directories do not supply loaded 26.2 tags.
 
 ### Macaw wood doors
 
