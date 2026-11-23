@@ -405,3 +405,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Artifact: `AMC C32.jar`, 3,671,362 bytes, SHA-256 `632c4423c016ebeb7057559efa0494f680c93efdf1cd79e7ee25cd4708111f7c`, built_at `2026-11-23T01:01:47.2851890Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Compare the six designs with the packaged Oak references using TESTING.md and record owner observations against the C32 hash.
+
+## 2026-11-23T01:54:01Z — AMC C33 wood accessories
+
+- Revision: 34
+- Source checkpoint: `04fe54fc757d47a0b4af2a1d19784ce47988375d`
+- Changes: Provide seven wood accessories per Enderscape wood and nine for Mossy Oak, including wooden controls. Use native timber roles, design-specific regular shutter faces and luminance-ranked or selectively mossed Oak louvered shutters. Mossy Oak uses slabs in the two log recipe slots and three AMC Classic Trapdoors for its regular shutter.
+- Build/static: Java 25 build, historical resource checks and five controlled Fabric configurations passed. Both woods with or without Macaw Trapdoors 301/301 each, Enderscape alone 297/297, Ribbits alone 239/239 and neither 235/235. Verified crafting, classes, state shapes, placement, stacks, controls and drops. Compared all C32 entries: 7,123 byte-identical, eight changed and 260 added. Verified 346 model state branches and generated four local material/reference sheets in build/c33/previews.
+- Runtime: Owner visual and gameplay verification and acceptance pending.
+- Artifact: `AMC C33.jar`, 3,797,215 bytes, SHA-256 `9c4385405ad0e2eb0b91dbb2ed8a0a50ce56680204a4cd1f8e3c9d59d7ea5ded`, built_at `2026-11-23T01:51:42.4299175Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of shutter motifs, wood grain and gameplay against C33.

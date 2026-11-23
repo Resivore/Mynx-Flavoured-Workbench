@@ -37,7 +37,8 @@
       "Adds six BBB-style Mossy Oak forms when Ribbits is installed.",
       "Provide 88 optional Macaw doors using the original door classes, authored model parents, item art, crafting patterns and wood-specific material masks. Veiled and Mossy Oak have Bark Glass. Celestial and Murublight have Stem Glass.",
       "Provide 17 Macaw trapdoor designs each for Veiled, Celestial, Murublight and Mossy Oak when Macaw's Trapdoors and the matching wood provider are present. Preserve the actual Macaw block types, state/model graphs, protected artwork and recipe grids.",
-      "Add Bamboo log and plank parapets, blinds, curtain rod and louvered shutter using the Oak Macaw's Windows implementations. Add the Bamboo Ranch Trapdoor only when Macaw's Trapdoors is present. Use the native Bamboo Block and Bamboo Planks artwork."
+      "Add Bamboo log and plank parapets, blinds, curtain rod and louvered shutter using the Oak Macaw's Windows implementations. Add the Bamboo Ranch Trapdoor only when Macaw's Trapdoors is present. Use the native Bamboo Block and Bamboo Planks artwork.",
+      "Provide seven wood accessories per Enderscape wood and nine for Mossy Oak, including wooden controls. Use native timber roles, design-specific regular shutter faces and luminance-ranked or selectively mossed Oak louvered shutters. Mossy Oak uses slabs in the two log recipe slots and three AMC Classic Trapdoors for its regular shutter."
     ],
     "boundaries": {
       "owned_paths": [
@@ -112,23 +113,23 @@
     ]
   },
   "state": {
-    "milestone": "C32 passed package, texture and controlled interaction checks with Macaw's Trapdoors present and absent. Owner visual and gameplay verification and acceptance are pending.",
+    "milestone": "Adds 30 wood accessories for Veiled, Celestial, Murublight and Mossy Oak. Controlled validation passed. Owner gameplay and visual verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C32 (0.1.0-canary32)",
-        "canary": 32,
-        "embedded_version": "0.1.0-canary32",
+        "version": "C33 (0.1.0-canary33)",
+        "canary": 33,
+        "embedded_version": "0.1.0-canary33",
         "artifact": {
-          "filename": "AMC C32.jar",
-          "sha256": "632c4423c016ebeb7057559efa0494f680c93efdf1cd79e7ee25cd4708111f7c"
+          "filename": "AMC C33.jar",
+          "sha256": "9c4385405ad0e2eb0b91dbb2ed8a0a50ce56680204a4cd1f8e3c9d59d7ea5ded"
         },
-        "built_at": "2026-11-23T01:01:47.2851890Z",
-        "source_commit": "f27f5bf0d66c4838332a2fa7218c38645a66cf95",
+        "built_at": "2026-11-23T01:51:42.4299175Z",
+        "source_commit": "04fe54fc757d47a0b4af2a1d19784ce47988375d",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds six Bamboo architectural forms, including the optional Macaw Ranch Trapdoor and a Bamboo Planks louvered shutter."
+        "summary": "Adds 30 wood accessories for Veiled, Celestial, Murublight and Mossy Oak."
       },
       "accepted": null,
       "rollback": null,
@@ -142,10 +143,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 33,
-    "activity_at": "2026-11-23T01:03:47Z",
-    "updated_at": "2026-11-23T01:03:47Z",
-    "last_codex_at": "2026-11-23T01:03:47Z",
-    "source_commit": "f27f5bf0d66c4838332a2fa7218c38645a66cf95"
+    "revision": 34,
+    "activity_at": "2026-11-23T01:54:01Z",
+    "updated_at": "2026-11-23T01:54:01Z",
+    "last_codex_at": "2026-11-23T01:54:01Z",
+    "source_commit": "04fe54fc757d47a0b4af2a1d19784ce47988375d"
   }
 }
