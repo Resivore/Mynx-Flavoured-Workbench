@@ -64,7 +64,11 @@ public final class BambooTests {
     }
 
     @GameTest public void blindsCycle(GameTestHelper h) {
-        var actual = bamboo("blinds");
+        checkBlinds(h,bamboo("blinds"));
+        h.succeed();
+    }
+
+    static void checkBlinds(GameTestHelper h, Block actual) {
         var source = BuiltInRegistries.BLOCK.getValue(Identifier.parse("mcwwindows:oak_blinds"));
         var traces = new ArrayList<List<String>>();
         for (var block : List.of(source,actual)) {
@@ -81,7 +85,6 @@ public final class BambooTests {
             traces.add(trace);
         }
         h.assertTrue(traces.getFirst().equals(traces.getLast()), "Reference blind states");
-        h.succeed();
     }
 
     @GameTest public void forms(GameTestHelper h) {
@@ -90,44 +93,48 @@ public final class BambooTests {
             if (ranch && !FabricLoader.getInstance().isModLoaded("mcwtrpdoors")) continue;
             var source = BuiltInRegistries.BLOCK.getOptional(Identifier.parse((ranch?"mcwtrpdoors":"mcwwindows")+":oak_"+form)).orElseThrow();
             var block = bamboo(form);
-            var level = h.getLevel();
-            var pos = h.absolutePos(POS);
-            h.assertTrue(block.getClass()==source.getClass() && block.asItem().getClass()==source.asItem().getClass()
-                    && ((BlockItem)block.asItem()).getBlock()==block, "Provider class/item " + form);
-            for (var state : source.getStateDefinition().getPossibleStates()) {
-                var copy = block.withPropertiesOf(state);
-                h.assertTrue(copy.getValues().toList().equals(state.getValues().toList())
-                        && copy.getShape(level,pos).toAabbs().equals(state.getShape(level,pos).toAabbs())
-                        && copy.getCollisionShape(level,pos).toAabbs().equals(state.getCollisionShape(level,pos).toAabbs())
-                        && state.getFluidState()==copy.getFluidState() && copy.getSoundType()==state.getSoundType()
-                        && copy.getDestroySpeed(level,pos)==state.getDestroySpeed(level,pos), "State " + form);
-                for (var rot : Rotation.values())
-                    h.assertTrue(copy.rotate(rot)==block.withPropertiesOf(state.rotate(rot)), "Rotation " + form);
-            }
-            var drops = Block.getDrops(block.defaultBlockState(),level,pos,null);
-            h.assertTrue(drops.size()==1 && drops.getFirst().is(block.asItem()) && drops.getFirst().getCount()==1,"Drop "+form);
-            h.assertTrue(block.defaultBlockState().is(net.minecraft.tags.BlockTags.MINEABLE_WITH_AXE), "Axe tag " + form);
-            for (var face : Direction.Plane.HORIZONTAL) {
-                if (ranch) {
-                    for (double height : List.of(0.25,0.75)) for (boolean wet : List.of(false,true))
-                        TrapdoorTests.exercise(h,(TrapDoorBlock)block,face,height,wet);
-                } else {
-                    var player = h.makeMockPlayer(GameType.CREATIVE);
-                    player.setYRot(face.toYRot());
-                    h.setBlock(POS.below(),Blocks.STONE);
-                    for (double offset : List.of(0.2,0.8)) {
-                        var hit = new BlockHitResult(Vec3.atLowerCornerOf(pos).add(offset,0,offset),Direction.UP,pos.below(),false);
-                        var reference = source.getStateForPlacement(new BlockPlaceContext(player,InteractionHand.MAIN_HAND,
-                                source.asItem().getDefaultInstance(),hit));
-                        var item = (BlockItem)block.asItem();
-                        h.assertTrue(item.place(new BlockPlaceContext(player,InteractionHand.MAIN_HAND,item.getDefaultInstance(),hit)).consumesAction()
-                                && h.getBlockState(POS)==block.withPropertiesOf(reference),"Placement "+form);
-                        h.setBlock(POS,Blocks.AIR);
-                    }
+            checkForm(h,source,block,form,ranch);
+        }
+        h.succeed();
+    }
+
+    static void checkForm(GameTestHelper h, Block source, Block block, String form, boolean ranch) {
+        var level = h.getLevel();
+        var pos = h.absolutePos(POS);
+        h.assertTrue(block.getClass()==source.getClass() && block.asItem().getClass()==source.asItem().getClass()
+                && ((BlockItem)block.asItem()).getBlock()==block, "Provider class/item " + form);
+        for (var state : source.getStateDefinition().getPossibleStates()) {
+            var copy = block.withPropertiesOf(state);
+            h.assertTrue(copy.getValues().toList().equals(state.getValues().toList())
+                    && copy.getShape(level,pos).toAabbs().equals(state.getShape(level,pos).toAabbs())
+                    && copy.getCollisionShape(level,pos).toAabbs().equals(state.getCollisionShape(level,pos).toAabbs())
+                    && state.getFluidState()==copy.getFluidState() && copy.getSoundType()==state.getSoundType()
+                    && copy.getDestroySpeed(level,pos)==state.getDestroySpeed(level,pos), "State " + form);
+            for (var rot : Rotation.values())
+                h.assertTrue(copy.rotate(rot)==block.withPropertiesOf(state.rotate(rot)), "Rotation " + form);
+        }
+        var drops = Block.getDrops(block.defaultBlockState(),level,pos,null);
+        h.assertTrue(drops.size()==1 && drops.getFirst().is(block.asItem()) && drops.getFirst().getCount()==1,"Drop "+form);
+        h.assertTrue(block.defaultBlockState().is(net.minecraft.tags.BlockTags.MINEABLE_WITH_AXE)==source.defaultBlockState().is(net.minecraft.tags.BlockTags.MINEABLE_WITH_AXE), "Axe tag " + form);
+        for (var face : Direction.Plane.HORIZONTAL) {
+            if (ranch) {
+                for (double height : List.of(0.25,0.75)) for (boolean wet : List.of(false,true))
+                    TrapdoorTests.exercise(h,(TrapDoorBlock)block,face,height,wet);
+            } else {
+                var player = h.makeMockPlayer(GameType.CREATIVE);
+                player.setYRot(face.toYRot());
+                h.setBlock(POS.below(),Blocks.STONE);
+                for (double offset : List.of(0.2,0.8)) {
+                    var hit = new BlockHitResult(Vec3.atLowerCornerOf(pos).add(offset,0,offset),Direction.UP,pos.below(),false);
+                    var reference = source.getStateForPlacement(new BlockPlaceContext(player,InteractionHand.MAIN_HAND,
+                            source.asItem().getDefaultInstance(),hit));
+                    var item = (BlockItem)block.asItem();
+                    h.assertTrue(item.place(new BlockPlaceContext(player,InteractionHand.MAIN_HAND,item.getDefaultInstance(),hit)).consumesAction()
+                            && h.getBlockState(POS)==block.withPropertiesOf(reference),"Placement "+form);
+                    h.setBlock(POS,Blocks.AIR);
                 }
             }
         }
-        h.succeed();
     }
 
     @GameTest public void recipes(GameTestHelper h) {

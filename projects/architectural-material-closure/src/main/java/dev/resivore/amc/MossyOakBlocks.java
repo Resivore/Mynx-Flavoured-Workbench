@@ -45,6 +45,7 @@ public final class MossyOakBlocks {
         var container = FabricLoader.getInstance().getModContainer(NS).orElseThrow();
         if (!ResourceLoader.registerBuiltinPack(Identifier.fromNamespaceAndPath(NS, "ribbits"),
                 container, PackActivationType.ALWAYS_ENABLED)) throw new IllegalStateException("Missing Ribbits pack");
+        WoodAccessories.register("mossy_oak");
         var items = List.of(register("frame", FrameBlock::new), register("lattice", LatticeBlock::new),
                 register("trim", FacingConnectingBlock::new), register("balustrade", BalustradeBlock::new),
                 register("support", SupportBlock::new), register("pallet", PalletBlock::new));

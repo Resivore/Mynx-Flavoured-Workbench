@@ -47,6 +47,7 @@ public record EnderscapeFamilies(String material, Block base) {
     private static final String AMC = "architectural_material_closure";
 
     public static void registerAfterProvider() {
+        for (String wood : List.of("veiled", "celestial", "murublight")) WoodAccessories.register(wood);
         var loader = FabricLoader.getInstance();
         if (!loader.isModLoaded("enderscape")) return;
         var families = new ArrayList<EnderscapeFamilies>();

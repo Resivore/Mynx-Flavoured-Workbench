@@ -1,8 +1,16 @@
 # Architectural Material Closure verification
 
-## Owner verification for Canary 32
+## Owner verification for Canary 33
 
-Match the SHA-256 of `AMC C32.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 392 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. With Macaw’s Doors 1.1.5 also present, add 66 Enderscape doors and 22 Ribbits doors. All AMC IDs use the namespace `architectural_material_closure`.
+Match the SHA-256 of `AMC C33.jar` to the current release in `WORKBENCH_STATUS.json`. Use Minecraft Java 26.2 Fabric with Fabric API, Macaw's Windows, Macaw's Paths and Pavings, and Building But Better. The controlled reference versions were Windows 2.4.2, Paths 1.1.1 and BBB C9 (2.0pre4+26.2-enderscape-dev.7). AMC supplies 392 base pairs, 144 additional pairs with Enderscape and six additional pairs with Ribbits. With Macaw’s Doors 1.1.5 also present, add 66 Enderscape doors and 22 Ribbits doors. All AMC IDs use the namespace `architectural_material_closure`.
+
+### C33 wood accessories
+
+With Enderscape installed, check `veiled`, `celestial` and `murublight`. With Ribbits installed, check `mossy_oak`. In `architectural_material_closure`, each wood has the suffixes `planks_path`, `log_parapet` (Veiled and Mossy Oak) or `stem_parapet` (Celestial and Murublight), `plank_parapet`, `blinds`, `curtain_rod`, `shutter` and `louvered_shutter`. Mossy Oak also has `button` and `pressure_plate`. Enderscape supplies its original controls.
+
+Compare the four sheets in `build/c33/previews/` with the placed forms. Look for Veiled's perforated lattice, Celestial's inset panel, Murublight's pierced scroll and Mossy Oak's divided arch and gold latch. Check both shutter hinges and stacked operation, all five louver highlights and their recesses, the plank-path facing, the parapet support with and without a pot, joined blind cycles and the stripped shaft of each curtain rod. Test the Mossy Oak Button with a hand and arrow and the Pressure Plate with a dropped item.
+
+Use the original Oak crafting grids. Substitute native slabs, planks, logs/stems and trapdoors. Mossy Oak uses Ribbits slabs in the Log Parapet and Curtain Rod log slots. Three AMC Classic Trapdoors arranged vertically make three Mossy Oak regular shutters. Without Macaw's Trapdoors that recipe and its advancement disappear while the shutter block remains. The unchanged C32 regression procedures below describe their original registry totals; add 21 pairs with Enderscape and nine with Ribbits. Run Java 25 `build runGameTest` with both, each and neither wood provider, then with both woods and `-PwithoutTrapdoors`. Compare with the exact retained C32. Record observations against the C33 hash.
 
 ### Bamboo additions
 
