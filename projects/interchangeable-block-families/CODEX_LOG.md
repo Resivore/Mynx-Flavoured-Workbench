@@ -301,3 +301,14 @@
 - Artifact: `IBF C28.jar`, 65,515 bytes, SHA-256 `de912d4753f69cbb6cf53e371659bfa91b57392ae48eec868da367d6b735f3c5`, built_at `2026-11-22T01:45:17.1216990Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Exercise both Mossy Oak selectors in-world and verify their recipes and named stack transfers.
+
+## 2026-11-23T00:18:33Z — IBF C29 integrates the AMC Macaw wood doors
+
+- Revision: 29
+- Source checkpoint: `b7729409df7456e48989c0081d9c17d1551d051d`
+- Changes: Veiled, Celestial, Murublight and Mossy Oak each retain their native door as parent and gain 22 AMC C30 designs. The four two-high selectors account for 92 distinct members. Removing them reproduces the compiled C28 catalog (SHA-256 `6926571dc498310dd9c5e88f3bcfd854ff6c7d13486970f61529c476d7dcc60e`).
+- Build/static: The 55 JUnit checks, production build and archive isolation passed. With Enderscape 3.0.2, AMC C30 and AMC-absent runs each passed 38 server GameTests (259 families / 1,977 items and 181 / 1,397). Without Enderscape, both focused GameTests passed (222 / 1,733 with AMC, 164 / 1,348 without). Native doors without AMC retain their recipes and have no selector. Mossy Oak retains all 23 members with AMC alone. All 88 door alternatives preserved names, counts and component patches on forward and reverse transfers. All 88 alternate recipes were suppressed, while four native crafting recipes and the Murublight conversion survived. The assembled cleanup removed 1,676 alternates with AMC and 1,114 without, with zero canonical removals or surviving literal ingredient rewrites. The isolated graphical client exercised all 23 positions of all four selectors through the held-item overlay and 12-icon inventory tooltip at 320 scaled pixels.
+- Runtime: Owner gameplay verification and acceptance are pending.
+- Artifact: `IBF C29.jar` (embedded `0.1.0-canary29`, 67,091 bytes), SHA-256 `b5ef2765538d49ce46b8d51b97873026e03143350819ebbe82c8cf44f1ab4f97`, built at `2026-11-23T00:09:12.2693718Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of GUI scale, placement, drops and reload behavior in TESTING.md.

@@ -24,11 +24,12 @@
       "Use AMC registrations for the Stone accessories and the Andesite, Diorite, and Granite accessory, masonry detail, and Gothic window forms. Integrate the thirteen AMC Mud Bricks forms with the Macaw Mud Brick Gothic Window and Arrow Slit. Integrate the Prismarine Bricks and Dark Prismarine accessories and masonry details, and the eleven thin Prismarine Bricks paths and pavings. Integrate the twelve AMC Sandstone and Red Sandstone forms into their accessory, window, and masonry detail selectors. Integrate the Deepslate, Quartz and Nether Bricks accessory, window, masonry and thin path forms admitted by C21. Integrate End Stone Bricks accessories, windows, masonry details and thin paths and pavings, and the Polished Blackstone Louvered Shutter. Integrate the fifteen AMC Mossy Stone Bricks forms into Button, Column and Window selectors. Integrate the AMC Tuff, Cinnabar, Sulfur and Smooth Basalt accessories, masonry details, windows and thin paths and pavings. Integrate the AMC Veradite, Mirestone and Kurodite forms with the existing polished Enderscape controls. Integrate the 78 AMC Purpur, Dusk Purpur and Resin selector members. Integrate the AMC Calcite and Shadoline Block accessories, masonry, windows and thin paths."
     ],
     "scope": [
-      "With AMC C29 and Enderscape 3.0.2, 255 families resolve across 1,885 distinct items. With only AMC, 221 families resolve across 1,710 items. With only Enderscape, 181 families resolve across 1,397 items. With neither optional provider, 164 families resolve across 1,348 items. The largest family has 22 members.",
+      "With AMC C30 and Enderscape 3.0.2, 259 families resolve across 1,977 distinct items. With only AMC, 222 families resolve across 1,733 items. With only Enderscape, 181 families resolve across 1,397 items. With neither optional provider, 164 families resolve across 1,348 items. The largest family has 23 members with AMC C30 and 22 without AMC.",
       "Use the actual Minecraft 26.2 and Enderscape 3.0.2 registries as the display-fixture authority: the complete eligible set is the 12 literal vanilla wood families plus Enderscape Veiled, Celestial, and Murublight; Sign is canonical, Hanging Sign and Shelf are alternates, and wall placement blocks are excluded because they are not inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain the accepted C7 and historical rollback C3 artifacts while C28 undergoes owner-directed verification.",
-      "Extends the Ribbits Mossy Oak fence selector with AMC Frame and Lattice and adds a four-member Trim detail selector."
+      "Retain the accepted C7 and historical rollback C3 artifacts while C29 undergoes owner-directed verification.",
+      "Extends the Ribbits Mossy Oak fence selector with AMC Frame and Lattice and adds a four-member Trim detail selector.",
+      "Adds four 23-member two-high door selectors with native Enderscape and Ribbits parents and 88 AMC Macaw designs."
     ],
     "boundaries": {
       "owned_paths": [
@@ -38,8 +39,8 @@
         "Clutter No More owns ShapeMap, selection controls, 1:1 transmuteCopy switching, recipe equivalence and cleanup, and the graph consumed by Quick Stack Nearby; IBF does not add a second registry, switcher, keybind, networking protocol, recipe engine, or storage-equivalence system.",
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
-        "An absent AMC parent omits its whole family. Without Enderscape, IBF omits families backed by Enderscape or its optional AMC and BBB packs. All active families retain their ordered, registered members and collision guards.",
-        "C28 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
+        "An absent AMC parent omits its whole family. Without Enderscape, IBF omits families backed by Enderscape or its optional AMC and BBB packs. All active families retain their ordered, registered members and collision guards. A native door without its AMC alternatives remains independent.",
+        "C29 is an unaccepted candidate. The server release record and Minecraft testing profiles are separately owned.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -48,7 +49,7 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact game version targeted by C28; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
+        "reason": "Exact game version targeted by C29; the actual merged registry JAR used for the literal item/block audit is 37,399,549 bytes with SHA-256 e29fddd54a12fdbb7a0ccc899ad7ce6b5167f5cbcef7c305ee3069ed7a4cc1ef."
       },
       {
         "type": "MOD",
@@ -138,35 +139,35 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "=25",
-        "reason": "Required Java release for Minecraft 26.2 and the controlled C28 build."
+        "reason": "Required Java release for Minecraft 26.2 and the controlled C29 build."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "=9.5.1 with Fabric Loom 1.17.19",
-        "reason": "Exact build-tool baseline used for the controlled C28 build and GameTest validation."
+        "reason": "Exact build-tool baseline used for the controlled C29 build and GameTest validation."
       },
       {
         "type": "PROJECT",
         "identifier": "f872cd63-7ec8-456f-b7fb-105e7f17a7d4",
-        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C29.jar, SHA-256 2a039898f657acd66012b6661866a20b77c24b2a0b595b3a2b138ff133593a76.",
-        "reason": "Provides the Stone accessories and the Button, Pressure Plate, Column, Urn, Moulding, Fence, Frame, Arrow Slit, and Gothic Window for each of Andesite, Diorite, and Granite. C14 also supplies the thirteen Mud Bricks accessory, masonry, and window items. C15 supplies the 27 Prismarine accessory, masonry, path and paving items admitted by C19. C16 supplies six registered forms each for Sandstone and Red Sandstone. C19 supplies the six Deepslate, seventeen Quartz and nineteen Nether Bricks items admitted by C21. C21 supplies the 22 End Stone Bricks forms admitted by C22 and the Polished Blackstone Louvered Shutter. C22 supplies all fifteen Mossy Stone Bricks items. C23 supplies 26 selector members and four independent patterned full blocks per new material. C24 supplies 24 selector members per Enderscape material, including the two alternates for each existing polished control family. C26 supplies Purpur and Resin in the base pack and Dusk Purpur through its Enderscape integration. C28 supplies 26 selector members and four independent full patterns for each of Calcite and Enderscape-backed Shadoline Block. C29 supplies the six Mossy Oak wood forms."
+        "requirement": "Optional provider architectural_material_closure. Controlled input AMC C30.jar, SHA-256 f0b4a7f464026a1c021d7004d81a18b9896cfd428018887e2bf69f1fdbe43462.",
+        "reason": "Provides the Stone accessories and the Button, Pressure Plate, Column, Urn, Moulding, Fence, Frame, Arrow Slit, and Gothic Window for each of Andesite, Diorite, and Granite. C14 also supplies the thirteen Mud Bricks accessory, masonry, and window items. C15 supplies the 27 Prismarine accessory, masonry, path and paving items admitted by C19. C16 supplies six registered forms each for Sandstone and Red Sandstone. C19 supplies the six Deepslate, seventeen Quartz and nineteen Nether Bricks items admitted by C21. C21 supplies the 22 End Stone Bricks forms admitted by C22 and the Polished Blackstone Louvered Shutter. C22 supplies all fifteen Mossy Stone Bricks items. C23 supplies 26 selector members and four independent patterned full blocks per new material. C24 supplies 24 selector members per Enderscape material, including the two alternates for each existing polished control family. C26 supplies Purpur and Resin in the base pack and Dusk Purpur through its Enderscape integration. C28 supplies 26 selector members and four independent full patterns for each of Calcite and Enderscape-backed Shadoline Block. C29 supplies the six Mossy Oak wood forms. C30 supplies 22 Macaw door alternatives for each of Veiled, Celestial, Murublight and Mossy Oak."
       }
     ]
   },
   "state": {
-    "milestone": "The two Mossy Oak selectors resolved in their intended order with AMC C29. With AMC absent the original Ribbits fence pair remained available. Owner verification is pending.",
+    "milestone": "Four native-parent door selectors passed controlled registry, transfer, recipe and client viewport checks. Owner gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C28 (0.1.0-canary28)",
-        "canary": 28,
-        "embedded_version": "0.1.0-canary28",
+        "version": "C29 (0.1.0-canary29)",
+        "canary": 29,
+        "embedded_version": "0.1.0-canary29",
         "artifact": {
-          "filename": "IBF C28.jar",
-          "sha256": "de912d4753f69cbb6cf53e371659bfa91b57392ae48eec868da367d6b735f3c5"
+          "filename": "IBF C29.jar",
+          "sha256": "b5ef2765538d49ce46b8d51b97873026e03143350819ebbe82c8cf44f1ab4f97"
         },
-        "built_at": "2026-11-22T01:45:17.1216990Z",
-        "source_commit": "89523164812b77f71a02ff07e2e286e9b6d55eff",
+        "built_at": "2026-11-23T00:09:12.2693718Z",
+        "source_commit": "b7729409df7456e48989c0081d9c17d1551d051d",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -177,14 +178,14 @@
               "predicate": "=2.0pre4+26.2-enderscape-dev.7",
               "reason": "BBB dev.7 supplies the audited Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package. Its provider version does not support Fabric semantic version ordering. The dev.6 provider lacks the required package.",
               "regression_evidence": [
-                "Fresh C28 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
+                "Fresh C29 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
                 "The Fabric VersionPredicate equality check accepts dev.7 and rejects the incompatible pre-C9 pale-oak dev.6 package before ShapeMap resolution.",
-                "The C28 JUnit suite verified the exact BBB provider. With Enderscape present, both AMC configurations passed 38 controlled GameTests. With Enderscape absent, both passed the focused provider-matrix GameTest."
+                "The C29 JUnit suite verified the exact BBB provider. With Enderscape present, both AMC configurations passed 38 controlled GameTests. With Enderscape absent, both passed the focused provider-matrix GameTest."
               ]
             }
           ]
         },
-        "summary": "Extends the Ribbits Mossy Oak fence selector with AMC Frame and Lattice and adds a four-member Trim detail selector."
+        "summary": "Adds four 23-member two-high door selectors with native Enderscape and Ribbits parents and 88 AMC Macaw designs."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -221,10 +222,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 28,
-    "activity_at": "2026-11-22T01:51:03Z",
-    "updated_at": "2026-11-22T01:51:03Z",
-    "last_codex_at": "2026-11-22T01:51:03Z",
-    "source_commit": "89523164812b77f71a02ff07e2e286e9b6d55eff"
+    "revision": 29,
+    "activity_at": "2026-11-23T00:18:33Z",
+    "updated_at": "2026-11-23T00:18:33Z",
+    "last_codex_at": "2026-11-23T00:18:33Z",
+    "source_commit": "b7729409df7456e48989c0081d9c17d1551d051d"
   }
 }
