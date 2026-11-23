@@ -174,11 +174,11 @@ public class DDRegistry
 	}
 	
 	public static Item createDoorItem(String name, Block block) {
-		return new BlockItem(block, new Item.Properties().setId(itemKey(name)));
+		return createDoorItem(name, block, false);
 	}
 
 	public static Item createDoorItem(String name, Block block, boolean fireResistant) {
-		Item.Properties properties = new Item.Properties().setId(itemKey(name));
+		Item.Properties properties = new Item.Properties().setId(itemKey(name)).useBlockDescriptionPrefix();
 		return new BlockItem(block, fireResistant ? properties.fireResistant() : properties);
 	}
 

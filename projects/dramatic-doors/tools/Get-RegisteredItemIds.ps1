@@ -1,5 +1,8 @@
 param(
-    [switch]$ValidateDefinitions
+    [switch]$ValidateDefinitions,
+    [string]$Artifact,
+    [string]$PreviousArtifact,
+    [string]$NameReport
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,6 +17,7 @@ $names = @{}
 }
 
 $keys = [System.Collections.Generic.HashSet[string]]::new()
+$nativeKeys = [System.Collections.Generic.HashSet[string]]::new()
 $unparsed = [System.Collections.Generic.List[string]]::new()
 
 $fabricCompat = Join-Path $projectRoot 'fabric/src/main/java/com/fizzware/dramaticdoors/fabric/NativeDoorCompat.java'
@@ -24,8 +28,11 @@ Get-ChildItem -LiteralPath $javaRoot,$fabricCompat -Recurse -Filter '*.java' | F
         if ($code -match 'watch\("[^"]+", DDNames\.(\w+), DDNames\.(\w+)\)') {
             [void]$keys.Add($Matches[1])
             [void]$keys.Add($Matches[2])
+            [void]$nativeKeys.Add($Matches[1])
+            [void]$nativeKeys.Add($Matches[2])
         } elseif ($code -match 'queueNativeDoor\(DDNames\.(\w+)') {
             [void]$keys.Add($Matches[1])
+            [void]$nativeKeys.Add($Matches[1])
         } elseif ($code -match 'DDRegistry\.register(?:Weathering|Sliding|Stable)?DoorBlockAndItem\(') {
             $match = [regex]::Match($code, 'register(?:Weathering|Sliding|Stable)?DoorBlockAndItem\(DDNames\.(\w+),\s*(?:DDNames\.(\w+)|null),.*?,\s*(true|false)(?:,\s*WeatherState\.\w+)?\);\s*$')
             if (-not $match.Success) {
@@ -159,3 +166,17 @@ if ($errors.Count -gt 0) {
     $errors | ForEach-Object { Write-Error $_ }
     exit 1
 }
+
+if (-not $Artifact) {
+    $version = (Get-Content -Raw -LiteralPath (Join-Path $projectRoot 'gradle.properties') | ConvertFrom-StringData).mod_version
+    $Artifact = Join-Path $projectRoot "fabric/build/libs/dramaticdoors-$version.jar"
+}
+$arguments = @('-B', (Join-Path $PSScriptRoot 'verify_door_names.py'), $Artifact)
+if ($PreviousArtifact) { $arguments += @('--previous', $PreviousArtifact) }
+if ($NameReport) { $arguments += @('--report', $NameReport) }
+$nativeIds = @($nativeKeys | ForEach-Object { $names[$_] })
+$ids | ForEach-Object {
+    $group = if ($_ -in $nativeIds) { 'native' } elseif ($_ -in $amcIds) { 'amc' } else { 'legacy' }
+    "$_`t$group"
+} | & python @arguments
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
