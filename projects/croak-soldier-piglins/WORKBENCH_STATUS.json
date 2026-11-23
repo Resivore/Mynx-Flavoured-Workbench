@@ -15,7 +15,7 @@
       "Render ordinary adult piglins using the Croak Soldier rig, atlas, and authored keyframes."
     ],
     "scope": [
-      "Client-side external archive binding, animation state selection, and exact entity/render-state dispatch."
+      "Client-only adult piglin state extraction and submission, external or privately packaged Soldier resources, original animation controllers, and activation diagnostics."
     ],
     "boundaries": {
       "owned_paths": [
@@ -47,23 +47,23 @@
     ]
   },
   "state": {
-    "milestone": "Canary 1 passed off-game bake and archive checks. In-game appearance, transitions and EMF/ETF coexistence await owner observations.",
+    "milestone": "C1 RUNTIME_FAIL: the owner observed ordinary adults remaining vanilla in a bastion with the reference JVM argument supplied. C2 passed off-game resource, renderer and dispatch fixtures; in-game visibility is unverified.",
     "releases": {
       "current": {
-        "version": "C1",
-        "canary": 1,
-        "embedded_version": "0.1.0+26.2-canary1",
+        "version": "C2",
+        "canary": 2,
+        "embedded_version": "0.1.0+26.2-canary2",
         "artifact": {
-          "filename": "croak-soldier-piglins-0.1.0+26.2-canary1.jar",
-          "sha256": "0c0ae5382fa1fb8e7952f45fa38836b756d90ec7b9f46978a1a6b5ab5e113a32"
+          "filename": "croak-soldier-piglins-0.1.0+26.2-canary2-private.jar",
+          "sha256": "e1623d84ea22863fab114eff2bdb8b5086c3f4cd39633eaf86746eca72d48f76"
         },
-        "built_at": "2026-11-23T07:17:33.145103Z",
-        "source_commit": "db298f859c11c2da95bdb3ea9e482174e0606887",
+        "built_at": "2026-11-23T16:19:46.768233Z",
+        "source_commit": "eb49b73f8145639cf801239fe5e822e5eb21747c",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Renders ordinary adult piglins using the original Croak Soldier assets and five animation clips from a user-supplied archive."
+        "summary": "Binds Soldier rendering to the registered adult piglin path and supplies a private drop-in with activation diagnostics."
       },
       "accepted": null,
       "rollback": null,
@@ -77,10 +77,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-11-23T07:19:03.151172Z",
-    "updated_at": "2026-11-23T07:19:03.151172Z",
-    "last_codex_at": "2026-11-23T07:19:03.151172Z",
-    "source_commit": "db298f859c11c2da95bdb3ea9e482174e0606887"
+    "revision": 2,
+    "activity_at": "2026-11-23T16:23:37.987227Z",
+    "updated_at": "2026-11-23T16:23:37.987227Z",
+    "last_codex_at": "2026-11-23T16:23:37.987227Z",
+    "source_commit": "eb49b73f8145639cf801239fe5e822e5eb21747c"
   }
 }
