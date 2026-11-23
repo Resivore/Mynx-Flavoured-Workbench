@@ -38,7 +38,8 @@
       "Generate one Layer, Corner, and Quarter Column per supported canonical family while preserving Vertical Slab and Step, deterministic selector order, one-source economy, orientation, waterlogging, collision, and drops.",
       "Provide primary Fabric ID `cnm_terrain_slabs_compat` and verified legacy alias `more_slabs_stairs_and_walls` from the same mod container and shared version `4.2.53-bge.canary109.amc-calcite-shadoline+26.2`.",
       "Preserve C58 native registry/resource identities while exposing one canonical nine-role family per exact optional source variant: 52 Macaw patterned full blocks plus five distinct Macaw soil Path blocks, six Mynx Trees log/wood/leaf sources, Ribbits Mossy Oak Planks plus Red Toadstool, Brown Toadstool, and Toadstool Stem, all 12 BBB beam parents including Pale Oak, 68 exact Enderscape sources, the provider-owned Mossy Stone root, and 64 AMC patterned full blocks. AMC registers the original 16 before the EndStoneBricksBlocks return hook and the 16 Tuff, Cinnabar, Sulfur and Smooth Basalt patterns before the BaseStoneFamilies return hook. C107 adds twelve Enderscape-backed AMC patterns at the return of AMC's own EnderscapeFamilies.registerAfterProvider callback. C108 uses the same base stone and optional Enderscape callbacks to admit the exact registered Purpur, Resin and Dusk Purpur pattern IDs. C109 extends those same checks to the four Calcite and four Enderscape-backed Shadoline Block patterns. C93 adopts exact vanilla or Enderscape Slab/Stairs/Wall blocks wherever supplied, suppresses overlapping fallback registrations while Enderscape is loaded, supplies only genuinely absent standard roles plus the five BGE-specific roles, and validates exactly one visible nine-role ShapeMap variation for each explicit family. The six stripped Enderscape log/wood/stem/hyphae entries retain their exact canonical side/end contracts without fabricated stripping transitions. Enderscape's actual `nebulite_block` is the requested Block of Nebulite and `raw_shadoline_block` is the requested Block of Raw Shadoline; absent `block_of_raw_magnia` remains a declared exclusion. The three Ribbits toadstools remain distinct source identities; every exposed face of each generated BGE role uses that source's assigned exterior texture, with no generated `toadstool_inside` route and no provider texture bytes included. BBB's original slab and stair registrations remain untouched but are excluded from canonical selectors; C69's BGE AxisSlab and AxisStairs remain canonical, BBB's thin Beam Wall topology remains canonical for all 12 Beam families, and the three Enderscape private Beam variants preserve that topology with their own palettes.",
-      "The Ribbits plank remains the canonical parent of its 18-position selector. The Beam root and eight derived forms use BBB Oak Beam side and end artwork assembled privately with the Ribbits moss footprint. The Beam Wall uses BBB's thin visible post and arms and its conditional collision center."
+      "The Ribbits plank remains the canonical parent of its 18-position selector. The Beam root and eight derived forms use BBB Oak Beam side and end artwork assembled privately with the Ribbits moss footprint. The Beam Wall uses BBB's thin visible post and arms and its conditional collision center.",
+      "Adds Silver Birch and Wisteria plank/beam pairs, three sets of raw/stripped log/wood families, and native role-to-role axe stripping. The existing Ribbits Mossy Oak Beam is reused. The C8 tree provider retains its former bindings when new native timber is unavailable."
     ],
     "boundaries": {
       "owned_paths": [
@@ -95,18 +96,18 @@
     ]
   },
   "state": {
-    "milestone": "Appends nine selectively mossed BBB-style Beam forms to the nine existing Ribbits Mossy Oak Planks selector positions. Controlled verification passed. Owner gameplay and visual checks are pending.",
+    "milestone": "Extends native timber, plank and thin beam-wall geometry to Silver Birch, Wisteria and Mossy Oak. Owner gameplay and visual verification are pending.",
     "releases": {
       "current": {
-        "version": "C110 (4.2.54-bge.canary110.mossy-oak-beam+26.2)",
-        "canary": 110,
-        "embedded_version": "4.2.54-bge.canary110.mossy-oak-beam+26.2",
+        "version": "C111 (4.2.55-bge.canary111.wood-families+26.2)",
+        "canary": 111,
+        "embedded_version": "4.2.55-bge.canary111.wood-families+26.2",
         "artifact": {
-          "filename": "BGE C110.jar",
-          "sha256": "aa2009705e0fa4ef309b79ccd1701edf4a82ee2a601beecb1d8924afbd90191d"
+          "filename": "BGE C111.jar",
+          "sha256": "3853e2078d153c2f7a584d269cd73b9fb19f48bcb010131116323d9941f570e2"
         },
-        "built_at": "2026-11-23T05:22:26.7406677Z",
-        "source_commit": "24a96cb8b5261c9b0a1f1358fc4a6abd3bec8db2",
+        "built_at": "2026-11-23T06:25:51.7468601Z",
+        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -117,13 +118,13 @@
               "predicate": "~26.2",
               "reason": "The 26.2 registry, model, placement and loot contracts are exercised against this Minecraft target.",
               "regression_evidence": [
-                "Java 25 build, Minecraft 26.2 Fabric, SHA-256 aa2009705e0fa4ef309b79ccd1701edf4a82ee2a601beecb1d8924afbd90191d, source 24a96cb8b5261c9b0a1f1358fc4a6abd3bec8db2.",
-                "All 164 server GameTests passed, including 324 component-preserving transfers, separate Planks and Beam walls, all Beam roles, survival placement, CNM's inherited plank drop and direct geometry loot. The absent-provider model audit and its four server tests passed. All 990 generated role blockstates and item definitions resolved with 11,618 model references. The Mossy Oak post and side models matched BBB geometry and UVs. Both 16 by 16 Beam sprites matched AMC's transfer pixel for pixel, changing 63 texels per sprite. Against C109, 11,246 payloads are identical, nine changed and two private PNGs were added. Architecture, native semantics, glass, Bookshelf and archive checks passed."
+                "Minecraft 26.2 Fabric, Java 25, SHA-256 3853e2078d153c2f7a584d269cd73b9fb19f48bcb010131116323d9941f570e2, source 45b9ab177aa0d5b8bf8f04af3189b0457c01a748.",
+                "Java 25 production build and all 164 default server GameTests passed. Combined CNM/IBF tests found 18 log/wood roles in each finish, stripped every raw role to its counterpart across all three woods, and checked material axes and the 18-position plank/beam sets. The existing beam-wall topology, resource generation and leaf behavior suites passed."
               ]
             }
           ]
         },
-        "summary": "Appends nine selectively mossed BBB-style Beam forms to the nine existing Ribbits Mossy Oak Planks selector positions."
+        "summary": "Extends native timber, plank and thin beam-wall geometry to Silver Birch, Wisteria and Mossy Oak."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -193,10 +194,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 72,
-    "activity_at": "2026-11-23T05:39:35Z",
-    "updated_at": "2026-11-23T05:39:35Z",
-    "last_codex_at": "2026-11-23T05:39:35Z",
-    "source_commit": "24a96cb8b5261c9b0a1f1358fc4a6abd3bec8db2"
+    "revision": 73,
+    "activity_at": "2026-11-23T07:04:23Z",
+    "updated_at": "2026-11-23T07:04:23Z",
+    "last_codex_at": "2026-11-23T07:04:23Z",
+    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
   }
 }

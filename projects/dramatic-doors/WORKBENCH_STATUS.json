@@ -29,7 +29,8 @@
       "Preserve facing, hinge, open and powered synchronization, placement, breaking, drops, collision, pathfinding, waterlogging, copper weathering and waxing, recipes, resources, configuration, and compatible AI and mixin behavior.",
       "Preserve the accepted Minecraft 26.2 recipe encoding and load conditions plus the Macaw initialization, property-optional waterlogging, weathering-registration, and mixin-selector compatibility fixes for existing adapters.",
       "Maintain the native Pale Oak, Enderscape Veiled, Celestial and Murublight, and Ribbits Mossy Oak short and tall pairs with exact source resolution and provider-owned artwork.",
-      "Support the 88 AMC C30 Macaw-style two-block source doors as optional three-block tall variants with their corresponding material artwork and door behavior."
+      "Support the 88 AMC C30 Macaw-style two-block source doors as optional three-block tall variants with their corresponding material artwork and door behavior.",
+      "Four native door items and 44 optional tall Macaw items use the real source door types. Mynx Wisteria uses short_mynx_wisteria_door and tall_mynx_wisteria_door so Environmental retains its original IDs. The short Wisteria front and three stacked tall panels preserve the supplied artwork."
     ],
     "boundaries": {
       "owned_paths": [
@@ -100,23 +101,23 @@
     ]
   },
   "state": {
-    "milestone": "C14 restores legacy door item names. The packaged catalog passed in all three maintained locales, and all 355 doors loaded in the controlled English client passed Creative Search and JEI checks. Owner verification is pending.",
+    "milestone": "Adds independent short and tall Silver Birch and Wisteria doors and 44 matching tall AMC Macaw designs. Owner gameplay and visual verification are pending.",
     "releases": {
       "current": {
-        "version": "C14",
-        "canary": 14,
-        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary14",
+        "version": "C15",
+        "canary": 15,
+        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary15",
         "artifact": {
-          "filename": "DD C14.jar",
-          "sha256": "9623cdcdf79ce449a3c0832fefda9276fa37435611d496dbd40eea7392052ddd"
+          "filename": "DD C15.jar",
+          "sha256": "d23506de3812718aa5c4018f9970019064d84ec248339a2709cd63abb9ea9e35"
         },
-        "built_at": "2026-11-23T04:07:47.055514Z",
-        "source_commit": "b4f33ed3bcb9a46434934fd853ec56ec69b3be42",
+        "built_at": "2026-11-23T06:56:22.6318613Z",
+        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Restores the established display names for legacy short and tall door items and fills missing Russian and Simplified Chinese door names."
+        "summary": "Adds independent short and tall Silver Birch and Wisteria doors and 44 matching tall AMC Macaw designs."
       },
       "accepted": {
         "version": "C8 (legacy Canary 7)",
@@ -160,10 +161,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-11-23T04:08:56Z",
-    "updated_at": "2026-11-23T04:08:56Z",
-    "last_codex_at": "2026-11-23T04:08:56Z",
-    "source_commit": "b4f33ed3bcb9a46434934fd853ec56ec69b3be42"
+    "revision": 10,
+    "activity_at": "2026-11-23T07:04:23Z",
+    "updated_at": "2026-11-23T07:04:23Z",
+    "last_codex_at": "2026-11-23T07:04:23Z",
+    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
   }
 }

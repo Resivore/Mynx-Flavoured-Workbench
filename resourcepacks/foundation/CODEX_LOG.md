@@ -149,3 +149,14 @@ M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/5.png
 M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/7.png
 M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/8.png
 ```
+
+## 2026-11-23T07:04:23Z — Foundation Canary 7
+
+- Revision: 7
+- Source checkpoint: `45b9ab177aa0d5b8bf8f04af3189b0457c01a748`
+- Changes: Foundation v11 preserves the Goop palette for Silver Birch, restores ordinary Birch and its provider artwork, and adds Wisteria and Silver Birch to the existing plank CTM system. The log-top sprites remain in Mynx Trees. Unrelated foliage, Red Sandstone, Nether and End entries retain their previous payloads.
+- Build/static: Checked the ZIP, Matcha and Foundation input hashes, all 51 plank-overlay tiles for source RGB and exact mask alpha, and byte identity of unrelated entries. The coordinated audit resolved 15,467 graph references without Foundation and 15,549 with it at highest priority. Both new Silver Birch end sprites remained identical to the owner files in both cases.
+- Runtime: RUNTIME_UNTESTED. Owner gameplay and visual observations are pending.
+- Artifact: `Foundation v11.zip`, 15,459,810 bytes, SHA-256 `ac31fab940edc2caca1dd9c74bf6158861c267bece7d052a904639d7c9115f36`, finalized `2026-11-23T06:48:37.9559912Z`, embedded version `v11`.
+- Result: ACTIVE / STATIC_PASS.
+- Next state: Owner checks the exact artifact using TESTING.md.

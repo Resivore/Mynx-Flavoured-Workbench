@@ -39,7 +39,8 @@
       "Provide 17 Macaw trapdoor designs each for Veiled, Celestial, Murublight and Mossy Oak when Macaw's Trapdoors and the matching wood provider are present. Preserve the actual Macaw block types, state/model graphs, protected artwork and recipe grids.",
       "Add Bamboo log and plank parapets, blinds, curtain rod and louvered shutter using the Oak Macaw's Windows implementations. Add the Bamboo Ranch Trapdoor only when Macaw's Trapdoors is present. Use the native Bamboo Block and Bamboo Planks artwork.",
       "Provide seven wood accessories per Enderscape wood and nine for Mossy Oak, including wooden controls. Use native timber roles, design-specific regular shutter faces and luminance-ranked or selectively mossed Oak louvered shutters. Mossy Oak uses slabs in the two log recipe slots and three AMC Classic Trapdoors for its regular shutter.",
-      "Sixty window items cover three finishes and four Macaw geometries for Bamboo, Veiled, Celestial, Murublight and Mossy Oak. Ribbits also supplies the material for AMC's standing/wall sign, ceiling/wall hanging sign, shelf and wooden lantern."
+      "Sixty window items cover three finishes and four Macaw geometries for Bamboo, Veiled, Celestial, Murublight and Mossy Oak. Ribbits also supplies the material for AMC's standing/wall sign, ceiling/wall hanging sign, shelf and wooden lantern.",
+      "Under Mynx Trees C9, Silver Birch and Wisteria each receive seven BBB forms, twelve windows, seven accessories, 22 optional Macaw doors and 17 optional trapdoors. Ribbits provides the plank family for AMC boats. Earlier Ribbits-only recipes and native BBB slab slots remain available where appropriate."
     ],
     "boundaries": {
       "owned_paths": [
@@ -114,23 +115,23 @@
     ]
   },
   "state": {
-    "milestone": "Adds 60 Macaw-style wood windows and gives Ribbits Mossy Oak functional signs, a shelf and a BBB-style wooden lantern. Controlled verification passed. Owner gameplay and visual checks are pending.",
+    "milestone": "Adds 65 architectural forms per new tree family, both Mossy Oak boats and recipes that use native Mossy Oak timber when available. Owner gameplay and visual verification are pending.",
     "releases": {
       "current": {
-        "version": "C35 (0.1.0-canary35)",
-        "canary": 35,
-        "embedded_version": "0.1.0-canary35",
+        "version": "C36 (0.1.0-canary36)",
+        "canary": 36,
+        "embedded_version": "0.1.0-canary36",
         "artifact": {
-          "filename": "AMC C35.jar",
-          "sha256": "b1d5fd2bb5f1980ac470b8e273216396989330e801f87c7621b80bf16ca790d8"
+          "filename": "AMC C36.jar",
+          "sha256": "eded83f8a249cf090934f99b0445089b88b87764262458e42b40b15a1fa42bf9"
         },
-        "built_at": "2026-11-23T05:22:52.5006532Z",
-        "source_commit": "e9265d43d5226d89c592b3fa48d8ba5567b0f81e",
+        "built_at": "2026-11-23T06:52:58.3659924Z",
+        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 60 Macaw-style wood windows and gives Ribbits Mossy Oak functional signs, a shelf and a BBB-style wooden lantern."
+        "summary": "Adds 65 architectural forms per new tree family, both Mossy Oak boats and recipes that use native Mossy Oak timber when available."
       },
       "accepted": null,
       "rollback": null,
@@ -144,10 +145,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 36,
-    "activity_at": "2026-11-23T05:39:35Z",
-    "updated_at": "2026-11-23T05:39:35Z",
-    "last_codex_at": "2026-11-23T05:39:35Z",
-    "source_commit": "e9265d43d5226d89c592b3fa48d8ba5567b0f81e"
+    "revision": 37,
+    "activity_at": "2026-11-23T07:04:23Z",
+    "updated_at": "2026-11-23T07:04:23Z",
+    "last_codex_at": "2026-11-23T07:04:23Z",
+    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
   }
 }

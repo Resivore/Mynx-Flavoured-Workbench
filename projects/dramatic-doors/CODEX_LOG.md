@@ -93,3 +93,14 @@
 - Runtime: RUNTIME_UNTESTED for owner gameplay.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS. C8 remains the accepted rollback.
 - Next state: Owner checks inventory, tooltips, Creative Search and JEI on the installed stack against the C14 hash.
+
+## 2026-11-23T07:04:23Z — Dramatic Doors 26.2 Canary 15
+
+- Revision: 10
+- Source checkpoint: `45b9ab177aa0d5b8bf8f04af3189b0457c01a748`
+- Changes: Four native door items and 44 optional tall Macaw items use the real source door types. Mynx Wisteria uses short_mynx_wisteria_door and tall_mynx_wisteria_door so Environmental retains its original IDs. The short Wisteria front and three stacked tall panels preserve the supplied artwork.
+- Build/static: Four JUnit tests and two combined server GameTests passed, including every segment break, recipes, operation and two reloads. The packaged name audit verified 1,832 definitions in English, Russian and Simplified Chinese. With YACL 3.9.6 and JEI 30.18.0.144 the automated client checked 403 installed DD names, all 132 AMC tall doors and new wood models. A separate YACL 3.9.7 client fixture failed during ContainerEventHandler mixin transformation before rendering.
+- Runtime: RUNTIME_UNTESTED. Owner gameplay and visual observations are pending.
+- Artifact: `DD C15.jar`, 14,558,257 bytes, SHA-256 `d23506de3812718aa5c4018f9970019064d84ec248339a2709cd63abb9ea9e35`, finalized `2026-11-23T06:56:22.6318613Z`, embedded version `1.20.1-3.3.3+26.2-workbench-canary15`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS.
+- Next state: Owner checks the exact artifact using TESTING.md.

@@ -89,3 +89,14 @@
 - Artifact: Accepted/current `mynx-trees-private-0.1.0+26.2-canary8.jar`, SHA-256 `7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634`, source `a41446f956d73b7d1418576dc8bfde4c7f6cff15`.
 - Result: ACCEPTED — exact current release is `READY_TO_TEST_VERIFIED` and `RUNTIME_PASS`; no blocker is recorded.
 - Next state: Retain this exact identity for future regression testing; do not transfer this PASS to another artifact, version, hash, or source checkpoint.
+
+## 2026-11-23T07:04:23Z — Mynx Trees Canary 9
+
+- Revision: 10
+- Source checkpoint: `45b9ab177aa0d5b8bf8f04af3189b0457c01a748`
+- Changes: Native signs, shelves, boats and the full crafted families use dedicated identities. Mossy Oak supplies four timber forms with Ribbits-conditional plank recipes. Natural Swamp Oak and Fallen Oak use a one-third per-position roll, and the six Fancy Oak configurations use one tenth. Sapling growth and existing terrain retain their prior behavior.
+- Build/static: Java 25 build passed 25 JUnit tests and 18 package checks. Both supplied 16×16 Silver Birch PNGs match the JAR byte-for-byte (barked 1bb732585bfff63d251076a45ed5631cae15dd9d33123fd8086ecd2794eda857, stripped 726a6ae77cfc9bcfed4e8f355bbf13ab4227c5689ad26b1750c7d831bab573cc). All log axes, the soil-base end binding and both six-sided wood models were checked. The generation test sampled 32,768 positions per probability, repeated seeds and checked adjacent positions. Isolated combined GameTests exercised vessel identity, sign placement and persistence, shelf inventory and redstone.
+- Runtime: RUNTIME_UNTESTED. Owner gameplay and visual observations are pending.
+- Artifact: `mynx-trees-private-0.1.0+26.2-canary9.jar`, 268,765 bytes, SHA-256 `af6b077427faeb8c41f6aa8d42dd133880a67af1cb0f6c213cd64f3c02204200`, finalized `2026-11-23T06:50:15.9199823Z`, embedded version `0.1.0+26.2-canary9`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS.
+- Next state: Owner checks the exact artifact using TESTING.md.

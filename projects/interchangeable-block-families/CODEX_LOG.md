@@ -378,3 +378,14 @@
 - Artifact: `IBF C35.jar`, 72,042 bytes, SHA-256 `6fe15df5178bfc9ff1285128229d0bdadebe35d39c2f925da3c85af1a570dc67`, built_at `2026-11-23T05:28:22.4615899Z`, embedded version `0.1.0-canary35`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify appearance and interaction in TESTING.md against these exact bytes.
+
+## 2026-11-23T07:04:23Z — Interchangeable Block Families Canary 36
+
+- Revision: 36
+- Source checkpoint: `45b9ab177aa0d5b8bf8f04af3189b0457c01a748`
+- Changes: Each new wood provides ten selectors across the two door heights, trapdoors, three window finishes, fixtures, fence/gate/frame/lattice, BBB details and button/accessories. Only active provider batches participate. CNM remains the switching, transfer, loot and recipe-cleanup authority.
+- Build/static: All 55 JUnit cases, production isolation and all 39 full-provider server GameTests passed. The combined harness checked literal registry order, switching, canonical parents, 304 families and 2,449 items. The older provider configuration also passed 39 tests. AMC-absent and Enderscape-absent configurations exercised conditional closure.
+- Runtime: RUNTIME_UNTESTED. Owner gameplay and visual observations are pending.
+- Artifact: `IBF C36.jar`, 75,385 bytes, SHA-256 `969085ee8c592feeaaaa8f6c9db8c0529a352f0597970af7f49cffe263dea696`, finalized `2026-11-23T06:54:21.4392240Z`, embedded version `0.1.0-canary36`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS.
+- Next state: Owner checks the exact artifact using TESTING.md.

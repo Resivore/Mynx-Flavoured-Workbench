@@ -24,16 +24,17 @@
       "Use AMC registrations for the Stone accessories and the Andesite, Diorite, and Granite accessory, masonry detail, and Gothic window forms. Integrate the thirteen AMC Mud Bricks forms with the Macaw Mud Brick Gothic Window and Arrow Slit. Integrate the Prismarine Bricks and Dark Prismarine accessories and masonry details, and the eleven thin Prismarine Bricks paths and pavings. Integrate the twelve AMC Sandstone and Red Sandstone forms into their accessory, window, and masonry detail selectors. Integrate the Deepslate, Quartz and Nether Bricks accessory, window, masonry and thin path forms admitted by C21. Integrate End Stone Bricks accessories, windows, masonry details and thin paths and pavings, and the Polished Blackstone Louvered Shutter. Integrate the fifteen AMC Mossy Stone Bricks forms into Button, Column and Window selectors. Integrate the AMC Tuff, Cinnabar, Sulfur and Smooth Basalt accessories, masonry details, windows and thin paths and pavings. Integrate the AMC Veradite, Mirestone and Kurodite forms with the existing polished Enderscape controls. Integrate the 78 AMC Purpur, Dusk Purpur and Resin selector members. Integrate the AMC Calcite and Shadoline Block accessories, masonry, windows and thin paths."
     ],
     "scope": [
-      "With AMC C35 and Enderscape 3.0.2, 284 families resolve across 2,255 distinct items. With AMC alone, 232 families resolve across 1,828 items. With Enderscape alone, 181 families resolve across 1,412 items. With neither optional provider, 164 families resolve across 1,360 items. The largest family has 23 members with AMC and 22 without AMC.",
-      "Display fixtures cover twelve vanilla woods, three Enderscape woods, and AMC's Ribbits-backed Mossy Oak. Each selector uses the Sign as its canonical parent followed by Hanging Sign and Shelf. The standing, wall and hanging placement states share their respective inventory items.",
+      "With Mynx Trees C9, Dramatic Doors C15, AMC C36 and Enderscape, 304 selectors resolve across 2,449 distinct items. Without the tree provider the prior full catalog resolves 284 selectors across 2,255 items. The largest family contains 23 members.",
+      "Display fixtures cover twelve vanilla woods, three Enderscape woods, two Mynx Trees woods, and AMC's Ribbits-backed Mossy Oak. Each selector uses the Sign as its canonical parent followed by Hanging Sign and Shelf. The standing, wall and hanging placement states share their respective inventory items.",
       "Preserve pre/post ShapeMap collision validation, equal-component-patch equivalence, fail-closed transfer validation, audited alternate-door loot narrowing, recipe cleanup contracts, Quick Stack Nearby affinity, and large-family viewport handling.",
-      "Retain the accepted C7 and historical rollback C3 artifacts while C35 undergoes owner-directed verification.",
+      "Retain the accepted C7 and historical rollback C3 artifacts while C36 undergoes owner-directed verification.",
       "Extends the Ribbits Mossy Oak fence selector with AMC Frame and Lattice and adds a four-member Trim detail selector.",
       "Adds four 23-member two-high door selectors with native Enderscape and Ribbits parents and 88 AMC Macaw designs.",
       "Adds 17 AMC Macaw alternatives to each native Veiled, Celestial and Murublight trapdoor selector. Groups all 17 AMC Mossy Oak trapdoors under Classic, preserving its crafting recipe and suppressing the other 16.",
       "Adds four 23-member Dramatic Doors tall Macaw selectors and integrates six AMC Bamboo variants into the existing accessory and trapdoor selectors.",
       "Appends the matching native Dramatic Doors short door to each of the 16 wooden Button selectors, after the Louvered Shutter. Without AMC, the three installed Enderscape wood families retain their Button, Pressure Plate and short door. The Mossy Oak short door retains independent acquisition when its AMC Button is absent.",
-      "AMC C35 supplies 15 ordered Window, Window 2, Four Window and Pane Window selectors and the Mossy Oak Sign, Hanging Sign and Shelf selector. The Mossy Oak Lantern retains its independent recipe. BGE/CNM owns all 18 Mossy Oak Planks and Beam roles."
+      "AMC C35 supplies 15 ordered Window, Window 2, Four Window and Pane Window selectors and the Mossy Oak Sign, Hanging Sign and Shelf selector. The Mossy Oak Lantern retains its independent recipe. BGE/CNM owns all 18 Mossy Oak Planks and Beam roles.",
+      "Each new wood provides ten selectors across the two door heights, trapdoors, three window finishes, fixtures, fence/gate/frame/lattice, BBB details and button/accessories. Only active provider batches participate. CNM remains the switching, transfer, loot and recipe-cleanup authority."
     ],
     "boundaries": {
       "owned_paths": [
@@ -44,7 +45,7 @@
         "Minecraft, Enderscape, Macaw, and Dramatic Doors providers own native blocks, placement, collision, redstone, recipes and costs, drops, copper weathering, waxing, scraping, and lightning behavior; IBF does not normalize or replace those semantics.",
         "Nibaru and Block Geometry Extensions own ordinary slabs, stairs, walls, and generated geometry and material behavior, while Quick Stack Nearby and its compatibility layer only consume Clutter No More affinity; IBF does not modify, duplicate, or bundle those projects.",
         "An absent AMC parent omits its whole family. Without Enderscape, IBF omits families backed by Enderscape or its optional AMC and BBB packs. All active families retain their ordered, registered members and collision guards. Native two-high and tall doors without their AMC-backed alternatives remain independent.",
-        "C35 awaits owner acceptance. The server release record and Minecraft testing profiles are separately owned.",
+        "C36 awaits owner acceptance. The server release record and Minecraft testing profiles are separately owned.",
         "Legacy status READMEs, provenance and audit narratives, historical C1/C2 matrices and binaries, manager records, snapshots, branches, worktrees, and Git history are not imported."
       ]
     },
@@ -160,18 +161,18 @@
     ]
   },
   "state": {
-    "milestone": "Adds 15 four-member wood window selectors and the Mossy Oak Sign, Hanging Sign and Shelf selector. Controlled verification passed. Owner gameplay and visual checks are pending.",
+    "milestone": "Adds 20 ordered Silver Birch and Wisteria selectors across 194 items while preserving native acquisition and BGE geometry ownership. Owner gameplay and visual verification are pending.",
     "releases": {
       "current": {
-        "version": "C35 (0.1.0-canary35)",
-        "canary": 35,
-        "embedded_version": "0.1.0-canary35",
+        "version": "C36 (0.1.0-canary36)",
+        "canary": 36,
+        "embedded_version": "0.1.0-canary36",
         "artifact": {
-          "filename": "IBF C35.jar",
-          "sha256": "6fe15df5178bfc9ff1285128229d0bdadebe35d39c2f925da3c85af1a570dc67"
+          "filename": "IBF C36.jar",
+          "sha256": "969085ee8c592feeaaaa8f6c9db8c0529a352f0597970af7f49cffe263dea696"
         },
-        "built_at": "2026-11-23T05:28:22.4615899Z",
-        "source_commit": "cbaae6dde05529af9f5d24c5f206eaf743603f53",
+        "built_at": "2026-11-23T06:54:21.4392240Z",
+        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -182,14 +183,14 @@
               "predicate": "=2.0pre4+26.2-enderscape-dev.7",
               "reason": "BBB dev.7 supplies the audited Enderscape Frame, Lattice, Trim, Balustrade, Support, and Pallet package. Its provider version does not support Fabric semantic version ordering. The dev.6 provider lacks the required package.",
               "regression_evidence": [
-                "Fresh C35 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
+                "Fresh C36 BuildingButBetterEnderscapeProviderContractTest, BuildingButBetterFamiliesTest, and ExactProviderArtifactIdentityTest verify exact BBB dev.7 filename, size, SHA-256, the literal provider items, required resources, and Fabric metadata.",
                 "The Fabric VersionPredicate equality check accepts dev.7 and rejects the incompatible pre-C9 pale-oak dev.6 package before ShapeMap resolution.",
-                "The C35 JUnit suite verified the exact BBB provider. With Enderscape present, both AMC configurations passed 39 controlled GameTests. With Enderscape absent, both passed the focused provider-matrix GameTest."
+                "All 55 JUnit cases, production isolation and all 39 full-provider server GameTests passed. The combined harness checked literal registry order, switching, canonical parents, 304 families and 2,449 items. The older provider configuration also passed 39 tests. AMC-absent and Enderscape-absent configurations exercised conditional closure."
               ]
             }
           ]
         },
-        "summary": "Adds 15 four-member wood window selectors and the Mossy Oak Sign, Hanging Sign and Shelf selector."
+        "summary": "Adds 20 ordered Silver Birch and Wisteria selectors across 194 items while preserving native acquisition and BGE geometry ownership."
       },
       "accepted": {
         "version": "C7 (0.1.0-canary7)",
@@ -226,10 +227,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 35,
-    "activity_at": "2026-11-23T05:39:35Z",
-    "updated_at": "2026-11-23T05:39:35Z",
-    "last_codex_at": "2026-11-23T05:39:35Z",
-    "source_commit": "cbaae6dde05529af9f5d24c5f206eaf743603f53"
+    "revision": 36,
+    "activity_at": "2026-11-23T07:04:23Z",
+    "updated_at": "2026-11-23T07:04:23Z",
+    "last_codex_at": "2026-11-23T07:04:23Z",
+    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
   }
 }

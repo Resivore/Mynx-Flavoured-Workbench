@@ -10,25 +10,26 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Provide Silver Birch, Wisteria and Sweet Violets as separate Minecraft Java 26.2 Fabric content using supplied private textures.",
       "Preserve target-version tree shapes and density while replacing old-growth birch materials and selecting 25% Wisteria in cherry groves."
     ],
     "scope": [
-      "Nine block/item identities, direct vanilla plank recipes, all-bark wood recipes, vanilla axe stripping, tool-gated leaf collection, leaf-to-sapling recipes, composting and normal sapling behavior.",
+      "Native plank, timber, stripped and crafted wood identities alongside the existing tool-gated leaves, saplings, fuel, composting and decorations.",
       "Loaded tree/fallen-tree material substitution preserves shape parameters and applicable decorators; biome-scoped selectors cover standing/fallen birch variants and weighted cherry/Wisteria attempts.",
       "Preferred tree-associated Sweet Violets with a bounded successful-growth decorator; remove the independent grove petal pass; retain Nemo ordinary cherry and unrelated decorators without a required Nemo dependency.",
       "Position-dependent compensated mustard-gold Silver Birch leaf tint with exact existing hue variation and saturation, a normal cube leaf item with one matching default tint, #B0C73A old-growth grass tint, separately namespaced Wisteria particles, and the standalone user-supplied Wisteria log-top texture.",
       "Optional client Iris material-map fallback: only absent Silver Birch states inherit corresponding loaded vanilla Birch Leaves state assignments, while only absent Wisteria states continue inheriting matching vanilla Cherry Leaves state IDs; no shader-pack/profile edits or fake animation.",
-      "Client-only soil-dependent base bark on upright Silver Birch log sides, using the exact supplied packaged texture and extensible silver_birch_base_soils block tag; ordinary items and live vanilla birch end grain remain. Contextual geometry keys and resource/tag/neighbor rebuild handling preserve current placed trees without saved-state changes."
+      "Client-only soil-dependent base bark on upright Silver Birch log sides, using the exact supplied packaged texture and extensible silver_birch_base_soils block tag; items use ordinary bark and both base-model ends use the namespaced owner sprite. Contextual geometry keys and resource/tag/neighbor rebuild handling preserve current placed trees without saved-state changes.",
+      "Native signs, shelves, boats and the full crafted families use dedicated identities. Mossy Oak supplies four timber forms with Ribbits-conditional plank recipes. Natural Swamp Oak and Fallen Oak use a one-third per-position roll, and the six Fancy Oak configurations use one tenth. Sapling growth and existing terrain retain their prior behavior."
     ],
     "boundaries": {
       "owned_paths": [
         "projects/mynx-trees"
       ],
       "exclusions": [
-        "No new planks, custom stripped blocks, additional wood families, biomes, RU world generation, runtime RU dependency, CTM base-log block or bushy/drooping geometry.",
+        "No new biomes, independent Mossy Oak tree species, RU runtime dependency, CTM base-log block or bushy/drooping geometry.",
         "No runtime deployment, slot changes, retrogen, existing-tree conversion, profile mutation or protected gameplay-instance access.",
         "No redistribution of supplied restricted pixels, reference binaries or privately retained artifact."
       ]
@@ -61,22 +62,23 @@
     ]
   },
   "state": {
-    "milestone": "Exact current 0.1.0+26.2-canary8 is ACCEPTED in Workbench Stack v27 after the user's 2026-09-06 user-reported external aggregate PASS. Artifact mynx-trees-private-0.1.0+26.2-canary8.jar SHA-256 7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634 and source a41446f956d73b7d1418576dc8bfde4c7f6cff15 were bound exactly; No Test Slot deployment or slot history was created; Slot A remained empty and Slot B was preserved.",
+    "milestone": "Adds native Silver Birch and Wisteria wood families, owner-authored rounded Silver Birch ends, and naturally occurring Mossy Oak timber. Owner gameplay and visual verification are pending.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary8",
-        "canary": 8,
+        "version": "0.1.0+26.2-canary9",
+        "canary": 9,
         "artifact": {
-          "filename": "mynx-trees-private-0.1.0+26.2-canary8.jar",
-          "sha256": "7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634"
+          "filename": "mynx-trees-private-0.1.0+26.2-canary9.jar",
+          "sha256": "af6b077427faeb8c41f6aa8d42dd133880a67af1cb0f6c213cd64f3c02204200"
         },
-        "built_at": "2026-09-06T23:04:54.4120375Z",
-        "source_commit": "a41446f956d73b7d1418576dc8bfde4c7f6cff15",
+        "built_at": "2026-11-23T06:50:15.9199823Z",
+        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Provides Silver Birch, Wisteria, and Sweet Violets as separate Minecraft 26.2 Fabric content."
+        "summary": "Adds native Silver Birch and Wisteria wood families, owner-authored rounded Silver Birch ends, and naturally occurring Mossy Oak timber.",
+        "embedded_version": "0.1.0+26.2-canary9"
       },
       "accepted": {
         "version": "0.1.0+26.2-canary8",
@@ -93,21 +95,35 @@
         },
         "summary": "Provides Silver Birch, Wisteria, and Sweet Violets as separate Minecraft 26.2 Fabric content."
       },
-      "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
-      "accepted_rollback": "NO_ROLLBACK"
+      "rollback": {
+        "version": "0.1.0+26.2-canary8",
+        "canary": 8,
+        "artifact": {
+          "filename": "mynx-trees-private-0.1.0+26.2-canary8.jar",
+          "sha256": "7505c21dcb4553e79a051272695a352eb2749a9584949882c7683c6d90f6a634"
+        },
+        "built_at": "2026-09-06T23:04:54.4120375Z",
+        "source_commit": "a41446f956d73b7d1418576dc8bfde4c7f6cff15",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        },
+        "summary": "Provides Silver Birch, Wisteria, and Sweet Violets as separate Minecraft 26.2 Fabric content."
+      },
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
+      "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
-      "build": "STATIC_PASS",
-      "runtime": "RUNTIME_PASS"
+      "build": "CONTROLLED_VALIDATION_PASS",
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 9,
-    "activity_at": "2026-09-07T04:02:00Z",
-    "updated_at": "2026-09-07T04:02:00Z",
-    "last_codex_at": "2026-09-07T04:02:00Z",
-    "source_commit": "274e9b7e36a1c2b53395c725f1fc9f2fed4ad2e0"
+    "revision": 10,
+    "activity_at": "2026-11-23T07:04:23Z",
+    "updated_at": "2026-11-23T07:04:23Z",
+    "last_codex_at": "2026-11-23T07:04:23Z",
+    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
   }
 }

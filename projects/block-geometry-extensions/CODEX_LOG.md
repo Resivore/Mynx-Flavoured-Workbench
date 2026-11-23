@@ -713,3 +713,14 @@
 - Artifact: `BGE C110.jar`, 6,430,266 bytes, SHA-256 `aa2009705e0fa4ef309b79ccd1701edf4a82ee2a601beecb1d8924afbd90191d`, built_at `2026-11-23T05:22:26.7406677Z`, embedded version `4.2.54-bge.canary110.mossy-oak-beam+26.2`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify appearance and interaction in TESTING.md against these exact bytes.
+
+## 2026-11-23T07:04:23Z — Block Geometry Extensions (BGE) Canary 111
+
+- Revision: 73
+- Source checkpoint: `45b9ab177aa0d5b8bf8f04af3189b0457c01a748`
+- Changes: Adds Silver Birch and Wisteria plank/beam pairs, three sets of raw/stripped log/wood families, and native role-to-role axe stripping. The existing Ribbits Mossy Oak Beam is reused. The C8 tree provider retains its former bindings when new native timber is unavailable.
+- Build/static: Java 25 production build and all 164 default server GameTests passed. Combined CNM/IBF tests found 18 log/wood roles in each finish, stripped every raw role to its counterpart across all three woods, and checked material axes and the 18-position plank/beam sets. The existing beam-wall topology, resource generation and leaf behavior suites passed.
+- Runtime: RUNTIME_UNTESTED. Owner gameplay and visual observations are pending.
+- Artifact: `BGE C111.jar`, 6,434,398 bytes, SHA-256 `3853e2078d153c2f7a584d269cd73b9fb19f48bcb010131116323d9941f570e2`, finalized `2026-11-23T06:25:51.7468601Z`, embedded version `4.2.55-bge.canary111.wood-families+26.2`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS.
+- Next state: Owner checks the exact artifact using TESTING.md.

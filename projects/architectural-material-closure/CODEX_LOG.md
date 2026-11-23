@@ -438,3 +438,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Artifact: `AMC C35.jar`, 4,082,742 bytes, SHA-256 `b1d5fd2bb5f1980ac470b8e273216396989330e801f87c7621b80bf16ca790d8`, built_at `2026-11-23T05:22:52.5006532Z`, embedded version `0.1.0-canary35`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Verify appearance and interaction in TESTING.md against these exact bytes.
+
+## 2026-11-23T07:04:23Z — Architectural Material Closure Canary 36
+
+- Revision: 37
+- Source checkpoint: `45b9ab177aa0d5b8bf8f04af3189b0457c01a748`
+- Changes: Under Mynx Trees C9, Silver Birch and Wisteria each receive seven BBB forms, twelve windows, seven accessories, 22 optional Macaw doors and 17 optional trapdoors. Ribbits provides the plank family for AMC boats. Earlier Ribbits-only recipes and native BBB slab slots remain available where appropriate.
+- Build/static: The production archive passed its C35 comparison, older regression chain, 130 block/item-pair checks and 782 directly inspected resource graphs. The full provider server passed 305 GameTests including both tree fixture sets. Isolated configurations also passed with either Macaw door provider absent, with both wood providers absent, and with Ribbits and no Mynx Trees. The owner shutter is byte-identical to its source.
+- Runtime: RUNTIME_UNTESTED. Owner gameplay and visual observations are pending.
+- Artifact: `AMC C36.jar`, 4,825,993 bytes, SHA-256 `eded83f8a249cf090934f99b0445089b88b87764262458e42b40b15a1fa42bf9`, finalized `2026-11-23T06:52:58.3659924Z`, embedded version `0.1.0-canary36`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS.
+- Next state: Owner checks the exact artifact using TESTING.md.
