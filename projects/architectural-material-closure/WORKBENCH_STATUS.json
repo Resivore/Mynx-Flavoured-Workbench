@@ -38,7 +38,8 @@
       "Provide 88 optional Macaw doors using the original door classes, authored model parents, item art, crafting patterns and wood-specific material masks. Veiled and Mossy Oak have Bark Glass. Celestial and Murublight have Stem Glass.",
       "Provide 17 Macaw trapdoor designs each for Veiled, Celestial, Murublight and Mossy Oak when Macaw's Trapdoors and the matching wood provider are present. Preserve the actual Macaw block types, state/model graphs, protected artwork and recipe grids.",
       "Add Bamboo log and plank parapets, blinds, curtain rod and louvered shutter using the Oak Macaw's Windows implementations. Add the Bamboo Ranch Trapdoor only when Macaw's Trapdoors is present. Use the native Bamboo Block and Bamboo Planks artwork.",
-      "Provide seven wood accessories per Enderscape wood and nine for Mossy Oak, including wooden controls. Use native timber roles, design-specific regular shutter faces and luminance-ranked or selectively mossed Oak louvered shutters. Mossy Oak uses slabs in the two log recipe slots and three AMC Classic Trapdoors for its regular shutter."
+      "Provide seven wood accessories per Enderscape wood and nine for Mossy Oak, including wooden controls. Use native timber roles, design-specific regular shutter faces and luminance-ranked or selectively mossed Oak louvered shutters. Mossy Oak uses slabs in the two log recipe slots and three AMC Classic Trapdoors for its regular shutter.",
+      "Sixty window items cover three finishes and four Macaw geometries for Bamboo, Veiled, Celestial, Murublight and Mossy Oak. Ribbits also supplies the material for AMC's standing/wall sign, ceiling/wall hanging sign, shelf and wooden lantern."
     ],
     "boundaries": {
       "owned_paths": [
@@ -113,23 +114,23 @@
     ]
   },
   "state": {
-    "milestone": "Updates the regular Veiled, Celestial, Murublight and Mossy Oak shutters with the owner’s artwork. Controlled validation passed. Owner visual and gameplay verification and acceptance are pending.",
+    "milestone": "Adds 60 Macaw-style wood windows and gives Ribbits Mossy Oak functional signs, a shelf and a BBB-style wooden lantern. Controlled verification passed. Owner gameplay and visual checks are pending.",
     "releases": {
       "current": {
-        "version": "C34 (0.1.0-canary34)",
-        "canary": 34,
-        "embedded_version": "0.1.0-canary34",
+        "version": "C35 (0.1.0-canary35)",
+        "canary": 35,
+        "embedded_version": "0.1.0-canary35",
         "artifact": {
-          "filename": "AMC C34.jar",
-          "sha256": "bae05199d1d9b6d8fd187b4f1f50b72db30d046a05038496b8ffce998095185c"
+          "filename": "AMC C35.jar",
+          "sha256": "b1d5fd2bb5f1980ac470b8e273216396989330e801f87c7621b80bf16ca790d8"
         },
-        "built_at": "2026-11-23T03:44:47.2150279Z",
-        "source_commit": "80c62723e6ab31aa8ba8600ef73f971bd43cdde0",
+        "built_at": "2026-11-23T05:22:52.5006532Z",
+        "source_commit": "e9265d43d5226d89c592b3fa48d8ba5567b0f81e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Updates the regular Veiled, Celestial, Murublight and Mossy Oak shutters with the owner’s artwork."
+        "summary": "Adds 60 Macaw-style wood windows and gives Ribbits Mossy Oak functional signs, a shelf and a BBB-style wooden lantern."
       },
       "accepted": null,
       "rollback": null,
@@ -143,10 +144,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 35,
-    "activity_at": "2026-11-23T03:47:06Z",
-    "updated_at": "2026-11-23T03:47:06Z",
-    "last_codex_at": "2026-11-23T03:47:06Z",
-    "source_commit": "80c62723e6ab31aa8ba8600ef73f971bd43cdde0"
+    "revision": 36,
+    "activity_at": "2026-11-23T05:39:35Z",
+    "updated_at": "2026-11-23T05:39:35Z",
+    "last_codex_at": "2026-11-23T05:39:35Z",
+    "source_commit": "e9265d43d5226d89c592b3fa48d8ba5567b0f81e"
   }
 }

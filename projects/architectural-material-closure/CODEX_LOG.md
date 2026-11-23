@@ -427,3 +427,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Artifact: `AMC C34.jar`, 3,799,300 bytes, SHA-256 `bae05199d1d9b6d8fd187b4f1f50b72db30d046a05038496b8ffce998095185c`, built_at `2026-11-23T03:44:47.2150279Z`. Embedded version `0.1.0-canary34`. Runtime dependency policy CAPABILITY_OR_PROVIDER, no exceptions.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner visual and gameplay checks and acceptance.
+
+## 2026-11-23T05:39:35Z — AMC C35 wood matrix
+
+- Revision: 36
+- Source checkpoint: `e9265d43d5226d89c592b3fa48d8ba5567b0f81e`
+- Changes: Adds 60 Macaw-style wood windows and gives Ribbits Mossy Oak functional signs, a shelf and a BBB-style wooden lantern.
+- Build/static: Java 25 build and archive validation passed. Checked 1,980 placed model selections and all 64 new inventory items. All 132 original Macaw wood windows, the C34 shutter artwork and every earlier archive entry remain present. Fabric GameTests passed 238/238 with neither wood provider, 300/300 with Enderscape, 242/242 with Ribbits, and 304/304 with both. Tests exercised native placement, two-sided waxed sign text persistence, shelf slots and redstone, lantern light and Hammer changes, and window class, states, interactions and drops.
+- Runtime: Owner gameplay and visual verification pending.
+- Artifact: `AMC C35.jar`, 4,082,742 bytes, SHA-256 `b1d5fd2bb5f1980ac470b8e273216396989330e801f87c7621b80bf16ca790d8`, built_at `2026-11-23T05:22:52.5006532Z`, embedded version `0.1.0-canary35`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Verify appearance and interaction in TESTING.md against these exact bytes.
