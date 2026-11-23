@@ -47,13 +47,14 @@ public record AuditedShapeFamily(
         }
     }
 
-    /** Omit the entire family if its canonical parent has no provider. */
+    /** A selector needs a canonical parent and at least one available alternative. */
     public List<Identifier> availableMembers(boolean amcLoaded) {
         if (amcLoaded) return members;
         if (canonicalParent.getNamespace().equals("architectural_material_closure")) return List.of();
-        return members.stream()
+        var available = members.stream()
                 .filter(id -> !id.getNamespace().equals("architectural_material_closure"))
                 .toList();
+        return available.size() >= 2 ? available : List.of();
     }
 
     public enum Category {

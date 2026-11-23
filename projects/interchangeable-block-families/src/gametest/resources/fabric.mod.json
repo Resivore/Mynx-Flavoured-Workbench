@@ -5,6 +5,7 @@
   "name": "Interchangeable Block Families Runtime Tests",
   "environment": "*",
   "entrypoints": {
+    "fabric-client-gametest": ["dev.resivore.blockfamilies.gametest.DoorViewportClientTest"],
     "fabric-gametest": [
       "dev.resivore.blockfamilies.gametest.AuditedShapeMapGameTests"
     ]

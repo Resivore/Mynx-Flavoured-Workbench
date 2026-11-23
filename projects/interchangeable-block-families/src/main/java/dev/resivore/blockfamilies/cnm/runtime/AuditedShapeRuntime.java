@@ -180,6 +180,13 @@ public final class AuditedShapeRuntime {
                 available = available.stream().filter(BuiltInRegistries.ITEM::containsKey).toList();
             }
             if (available.isEmpty()) continue;
+            // AMC releases before C30 supply none of the Macaw wood door alternatives.
+            // If any are registered, resolve the entire audited list strictly below.
+            if (definition.category() == AuditedShapeFamily.Category.TWO_HIGH_DOOR
+                    && available.get(1).getNamespace().equals("architectural_material_closure")
+                    && available.subList(1, available.size()).stream().noneMatch(BuiltInRegistries.ITEM::containsKey)) {
+                continue;
+            }
             ArrayList<Item> members = new ArrayList<>(available.size());
             for (Identifier id : available) {
                 if (!BuiltInRegistries.ITEM.containsKey(id)) {

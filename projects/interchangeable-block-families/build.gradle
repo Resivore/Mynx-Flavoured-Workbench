@@ -255,7 +255,7 @@ fabricApi {
         createSourceSet = true
         modId = 'interchangeable-block-families-runtime-tests'
         enableGameTests = true
-        enableClientGameTests = false
+        enableClientGameTests = providers.gradleProperty('door_viewport_test').isPresent()
         eula = true
     }
 }
@@ -272,9 +272,19 @@ loom.runs.named('gameTest') {
     // execution to the IBF suite rather than treating an upstream provider's
     // own GameTest failures as failures of this project.
     def withoutEnderscape = providers.gradleProperty('without_enderscape').isPresent()
+    def amcMode = amcReferenceJar.isPresent() ? 'amc' : 'no-amc'
+    def enderscapeMode = withoutEnderscape ? 'no-enderscape' : 'enderscape'
+    runDirectory = file("build/run/gameTest/${amcMode}-${enderscapeMode}")
     vmArg "-Dibf.test.enderscapeExpected=${!withoutEnderscape}"
     def testPattern = withoutEnderscape ? '*matrix*' : '*'
     vmArg "-Dfabric-api.gametest.filter=interchangeable-block-families-runtime-tests:${testPattern}"
+}
+
+if (providers.gradleProperty('door_viewport_test').isPresent()) {
+    loom.runs.named('clientGameTest') {
+        // The optional dev pack dump uses a namespaced ID as a Windows filename on shutdown.
+        vmArg '-Dauroraslanterns.pack.dump_from_in_memory=false'
+    }
 }
 
 // Ribbits validates its owned trade recipes at server startup. The optional
