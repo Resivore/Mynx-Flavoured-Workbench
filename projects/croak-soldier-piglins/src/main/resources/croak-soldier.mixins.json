@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "dev.resivore.croak.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["PackMixin", "RendererSetupMixin", "DispatcherMixin"],
+  "injectors": {"defaultRequire": 1}
+}

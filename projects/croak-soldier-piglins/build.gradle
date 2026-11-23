@@ -1,0 +1,53 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.19'
+}
+group = 'dev.resivore'
+version = '0.1.0+26.2-canary1'
+repositories {
+    maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    mavenCentral()
+}
+dependencies {
+    minecraft 'com.mojang:minecraft:26.2'
+    implementation 'net.fabricmc:fabric-loader:0.19.3'
+    if (providers.gradleProperty('geckolibJar').isPresent()) {
+        compileOnly files(providers.gradleProperty('geckolibJar').get())
+    } else {
+        compileOnly 'com.geckolib:geckolib-fabric-26.2:5.5.1'
+    }
+}
+java { toolchain.languageVersion = JavaLanguageVersion.of(25) }
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand(version: project.version) }
+}
+
+configurations.testImplementation.extendsFrom(configurations.compileOnly)
+tasks.register('checkSoldierBake', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.resivore.croak.SoldierBakeCheck'
+    systemProperty 'croakSoldier.referenceJar', providers.gradleProperty('croaksJar')
+        .getOrElse(file('../../originals/mods/croaks-2.0.0-neoforge-1.21.1.jar').absolutePath)
+    workingDir = layout.buildDirectory.get().asFile
+}
+check.dependsOn checkSoldierBake
+
+tasks.named('test') {
+    // The fixture is an executable off-game check, run through checkSoldierBake.
+    failOnNoDiscoveredTests = false
+}
+tasks.register('checkSoldierArchive') {
+    dependsOn jar
+    doLast {
+        new java.util.zip.ZipFile(jar.archiveFile.get().asFile).withCloseable { zip ->
+            zip.entries().each { entry ->
+                if (!entry.directory && !(entry.name in ['META-INF/MANIFEST.MF', 'fabric.mod.json', 'croak-soldier.mixins.json']
+                        || (entry.name.startsWith('dev/resivore/croak/') && entry.name.endsWith('.class')))) {
+                    throw new GradleException("Unexpected packaged entry: " + entry.name)
+                }
+            }
+        }
+    }
+}
+check.dependsOn checkSoldierArchive
