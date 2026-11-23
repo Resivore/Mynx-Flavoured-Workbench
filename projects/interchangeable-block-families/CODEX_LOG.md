@@ -334,3 +334,14 @@
 - Artifact: `IBF C31.jar`, embedded version `0.1.0-canary31`, 68,114 bytes, SHA-256 `dbb061635ccfe5605864b9641e5c374eaaa22d5e21ca286d876162cd0a049eaf`, built at `2026-11-23T00:51:48.6886263Z`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
 - Next state: Owner checks of the selector at normal GUI scale, placement, redstone and recipe access after reload in TESTING.md.
+
+## 2026-11-23T01:18:04Z — IBF C32 integrates Bamboo and tall Macaw doors
+
+- Revision: 32
+- Source checkpoint: `3462b9fe519d80b5708c14f80006d2822462fcc7`
+- Changes: Added four native-parent DD tall-door selectors with 22 alternatives each and inserted six AMC variants into the two Bamboo selectors. Verified the provider resources and DD's packaged source-to-tall audit against AMC C32 and DD C12. Removing the additions from the compiled catalog reproduced the C31 ordered digest `b4f8df17d50ac466d4ae33a06d153ad5e79d6fb67e0f0b8ab90ca5ced13b12c3`.
+- Build/static: Both 55-test JUnit suites, production build and archive isolation passed. Each full server suite passed 38/38 with Enderscape (267 families / 2,146 distinct items with AMC and 181 / 1,397 without). Both focused tests passed without Enderscape (224 / 1,779 with AMC and 164 / 1,348 without). Removing each required Macaw Doors, Windows or Trapdoors provider separately triggered Fabric dependency rejection. Named stacks of seven retained their component patches and counts through every forward and reverse switch. The assembled recipe audit counted 1,837 alternate removals with AMC and 1,114 without, with zero canonical removals or surviving literal ingredient rewrites. Native short/tall conversions and two-high door contracts passed. After data reload, the controlled graphical client checked every overlay and tooltip position in the six changed selectors and retained coverage of the earlier eight wood door and trapdoor selectors.
+- Runtime: Owner gameplay verification and acceptance pending.
+- Artifact: `IBF C32.jar`, embedded version `0.1.0-canary32`, 70,066 bytes, SHA-256 `e4a02b12fc5fbe549c30d982f64566a05a7d5dfd38a573c138c2a3c832f562dd`, built at `2026-11-23T01:14:33.7787367Z`.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner checks of crafting, selection at gameplay GUI scales, placement, redstone, drops and reload in TESTING.md.
