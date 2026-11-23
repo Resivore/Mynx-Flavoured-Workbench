@@ -39,6 +39,12 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
                 families.put("enderscape:" + wood + "_button", 10);
             }
             families.put("architectural_material_closure:mossy_oak_button", 10);
+            for (String wood : List.of("bamboo", "veiled", "celestial", "murublight", "mossy_oak")) {
+                for (String finish : List.of(wood, "stripped_" + wood, wood + "_plank")) {
+                    families.put("architectural_material_closure:" + finish + "_window", 4);
+                }
+            }
+            families.put("architectural_material_closure:mossy_oak_sign", 3);
             families.put("minecraft:bamboo_trapdoor", 18);
             for (String wood : List.of("veiled", "celestial", "murushroom", "mossy_oak")) {
                 families.put("dramaticdoors:tall_" + wood + "_door", 23);
@@ -78,10 +84,19 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
                     }
                     before.forEach((parent, members) -> {
                         if (!members.equals(ShapeMap.getShapes(parent))) throw new AssertionError("Client reload order differs for " + parent);
+                        if (members.size() == 3 || members.size() == 4) {
+                            for (Item member : members) requireItemModel(client, member);
+                        }
                         if (members.size() != 10) {
                             checkFamily(client, BuiltInRegistries.ITEM.getKey(parent).toString(), members.size());
                         }
                     });
+                    requireItemModel(client, BuiltInRegistries.ITEM.getOptional(
+                            Identifier.parse("architectural_material_closure:mossy_oak_lantern")).orElseThrow());
+                    BuiltInRegistries.ITEM.getOptional(Identifier.parse("cnm_terrain_slabs_compat:ribbits/mossy_oak_beam"))
+                            .ifPresent(beam -> {
+                                for (Item member : ShapeMap.getShapes(beam)) requireItemModel(client, member);
+                            });
                     checkShortDoorScales(client, families);
                     for (String parent : List.of("enderscape:veiled_door", "enderscape:celestial_door",
                             "enderscape:murublight_door", "ribbits:mossy_oak_door")) {
@@ -102,6 +117,14 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
         }
     }
 
+    private static void requireItemModel(Minecraft client, Item member) {
+        var models = client.getModelManager();
+        var key = BuiltInRegistries.ITEM.getKey(member);
+        if (models.getItemModel(key) == models.getItemModel(Identifier.parse("interchangeable_block_families:missing"))) {
+            throw new AssertionError("Missing wood matrix item model " + key);
+        }
+    }
+
     private static void checkShortDoorScales(Minecraft client, Map<String, Integer> families) {
         var scale = client.options.guiScale();
         int restore = scale.get();
@@ -114,9 +137,9 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
                 if (client.getWindow().getGuiScale() != setting) throw new AssertionError("GUI scale " + setting);
                 int width = client.getWindow().getGuiScaledWidth();
                 families.forEach((parent, size) -> {
-                    if (size == 10) checkFamily(client, parent, size, width);
+                    if (size == 10 || size == 4 || size == 3) checkFamily(client, parent, size, width);
                 });
-                com.mojang.logging.LogUtils.getLogger().info("Checked 16 short-door selectors at GUI scale {} (width {})", setting, width);
+                com.mojang.logging.LogUtils.getLogger().info("Checked 16 short-door and 16 wood matrix selectors at GUI scale {} (width {})", setting, width);
             }
         } finally {
             scale.set(restore);

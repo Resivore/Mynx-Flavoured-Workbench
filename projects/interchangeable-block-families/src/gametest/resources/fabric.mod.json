@@ -29,12 +29,12 @@
     "mcwpaths": "=1.1.1",
     "auroraslanterns": "=2.1.1+26.2",
     "bbb": "=2.0pre4+26.2-enderscape-dev.7",
-    "ribbits": "=4.1.6+26.2-mynx-canary17",
+    "ribbits": "=${ribbitsVersion}",
     "mcwtrpdoors": "=1.1.5",
     "mcwwindows": "=2.4.2",
     "dramaticdoors": "=1.20.1-3.3.3+26.2-workbench-canary14",
     "quick_stack_nearby_compat": "=0.1.0-canary6",
-    "cnm_terrain_slabs_compat": "=0.5.49-nibaru-cnm-canary1.39-native-directional-material-axis",
-    "more_slabs_stairs_and_walls": "=4.2.0+26.2-port-canary43-native-directional-material-axis"
+    "cnm_terrain_slabs_compat": "=${bgeVersion}",
+    "more_slabs_stairs_and_walls": "=${nibaruVersion}"
   }
 }

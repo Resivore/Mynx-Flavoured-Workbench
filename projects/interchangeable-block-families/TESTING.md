@@ -1,4 +1,38 @@
-# C34 verification checklist
+# IBF verification checklist
+
+## Canary 35 wood matrix
+
+Use the current manifest hash, AMC C35, BGE C110, Ribbits C27, BBB dev.7, Dramatic Doors C14 and Macaw's Windows 2.4.2. For each of Bamboo, Veiled, Celestial, Murublight and Mossy Oak, craft the canonical Window for timber, stripped timber and planks. Cycle a named stack through Window, Window 2, Four Window and Pane Window in both directions. Compare the held overlay, inventory tooltip, actual result, count and components at normal and narrow GUI scales. The 15 selectors are independent. Craft a Mossy Oak Sign, cycle through Hanging Sign and Shelf, and check the lantern's separate recipe. Check again after a data reload.
+
+Repeat with AMC and Enderscape individually and jointly absent. Ribbits is a required IBF provider. Without AMC its C35-only selectors are absent. Without Enderscape, AMC still supplies the Bamboo and Mossy Oak sets. Check the original eleven woods and the 16 Button selectors below, including each short door in position ten with the full provider set. Check the 18-position Mossy Oak Planks/Beam selector supplied by BGE.
+
+For the combined controlled server use the existing Gradle provider arguments below plus `-Pamc_reference_jar=<AMC C35.jar>`, `-Punified_bge_jar=<BGE C110.jar>` and `-Pribbits_reference_jar=<Ribbits C27 jar>`. Keep the existing split-provider regressions as a separate run. Record release hashes and GUI scale with owner observations.
+
+### Exact wood selector membership
+
+Each row gives the four registered inventory items in selector order. The first column of IDs is the craftable parent.
+
+| Wood | Finish | Window | Window 2 | Four Window | Pane Window |
+| --- | --- | --- | --- | --- | --- |
+| Bamboo | Timber | `architectural_material_closure:bamboo_window` | `architectural_material_closure:bamboo_window2` | `architectural_material_closure:bamboo_four_window` | `architectural_material_closure:bamboo_pane_window` |
+| Bamboo | Stripped timber | `architectural_material_closure:stripped_bamboo_window` | `architectural_material_closure:stripped_bamboo_window2` | `architectural_material_closure:stripped_bamboo_four_window` | `architectural_material_closure:stripped_bamboo_pane_window` |
+| Bamboo | Planks | `architectural_material_closure:bamboo_plank_window` | `architectural_material_closure:bamboo_plank_window2` | `architectural_material_closure:bamboo_plank_four_window` | `architectural_material_closure:bamboo_plank_pane_window` |
+| Veiled | Timber | `architectural_material_closure:veiled_window` | `architectural_material_closure:veiled_window2` | `architectural_material_closure:veiled_four_window` | `architectural_material_closure:veiled_pane_window` |
+| Veiled | Stripped timber | `architectural_material_closure:stripped_veiled_window` | `architectural_material_closure:stripped_veiled_window2` | `architectural_material_closure:stripped_veiled_four_window` | `architectural_material_closure:stripped_veiled_pane_window` |
+| Veiled | Planks | `architectural_material_closure:veiled_plank_window` | `architectural_material_closure:veiled_plank_window2` | `architectural_material_closure:veiled_plank_four_window` | `architectural_material_closure:veiled_plank_pane_window` |
+| Celestial | Timber | `architectural_material_closure:celestial_window` | `architectural_material_closure:celestial_window2` | `architectural_material_closure:celestial_four_window` | `architectural_material_closure:celestial_pane_window` |
+| Celestial | Stripped timber | `architectural_material_closure:stripped_celestial_window` | `architectural_material_closure:stripped_celestial_window2` | `architectural_material_closure:stripped_celestial_four_window` | `architectural_material_closure:stripped_celestial_pane_window` |
+| Celestial | Planks | `architectural_material_closure:celestial_plank_window` | `architectural_material_closure:celestial_plank_window2` | `architectural_material_closure:celestial_plank_four_window` | `architectural_material_closure:celestial_plank_pane_window` |
+| Murublight | Timber | `architectural_material_closure:murublight_window` | `architectural_material_closure:murublight_window2` | `architectural_material_closure:murublight_four_window` | `architectural_material_closure:murublight_pane_window` |
+| Murublight | Stripped timber | `architectural_material_closure:stripped_murublight_window` | `architectural_material_closure:stripped_murublight_window2` | `architectural_material_closure:stripped_murublight_four_window` | `architectural_material_closure:stripped_murublight_pane_window` |
+| Murublight | Planks | `architectural_material_closure:murublight_plank_window` | `architectural_material_closure:murublight_plank_window2` | `architectural_material_closure:murublight_plank_four_window` | `architectural_material_closure:murublight_plank_pane_window` |
+| Mossy Oak | Timber | `architectural_material_closure:mossy_oak_window` | `architectural_material_closure:mossy_oak_window2` | `architectural_material_closure:mossy_oak_four_window` | `architectural_material_closure:mossy_oak_pane_window` |
+| Mossy Oak | Stripped timber | `architectural_material_closure:stripped_mossy_oak_window` | `architectural_material_closure:stripped_mossy_oak_window2` | `architectural_material_closure:stripped_mossy_oak_four_window` | `architectural_material_closure:stripped_mossy_oak_pane_window` |
+| Mossy Oak | Planks | `architectural_material_closure:mossy_oak_plank_window` | `architectural_material_closure:mossy_oak_plank_window2` | `architectural_material_closure:mossy_oak_plank_four_window` | `architectural_material_closure:mossy_oak_plank_pane_window` |
+
+The sixteenth selector is `architectural_material_closure:mossy_oak_sign`, `architectural_material_closure:mossy_oak_hanging_sign`, `architectural_material_closure:mossy_oak_shelf`, in order. The independently craftable lantern is `architectural_material_closure:mossy_oak_lantern`.
+
+## Previous C34 short-door reference
 
 Use the exact current JAR, SHA-256, and source checkpoint in [WORKBENCH_STATUS.json](WORKBENCH_STATUS.json).
 

@@ -291,7 +291,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 268 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 284 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -318,7 +318,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_192 : 1_412;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_255 : 1_412;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -331,7 +331,8 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     public void c8DisplayFixtureFamiliesResolveExactlyWithSignsCanonical(GameTestHelper helper) {
         List<AuditedShapeFamily> actual = AuditedShapeFamilies.families(
                 AuditedShapeFamily.Category.DISPLAY_FIXTURE);
-        assertExactFamilies(helper, "C8 display fixtures", actual, C8_DISPLAY_FIXTURE_FAMILIES);
+        assertExactFamilies(helper, "C8 display fixtures", actual.stream()
+                .filter(f -> !f.canonicalParent().getNamespace().equals("architectural_material_closure")).toList(), C8_DISPLAY_FIXTURE_FAMILIES);
 
         for (AuditedShapeFamily family : actual) {
             String path = family.canonicalParent().getPath();
@@ -830,14 +831,19 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
 
     @GameTest(maxTicks = 40)
     public void acceptedNibaruComponentRemainsExactAndUnjoined(GameTestHelper helper) {
-        List<Identifier> expected = List.of(
+        List<Identifier> expected = new ArrayList<>(List.of(
                 id("minecraft:sea_lantern"),
                 id("more_slabs_stairs_and_walls:sea_lantern_slab"),
                 id("more_slabs_stairs_and_walls:sea_lantern_stairs"),
                 id("more_slabs_stairs_and_walls:sea_lantern_wall"),
                 id("clutternomore:more_slabs_stairs_and_walls/vertical_sea_lantern_slab"),
                 id("clutternomore:more_slabs_stairs_and_walls/sea_lantern_step")
-        );
+        ));
+        if (Boolean.getBoolean("ibf.test.unifiedBge")) {
+            for (String role : List.of("corner", "quarter_column", "layer")) {
+                expected.add(id("cnm_terrain_slabs_compat:minecraft/sea_lantern_" + role));
+            }
+        }
         Item parent = requiredItem(expected.getFirst());
         List<Identifier> actual = ids(ShapeMap.getShapes(parent));
         helper.assertTrue(actual.equals(expected),
@@ -1301,13 +1307,45 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             helper.assertTrue(members.size() == size && members.getLast().equals(shortId), "Accessory order for " + path);
             assertSelectorRoundTrip(helper, members);
         }
+        if (amc) {
+            for (String wood : List.of("bamboo", "veiled", "celestial", "murublight", "mossy_oak")) {
+                if (!enderscape && List.of("veiled", "celestial", "murublight").contains(wood)) continue;
+                for (String finish : List.of(wood, "stripped_" + wood, wood + "_plank")) {
+                    String base = "architectural_material_closure:" + finish + "_";
+                    var windows = List.of(base + "window", base + "window2", base + "four_window", base + "pane_window");
+                    assertSelectorRoundTrip(helper, windows);
+                    assertWoodMatrixCraft(helper, windows.getFirst(), 4);
+                }
+            }
+            String base = "architectural_material_closure:mossy_oak_";
+            assertSelectorRoundTrip(helper, List.of(base + "sign", base + "hanging_sign", base + "shelf"));
+            helper.assertTrue(hasRecipe(helper, base + "sign") && !hasRecipe(helper, base + "hanging_sign")
+                    && !hasRecipe(helper, base + "shelf") && hasRecipe(helper, base + "lantern"), "Fixture recipes");
+            assertWoodMatrixCraft(helper, base + "sign", 3);
+            assertWoodMatrixCraft(helper, base + "lantern", 1);
+        }
+        if (Boolean.getBoolean("ibf.test.unifiedBge")) {
+            Item planks = requiredItem("ribbits:mossy_oak_planks");
+            var shapes = ShapeMap.getShapes(planks);
+            helper.assertTrue(shapes.size() == 18 && shapes.getFirst() == planks
+                    && shapes.get(9) == requiredItem("cnm_terrain_slabs_compat:ribbits/mossy_oak_beam"),
+                    "Combined Mossy Oak Planks/Beam order " + shapes);
+            for (Item member : shapes) {
+                helper.assertTrue(!AuditedShapeRuntime.isAudited(member), "IBF claimed a BGE shape " + member);
+                var state = Block.byItem(member).defaultBlockState();
+                var drops = Block.getDrops(state, helper.getLevel(), helper.absolutePos(new BlockPos(1, 1, 1)),
+                        null, null, ItemStack.EMPTY);
+                helper.assertTrue(drops.size() == 1 && drops.getFirst().is(planks) && drops.getFirst().getCount() == 1,
+                        "Combined Ribbits/CNM loot " + member + ": " + drops);
+            }
+        }
         checkWoodTrapdoors(helper, amc, enderscape);
         if (enderscape) {
             helper.assertTrue(hasRecipe(helper, "enderscape:murublight_door_from_celestial_door"),
                     "Lost Enderscape's native door conversion");
         }
-        int expectedFamilies = enderscape ? (amc ? 268 : 181) : (amc ? 225 : 164);
-        int expectedItems = enderscape ? (amc ? 2192 : 1412) : (amc ? 1801 : 1360);
+        int expectedFamilies = enderscape ? (amc ? 284 : 181) : (amc ? 232 : 164);
+        int expectedItems = enderscape ? (amc ? 2255 : 1412) : (amc ? 1828 : 1360);
         helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
                 "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
 
@@ -1614,6 +1652,32 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             stack = previous;
         }
         helper.assertTrue(hasRecipe(helper, parentId), "Canonical recipe missing for " + parentId);
+    }
+
+    private static void assertWoodMatrixCraft(GameTestHelper helper, String parent, int count) {
+        var level = helper.getLevel();
+        var resource = id(parent).withPath(path -> "recipe/" + path + ".json");
+        try (var reader = level.getServer().getResourceManager().openAsReader(resource)) {
+            var recipe = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+            var pattern = recipe.getAsJsonArray("pattern");
+            var keys = recipe.getAsJsonObject("key");
+            var stacks = new ArrayList<ItemStack>();
+            for (var row : pattern) {
+                for (char slot : row.getAsString().toCharArray()) {
+                    stacks.add(slot == ' ' ? ItemStack.EMPTY :
+                            new ItemStack(requiredItem(keys.get(String.valueOf(slot)).getAsString())));
+                }
+            }
+            var grid = net.minecraft.world.item.crafting.CraftingInput.of(pattern.get(0).getAsString().length(),
+                    pattern.size(), stacks);
+            var match = level.recipeAccess().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING,
+                    grid, level).orElseThrow();
+            var result = match.value().assemble(grid);
+            helper.assertTrue(result.is(requiredItem(parent)) && result.getCount() == count,
+                    "Survival crafting grid for " + parent + " selected " + match.id() + " and produced " + result);
+        } catch (java.io.IOException failure) {
+            throw new IllegalStateException("Missing wood matrix recipe " + parent, failure);
+        }
     }
 
     private static void assertExactShapeSet(

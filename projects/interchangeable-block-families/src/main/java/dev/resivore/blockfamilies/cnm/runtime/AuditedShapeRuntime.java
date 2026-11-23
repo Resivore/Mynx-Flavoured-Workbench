@@ -197,6 +197,11 @@ public final class AuditedShapeRuntime {
                 available = definition.availableMembers(false);
             }
             if (available.isEmpty()) continue;
+            // A complete, all-AMC window or display family may be absent on an older AMC release.
+            if ((definition.category() == AuditedShapeFamily.Category.WINDOW
+                    || definition.category() == AuditedShapeFamily.Category.DISPLAY_FIXTURE)
+                    && definition.canonicalParent().getNamespace().equals("architectural_material_closure")
+                    && available.stream().noneMatch(BuiltInRegistries.ITEM::containsKey)) continue;
             // Earlier AMC releases lack the wood door pack, the trapdoor pack, or both.
             // If any are registered, resolve the entire audited list strictly below.
             if ((definition.requiresAmcDoorPack() || ((definition.category() == AuditedShapeFamily.Category.TWO_HIGH_DOOR

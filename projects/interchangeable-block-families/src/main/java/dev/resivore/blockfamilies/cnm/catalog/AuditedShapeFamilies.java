@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 268;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 2_192;
+    public static final int EXPECTED_FAMILY_COUNT = 284;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 2_255;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 23;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -1246,7 +1246,37 @@ public final class AuditedShapeFamilies {
             family("cnm/window/warped_stem", WINDOW, mcwWindows("warped_stem_window"),
                     mcwWindows("warped_stem_window2"),
                     mcwWindows("warped_stem_four_window"),
-                    mcwWindows("warped_pane_window"))
+                    mcwWindows("warped_pane_window")),
+            family("cnm/window/bamboo_timber", WINDOW, amc("bamboo_window"),
+                    amc("bamboo_window2"), amc("bamboo_four_window"), amc("bamboo_pane_window")),
+            family("cnm/window/bamboo_stripped", WINDOW, amc("stripped_bamboo_window"),
+                    amc("stripped_bamboo_window2"), amc("stripped_bamboo_four_window"), amc("stripped_bamboo_pane_window")),
+            family("cnm/window/bamboo_planks", WINDOW, amc("bamboo_plank_window"),
+                    amc("bamboo_plank_window2"), amc("bamboo_plank_four_window"), amc("bamboo_plank_pane_window")),
+            enderscapeFamily("cnm/window/veiled_timber", WINDOW, amc("veiled_window"),
+                    amc("veiled_window2"), amc("veiled_four_window"), amc("veiled_pane_window")),
+            enderscapeFamily("cnm/window/veiled_stripped", WINDOW, amc("stripped_veiled_window"),
+                    amc("stripped_veiled_window2"), amc("stripped_veiled_four_window"), amc("stripped_veiled_pane_window")),
+            enderscapeFamily("cnm/window/veiled_planks", WINDOW, amc("veiled_plank_window"),
+                    amc("veiled_plank_window2"), amc("veiled_plank_four_window"), amc("veiled_plank_pane_window")),
+            enderscapeFamily("cnm/window/celestial_timber", WINDOW, amc("celestial_window"),
+                    amc("celestial_window2"), amc("celestial_four_window"), amc("celestial_pane_window")),
+            enderscapeFamily("cnm/window/celestial_stripped", WINDOW, amc("stripped_celestial_window"),
+                    amc("stripped_celestial_window2"), amc("stripped_celestial_four_window"), amc("stripped_celestial_pane_window")),
+            enderscapeFamily("cnm/window/celestial_planks", WINDOW, amc("celestial_plank_window"),
+                    amc("celestial_plank_window2"), amc("celestial_plank_four_window"), amc("celestial_plank_pane_window")),
+            enderscapeFamily("cnm/window/murublight_timber", WINDOW, amc("murublight_window"),
+                    amc("murublight_window2"), amc("murublight_four_window"), amc("murublight_pane_window")),
+            enderscapeFamily("cnm/window/murublight_stripped", WINDOW, amc("stripped_murublight_window"),
+                    amc("stripped_murublight_window2"), amc("stripped_murublight_four_window"), amc("stripped_murublight_pane_window")),
+            enderscapeFamily("cnm/window/murublight_planks", WINDOW, amc("murublight_plank_window"),
+                    amc("murublight_plank_window2"), amc("murublight_plank_four_window"), amc("murublight_plank_pane_window")),
+            family("cnm/window/mossy_oak_timber", WINDOW, amc("mossy_oak_window"),
+                    amc("mossy_oak_window2"), amc("mossy_oak_four_window"), amc("mossy_oak_pane_window")),
+            family("cnm/window/mossy_oak_stripped", WINDOW, amc("stripped_mossy_oak_window"),
+                    amc("stripped_mossy_oak_window2"), amc("stripped_mossy_oak_four_window"), amc("stripped_mossy_oak_pane_window")),
+            family("cnm/window/mossy_oak_planks", WINDOW, amc("mossy_oak_plank_window"),
+                    amc("mossy_oak_plank_window2"), amc("mossy_oak_plank_four_window"), amc("mossy_oak_plank_pane_window"))
     );
 
     private static final List<AuditedShapeFamily> DISPLAY_FIXTURES = List.of(
@@ -1279,7 +1309,9 @@ public final class AuditedShapeFamilies {
             enderscapeFamily("cnm/display_fixture/enderscape_celestial", DISPLAY_FIXTURE, enderscape("celestial_sign"),
                     enderscape("celestial_hanging_sign"), enderscape("celestial_shelf")),
             enderscapeFamily("cnm/display_fixture/enderscape_murublight", DISPLAY_FIXTURE, enderscape("murublight_sign"),
-                    enderscape("murublight_hanging_sign"), enderscape("murublight_shelf"))
+                    enderscape("murublight_hanging_sign"), enderscape("murublight_shelf")),
+            family("cnm/display_fixture/ribbits_mossy_oak", DISPLAY_FIXTURE, amc("mossy_oak_sign"),
+                    amc("mossy_oak_hanging_sign"), amc("mossy_oak_shelf"))
     );
 
     private static final List<AuditedShapeFamily> FENCE_GATES = List.of(

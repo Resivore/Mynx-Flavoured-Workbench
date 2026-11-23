@@ -234,8 +234,12 @@ dependencies {
     runtimeOnly files(dramaticDoorsReferenceJar)
     dramaticDoorsReference files(dramaticDoorsReferenceJar)
 
-    runtimeOnly files(nibaruReferenceJar)
-    runtimeOnly files(cnmIntegrationReferenceJar)
+    if (providers.gradleProperty('unified_bge_jar').isPresent()) {
+        runtimeOnly files(providers.gradleProperty('unified_bge_jar').get())
+    } else {
+        runtimeOnly files(nibaruReferenceJar)
+        runtimeOnly files(cnmIntegrationReferenceJar)
+    }
     nibaruReference files(nibaruReferenceJar)
     cnmIntegrationReference files(cnmIntegrationReferenceJar)
 
@@ -274,7 +278,9 @@ loom.runs.named('gameTest') {
     def withoutEnderscape = providers.gradleProperty('without_enderscape').isPresent()
     def amcMode = amcReferenceJar.isPresent() ? 'amc' : 'no-amc'
     def enderscapeMode = withoutEnderscape ? 'no-enderscape' : 'enderscape'
-    runDirectory = file("build/run/gameTest/${amcMode}-${enderscapeMode}")
+    def unifiedBge = providers.gradleProperty('unified_bge_jar').isPresent()
+    runDirectory = file("build/run/gameTest/${amcMode}-${enderscapeMode}" + (unifiedBge ? '-unified-bge' : ''))
+    vmArg "-Dibf.test.unifiedBge=${unifiedBge}"
     vmArg "-Dibf.test.enderscapeExpected=${!withoutEnderscape}"
     def testPattern = withoutEnderscape ? '*matrix*' : '*'
     vmArg "-Dfabric-api.gametest.filter=interchangeable-block-families-runtime-tests:${testPattern}"
@@ -291,9 +297,20 @@ if (providers.gradleProperty('door_viewport_test').isPresent()) {
 // input is test-only: it mounts the canonical Matcha data dependencies in the
 // GameTest test mod without bundling them in IBF's production artifact.
 tasks.named('processGametestResources') {
-    inputs.property 'version', project.version
+    def unified = providers.gradleProperty('unified_bge_jar').getOrNull()
+    def versionOf = { File archive ->
+        new java.util.zip.ZipFile(archive).withCloseable { zip ->
+            zip.getInputStream(zip.getEntry('fabric.mod.json')).withCloseable {
+                new groovy.json.JsonSlurper().parse(it).version
+            }
+        }
+    }
+    def versions = [version: project.version, ribbitsVersion: versionOf(ribbitsReferenceJar),
+            bgeVersion: versionOf(unified ? file(unified) : cnmIntegrationReferenceJar),
+            nibaruVersion: versionOf(unified ? file(unified) : nibaruReferenceJar)]
+    inputs.properties versions
     filesMatching('fabric.mod.json') {
-        expand 'version': project.version
+        expand versions
     }
     if (matchaFoodResourceRoot.isPresent()) {
         from(matchaFoodResourceRoot) {
