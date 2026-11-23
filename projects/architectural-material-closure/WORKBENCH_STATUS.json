@@ -115,23 +115,23 @@
     ]
   },
   "state": {
-    "milestone": "Adds 65 architectural forms per new tree family, both Mossy Oak boats and recipes that use native Mossy Oak timber when available. Owner gameplay and visual verification are pending.",
+    "milestone": "Mossy Oak architecture, fixtures and boats follow the Ribbits footprint with shadow-only shading and protected chest details. Owner runtime and visual verification pending.",
     "releases": {
       "current": {
-        "version": "C36 (0.1.0-canary36)",
-        "canary": 36,
-        "embedded_version": "0.1.0-canary36",
+        "version": "C37 (0.1.0-canary37)",
+        "canary": 37,
+        "embedded_version": "0.1.0-canary37",
         "artifact": {
-          "filename": "AMC C36.jar",
-          "sha256": "eded83f8a249cf090934f99b0445089b88b87764262458e42b40b15a1fa42bf9"
+          "filename": "AMC C37.jar",
+          "sha256": "d535fedd9141139c744f155234b1a3a21230ff6656917dce19b3d8cb8e96cecc"
         },
-        "built_at": "2026-11-23T06:52:58.3659924Z",
-        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
+        "built_at": "2026-11-23T18:18:16.098794Z",
+        "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds 65 architectural forms per new tree family, both Mossy Oak boats and recipes that use native Mossy Oak timber when available."
+        "summary": "Mossy Oak architecture, fixtures and boats follow the Ribbits footprint with shadow-only shading and protected chest details."
       },
       "accepted": null,
       "rollback": null,
@@ -139,16 +139,16 @@
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "CONTROLLED_VALIDATION_PASS",
+      "build": "STATIC_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 38,
-    "activity_at": "2026-11-23T17:46:22Z",
-    "updated_at": "2026-11-23T17:46:22Z",
-    "last_codex_at": "2026-11-23T17:46:22Z",
-    "source_commit": "f03a432bd7e24cc246f78e17da0f9c303dac9436"
+    "revision": 39,
+    "activity_at": "2026-11-23T18:27:10.656647Z",
+    "updated_at": "2026-11-23T18:27:10.656647Z",
+    "last_codex_at": "2026-11-23T18:27:10.656647Z",
+    "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed"
   }
 }

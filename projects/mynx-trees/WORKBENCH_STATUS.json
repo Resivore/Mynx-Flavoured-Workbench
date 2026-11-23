@@ -62,23 +62,23 @@
     ]
   },
   "state": {
-    "milestone": "Sapling-grown Fancy Oak has a 1/10 Mossy Oak chance per log, and provider-selected Swamp Oak has a 1/3 chance per log. Owner gameplay verification is pending.",
+    "milestone": "All four Mossy Oak log surfaces use the darken-only Ribbits footprint, including stripped end grain. Owner runtime and visual verification pending.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary10",
-        "canary": 10,
+        "version": "0.1.0+26.2-canary11",
+        "canary": 11,
         "artifact": {
-          "filename": "mynx-trees-private-0.1.0+26.2-canary10.jar",
-          "sha256": "73b76789a25efd019f53069acb49835ad53fa41805296d71a6c1294b6f300c75"
+          "filename": "mynx-trees-private-0.1.0+26.2-canary11.jar",
+          "sha256": "8d8e53e2322b13101fa91fc2ce4c3767c531fc8b43b9d770bf54ba344c2f16df"
         },
-        "built_at": "2026-11-23T17:26:52.4743814Z",
-        "source_commit": "7c14937ce64238df0d139e7b28b1ebdc67baca30",
+        "built_at": "2026-11-23T18:14:12.574510Z",
+        "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Sapling-grown Fancy Oak has a 1/10 Mossy Oak chance per log, and provider-selected Swamp Oak has a 1/3 chance per log.",
-        "embedded_version": "0.1.0+26.2-canary10"
+        "summary": "All four Mossy Oak log surfaces use the darken-only Ribbits footprint, including stripped end grain.",
+        "embedded_version": "0.1.0+26.2-canary11"
       },
       "accepted": {
         "version": "0.1.0+26.2-canary8",
@@ -114,16 +114,16 @@
       "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
-      "build": "CONTROLLED_VALIDATION_PASS",
+      "build": "STATIC_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 11,
-    "activity_at": "2026-11-23T17:27:31Z",
-    "updated_at": "2026-11-23T17:27:31Z",
-    "last_codex_at": "2026-11-23T17:27:31Z",
-    "source_commit": "7c14937ce64238df0d139e7b28b1ebdc67baca30"
+    "revision": 12,
+    "activity_at": "2026-11-23T18:27:10.695331Z",
+    "updated_at": "2026-11-23T18:27:10.695331Z",
+    "last_codex_at": "2026-11-23T18:27:10.695331Z",
+    "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed"
   }
 }

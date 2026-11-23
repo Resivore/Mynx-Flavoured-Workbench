@@ -71,23 +71,23 @@
     ]
   },
   "state": {
-    "milestone": "Restores ordinary Birch to its Matcha appearance and gives Silver Birch and Wisteria separate connected plank overlays. Owner gameplay and visual verification are pending.",
+    "milestone": "Mossy Oak timber uses Matcha bark and cut ends with shadow-only moss, including the vanilla stripped side inherited by Matcha. Owner runtime and visual verification pending.",
     "releases": {
       "current": {
-        "version": "v11",
-        "canary": 7,
-        "embedded_version": "v11",
+        "version": "v12",
+        "canary": 8,
+        "embedded_version": "v12",
         "artifact": {
-          "filename": "Foundation v11.zip",
-          "sha256": "ac31fab940edc2caca1dd9c74bf6158861c267bece7d052a904639d7c9115f36"
+          "filename": "Foundation v12.zip",
+          "sha256": "c45fbc7b8f9b41807c59d0a6addcbf5a8a98ad5361df793cd8cecc8454a71143"
         },
-        "built_at": "2026-11-23T06:48:37.9559912Z",
-        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
+        "built_at": "2026-11-23T18:18:29.703504Z",
+        "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Restores ordinary Birch to its Matcha appearance and gives Silver Birch and Wisteria separate connected plank overlays."
+        "summary": "Mossy Oak timber uses Matcha bark and cut ends with shadow-only moss, including the vanilla stripped side inherited by Matcha."
       },
       "accepted": null,
       "rollback": null,
@@ -101,10 +101,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-11-23T07:04:23Z",
-    "updated_at": "2026-11-23T07:04:23Z",
-    "last_codex_at": "2026-11-23T07:04:23Z",
-    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
+    "revision": 8,
+    "activity_at": "2026-11-23T18:27:10.760883Z",
+    "updated_at": "2026-11-23T18:27:10.760883Z",
+    "last_codex_at": "2026-11-23T18:27:10.760883Z",
+    "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed"
   }
 }

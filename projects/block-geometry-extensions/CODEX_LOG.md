@@ -724,3 +724,14 @@
 - Artifact: `BGE C111.jar`, 6,434,398 bytes, SHA-256 `3853e2078d153c2f7a584d269cd73b9fb19f48bcb010131116323d9941f570e2`, finalized `2026-11-23T06:25:51.7468601Z`, embedded version `4.2.55-bge.canary111.wood-families+26.2`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS.
 - Next state: Owner checks the exact artifact using TESTING.md.
+
+## 2026-11-23T18:27:10.676372Z — Block Geometry Extensions (BGE) Canary 112
+
+- Revision: 74
+- Source checkpoint: `89894f94140ea3df9a51d1a6aa1d71fbc1a27fed`
+- Changes: Mossy Oak beam sides and ends darken with the wood grain while retaining their Ribbits moss colors on bright surfaces.
+- Build/static: Verified both 16x16 beam sheets against the native BBB inputs, vanilla planks and Ribbits footprint. The other archive changes are the build-time assembler class and release metadata. Checked pillar catalog bindings for all four native timber forms.
+- Runtime: RUNTIME_UNTESTED.
+- Artifact: `BGE C112.jar`, 6,434,293 bytes, SHA-256 `c95bc27107d83f473b0a879968582fff2587e456299acaaac64e54875dd148a5`, finalized `2026-11-23T18:16:01.078212Z`, embedded version `4.2.56-bge.canary112.mossy-oak+26.2`.
+- Result: ACTIVE / STATIC_PASS.
+- Next state: Owner checks placed and inventory appearance using TESTING.md.

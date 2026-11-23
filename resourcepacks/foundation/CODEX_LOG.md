@@ -160,3 +160,14 @@ M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/8.png
 - Artifact: `Foundation v11.zip`, 15,459,810 bytes, SHA-256 `ac31fab940edc2caca1dd9c74bf6158861c267bece7d052a904639d7c9115f36`, finalized `2026-11-23T06:48:37.9559912Z`, embedded version `v11`.
 - Result: ACTIVE / STATIC_PASS.
 - Next state: Owner checks the exact artifact using TESTING.md.
+
+## 2026-11-23T18:27:10.760883Z — Foundation Canary 8
+
+- Revision: 8
+- Source checkpoint: `89894f94140ea3df9a51d1a6aa1d71fbc1a27fed`
+- Changes: Mossy Oak timber uses Matcha bark and cut ends with shadow-only moss, including the vanilla stripped side inherited by Matcha.
+- Build/static: Verified four Mynx Trees and three AMC timber overrides against the effective source artwork. All v11 entries except pack metadata are byte-identical, including CTM rules and alpha tiles. Checked the enabled and disabled static block and item model stacks.
+- Runtime: RUNTIME_UNTESTED.
+- Artifact: `Foundation v12.zip`, 15,466,043 bytes, SHA-256 `c45fbc7b8f9b41807c59d0a6addcbf5a8a98ad5361df793cd8cecc8454a71143`, finalized `2026-11-23T18:18:29.703504Z`, embedded version `v12`.
+- Result: ACTIVE / STATIC_PASS.
+- Next state: Owner checks placed and inventory appearance using TESTING.md.

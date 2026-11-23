@@ -111,3 +111,14 @@
 - Artifact: `mynx-trees-private-0.1.0+26.2-canary10.jar`, 271,527 bytes, SHA-256 `73b76789a25efd019f53069acb49835ad53fa41805296d71a6c1294b6f300c75`, finalized `2026-11-23T17:26:52.4743814Z`, embedded version `0.1.0+26.2-canary10`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS. Canary 8 remains accepted and available for rollback.
 - Next state: Owner checks the retained C10 artifact using TESTING.md.
+
+## 2026-11-23T18:27:10.695331Z — Mynx Trees Canary 11
+
+- Revision: 12
+- Source checkpoint: `89894f94140ea3df9a51d1a6aa1d71fbc1a27fed`
+- Changes: All four Mossy Oak log surfaces use the darken-only Ribbits footprint, including stripped end grain.
+- Build/static: 18 package-contract tests passed. Checked every timber texel, item definition and XYZ block model; wood uses its side sprite on every face. The C10 archive comparison found only four PNGs and release metadata changed.
+- Runtime: RUNTIME_UNTESTED.
+- Artifact: `mynx-trees-private-0.1.0+26.2-canary11.jar`, 271,671 bytes, SHA-256 `8d8e53e2322b13101fa91fc2ce4c3767c531fc8b43b9d770bf54ba344c2f16df`, finalized `2026-11-23T18:14:12.574510Z`, embedded version `0.1.0+26.2-canary11`.
+- Result: ACTIVE / STATIC_PASS.
+- Next state: Owner checks placed and inventory appearance using TESTING.md.

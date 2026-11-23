@@ -104,3 +104,14 @@
 - Artifact: `DD C15.jar`, 14,558,257 bytes, SHA-256 `d23506de3812718aa5c4018f9970019064d84ec248339a2709cd63abb9ea9e35`, finalized `2026-11-23T06:56:22.6318613Z`, embedded version `1.20.1-3.3.3+26.2-workbench-canary15`.
 - Result: ACTIVE / CONTROLLED_VALIDATION_PASS.
 - Next state: Owner checks the exact artifact using TESTING.md.
+
+## 2026-11-23T18:27:10.707153Z — Dramatic Doors 26.2 Canary 16
+
+- Revision: 11
+- Source checkpoint: `89894f94140ea3df9a51d1a6aa1d71fbc1a27fed`
+- Changes: Generated tall Mossy Oak Macaw door panels and inventory sprites retain the original moss highlights and deepen in shadow.
+- Build/static: Compared every archive payload with C15. Only 79 generated Macaw textures and release metadata changed. Replayed 19,968 template texels, including 6,985 protected texels and 3,000 moss samples, and checked the Western icon separately. Fabric unit tests passed.
+- Runtime: RUNTIME_UNTESTED.
+- Artifact: `DD C16.jar`, 14,557,979 bytes, SHA-256 `b1bd1d9b50276e321ad97cb02945b00745e2c462e7cf8f7a37b7da296f84ac70`, finalized `2026-11-23T18:25:23.821237Z`, embedded version `1.20.1-3.3.3+26.2-workbench-canary16`.
+- Result: ACTIVE / STATIC_PASS.
+- Next state: Owner checks placed and inventory appearance using TESTING.md.

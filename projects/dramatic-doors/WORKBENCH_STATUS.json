@@ -101,23 +101,23 @@
     ]
   },
   "state": {
-    "milestone": "Adds independent short and tall Silver Birch and Wisteria doors and 44 matching tall AMC Macaw designs. Owner gameplay and visual verification are pending.",
+    "milestone": "Generated tall Mossy Oak Macaw door panels and inventory sprites retain the original moss highlights and deepen in shadow. Owner runtime and visual verification pending.",
     "releases": {
       "current": {
-        "version": "C15",
-        "canary": 15,
-        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary15",
+        "version": "C16",
+        "canary": 16,
+        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary16",
         "artifact": {
-          "filename": "DD C15.jar",
-          "sha256": "d23506de3812718aa5c4018f9970019064d84ec248339a2709cd63abb9ea9e35"
+          "filename": "DD C16.jar",
+          "sha256": "b1bd1d9b50276e321ad97cb02945b00745e2c462e7cf8f7a37b7da296f84ac70"
         },
-        "built_at": "2026-11-23T06:56:22.6318613Z",
-        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
+        "built_at": "2026-11-23T18:25:23.821237Z",
+        "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds independent short and tall Silver Birch and Wisteria doors and 44 matching tall AMC Macaw designs."
+        "summary": "Generated tall Mossy Oak Macaw door panels and inventory sprites retain the original moss highlights and deepen in shadow."
       },
       "accepted": {
         "version": "C8 (legacy Canary 7)",
@@ -155,16 +155,16 @@
       "accepted_rollback": "ACCEPTED_IS_ROLLBACK"
     },
     "validation": {
-      "build": "CONTROLLED_VALIDATION_PASS",
+      "build": "STATIC_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 10,
-    "activity_at": "2026-11-23T07:04:23Z",
-    "updated_at": "2026-11-23T07:04:23Z",
-    "last_codex_at": "2026-11-23T07:04:23Z",
-    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
+    "revision": 11,
+    "activity_at": "2026-11-23T18:27:10.707153Z",
+    "updated_at": "2026-11-23T18:27:10.707153Z",
+    "last_codex_at": "2026-11-23T18:27:10.707153Z",
+    "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed"
   }
 }

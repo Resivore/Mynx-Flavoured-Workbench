@@ -96,18 +96,18 @@
     ]
   },
   "state": {
-    "milestone": "Extends native timber, plank and thin beam-wall geometry to Silver Birch, Wisteria and Mossy Oak. Owner gameplay and visual verification are pending.",
+    "milestone": "Mossy Oak beam sides and ends darken with the wood grain while retaining their Ribbits moss colors on bright surfaces. Owner runtime and visual verification pending.",
     "releases": {
       "current": {
-        "version": "C111 (4.2.55-bge.canary111.wood-families+26.2)",
-        "canary": 111,
-        "embedded_version": "4.2.55-bge.canary111.wood-families+26.2",
+        "version": "C112 (4.2.56-bge.canary112.mossy-oak+26.2)",
+        "canary": 112,
+        "embedded_version": "4.2.56-bge.canary112.mossy-oak+26.2",
         "artifact": {
-          "filename": "BGE C111.jar",
-          "sha256": "3853e2078d153c2f7a584d269cd73b9fb19f48bcb010131116323d9941f570e2"
+          "filename": "BGE C112.jar",
+          "sha256": "c95bc27107d83f473b0a879968582fff2587e456299acaaac64e54875dd148a5"
         },
-        "built_at": "2026-11-23T06:25:51.7468601Z",
-        "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748",
+        "built_at": "2026-11-23T18:16:01.078212Z",
+        "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -118,13 +118,13 @@
               "predicate": "~26.2",
               "reason": "The 26.2 registry, model, placement and loot contracts are exercised against this Minecraft target.",
               "regression_evidence": [
-                "Minecraft 26.2 Fabric, Java 25, SHA-256 3853e2078d153c2f7a584d269cd73b9fb19f48bcb010131116323d9941f570e2, source 45b9ab177aa0d5b8bf8f04af3189b0457c01a748.",
-                "Java 25 production build and all 164 default server GameTests passed. Combined CNM/IBF tests found 18 log/wood roles in each finish, stripped every raw role to its counterpart across all three woods, and checked material axes and the 18-position plank/beam sets. The existing beam-wall topology, resource generation and leaf behavior suites passed."
+                "Minecraft 26.2 Fabric, Java 25, SHA-256 c95bc27107d83f473b0a879968582fff2587e456299acaaac64e54875dd148a5, source 89894f94140ea3df9a51d1a6aa1d71fbc1a27fed.",
+                "Verified both 16x16 beam sheets against the native BBB inputs, vanilla planks and Ribbits footprint. The other archive changes are the build-time assembler class and release metadata. Checked pillar catalog bindings for all four native timber forms. All runtime classes and dependency predicates match C111."
               ]
             }
           ]
         },
-        "summary": "Extends native timber, plank and thin beam-wall geometry to Silver Birch, Wisteria and Mossy Oak."
+        "summary": "Mossy Oak beam sides and ends darken with the wood grain while retaining their Ribbits moss colors on bright surfaces."
       },
       "accepted": {
         "version": "C70 (Stone Native Slab; embedded 4.2.14-bge.canary70.stone-native-slab+26.2)",
@@ -188,16 +188,16 @@
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
-      "build": "CONTROLLED_VALIDATION_PASS",
+      "build": "STATIC_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 73,
-    "activity_at": "2026-11-23T07:04:23Z",
-    "updated_at": "2026-11-23T07:04:23Z",
-    "last_codex_at": "2026-11-23T07:04:23Z",
-    "source_commit": "45b9ab177aa0d5b8bf8f04af3189b0457c01a748"
+    "revision": 74,
+    "activity_at": "2026-11-23T18:27:10.676372Z",
+    "updated_at": "2026-11-23T18:27:10.676372Z",
+    "last_codex_at": "2026-11-23T18:27:10.676372Z",
+    "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed"
   }
 }

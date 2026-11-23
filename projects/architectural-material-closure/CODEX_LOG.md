@@ -460,3 +460,14 @@ Changed resources under `assets/architectural_material_closure/` grouped by dire
 - Artifact: AMC C36, retained.
 - Result: ACTIVE. Continuous darken-only transfer recommended.
 - Next state: Owner selects a method and decides stripped-top footprint treatment.
+
+## 2026-11-23T18:27:10.656647Z — Architectural Material Closure Canary 37
+
+- Revision: 39
+- Source checkpoint: `89894f94140ea3df9a51d1a6aa1d71fbc1a27fed`
+- Changes: Mossy Oak architecture, fixtures and boats follow the Ribbits footprint with shadow-only shading and protected chest details.
+- Build/static: 108 changed PNG paths. Compared all file payloads with AMC C36, verified 19,968 Macaw texels, packed face masks, boat cuboid UVs and the owner shutter. The retained archive regression chain passed.
+- Runtime: RUNTIME_UNTESTED.
+- Artifact: `AMC C37.jar`, 4,823,074 bytes, SHA-256 `d535fedd9141139c744f155234b1a3a21230ff6656917dce19b3d8cb8e96cecc`, finalized `2026-11-23T18:18:16.098794Z`, embedded version `0.1.0-canary37`.
+- Result: ACTIVE / STATIC_PASS.
+- Next state: Owner checks placed and inventory appearance using TESTING.md.
