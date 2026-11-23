@@ -1,5 +1,6 @@
 package dev.resivore.bgectm.continuity;
 
+import dev.resivore.bgectm.BgeCtmDiagnostics;
 import dev.resivore.bgectm.SurfaceContactResolver;
 import dev.resivore.bgectm.SurfaceContactResolver.Decision;
 import dev.resivore.bgectm.SurfaceContactResolver.OverlayContribution;
@@ -39,14 +40,20 @@ public final class OverlayContactFilter {
         Objects.requireNonNull(face, "face");
         Decision stateDecision = SurfaceContactResolver.inspectOverlay(
                 receiverState, receiverPos, inducingState, inducingPos, face);
+        if (BgeCtmDiagnostics.enabled()) OverlayAttemptContext.geometry(stateDecision);
         if (stateDecision == Decision.CONNECT && (capture == null || !capture.valid())
                 && SurfaceContactResolver.stateDerivedFallbackSafe(receiverState, inducingState)) {
             return true;
         }
         if (stateDecision == Decision.BYPASS_UNRELATED) return true;
-        if (stateDecision != Decision.CONNECT || capture == null || !capture.valid()) return false;
+        if (stateDecision != Decision.CONNECT) return false;
+        if (capture == null || !capture.valid()) {
+            if (BgeCtmDiagnostics.enabled()) OverlayAttemptContext.geometry(Decision.INVALID_QUAD_SURFACE);
+            return false;
+        }
         OverlayContribution contribution = SurfaceContactResolver.inspectOverlayContribution(
                 receiverState, receiverPos, inducingState, inducingPos, face, capture.surface());
+        if (BgeCtmDiagnostics.enabled()) OverlayAttemptContext.geometry(contribution.decision());
         if (contribution.decision() != Decision.CONNECT) return false;
         capture.addOverlayProbe(inducingPos, contribution.footprints());
         return true;

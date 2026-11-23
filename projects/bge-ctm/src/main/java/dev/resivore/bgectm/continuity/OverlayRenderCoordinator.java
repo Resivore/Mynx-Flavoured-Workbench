@@ -66,13 +66,14 @@ public final class OverlayRenderCoordinator {
                 List<QuadSurface> cells = OverlayFootprintPlan.coveredCells(
                         cellsByPlane.getOrDefault(entry.getKey(), List.of()), entry.getValue());
                 for (QuadSurface cell : cells) {
-                    OverlayEmissionController.emitSurface(overlayEmitter, overlay.face(),
-                            overlay.sprite(), overlay.tint(), overlay.layer(), overlay.ao(), cell);
-                    boolean original = OverlayEmissionGeometry.originalUnitSquareMatches(cell);
-                    BgeCtmDiagnostics.overlayEmit(capture.receiverState(), overlay.face(), cell,
-                            original ? null : OverlayEmissionGeometry.project(cell),
-                            original ? "ORIGINAL" : "PROJECTED",
-                            overlay.reason() + "+SHARED_TESSELLATION");
+                    OverlayEmissionGeometry.Projection projection = OverlayEmissionController.emitSurface(
+                            overlayEmitter, overlay.face(), overlay.sprite(), overlay.tint(),
+                            overlay.layer(), overlay.ao(), cell);
+                    if (BgeCtmDiagnostics.enabled()) {
+                        BgeCtmDiagnostics.overlayEmit(capture.receiverState(), overlay.face(), cell,
+                                projection, projection == null ? "ORIGINAL" : "PROJECTED",
+                                overlay.reason() + "+SHARED_TESSELLATION");
+                    }
                 }
             }
         }

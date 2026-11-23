@@ -213,7 +213,7 @@ public final class ContinuityQuadContext {
 
         /** Delays managed overlay output until receiver and overlays share one tessellation. */
         public void addPendingOverlay(Direction face, TextureAtlasSprite sprite, int tint,
-                ChunkSectionLayer layer, TriState ao, List<QuadSurface> surfaces, String reason) {
+                ChunkSectionLayer layer, TriState ao, List<QuadSurface> surfaces, @Nullable String reason) {
             pendingOverlays.add(new PendingOverlay(face, sprite, tint, layer, ao, surfaces, reason));
         }
 
@@ -281,7 +281,7 @@ public final class ContinuityQuadContext {
 
     /** Native Continuity render attributes plus the authoritative regions for one logical sprite. */
     public record PendingOverlay(Direction face, TextureAtlasSprite sprite, int tint,
-            ChunkSectionLayer layer, TriState ao, List<QuadSurface> surfaces, String reason) {
+            ChunkSectionLayer layer, TriState ao, List<QuadSurface> surfaces, @Nullable String reason) {
         public PendingOverlay {
             Objects.requireNonNull(face, "face");
             Objects.requireNonNull(sprite, "sprite");
@@ -291,7 +291,6 @@ public final class ContinuityQuadContext {
             if (surfaces.isEmpty() || surfaces.stream().anyMatch(surface -> surface.normal() != face)) {
                 throw new IllegalArgumentException("Pending overlay must have matching surfaces");
             }
-            Objects.requireNonNull(reason, "reason");
         }
     }
 

@@ -10,22 +10,25 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Concise, category-bounded diagnostics for Canary 5's client rendering decisions. */
+/** Concise, category-bounded diagnostics for client rendering decisions. */
 public final class BgeCtmDiagnostics {
     public static final String PREFIX = "[BGE-CTM DIAG]";
-    private static final Logger LOGGER = LoggerFactory.getLogger("bge-ctm");
-    private static final int APPEARANCE_CAP = configuredCap("appearanceCap", 100);
-    private static final int REGULAR_CAP = configuredCap("regularCap", 200);
-    private static final int RULE_SELECTION_CAP = configuredCap("ruleSelectionCap", 100);
-    private static final int OVERLAY_CAP = configuredCap("overlayCap", 100);
-    private static final int OVERLAY_BASELINE_CAP = configuredCap("overlayBaselineCap", 10);
-    private static final int OVERLAY_EMIT_CAP = configuredCap("overlayEmitCap", 100);
     // Opt-in. The legacy disable flag remains an explicit override for existing launch scripts.
     private static final boolean ENABLED = Boolean.getBoolean("bge_ctm.diagnostics")
             && !Boolean.getBoolean("bge_ctm.diagnostics.disable");
-    private static final DiagnosticBudgets BUDGETS = new DiagnosticBudgets(
-            APPEARANCE_CAP, REGULAR_CAP, RULE_SELECTION_CAP, OVERLAY_CAP, OVERLAY_BASELINE_CAP,
-            OVERLAY_EMIT_CAP);
+
+    private static final class Reporting {
+        private static final Logger LOGGER = LoggerFactory.getLogger("bge-ctm");
+        private static final int APPEARANCE_CAP = configuredCap("appearanceCap", 100);
+        private static final int REGULAR_CAP = configuredCap("regularCap", 200);
+        private static final int RULE_SELECTION_CAP = configuredCap("ruleSelectionCap", 100);
+        private static final int OVERLAY_CAP = configuredCap("overlayCap", 100);
+        private static final int OVERLAY_BASELINE_CAP = configuredCap("overlayBaselineCap", 10);
+        private static final int OVERLAY_EMIT_CAP = configuredCap("overlayEmitCap", 100);
+        private static final DiagnosticBudgets BUDGETS = new DiagnosticBudgets(
+                APPEARANCE_CAP, REGULAR_CAP, RULE_SELECTION_CAP, OVERLAY_CAP, OVERLAY_BASELINE_CAP,
+                OVERLAY_EMIT_CAP);
+    }
 
     private BgeCtmDiagnostics() {}
 
@@ -34,17 +37,17 @@ public final class BgeCtmDiagnostics {
 
     public static void startup() {
         if (!ENABLED) return;
-        LOGGER.info("{} STARTUP BGE × CTM=" + version("bge_ctm")
+        Reporting.LOGGER.info("{} STARTUP BGE × CTM=" + version("bge_ctm")
                 + " minecraft=" + FabricLoader.getInstance().getModContainer("minecraft")
                         .map(container -> container.getMetadata().getVersion().getFriendlyString())
                         .orElse("unknown")
                 + " continuity=" + version("continuity")
                 + " bge=" + version("cnm_terrain_slabs_compat")
                 + " regularHook=required-exact overlayHook=required-exact"
-                + " appearanceCap=" + APPEARANCE_CAP + " regularCap=" + REGULAR_CAP
-                + " ruleSelectionCap=" + RULE_SELECTION_CAP + " overlayCap=" + OVERLAY_CAP
-                + " overlayBaselineCap=" + OVERLAY_BASELINE_CAP
-                + " overlayEmitCap=" + OVERLAY_EMIT_CAP
+                + " appearanceCap=" + Reporting.APPEARANCE_CAP + " regularCap=" + Reporting.REGULAR_CAP
+                + " ruleSelectionCap=" + Reporting.RULE_SELECTION_CAP + " overlayCap=" + Reporting.OVERLAY_CAP
+                + " overlayBaselineCap=" + Reporting.OVERLAY_BASELINE_CAP
+                + " overlayEmitCap=" + Reporting.OVERLAY_EMIT_CAP
                 + " enabled=" + ENABLED, PREFIX);
     }
 
@@ -62,20 +65,19 @@ public final class BgeCtmDiagnostics {
             BlockState other, BlockPos otherPos, BlockState otherAppearance, Object predicate,
             boolean nativeSemantic, boolean canonicalSemantic,
             @Nullable SurfaceContactResolver.QuadSurface quad,
-            SurfaceContactResolver.Decision stateDecision,
-            SurfaceContactResolver.Decision geometryDecision, boolean result, String reason) {
+            @Nullable SurfaceContactResolver.Decision stateDecision,
+            @Nullable SurfaceContactResolver.Decision geometryDecision, boolean result, String reason) {
         if (!ENABLED) return;
         String key = "REGULAR|" + stateKey(source) + '|' + stateKey(other) + '|'
                 + pos.subtract(otherPos) + '|' + reason + '|' + result;
-        if (!managed(source) && !managed(other)) return;
         info(DiagnosticBudgets.Category.REGULAR, key, "event=REGULAR source=" + display(source) + " sourceAppearance="
                 + display(sourceAppearance) + " neighbor=" + display(other)
                 + " neighborAppearance=" + display(otherAppearance) + " delta="
                 + otherPos.subtract(pos) + " predicate=" + predicateName(predicate)
                 + " nativeSemantic=" + nativeSemantic
                 + " canonicalSemantic=" + canonicalSemantic + " quad=" + quad
-                + " state=" + stateDecision
-                + " geometry=" + geometryDecision + " result=" + result + " reason=" + reason);
+                + " state=" + (stateDecision == null ? "NOT_EVALUATED" : stateDecision)
+                + " geometry=" + (geometryDecision == null ? "NOT_EVALUATED" : geometryDecision) + " result=" + result + " reason=" + reason);
     }
 
     /** Records the exact Continuity slice chosen for a managed rendered quad. */
@@ -97,7 +99,7 @@ public final class BgeCtmDiagnostics {
             BlockState source, BlockPos sourcePos, BlockState sourceAppearance, boolean nativeFull,
             boolean promoted, boolean nativeConnection, boolean canonicalConnection,
             @Nullable SurfaceContactResolver.QuadSurface quad,
-            SurfaceContactResolver.Decision geometryDecision, boolean semantic, boolean result,
+            @Nullable SurfaceContactResolver.Decision geometryDecision, boolean semantic, boolean result,
             String reason) {
         if (!ENABLED) return;
         String key = "OVERLAY|" + stateKey(receiver) + '|' + stateKey(source) + '|'
@@ -113,7 +115,7 @@ public final class BgeCtmDiagnostics {
                 + " partialPromoted=" + promoted + " nativeConnection=" + nativeConnection
                 + " canonicalConnection=" + canonicalConnection
                 + " semantic=" + semantic + " quad=" + quad
-                + " geometry=" + geometryDecision + " result=" + result + " reason=" + reason);
+                + " geometry=" + (geometryDecision == null ? "NOT_EVALUATED" : geometryDecision) + " result=" + result + " reason=" + reason);
     }
 
     /** Emits only for a BGE-managed receiver; full unrelated overlays never consume this budget. */
@@ -144,9 +146,9 @@ public final class BgeCtmDiagnostics {
 
     private static void info(DiagnosticBudgets.Category category, String signature, String message) {
         if (!ENABLED) return;
-        switch (BUDGETS.admit(category, signature)) {
-            case ACCEPTED -> LOGGER.info("{} {}", PREFIX, message);
-            case SUPPRESS_NOTICE -> LOGGER.info("{} category={} cap={} reached; further unique records suppressed",
+        switch (Reporting.BUDGETS.admit(category, signature)) {
+            case ACCEPTED -> Reporting.LOGGER.info("{} {}", PREFIX, message);
+            case SUPPRESS_NOTICE -> Reporting.LOGGER.info("{} category={} cap={} reached; further unique records suppressed",
                     PREFIX, category, cap(category));
             case DUPLICATE, SUPPRESSED -> { }
         }
@@ -182,12 +184,12 @@ public final class BgeCtmDiagnostics {
 
     private static int cap(DiagnosticBudgets.Category category) {
         return switch (category) {
-            case APPEARANCE -> APPEARANCE_CAP;
-            case REGULAR -> REGULAR_CAP;
-            case RULE_SELECTION -> RULE_SELECTION_CAP;
-            case OVERLAY -> OVERLAY_CAP;
-            case OVERLAY_BASELINE -> OVERLAY_BASELINE_CAP;
-            case OVERLAY_EMIT -> OVERLAY_EMIT_CAP;
+            case APPEARANCE -> Reporting.APPEARANCE_CAP;
+            case REGULAR -> Reporting.REGULAR_CAP;
+            case RULE_SELECTION -> Reporting.RULE_SELECTION_CAP;
+            case OVERLAY -> Reporting.OVERLAY_CAP;
+            case OVERLAY_BASELINE -> Reporting.OVERLAY_BASELINE_CAP;
+            case OVERLAY_EMIT -> Reporting.OVERLAY_EMIT_CAP;
         };
     }
 

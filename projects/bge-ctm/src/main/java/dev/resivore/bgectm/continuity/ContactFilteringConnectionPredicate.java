@@ -88,7 +88,7 @@ public final class ContactFilteringConnectionPredicate implements ConnectionPred
                 BgeCtmDiagnostics.regular(realSourceState, pos, canonicalSource,
                         realOtherState, otherPos, canonicalOther, delegate, nativeSemantic,
                         false, capture == null ? null : capture.surface(),
-                        Decision.BYPASS_UNRELATED, Decision.BYPASS_UNRELATED, false,
+                        null, null, false,
                         "CANONICAL_SEMANTIC_REJECT");
             }
             return false;
@@ -96,26 +96,23 @@ public final class ContactFilteringConnectionPredicate implements ConnectionPred
 
         Decision stateDecision = stateContactPolicy.inspect(
                 realSourceState, pos, realOtherState, otherPos, face);
-        Decision geometryDecision = capture != null && capture.valid()
+        boolean validCapture = capture != null && capture.valid();
+        Decision exact = stateDecision == Decision.CONNECT && validCapture
                 ? SurfaceContactResolver.inspectWithSourceSurface(realSourceState, pos,
                         realOtherState, otherPos, face, capture.surface())
-                : stateDecision;
-        boolean fallback = (capture == null || !capture.valid())
-                && stateDecision == Decision.CONNECT
+                : null;
+        boolean fallback = stateDecision == Decision.CONNECT && !validCapture
                 && SurfaceContactResolver.stateDerivedFallbackSafe(realSourceState, realOtherState);
-        boolean result = retainRegularAfterUpstream(stateDecision, capture, fallback,
-                () -> SurfaceContactResolver.inspectWithSourceSurface(
-                        realSourceState, pos, realOtherState, otherPos, face, capture.surface()));
-        String reason = !stateDecision.allowsOriginal() ? stateDecision.name()
-                : fallback ? "STATE_FALLBACK_CONTACT_OK"
-                : result && !nativeSemantic ? "CARRIER_REJECTION_PROMOTED"
-                : result ? "FINAL_CONNECT"
-                : capture == null || !capture.valid() ? "QUAD_CAPTURE_INVALID"
-                : geometryDecision.name();
+        boolean result = retainRegularAfterUpstream(stateDecision, exact, fallback);
         if (BgeCtmDiagnostics.enabled()) {
+            String reason = !stateDecision.allowsOriginal() ? stateDecision.name()
+                    : fallback ? "STATE_FALLBACK_CONTACT_OK"
+                    : result && !nativeSemantic ? "CARRIER_REJECTION_PROMOTED"
+                    : result ? "FINAL_CONNECT"
+                    : !validCapture ? "QUAD_CAPTURE_INVALID" : exact.name();
             BgeCtmDiagnostics.regular(realSourceState, pos, canonicalSource, realOtherState, otherPos,
                     canonicalOther, delegate, nativeSemantic, canonicalSemantic,
-                    capture == null ? null : capture.surface(), stateDecision, geometryDecision,
+                    capture == null ? null : capture.surface(), stateDecision, exact,
                     result, reason);
         }
         return result;
@@ -137,13 +134,9 @@ public final class ContactFilteringConnectionPredicate implements ConnectionPred
 
     /** Shared regular final-decision path, including the narrow C4 state-cuboid fallback. */
     public static boolean retainRegularAfterUpstream(Decision stateDecision,
-            ContinuityQuadContext.Capture capture, boolean fallbackSafe,
-            Supplier<Decision> exactDecision) {
-        if (stateDecision == Decision.CONNECT && (capture == null || !capture.valid())
-                && fallbackSafe) {
-            return true;
-        }
-        return allowsByContactPolicy(stateDecision, capture, exactDecision);
+            Decision exact, boolean fallbackSafe) {
+        return stateDecision == Decision.BYPASS_UNRELATED || (stateDecision == Decision.CONNECT
+                && (exact == null ? fallbackSafe : exact.allowsOriginal()));
     }
 
     private static int coordinate(BlockPos pos, Direction.Axis axis) {

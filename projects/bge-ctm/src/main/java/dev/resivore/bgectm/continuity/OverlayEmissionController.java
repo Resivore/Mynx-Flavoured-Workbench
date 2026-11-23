@@ -1,5 +1,6 @@
 package dev.resivore.bgectm.continuity;
 
+import dev.aero.cnmterraincompat.BgeSurfaceGeometry.PlaneRelation;
 import dev.resivore.bgectm.BgeCtmDiagnostics;
 import dev.resivore.bgectm.CanonicalAppearanceResolver;
 import dev.resivore.bgectm.SurfaceContactResolver;
@@ -9,11 +10,11 @@ import dev.resivore.bgectm.continuity.ContinuityQuadContext.OverlaySpriteContrib
 import me.pepperbell.continuity.client.util.QuadUtil;
 import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.util.TriState;
-import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,15 +44,19 @@ public final class OverlayEmissionController {
             return;
         }
         if (spriteContribution.isPresent() && contributionFootprints.isEmpty()) {
-            BgeCtmDiagnostics.overlayEmit(receiver, face, capture.surface(), null,
-                    "VETO", "CONTRIBUTION_PROVENANCE_MISSING");
+            if (BgeCtmDiagnostics.enabled()) {
+                BgeCtmDiagnostics.overlayEmit(receiver, face, capture.surface(), null,
+                        "VETO", "CONTRIBUTION_PROVENANCE_MISSING");
+            }
             return;
         }
 
         Resolution resolution = resolve(receiver, face, capture, contributionFootprints);
-        if (resolution.kind == Kind.VETO) {
-            BgeCtmDiagnostics.overlayEmit(receiver, face, capture.surface(), null,
-                    "VETO", resolution.reason);
+        if (resolution.surfaces.isEmpty()) {
+            if (BgeCtmDiagnostics.enabled()) {
+                BgeCtmDiagnostics.overlayEmit(receiver, face, capture.surface(), null,
+                        "VETO", resolution.reason);
+            }
             return;
         }
         // Native Continuity emits its extra quads after all receiver quads. Managed overlays are
@@ -63,11 +68,12 @@ public final class OverlayEmissionController {
     }
 
     /** Exact Continuity 3.0.1 overlay attributes, changing only geometry bounds and UV crop. */
-    static void emitSurface(QuadEmitter emitter, Direction face, TextureAtlasSprite sprite,
-            int tint, ChunkSectionLayer layer, TriState ao, QuadSurface surface) {
+    @Nullable
+    static OverlayEmissionGeometry.Projection emitSurface(QuadEmitter emitter, Direction face,
+            TextureAtlasSprite sprite, int tint, ChunkSectionLayer layer, TriState ao, QuadSurface surface) {
         if (OverlayEmissionGeometry.originalUnitSquareMatches(surface)) {
             QuadUtil.emitOverlayQuad(emitter, face, sprite, tint, layer, ao);
-            return;
+            return null;
         }
         OverlayEmissionGeometry.Projection projected = OverlayEmissionGeometry.project(surface);
         emitter.square(face, projected.left(), projected.bottom(), projected.right(),
@@ -78,6 +84,7 @@ public final class OverlayEmissionController {
         }
         OverlayRenderState.continuity(sprite, tint, layer, ao).apply(emitter);
         emitter.emit();
+        return projected;
     }
 
     private static Resolution resolve(BlockState receiver, Direction face,
@@ -92,7 +99,8 @@ public final class OverlayEmissionController {
             if (receiverMatch.isEmpty()) {
                 return Resolution.veto("CONTRIBUTION_RECEIVER_UNMATCHED");
             }
-            int presentationPlane = receiverMatch.get().presentation().plane16();
+            SurfaceMatch matched = receiverMatch.get();
+            int presentationPlane = matched.presentation().plane16();
             List<QuadSurface> presentationContributions = new ArrayList<>();
             for (QuadSurface footprint : contributionFootprints) {
                 if (footprint.normal() != exact.normal()
@@ -105,72 +113,45 @@ public final class OverlayEmissionController {
                         OverlayFootprintPlan.onPlane(footprint, presentationPlane));
             }
             List<QuadSurface> regions = OverlayFootprintPlan.partition(presentationContributions);
-            String reason = receiverMatch.get().planeRelation()
-                    == dev.aero.cnmterraincompat.BgeSurfaceGeometry.PlaneRelation.TERRAIN_HEIGHT_INSET
-                    ? "CONTRIBUTION_TERRAIN_NOMINAL_PRESENTATION"
-                    : "CONTRIBUTION_FOOTPRINT";
-            return regions.size() == 1
-                    && OverlayEmissionGeometry.originalUnitSquareMatches(regions.getFirst())
-                    ? Resolution.original(regions.getFirst(), reason)
-                    : Resolution.projected(regions, reason);
+            String reason = diagnosticReason(matched, "CONTRIBUTION_FOOTPRINT",
+                    "CONTRIBUTION_TERRAIN_NOMINAL_PRESENTATION");
+            return regions.isEmpty() ? Resolution.veto("EMPTY_CONTRIBUTION_FOOTPRINT")
+                    : new Resolution(regions, reason);
         }
         if (exact != null) {
             if (exact.normal() != face) return Resolution.veto("SURFACE_UNSUPPORTED");
             Optional<SurfaceMatch> match = SurfaceContactResolver.matchRenderedSurface(receiver, exact);
             if (match.isEmpty()) return Resolution.veto("SURFACE_CAPTURE_UNMATCHED");
-            QuadSurface presentation = match.get().presentation();
-            String reason = match.get().planeRelation()
-                    == dev.aero.cnmterraincompat.BgeSurfaceGeometry.PlaneRelation.TERRAIN_HEIGHT_INSET
-                    ? "TERRAIN_NOMINAL_PRESENTATION" : "EMIT_MATCH_RECEIVER";
-            return OverlayEmissionGeometry.originalUnitSquareMatches(presentation)
-                    ? Resolution.original(presentation, reason)
-                    : Resolution.projected(List.of(presentation), reason);
+            SurfaceMatch matched = match.get();
+            QuadSurface presentation = matched.presentation();
+            String reason = diagnosticReason(matched, "EMIT_MATCH_RECEIVER",
+                    "TERRAIN_NOMINAL_PRESENTATION");
+            return new Resolution(List.of(presentation), reason);
         }
         Optional<QuadSurface> fallback = SurfaceContactResolver.describeLocalForOverlay(receiver, face);
         if (fallback.isEmpty()) return Resolution.veto("SURFACE_CAPTURE_MISSING");
         Optional<SurfaceMatch> match = SurfaceContactResolver.matchRenderedSurface(receiver, fallback.get());
         if (match.isEmpty()) return Resolution.veto("STATE_SURFACE_UNMATCHED");
-        QuadSurface presentation = match.get().presentation();
-        String reason = match.get().planeRelation()
-                == dev.aero.cnmterraincompat.BgeSurfaceGeometry.PlaneRelation.TERRAIN_HEIGHT_INSET
-                ? "STATE_TERRAIN_NOMINAL_PRESENTATION" : "STATE_DERIVED_PROJECTED";
-        return OverlayEmissionGeometry.originalUnitSquareMatches(presentation)
-                ? Resolution.original(presentation, reason)
-                : Resolution.projected(List.of(presentation), reason);
+        SurfaceMatch matched = match.get();
+        QuadSurface presentation = matched.presentation();
+        String reason = diagnosticReason(matched, "STATE_DERIVED_PROJECTED",
+                    "STATE_TERRAIN_NOMINAL_PRESENTATION");
+        return new Resolution(List.of(presentation), reason);
     }
 
     private static float interpolate(float min, float max, float fraction) {
         return min + (max - min) * fraction;
     }
 
-    private enum Kind { ORIGINAL, PROJECTED, VETO }
+    @Nullable
+    private static String diagnosticReason(SurfaceMatch match, String exact, String terrain) {
+        if (!BgeCtmDiagnostics.enabled()) return null;
+        return match.planeRelation() == PlaneRelation.TERRAIN_HEIGHT_INSET ? terrain : exact;
+    }
 
-    private static final class Resolution {
-        final Kind kind;
-        final List<QuadSurface> surfaces;
-        final String reason;
-
-        private Resolution(Kind kind, List<QuadSurface> surfaces, String reason) {
-            this.kind = kind;
-            this.surfaces = List.copyOf(surfaces);
-            this.reason = reason;
-        }
-
-        static Resolution original(QuadSurface surface) {
-            return original(surface, "FULL_RECEIVER_ORIGINAL");
-        }
-
-        static Resolution original(QuadSurface surface, String reason) {
-            return new Resolution(Kind.ORIGINAL, List.of(surface), reason);
-        }
-
-        static Resolution projected(List<QuadSurface> surfaces, String reason) {
-            return surfaces.isEmpty() ? veto("EMPTY_CONTRIBUTION_FOOTPRINT")
-                    : new Resolution(Kind.PROJECTED, surfaces, reason);
-        }
-
+    private record Resolution(List<QuadSurface> surfaces, @Nullable String reason) {
         static Resolution veto(String reason) {
-            return new Resolution(Kind.VETO, List.of(), reason);
+            return new Resolution(List.of(), reason);
         }
     }
 }

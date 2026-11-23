@@ -8,6 +8,7 @@ import dev.aero.cnmterraincompat.CnmTerrainCompat;
 import dev.aero.cnmterraincompat.FarmlandSlabBlock;
 import dev.aero.cnmterraincompat.GlazedPatternState;
 import dev.aero.cnmterraincompat.NibaruProviderAdapter;
+import dev.resivore.bgectm.BgeCtmDiagnostics;
 import dev.resivore.bgectm.CanonicalAppearanceResolver;
 import dev.aero.cnmterraincompat.BgeMaterialBindings.Topology;
 import dev.resivore.bgectm.CanonicalAppearanceResolver.Policy;
@@ -17,6 +18,7 @@ import dev.resivore.bgectm.SurfaceContactResolver.QuadSurface;
 import dev.resivore.bgectm.SurfaceContactResolver.Interval;
 import dev.resivore.bgectm.SurfaceContactResolver.SurfaceDescriptor;
 import dev.resivore.bgectm.continuity.ContinuityQuadContext;
+import dev.resivore.bgectm.continuity.OverlayAttemptContext;
 import dev.resivore.bgectm.continuity.OverlayContactFilter;
 import dev.resivore.bgectm.continuity.OverlayProcessingEligibility;
 import dev.resivore.bgectm.continuity.OverlaySourceEligibility;
@@ -164,6 +166,32 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
     }
 
     @GameTest(maxTicks = 40)
+    public void overlayObserverReportsTheExactVeto(GameTestHelper helper) {
+        BlockState receiver = slabState(Blocks.GLASS, SlabType.TOP);
+        BlockState source = Blocks.GLASS.defaultBlockState();
+        helper.assertTrue(SurfaceContactResolver.inspectOverlay(receiver, ORIGIN, source, EAST,
+                Direction.UP) == Decision.CONNECT, "The fixture requires a positive state-only decision");
+        var wrongFace = new ContinuityQuadContext.Capture(new QuadSurface(
+                Direction.DOWN, 0, Direction.Axis.X, 0, 16, Direction.Axis.Z, 0, 16));
+
+        OverlayAttemptContext.begin(true, false);
+        try {
+            helper.assertTrue(!OverlayContactFilter.retainAfterUpstream(true, receiver, ORIGIN,
+                    source, EAST, Direction.UP, wrongFace), "The exact receiver surface must veto");
+            var attempt = OverlayAttemptContext.current();
+            if (BgeCtmDiagnostics.enabled()) {
+                helper.assertTrue(attempt != null && attempt.geometry == Decision.INVALID_QUAD_SURFACE,
+                        "The observer must report the exact veto after the positive state-only decision");
+            } else {
+                helper.assertTrue(attempt == null, "Disabled diagnostics created an overlay attempt");
+            }
+        } finally {
+            OverlayAttemptContext.end();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(maxTicks = 40)
     public void farmlandSpecialBindingUsesGenericTypedSurfaceContact(GameTestHelper helper) {
         BlockState grassBottom = slabState(Blocks.GRASS_BLOCK, SlabType.BOTTOM);
         BlockState grassTop = slabState(Blocks.GRASS_BLOCK, SlabType.TOP);
@@ -299,11 +327,10 @@ public final class CanonicalAppearanceGameTests implements CustomTestMethodInvok
 
         helper.assertTrue(ContactFilteringConnectionPredicate.retainRegularAfterUpstream(
                         Decision.CONNECT, null,
-                        SurfaceContactResolver.stateDerivedFallbackSafe(top, Blocks.STONE.defaultBlockState()),
-                        () -> Decision.CONNECT),
+                        SurfaceContactResolver.stateDerivedFallbackSafe(top, Blocks.STONE.defaultBlockState())),
                 "Safe simple top-slab CTM did not use the state-derived fallback");
         helper.assertTrue(!ContactFilteringConnectionPredicate.retainRegularAfterUpstream(
-                        Decision.CONNECT, null, false, () -> Decision.CONNECT),
+                        Decision.CONNECT, null, false),
                 "Unsafe or unknown rendered topology did not remain fail-closed");
         helper.assertTrue(OverlayContactFilter.retainAfterUpstream(true, top, ORIGIN,
                         Blocks.STONE.defaultBlockState(), EAST, Direction.UP, null),

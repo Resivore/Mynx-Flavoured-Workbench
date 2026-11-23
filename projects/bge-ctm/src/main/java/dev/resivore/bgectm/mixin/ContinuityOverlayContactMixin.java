@@ -35,18 +35,6 @@ abstract class ContinuityOverlayContactMixin {
             + "Lnet/minecraft/core/Direction;"
             + "Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;)Z";
 
-    @Inject(method = APPLIES_OVERLAY, at = @At("HEAD"), require = 1)
-    private void bgeCtm$beginOverlayDiagnostic(BlockPos otherPos,
-            BlockState otherAppearanceState, BlockState otherState,
-            BlockAndTintGetter level, BlockPos pos, BlockState appearanceState,
-            BlockState state, Direction face, TextureAtlasSprite quadSprite,
-            CallbackInfoReturnable<Boolean> callback) {
-        if (BgeCtmDiagnostics.enabled()) {
-            OverlayAttemptContext.begin(otherPos, otherAppearanceState, otherState,
-                    pos, appearanceState, state, face);
-        }
-    }
-
     @Redirect(method = APPLIES_OVERLAY,
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;"
                     + "isCollisionShapeFullBlock(Lnet/minecraft/world/level/BlockGetter;"
@@ -54,7 +42,7 @@ abstract class ContinuityOverlayContactMixin {
     private boolean bgeCtm$allowTypedPartialSource(BlockState source, BlockGetter view, BlockPos sourcePos) {
         boolean nativeFull = source.isCollisionShapeFullBlock(view, sourcePos);
         boolean promoted = !nativeFull && OverlaySourceEligibility.mayReachCanonicalSemantics(source);
-        if (BgeCtmDiagnostics.enabled()) OverlayAttemptContext.gate(nativeFull, promoted);
+        if (BgeCtmDiagnostics.enabled()) OverlayAttemptContext.begin(nativeFull, promoted);
         return nativeFull || promoted;
     }
 
@@ -87,11 +75,6 @@ abstract class ContinuityOverlayContactMixin {
         if (!BgeCtmDiagnostics.enabled()) return;
         OverlayAttemptContext.Attempt attempt = OverlayAttemptContext.end();
         if (attempt != null) {
-            attempt.semantic = semantic;
-            attempt.result = retained;
-            attempt.quad = capture == null ? null : capture.surface();
-            attempt.geometry = SurfaceContactResolver.inspectOverlay(realReceiverState, pos,
-                    realInducingState, otherPos, face);
             if (semantic) {
                 attempt.reason = retained ? "FINAL_OVERLAY"
                         : attempt.geometry == SurfaceContactResolver.Decision.NON_COPLANAR
@@ -102,7 +85,7 @@ abstract class ContinuityOverlayContactMixin {
             BgeCtmDiagnostics.overlay(realReceiverState, pos, appearanceState,
                     realInducingState, otherPos, otherAppearanceState, attempt.nativeFull,
                     attempt.promoted, attempt.nativeConnection, attempt.canonicalConnection,
-                    attempt.quad, attempt.geometry, semantic, retained, attempt.reason);
+                    capture == null ? null : capture.surface(), attempt.geometry, semantic, retained, attempt.reason);
         }
     }
 }

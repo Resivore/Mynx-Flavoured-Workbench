@@ -143,6 +143,21 @@ final class ContactFilteringConnectionPredicateTest {
                 Decision.CONNECT, validCapture, () -> Decision.NO_BOUNDARY_CONTACT));
     }
 
+    @Test
+    void regularContactUsesTheExactDecisionOrTheSafeFallback() {
+        for (Decision state : Decision.values()) {
+            for (Decision exact : Decision.values()) {
+                assertEquals(state == Decision.BYPASS_UNRELATED
+                                || (state == Decision.CONNECT && exact.allowsOriginal()),
+                        ContactFilteringConnectionPredicate.retainRegularAfterUpstream(state, exact, false));
+            }
+            assertEquals(state == Decision.BYPASS_UNRELATED,
+                    ContactFilteringConnectionPredicate.retainRegularAfterUpstream(state, null, false));
+            assertEquals(state.allowsOriginal(),
+                    ContactFilteringConnectionPredicate.retainRegularAfterUpstream(state, null, true));
+        }
+    }
+
     private static BlockAndTintGetter viewReturning(BlockState state, AtomicInteger reads) {
         return (BlockAndTintGetter) Proxy.newProxyInstance(
                 ContactFilteringConnectionPredicateTest.class.getClassLoader(),
