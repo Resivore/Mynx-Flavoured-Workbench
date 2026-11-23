@@ -163,9 +163,9 @@ class AssembledRecipeCleanupContractTest {
                         Map.entry("fence_gates", 24L),
                         Map.entry("vanilla_building_accessories", 42L)));
         if (AMC_PRESENT) expectedCorpus.put("dd_amc_tall", 88L);
-        if (AMC_PRESENT) expectedCorpus.put("amc_families", 779L);
+        if (AMC_PRESENT) expectedCorpus.put("amc_families", 809L);
         assertEquals(expectedCorpus, countByCorpus(recipes));
-        assertEquals(AMC_PRESENT ? 2_439 : 1_572, recipes.size());
+        assertEquals(AMC_PRESENT ? 2_469 : 1_572, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -188,7 +188,7 @@ class AssembledRecipeCleanupContractTest {
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
         if (AMC_PRESENT) expectedRemoved.put("dd_amc_tall", 88L);
-        if (AMC_PRESENT) expectedRemoved.put("amc_families", 620L);
+        if (AMC_PRESENT) expectedRemoved.put("amc_families", 649L);
         expectedRemoved.put("two_high_doors", 260L);
         expectedRemoved.put("macaws_paths", 142L);
         expectedRemoved.put("trapdoors", 195L);
@@ -200,7 +200,7 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(AMC_PRESENT ? 1_837L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(AMC_PRESENT ? 1_866L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -262,7 +262,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(AMC_PRESENT ? 752 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(AMC_PRESENT ? 781 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",

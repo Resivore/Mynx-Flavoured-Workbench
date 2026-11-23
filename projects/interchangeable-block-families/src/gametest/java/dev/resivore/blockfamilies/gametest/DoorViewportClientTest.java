@@ -32,6 +32,10 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
             var families = new LinkedHashMap<String, Integer>();
             families.put("architectural_material_closure:mossy_oak_classic_trapdoor", 17);
             families.put("minecraft:bamboo_button", 9);
+            for (String wood : List.of("veiled", "celestial", "murublight")) {
+                families.put("enderscape:" + wood + "_button", 9);
+            }
+            families.put("architectural_material_closure:mossy_oak_button", 9);
             families.put("minecraft:bamboo_trapdoor", 18);
             for (String wood : List.of("veiled", "celestial", "murushroom", "mossy_oak")) {
                 families.put("dramaticdoors:tall_" + wood + "_door", 23);
@@ -62,6 +66,13 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
                 boolean previous = ClutterNoMoreClient.showTooltip;
                 try {
                     ClutterNoMoreClient.showTooltip = true;
+                    var missing = client.getModelManager().getItemModel(Identifier.parse("interchangeable_block_families:missing"));
+                    for (String height : List.of("short", "tall")) {
+                        var key = Identifier.parse("dramaticdoors:" + height + "_pale_oak_door");
+                        if (client.getModelManager().getItemModel(key) == missing) {
+                            throw new AssertionError("Missing DD model " + key);
+                        }
+                    }
                     before.forEach((parent, members) -> {
                         if (!members.equals(ShapeMap.getShapes(parent))) throw new AssertionError("Client reload order differs for " + parent);
                         checkFamily(client, BuiltInRegistries.ITEM.getKey(parent).toString(), members.size());

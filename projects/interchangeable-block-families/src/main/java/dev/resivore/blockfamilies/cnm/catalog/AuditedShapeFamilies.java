@@ -25,8 +25,8 @@ import static dev.resivore.blockfamilies.cnm.catalog.AuditedShapeFamily.Category
  * provider version requires a new audit and a literal catalog change.</p>
  */
 public final class AuditedShapeFamilies {
-    public static final int EXPECTED_FAMILY_COUNT = 267;
-    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 2_146;
+    public static final int EXPECTED_FAMILY_COUNT = 268;
+    public static final int EXPECTED_UNIQUE_MEMBER_COUNT = 2_176;
     public static final int EXPECTED_LARGEST_FAMILY_SIZE = 23;
 
     private static final String KEY_NAMESPACE = "interchangeable_block_families";
@@ -1879,11 +1879,42 @@ public final class AuditedShapeFamilies {
                     mcwPaths("dark_prismarine_clover_paving"),
                     mcwPaths("dark_prismarine_dumble_paving")),
             enderscapeFamily("cnm/building_accessory/enderscape_veiled", BUILDING_ACCESSORY,
-                    enderscape("veiled_button"), enderscape("veiled_pressure_plate")),
+                    enderscape("veiled_button"), enderscape("veiled_pressure_plate"),
+                    amc("veiled_planks_path"),
+                    amc("veiled_log_parapet"),
+                    amc("veiled_plank_parapet"),
+                    amc("veiled_blinds"),
+                    amc("veiled_curtain_rod"),
+                    amc("veiled_shutter"),
+                    amc("veiled_louvered_shutter")),
             enderscapeFamily("cnm/building_accessory/enderscape_celestial", BUILDING_ACCESSORY,
-                    enderscape("celestial_button"), enderscape("celestial_pressure_plate")),
+                    enderscape("celestial_button"), enderscape("celestial_pressure_plate"),
+                    amc("celestial_planks_path"),
+                    amc("celestial_stem_parapet"),
+                    amc("celestial_plank_parapet"),
+                    amc("celestial_blinds"),
+                    amc("celestial_curtain_rod"),
+                    amc("celestial_shutter"),
+                    amc("celestial_louvered_shutter")),
             enderscapeFamily("cnm/building_accessory/enderscape_murublight", BUILDING_ACCESSORY,
-                    enderscape("murublight_button"), enderscape("murublight_pressure_plate")),
+                    enderscape("murublight_button"), enderscape("murublight_pressure_plate"),
+                    amc("murublight_planks_path"),
+                    amc("murublight_stem_parapet"),
+                    amc("murublight_plank_parapet"),
+                    amc("murublight_blinds"),
+                    amc("murublight_curtain_rod"),
+                    amc("murublight_shutter"),
+                    amc("murublight_louvered_shutter")),
+            family("cnm/building_accessory/ribbits_mossy_oak", BUILDING_ACCESSORY,
+                    amc("mossy_oak_button"),
+                    amc("mossy_oak_pressure_plate"),
+                    amc("mossy_oak_planks_path"),
+                    amc("mossy_oak_log_parapet"),
+                    amc("mossy_oak_plank_parapet"),
+                    amc("mossy_oak_blinds"),
+                    amc("mossy_oak_curtain_rod"),
+                    amc("mossy_oak_shutter"),
+                    amc("mossy_oak_louvered_shutter")),
             enderscapeFamily("cnm/building_accessory/enderscape_polished_end_stone", BUILDING_ACCESSORY,
                     enderscape("polished_end_stone_button"), enderscape("polished_end_stone_pressure_plate"),
                     amc("end_stone_bricks_parapet"), amc("end_stone_bricks_louvered_shutter")),

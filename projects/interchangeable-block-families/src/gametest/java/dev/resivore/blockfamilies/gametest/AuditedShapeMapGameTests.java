@@ -79,9 +79,30 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     );
 
     private static final List<List<String>> C8_ENDERSCAPE_BUILDING_ACCESSORY_FAMILIES = List.of(
-            List.of("enderscape:veiled_button", "enderscape:veiled_pressure_plate"),
-            List.of("enderscape:celestial_button", "enderscape:celestial_pressure_plate"),
-            List.of("enderscape:murublight_button", "enderscape:murublight_pressure_plate"),
+            List.of("enderscape:veiled_button", "enderscape:veiled_pressure_plate",
+                    "architectural_material_closure:veiled_planks_path",
+                    "architectural_material_closure:veiled_log_parapet",
+                    "architectural_material_closure:veiled_plank_parapet",
+                    "architectural_material_closure:veiled_blinds",
+                    "architectural_material_closure:veiled_curtain_rod",
+                    "architectural_material_closure:veiled_shutter",
+                    "architectural_material_closure:veiled_louvered_shutter"),
+            List.of("enderscape:celestial_button", "enderscape:celestial_pressure_plate",
+                    "architectural_material_closure:celestial_planks_path",
+                    "architectural_material_closure:celestial_stem_parapet",
+                    "architectural_material_closure:celestial_plank_parapet",
+                    "architectural_material_closure:celestial_blinds",
+                    "architectural_material_closure:celestial_curtain_rod",
+                    "architectural_material_closure:celestial_shutter",
+                    "architectural_material_closure:celestial_louvered_shutter"),
+            List.of("enderscape:murublight_button", "enderscape:murublight_pressure_plate",
+                    "architectural_material_closure:murublight_planks_path",
+                    "architectural_material_closure:murublight_stem_parapet",
+                    "architectural_material_closure:murublight_plank_parapet",
+                    "architectural_material_closure:murublight_blinds",
+                    "architectural_material_closure:murublight_curtain_rod",
+                    "architectural_material_closure:murublight_shutter",
+                    "architectural_material_closure:murublight_louvered_shutter"),
             List.of("enderscape:polished_end_stone_button",
                     "enderscape:polished_end_stone_pressure_plate",
                     "architectural_material_closure:end_stone_bricks_parapet",
@@ -267,7 +288,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 267 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 268 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -294,7 +315,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_146 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_176 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1248,13 +1269,23 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             var family = AuditedShapeFamilies.families().stream().filter(f -> f.key().getPath().equals(key)).findFirst().orElseThrow();
             assertSelectorRoundTrip(helper, family.availableMembers(amc).stream().map(Identifier::toString).toList());
         }
+        for (String wood : List.of("veiled", "celestial", "murublight", "mossy_oak")) {
+            boolean mossyOak = wood.equals("mossy_oak");
+            if (mossyOak ? !amc : !enderscape) continue;
+            String path = "cnm/building_accessory/" + (mossyOak ? "ribbits_" : "enderscape_") + wood;
+            var family = AuditedShapeFamilies.families().stream()
+                    .filter(candidate -> candidate.key().getPath().equals(path)).findFirst().orElseThrow();
+            var members = family.availableMembers(amc).stream().map(Identifier::toString).toList();
+            helper.assertTrue(members.size() == (amc ? 9 : 2), "Accessory provider count for " + path);
+            assertSelectorRoundTrip(helper, members);
+        }
         checkWoodTrapdoors(helper, amc, enderscape);
         if (enderscape) {
             helper.assertTrue(hasRecipe(helper, "enderscape:murublight_door_from_celestial_door"),
                     "Lost Enderscape's native door conversion");
         }
-        int expectedFamilies = enderscape ? (amc ? 267 : 181) : (amc ? 224 : 164);
-        int expectedItems = enderscape ? (amc ? 2146 : 1397) : (amc ? 1779 : 1348);
+        int expectedFamilies = enderscape ? (amc ? 268 : 181) : (amc ? 225 : 164);
+        int expectedItems = enderscape ? (amc ? 2176 : 1397) : (amc ? 1788 : 1348);
         helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
                 "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
 
@@ -1516,12 +1547,42 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         assertSelectorRoundTrip(helper, fences);
     }
 
+    @GameTest
+    public void paleOakDoorAvailability(GameTestHelper helper) {
+        var input = net.minecraft.world.item.Items.PALE_OAK_DOOR.getDefaultInstance();
+        for (var height : List.of("short", "tall")) {
+            var key = id("dramaticdoors:" + height + "_pale_oak_door");
+            var block = BuiltInRegistries.BLOCK.getOptional(key).orElseThrow();
+            var item = requiredItem(key);
+            helper.assertTrue(item instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() == block,
+                    "Door block/item " + key);
+            var level = helper.getLevel();
+            var recipe = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, key)).orElseThrow().value();
+            ItemStack output;
+            if (height.equals("tall")) {
+                var grid = net.minecraft.world.item.crafting.CraftingInput.of(1, 3, List.of(input, input, input));
+                var shaped = (net.minecraft.world.item.crafting.ShapedRecipe) recipe;
+                helper.assertTrue(shaped.matches(grid, level), "Vertical Pale Oak conversion");
+                output = shaped.assemble(grid);
+                helper.assertTrue(ShapeMap.getShapes(item).size() <= 1, "Unexpected tall Pale Oak alternatives");
+            } else {
+                var single = new net.minecraft.world.item.crafting.SingleRecipeInput(input);
+                var cut = (net.minecraft.world.item.crafting.StonecutterRecipe) recipe;
+                helper.assertTrue(cut.matches(single, level), "Pale Oak stonecutting");
+                output = cut.assemble(single);
+            }
+            helper.assertTrue(output.is(item) && output.getCount() == 2, "Pale Oak output " + key);
+        }
+        helper.succeed();
+    }
+
     private static void assertSelectorRoundTrip(GameTestHelper helper, List<String> members) {
         String parentId = members.getFirst();
         assertExactShapeSet(helper, parentId, members);
         Item parent = requiredItem(parentId);
         ItemStack stack = new ItemStack(parent, 7);
         stack.set(DataComponents.CUSTOM_NAME, Component.literal("Selector round trip"));
+        stack.set(DataComponents.MAX_STACK_SIZE, 37);
         for (int index = 1; index < members.size(); index++) {
             ItemStack next = ShapeMap.transferStack(stack, index);
             assertTransferred(helper, stack, next, requiredItem(members.get(index)), members.get(index));
