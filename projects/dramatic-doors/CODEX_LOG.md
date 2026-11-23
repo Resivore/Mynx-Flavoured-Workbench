@@ -71,3 +71,14 @@
 - Artifact: `DD C12.jar`, 14,074,126 bytes, SHA-256 `7da8044d0c2ab1eec84227a55bb51dacd7a5af400aee2476c0f45b51dba676cf`, finalized `2026-11-23T00:46:22.985394Z`, embedded version `1.20.1-3.3.3+26.2-workbench-canary12`. Runtime dependency contract is CAPABILITY_OR_PROVIDER with no exceptions.
 - Result: ACTIVE C12 candidate. C8 is the accepted rollback at SHA-256 `43c3efd19619a59a10957b5893adce081766f653d8cccb13f38bfbaacec2cefb`.
 - Next state: Owner in-game visual review and operation checks with the installed stack, including both hinges/faces, tall joins, special doors and saved worlds.
+
+## 2026-11-23T03:50:47Z — DD C13 owner artwork
+
+- Revision: 8
+- Source checkpoint: `d18e0f8e95d2e22d4efb3543469937c1631a3a56`
+- Changes: Updates the short and tall native Murushroom doors and both inventory icons with the owner’s Murublight designs.
+- Build/static: The 16×16 short PNG is installed directly. The 16×48 tall artwork reconstructs exactly from its top, middle and bottom 16-row bands. Inventory icons sample their respective faces into the existing 10×11 and 8×16 footprints. SHA-verified C12 comparison found 30,412 byte-identical payloads and exactly six PNGs plus the Fabric version changed. Java 25 build, 4/4 JUnit cases, both combined-provider server GameTests including the native door checks across two reloads, 1,784 item definitions and 64 target state selections passed. The controlled client baked all native states and items and found them in Creative Search and JEI. Owner comparison in build/c13/previews/murublight_doors.png.
+- Runtime: Owner gameplay and visual verification pending.
+- Artifact: `DD C13.jar`, 14,077,144 bytes, SHA-256 `50a5cc25d3da52ebf0edb5763383c7b594add063f327f925e57b97d12e6884e2`, built_at `2026-11-23T03:48:17.7405918Z`. Embedded version `1.20.1-3.3.3+26.2-workbench-canary13`. Runtime dependency policy CAPABILITY_OR_PROVIDER, no exceptions.
+- Result: ACTIVE / CONTROLLED_VALIDATION_PASS / RUNTIME_UNTESTED.
+- Next state: Owner visual and gameplay checks and acceptance.

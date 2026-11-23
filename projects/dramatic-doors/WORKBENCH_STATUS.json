@@ -100,23 +100,23 @@
     ]
   },
   "state": {
-    "milestone": "C12 covers all 88 AMC Macaw source doors and awaits owner visual and gameplay verification. C8 is the accepted rollback.",
+    "milestone": "Updates the short and tall native Murushroom doors and both inventory icons with the owner’s Murublight designs. Controlled validation passed. Owner visual and gameplay verification and acceptance are pending.",
     "releases": {
       "current": {
-        "version": "C12",
-        "canary": 12,
-        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary12",
+        "version": "C13",
+        "canary": 13,
+        "embedded_version": "1.20.1-3.3.3+26.2-workbench-canary13",
         "artifact": {
-          "filename": "DD C12.jar",
-          "sha256": "7da8044d0c2ab1eec84227a55bb51dacd7a5af400aee2476c0f45b51dba676cf"
+          "filename": "DD C13.jar",
+          "sha256": "50a5cc25d3da52ebf0edb5763383c7b594add063f327f925e57b97d12e6884e2"
         },
-        "built_at": "2026-11-23T00:46:22.985394Z",
-        "source_commit": "7dd6d6949d06a4275b1484c059c3bdff6cd9ed96",
+        "built_at": "2026-11-23T03:48:17.7405918Z",
+        "source_commit": "d18e0f8e95d2e22d4efb3543469937c1631a3a56",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Adds three-block tall counterparts for all 88 AMC Macaw doors across Veiled, Celestial, Murublight and Mossy Oak, including working Stable and Japanese sliding variants."
+        "summary": "Updates the short and tall native Murushroom doors and both inventory icons with the owner’s Murublight designs."
       },
       "accepted": {
         "version": "C8 (legacy Canary 7)",
@@ -160,10 +160,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-11-23T00:47:08.339612Z",
-    "updated_at": "2026-11-23T00:47:08.339612Z",
-    "last_codex_at": "2026-11-23T00:47:08.339612Z",
-    "source_commit": "7dd6d6949d06a4275b1484c059c3bdff6cd9ed96"
+    "revision": 8,
+    "activity_at": "2026-11-23T03:50:47Z",
+    "updated_at": "2026-11-23T03:50:47Z",
+    "last_codex_at": "2026-11-23T03:50:47Z",
+    "source_commit": "d18e0f8e95d2e22d4efb3543469937c1631a3a56"
   }
 }
