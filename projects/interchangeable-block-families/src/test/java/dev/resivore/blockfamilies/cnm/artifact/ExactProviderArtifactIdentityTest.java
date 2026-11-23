@@ -22,8 +22,8 @@ final class ExactProviderArtifactIdentityTest {
 
     private static final Map<String, ArtifactContract> CONTRACTS = Map.ofEntries(
             Map.entry("amcReferenceJar", new ArtifactContract(
-                    "B1D7CB016E806B32BEE2C299DF1AF57239130C040C7BDD3B203991448D492FDB",
-                    "architectural_material_closure", "0.1.0-canary31")),
+                    "632C4423C016EBEB7057559EFA0494F680C93EFDF1CD79E7EE25CD4708111F7C",
+                    "architectural_material_closure", "0.1.0-canary32")),
             Map.entry("cnmUpstreamReferenceJar", new ArtifactContract(
                     "41A925E70D5E6E8C098BEA7DC88C44486AED46724E35CB2FA4B1622B2A4DBCCE",
                     "clutternomore", "2.0.7+26.2")),
@@ -61,8 +61,8 @@ final class ExactProviderArtifactIdentityTest {
                     "40BA9C55F191F8BD4758293683ED2BCF6D0C76C8F54F9FC8A0DCCABDBCFD36AD",
                     "mcwwindows", "2.4.2")),
             Map.entry("dramaticDoorsReferenceJar", new ArtifactContract(
-                    "4E77603B3337EE2A2571900395B89273E7053440EA0C325223DA1556C1F14B34",
-                    "dramaticdoors", "1.20.1-3.3.3+26.2-workbench-canary8")),
+                    "7DA8044D0C2AB1EEC84227A55BB51DACD7A5AF400AEE2476C0F45B51DBA676CF",
+                    "dramaticdoors", "1.20.1-3.3.3+26.2-workbench-canary12")),
             Map.entry("nibaruReferenceJar", new ArtifactContract(
                     "0A979A75101076E987A35807F8EB293631FE5E664B252E5DB0AA263D4EEDF07F",
                     "more_slabs_stairs_and_walls", "4.2.0+26.2-port-canary43-native-directional-material-axis")),

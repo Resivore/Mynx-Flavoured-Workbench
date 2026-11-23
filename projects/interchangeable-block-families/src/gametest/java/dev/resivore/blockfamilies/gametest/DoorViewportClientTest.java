@@ -29,29 +29,43 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
             world.getConnection().waitForClientboundPackets();
             context.waitFor(client -> client.player != null && client.level != null);
             var server = world.getServer();
-            var classicId = Identifier.parse("architectural_material_closure:mossy_oak_classic_trapdoor");
-            var classic = BuiltInRegistries.ITEM.getOptional(classicId).orElseThrow();
-            var before = server.computeOnServer(mc -> List.copyOf(ShapeMap.getShapes(classic)));
+            var families = new LinkedHashMap<String, Integer>();
+            families.put("architectural_material_closure:mossy_oak_classic_trapdoor", 17);
+            families.put("minecraft:bamboo_button", 9);
+            families.put("minecraft:bamboo_trapdoor", 18);
+            for (String wood : List.of("veiled", "celestial", "murushroom", "mossy_oak")) {
+                families.put("dramaticdoors:tall_" + wood + "_door", 23);
+            }
+            var before = server.computeOnServer(mc -> {
+                var snapshot = new LinkedHashMap<Item, List<Item>>();
+                families.forEach((id, size) -> {
+                    var parent = BuiltInRegistries.ITEM.getOptional(Identifier.parse(id)).orElseThrow();
+                    var members = List.copyOf(ShapeMap.getShapes(parent));
+                    if (members.size() != size || members.getFirst() != parent) throw new AssertionError(id);
+                    snapshot.put(parent, members);
+                });
+                return snapshot;
+            });
             var reload = server.computeOnServer(mc -> mc.reloadResources(mc.getPackRepository().getSelectedIds()));
             context.waitFor(client -> reload.isDone(), 1200);
             reload.join();
             world.getConnection().waitForClientboundPackets();
-            server.runOnServer(mc -> {
-                if (before.size() != 17 || before.getFirst() != classic || !before.equals(ShapeMap.getShapes(classic))) {
-                    throw new AssertionError("Reload changed the Mossy Oak trapdoor selector");
-                }
-                for (Item item : before) {
+            server.runOnServer(mc -> before.forEach((parent, members) -> {
+                if (!members.equals(ShapeMap.getShapes(parent))) throw new AssertionError("Reload changed " + parent);
+                for (Item item : members) {
                     var id = BuiltInRegistries.ITEM.getKey(item);
                     boolean hasRecipe = mc.getRecipeManager().byKey(ResourceKey.create(Registries.RECIPE, id)).isPresent();
-                    if (hasRecipe != (item == classic)) throw new AssertionError("Wrong recipe after reload: " + id);
+                    if (hasRecipe != (item == parent)) throw new AssertionError("Wrong recipe after reload: " + id);
                 }
-            });
+            }));
             context.runOnClient(client -> {
                 boolean previous = ClutterNoMoreClient.showTooltip;
                 try {
                     ClutterNoMoreClient.showTooltip = true;
-                    if (!before.equals(ShapeMap.getShapes(classic))) throw new AssertionError("Client reload order differs");
-                    checkFamily(client, classicId.toString(), 17);
+                    before.forEach((parent, members) -> {
+                        if (!members.equals(ShapeMap.getShapes(parent))) throw new AssertionError("Client reload order differs for " + parent);
+                        checkFamily(client, BuiltInRegistries.ITEM.getKey(parent).toString(), members.size());
+                    });
                     for (String parent : List.of("enderscape:veiled_door", "enderscape:celestial_door",
                             "enderscape:murublight_door", "ribbits:mossy_oak_door")) {
                         checkFamily(client, parent, 23);
@@ -86,18 +100,19 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
                 throw new AssertionError("Missing client door model: " + expected);
             }
             if (i > 0) overlay.onMouseScrolled(-1);
-            var graphics = new DoorGraphics(client);
+            var graphics = new DoorGraphics(client, expectedSize > 12);
             overlay.render(graphics, 1.0F);
             if (overlay.selectedIndex != i || Math.abs(graphics.x(expected) - (graphics.guiWidth() / 2 - 8)) > 1) {
                 throw new AssertionError("Overlay did not center " + expected);
             }
 
             var tooltip = new ClientShapeTooltip(new ShapeTooltip(stacks, i));
-            graphics = new DoorGraphics(client);
+            graphics = new DoorGraphics(client, true);
             int width = tooltip.getWidth(client.font);
             tooltip.extractImage(client.font, 0, 0, width, tooltip.getHeight(client.font), graphics);
-            if (width != 264 || graphics.icons.size() != 12 || graphics.x(expected) + 16 > width) {
-                throw new AssertionError("Tooltip did not display " + expected + " inside its 12-icon viewport");
+            int visible = Math.min(12, expectedSize);
+            if (width != 22 * visible || graphics.icons.size() != visible || graphics.x(expected) + 16 > width) {
+                throw new AssertionError("Tooltip did not display " + expected + " inside its viewport");
             }
         }
         com.mojang.logging.LogUtils.getLogger().info("Verified {} overlay and tooltip positions for {}", expectedSize, parent);
@@ -106,8 +121,11 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
     private static final class DoorGraphics extends GuiGraphicsExtractor {
         final Map<Item, Integer> icons = new LinkedHashMap<>();
 
-        DoorGraphics(Minecraft client) {
+        final boolean checkAllBounds;
+
+        DoorGraphics(Minecraft client, boolean checkAllBounds) {
             super(client, new GuiRenderState(), 0, 0);
+            this.checkAllBounds = checkAllBounds;
         }
 
         @Override
@@ -117,7 +135,7 @@ public final class DoorViewportClientTest implements FabricClientGameTest {
 
         @Override
         public void fakeItem(ItemStack stack, int x, int y) {
-            if (x < 0 || x + 16 > guiWidth() || icons.put(stack.getItem(), x) != null) {
+            if ((checkAllBounds && (x < 0 || x + 16 > guiWidth())) || icons.put(stack.getItem(), x) != null) {
                 throw new AssertionError("Clipped or duplicate door icon: " + stack);
             }
             super.fakeItem(stack, x, y);

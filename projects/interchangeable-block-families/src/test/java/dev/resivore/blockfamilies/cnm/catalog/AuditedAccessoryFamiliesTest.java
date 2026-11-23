@@ -99,7 +99,12 @@ final class AuditedAccessoryFamiliesTest {
                         id("minecraft:bamboo_button"),
                         id("minecraft:bamboo_pressure_plate"),
                         id("mcwpaths:bamboo_planks_path"),
-                        id("mcwwindows:bamboo_shutter")),
+                        id("architectural_material_closure:bamboo_log_parapet"),
+                        id("architectural_material_closure:bamboo_plank_parapet"),
+                        id("architectural_material_closure:bamboo_blinds"),
+                        id("architectural_material_closure:bamboo_curtain_rod"),
+                        id("mcwwindows:bamboo_shutter"),
+                        id("architectural_material_closure:bamboo_louvered_shutter")),
                 family("bamboo").members());
         assertEquals(List.of(
                         id("minecraft:polished_blackstone_button"),
@@ -136,7 +141,7 @@ final class AuditedAccessoryFamiliesTest {
 
         List<AuditedShapeFamily> accessories = AuditedShapeFamilies.families(BUILDING_ACCESSORY);
         assertEquals(71, accessories.size());
-        assertEquals(536, accessories.stream().mapToInt(value -> value.members().size()).sum());
+        assertEquals(541, accessories.stream().mapToInt(value -> value.members().size()).sum());
         for (AuditedShapeFamily accessory : accessories) {
             assertTrue(accessory.members().size() >= 2, "Singleton family " + accessory.key());
         }

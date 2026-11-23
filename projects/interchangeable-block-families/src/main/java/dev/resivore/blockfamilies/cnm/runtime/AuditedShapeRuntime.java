@@ -179,12 +179,18 @@ public final class AuditedShapeRuntime {
                 if (!BuiltInRegistries.ITEM.containsKey(definition.canonicalParent())) continue;
                 available = available.stream().filter(BuiltInRegistries.ITEM::containsKey).toList();
             }
+            if (amcLoaded && (definition.key().getPath().equals("cnm/building_accessory/bamboo")
+                    || definition.key().getPath().equals("cnm/trapdoor/bamboo"))
+                    && available.stream().filter(id -> id.getNamespace().equals("architectural_material_closure"))
+                            .noneMatch(BuiltInRegistries.ITEM::containsKey)) {
+                available = definition.availableMembers(false);
+            }
             if (available.isEmpty()) continue;
             // Earlier AMC releases lack the wood door pack, the trapdoor pack, or both.
             // If any are registered, resolve the entire audited list strictly below.
-            if ((definition.category() == AuditedShapeFamily.Category.TWO_HIGH_DOOR
+            if ((definition.requiresAmcDoorPack() || ((definition.category() == AuditedShapeFamily.Category.TWO_HIGH_DOOR
                     || definition.category() == AuditedShapeFamily.Category.TRAPDOOR)
-                    && available.get(1).getNamespace().equals("architectural_material_closure")
+                    && available.get(1).getNamespace().equals("architectural_material_closure")))
                     && available.subList(1, available.size()).stream().noneMatch(BuiltInRegistries.ITEM::containsKey)) {
                 continue;
             }

@@ -144,7 +144,10 @@ class AssembledRecipeCleanupContractTest {
                 "enderscapeReferenceJar", "enderscape", "enderscape_approved_families",
                 ENDERSCAPE_APPROVED_RESULTS));
         recipes.addAll(recipesFromBbbEnderscapePackResults());
-        if (AMC_PRESENT) recipes.addAll(amcRecipes());
+        if (AMC_PRESENT) {
+            recipes.addAll(amcRecipes());
+            recipes.addAll(ddAmcTallRecipes());
+        }
         recipes.addAll(dynamicAndModeledRecipes());
 
         Map<String, Long> expectedCorpus = new LinkedHashMap<>(Map.ofEntries(
@@ -159,9 +162,10 @@ class AssembledRecipeCleanupContractTest {
                         Map.entry("three_high_doors", 217L),
                         Map.entry("fence_gates", 24L),
                         Map.entry("vanilla_building_accessories", 42L)));
-        if (AMC_PRESENT) expectedCorpus.put("amc_families", 773L);
+        if (AMC_PRESENT) expectedCorpus.put("dd_amc_tall", 88L);
+        if (AMC_PRESENT) expectedCorpus.put("amc_families", 779L);
         assertEquals(expectedCorpus, countByCorpus(recipes));
-        assertEquals(AMC_PRESENT ? 2_345 : 1_572, recipes.size());
+        assertEquals(AMC_PRESENT ? 2_439 : 1_572, recipes.size());
         assertEquals(recipes.size(), recipes.stream().map(RecipeFixture::recipeId).distinct().count(),
                 "The assembled fixture must have one exact identity per recipe");
 
@@ -183,7 +187,8 @@ class AssembledRecipeCleanupContractTest {
         }
 
         Map<String, Long> expectedRemoved = new LinkedHashMap<>();
-        if (AMC_PRESENT) expectedRemoved.put("amc_families", 614L);
+        if (AMC_PRESENT) expectedRemoved.put("dd_amc_tall", 88L);
+        if (AMC_PRESENT) expectedRemoved.put("amc_families", 620L);
         expectedRemoved.put("two_high_doors", 260L);
         expectedRemoved.put("macaws_paths", 142L);
         expectedRemoved.put("trapdoors", 195L);
@@ -195,7 +200,7 @@ class AssembledRecipeCleanupContractTest {
         expectedRemoved.put("fence_gates", 12L);
         expectedRemoved.put("vanilla_building_accessories", 20L);
         assertEquals(expectedRemoved, removedNonParents);
-        assertEquals(AMC_PRESENT ? 1_743L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
+        assertEquals(AMC_PRESENT ? 1_837L : 1_114L, removedNonParents.values().stream().mapToLong(Long::longValue).sum());
         assertTrue(dangerousParentRemovals.isEmpty(), dangerousParentRemovals.toString());
         assertTrue(survivingLiteralRewrites.isEmpty(), survivingLiteralRewrites.toString());
     }
@@ -213,7 +218,10 @@ class AssembledRecipeCleanupContractTest {
                 "enderscapeReferenceJar", "enderscape", "enderscape_approved_families",
                 ENDERSCAPE_APPROVED_RESULTS));
         recipes.addAll(recipesFromBbbEnderscapePackResults());
-        if (AMC_PRESENT) recipes.addAll(amcRecipes());
+        if (AMC_PRESENT) {
+            recipes.addAll(amcRecipes());
+            recipes.addAll(ddAmcTallRecipes());
+        }
         recipes.addAll(dynamicAndModeledRecipes());
 
         ShapeFamilies shapes = ShapeFamilies.fromCatalog();
@@ -254,7 +262,7 @@ class AssembledRecipeCleanupContractTest {
             }
         }
 
-        assertEquals(AMC_PRESENT ? 747 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
+        assertEquals(AMC_PRESENT ? 752 : 286, newRemovedRecipeIds.size(), newRemovedRecipeIds.toString());
         assertTrue(newRemovedRecipeIds.containsAll(List.of(
                 "minecraft:iron_chain",
                 "minecraft:copper_chain",
@@ -483,10 +491,22 @@ class AssembledRecipeCleanupContractTest {
                 "data/" + namespace + "/recipe/");
     }
 
+    private static List<RecipeFixture> ddAmcTallRecipes() throws Exception {
+        try (JarFile jar = new JarFile(requiredPath("dramaticDoorsReferenceJar").toFile());
+             var input = jar.getInputStream(jar.getJarEntry("dramaticdoors/amc_macaw_doors.tsv"));
+             var reader = new java.io.BufferedReader(new java.io.InputStreamReader(input, java.nio.charset.StandardCharsets.UTF_8))) {
+            assertEquals("wood\tsource\ttall\ttemplate\tclass", reader.readLine());
+            return reader.lines().map(line -> {
+                String[] row = line.split("\t");
+                return new RecipeFixture("dd_amc_tall", row[2], row[2], List.of(row[1], row[1], row[1]), true);
+            }).toList();
+        }
+    }
+
     private static List<RecipeFixture> amcRecipes() throws Exception {
         String namespace = "architectural_material_closure";
         var recipes = new ArrayList<>(recipesFromJar("amcReferenceJar", namespace, "amc_families"));
-        for (String pack : List.of("enderscape", "ribbits", "enderscape_doors", "ribbits_doors", "enderscape_trapdoors", "ribbits_trapdoors")) {
+        for (String pack : List.of("enderscape", "ribbits", "enderscape_doors", "ribbits_doors", "enderscape_trapdoors", "ribbits_trapdoors", "bamboo_trapdoors")) {
             recipes.addAll(recipesFromJarResults("amcReferenceJar", namespace, "amc_families",
                     null, "resourcepacks/" + pack + "/data/" + namespace + "/recipe/"));
         }

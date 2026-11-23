@@ -245,13 +245,13 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             "mcwwindows:iron_shutter",
             "mcwwindows:golden_curtain_rod",
             "mcwwindows:metal_curtain_rod",
+            "dramaticdoors:tall_pale_oak_door",
             "mcwwindows:red_curtain"
     );
 
     private static final List<String> UNREGISTERED_EXCLUSIONS = List.of(
             "mcwdoors:cherry_waffle_door",
             "dramaticdoors:tall_netherite_door",
-            "dramaticdoors:tall_pale_oak_door",
             "dramaticdoors:tall_macaw_oak_classic_door",
             "dramaticdoors:tall_macaw_spruce_cottage_door",
             "dramaticdoors:tall_macaw_birch_paper_door",
@@ -267,7 +267,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
     @GameTest(maxTicks = 40)
     public void allAuditedFamiliesMaterializeWithExactParentsAndOrder(GameTestHelper helper) {
         List<AuditedShapeFamily> families = expectedActiveFamilies();
-        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 263 : 181;
+        int expectedFamilies = Boolean.getBoolean("ibf.test.amcExpected") ? 267 : 181;
         helper.assertTrue(families.size() == expectedFamilies, "Expected " + expectedFamilies + " families");
 
         Set<Identifier> seen = new LinkedHashSet<>();
@@ -294,7 +294,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
             largest = Math.max(largest, actual.size());
         }
 
-        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_048 : 1_397;
+        int expectedCount = Boolean.getBoolean("ibf.test.amcExpected") ? 2_146 : 1_397;
         helper.assertTrue(seen.size() == expectedCount,
                 "Expected " + expectedCount
                         + " unique runtime IDs, found " + seen.size());
@@ -1224,7 +1224,7 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 }
                 continue;
             }
-            if (!amc && (family.category() == AuditedShapeFamily.Category.TWO_HIGH_DOOR
+            if (!amc && (family.requiresAmcDoorPack() || family.category() == AuditedShapeFamily.Category.TWO_HIGH_DOOR
                     || family.category() == AuditedShapeFamily.Category.TRAPDOOR)
                     && !family.canonicalParent().getNamespace().equals("minecraft")) {
                 Item nativeDoor = requiredItem(family.canonicalParent());
@@ -1244,13 +1244,17 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         }
         checkMossyOak(helper);
         checkWoodDoors(helper, amc, enderscape);
+        for (String key : List.of("cnm/building_accessory/bamboo", "cnm/trapdoor/bamboo")) {
+            var family = AuditedShapeFamilies.families().stream().filter(f -> f.key().getPath().equals(key)).findFirst().orElseThrow();
+            assertSelectorRoundTrip(helper, family.availableMembers(amc).stream().map(Identifier::toString).toList());
+        }
         checkWoodTrapdoors(helper, amc, enderscape);
         if (enderscape) {
             helper.assertTrue(hasRecipe(helper, "enderscape:murublight_door_from_celestial_door"),
                     "Lost Enderscape's native door conversion");
         }
-        int expectedFamilies = enderscape ? (amc ? 263 : 181) : (amc ? 223 : 164);
-        int expectedItems = enderscape ? (amc ? 2048 : 1397) : (amc ? 1750 : 1348);
+        int expectedFamilies = enderscape ? (amc ? 267 : 181) : (amc ? 224 : 164);
+        int expectedItems = enderscape ? (amc ? 2146 : 1397) : (amc ? 1779 : 1348);
         helper.assertTrue(families == expectedFamilies && items.size() == expectedItems,
                 "Unexpected resolved catalog: " + families + " families, " + items.size() + " items");
 
@@ -1459,6 +1463,9 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
         for (String wood : List.of("veiled", "celestial", "murublight", "mossy_oak")) {
             boolean mossyOak = wood.equals("mossy_oak");
             String parent = (mossyOak ? "ribbits:" : "enderscape:") + wood + "_door";
+            String nativeWood = wood.equals("murublight") ? "murushroom" : wood;
+            String tallParent = "dramaticdoors:tall_" + nativeWood + "_door";
+            var tallMembers = new ArrayList<>(List.of(tallParent));
             String glass = wood.equals("celestial") || wood.equals("murublight") ? "stem_glass" : "bark_glass";
             var members = new java.util.ArrayList<>(List.of(parent));
             for (String style : List.of("bamboo", glass, "barn", "barn_glass", "beach", "classic", "cottage",
@@ -1468,6 +1475,23 @@ public final class AuditedShapeMapGameTests implements CustomTestMethodInvoker {
                 helper.assertTrue(BuiltInRegistries.ITEM.containsKey(id(alternate)) == (amc && (enderscape || mossyOak)),
                         "Unexpected registration for " + alternate);
                 members.add(alternate);
+                String tall = "dramaticdoors:tall_macaw_" + wood + "_" + style + "_door";
+                helper.assertTrue(BuiltInRegistries.ITEM.containsKey(id(tall)) == (amc && (enderscape || mossyOak)),
+                        "Unexpected DD registration for " + tall);
+                tallMembers.add(tall);
+            }
+            helper.assertTrue(BuiltInRegistries.ITEM.containsKey(id(tallParent)) == (enderscape || mossyOak),
+                    "Unexpected native tall door " + tallParent);
+            if (enderscape || mossyOak) {
+                helper.assertTrue(hasRecipe(helper, "dramaticdoors:short_" + nativeWood + "_door")
+                        && hasRecipe(helper, tallParent), "Missing native conversion for " + parent);
+                if (amc) {
+                    assertSelectorRoundTrip(helper, tallMembers);
+                    assertSeparate(helper, parent, tallParent, "Door heights merged for " + wood);
+                } else {
+                    helper.assertTrue(!AuditedShapeRuntime.isAudited(requiredItem(tallParent))
+                            && !ShapeMap.isShape(requiredItem(tallParent)), "Unexpected singleton " + tallParent);
+                }
             }
             if (enderscape || mossyOak) {
                 if (amc) assertSelectorRoundTrip(helper, members);

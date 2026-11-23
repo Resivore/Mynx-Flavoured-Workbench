@@ -47,10 +47,18 @@ public record AuditedShapeFamily(
         }
     }
 
+    public boolean requiresAmcDoorPack() {
+        return switch (key.getPath()) {
+            case "cnm/three_high_door/enderscape_veiled", "cnm/three_high_door/enderscape_celestial",
+                    "cnm/three_high_door/enderscape_murublight", "cnm/three_high_door/ribbits_mossy_oak" -> true;
+            default -> false;
+        };
+    }
+
     /** A selector needs a canonical parent and at least one available alternative. */
     public List<Identifier> availableMembers(boolean amcLoaded) {
         if (amcLoaded) return members;
-        if (canonicalParent.getNamespace().equals("architectural_material_closure")) return List.of();
+        if (requiresAmcDoorPack() || canonicalParent.getNamespace().equals("architectural_material_closure")) return List.of();
         var available = members.stream()
                 .filter(id -> !id.getNamespace().equals("architectural_material_closure"))
                 .toList();
