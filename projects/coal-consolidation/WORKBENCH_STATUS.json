@@ -10,16 +10,17 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Consolidate ordinary intended Matcha charcoal production into coal while preserving the overridden cooking recipe identities, burnable-log inputs, experience, and timing.",
       "Replace only the seven previously audited recipes' explicit charcoal alternatives with coal while leaving #minecraft:coals consumers unchanged.",
       "Keep vanilla charcoal registered for old-save and legacy-item safety, provide one-way 1:1 cleanup conversion, and suppress charcoal clutter in Creative and supported recipe viewers."
     ],
     "scope": [
-      "Maintain the audited data overrides: minecraft:charcoal and smoking:charcoal output one coal; four vanilla and three Matcha explicit consumers use coal only; coal_consolidation:charcoal_to_coal remains a shapeless 1:1 conversion.",
-      "After resource-pack resolution, enforce only the effective minecraft:charcoal SmeltingRecipe and smoking:charcoal SmokingRecipe holders so their identities, burnable-log inputs, category/group/show-notification semantics, experience, and 200/100-tick cooking times are preserved while each result is exactly one coal.",
-      "Maintain the client-only Fabric CreativeModeTabEvents removal of Items.CHARCOAL from Ingredients display and search output plus the additive c:hidden_from_recipe_viewers tag."
+      "Maintain the audited data overrides: minecraft:charcoal and matcha:kiln/charcoal output one coal; four vanilla and three Matcha explicit consumers use coal only; coal_consolidation:charcoal_to_coal remains a shapeless 1:1 conversion.",
+      "After resource-pack resolution, enforce only the effective minecraft:charcoal SmeltingRecipe and matcha:kiln/charcoal SmokingRecipe holders so their identities, burnable-log inputs, category/group/show-notification semantics, experience, and 200/100-tick cooking times are preserved while each result is exactly one coal.",
+      "Maintain the client-only Fabric CreativeModeTabEvents removal of Items.CHARCOAL from Ingredients display and search output plus the additive c:hidden_from_recipe_viewers tag.",
+      "Places the ten owned recipes above upstream filters and enforces the final furnace and smoker holders. Legacy charcoal conversion and viewer restrictions stay available."
     ],
     "boundaries": {
       "owned_paths": [
@@ -53,9 +54,9 @@
       },
       {
         "type": "DATA_PACK",
-        "identifier": "matcha-flavoured",
-        "requirement": "=1.12; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
-        "reason": "Exact external recipe and campfire-loot baseline audited for the retained Matcha overrides; it is not redistributed here."
+        "identifier": "MF_1_12_5_26_2.zip",
+        "requirement": "1.12.5, SHA-256 966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4",
+        "reason": "Verified publisher server-data input for the 26.2 compatibility contracts."
       },
       {
         "type": "MOD",
@@ -90,18 +91,22 @@
     ]
   },
   "state": {
-    "milestone": "The user reported an aggregate runtime PASS for exact Canary 3 without attributing results to individual checklist rows. Exact C3 is current and accepted in the physically verified Stack v6 baseline, and no separate rollback is designated.",
+    "milestone": "Matcha 1.12.5 Stage 1 candidate C4. Places the ten owned recipes above upstream filters and enforces the final furnace and smoker holders. Legacy charcoal conversion and viewer restrictions stay available. Coordinated integration awaits the owner trade matrix and client pack precedence checks.",
     "releases": {
       "current": {
-        "version": "0.1.2-canary3",
-        "canary": 3,
+        "version": "0.2.0-canary4",
+        "canary": 4,
         "artifact": {
-          "filename": "coal-consolidation-0.1.2-canary3.jar",
-          "sha256": "f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871"
+          "filename": "coal-consolidation-0.2.0-canary4.jar",
+          "sha256": "35cd9e9271b1000801b45816ab3c57bae34f792d61666e6c63f76567d3c49ec8"
         },
-        "built_at": "2026-08-31T01:09:14.2498795Z",
-        "source_commit": "d2ad841f6a8edfbc765ec681d803b193e5d1f7ad",
-        "summary": "Converts intended Matcha charcoal cooking into coal while preserving recipe inputs, timing, and experience."
+        "built_at": "2026-11-24T00:15:27.518896Z",
+        "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83",
+        "summary": "Keeps the established coal outputs, cooking times and seven explicit charcoal consumers under the migrated recipe IDs.",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "0.1.2-canary3",
@@ -115,20 +120,20 @@
         "summary": "Converts intended Matcha charcoal cooking into coal while preserving recipe inputs, timing, and experience."
       },
       "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "runtime": "RUNTIME_PASS"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 7,
-    "activity_at": "2026-08-31T04:36:25Z",
-    "updated_at": "2026-08-31T04:36:25Z",
-    "last_codex_at": "2026-08-31T04:36:25Z",
-    "source_commit": "12d96636943b4ba405c0d96916bbdc74e1434629"
+    "revision": 8,
+    "activity_at": "2026-11-24T00:40:27Z",
+    "updated_at": "2026-11-24T00:40:27Z",
+    "last_codex_at": "2026-11-24T00:40:27Z",
+    "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83"
   }
 }

@@ -69,6 +69,19 @@ def check_boundaries(pack, legacy):
     trades = runpy.run_path(str(PROJECTS / "mynx-matcha-trade-tweaks/generate_overlay.py"))
     assert len(trades["CHANGES"]) == 124 and len(trades["REMOVALS"]) == 4
     assert trades["POOL_MEMBERSHIP"][("leatherworker", 5)]["add"] == ["red_mushroom_block"]
+    changed = trades["CHANGES"].keys() | trades["REMOVALS"]
+    ids = members(pack)
+    assert sum(f"data/matcha/villager_trade/{key}.json" in ids for key in changed) == 76
+    assert "data/matcha/villager_trade/leatherworker/5/red_mushroom_block.json" not in ids
+    sets = [n for n in ids if n.startswith("data/minecraft/trade_set/") and n.endswith(".json")]
+    assert len(sets) == 68
+    assert all(json.loads(pack.read(n))["trades"].startswith("#matcha:") for n in sets)
+    assert sum(json.loads(pack.read(n))["amount"] != json.loads(legacy.read(n))["amount"]
+               for n in sets) == 11
+    overlay = trades["OVERLAY"]
+    old_sets = list((overlay / "data/minecraft/trade_set").rglob("*.json"))
+    assert len(old_sets) == 5 and all(json.loads(f.read_bytes())["trades"].startswith("#minecraft:")
+                                      for f in old_sets)
     for kind in ("plains", "desert", "savanna", "snowy", "taiga"):
         path = f"data/minecraft/worldgen/structure/village_{kind}.json"
         assert pack.read(path) == legacy.read(path)

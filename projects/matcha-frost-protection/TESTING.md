@@ -1,95 +1,26 @@
 # Testing
 
-## Accepted identity and evidence
+## Matcha 1.12.5 Stage 1, Canary 3
 
-**CANARY 2 ACCEPTED — USER-REPORTED EXTERNAL AGGREGATE PASS**
+`matcha-frost-protection-0.2.0-canary3.jar`
 
-The accepted Workbench Stack v10 identity is exact
-`matcha-frost-protection-0.1.0-canary2.jar`, 18,373 bytes,
-SHA-256 `88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742`,
-from source checkpoint `0d3d6650355a38758ff23227b34bc9bda5826d68`.
+SHA-256 `d13bb3122a35f8c7bb573057582b69904accdbaf367e49255cb7c831637b572b`
 
-The user reported an aggregate external runtime `PASS` for that exact current
-canonical candidate. No individual matrix-row observations were supplied, so
-none are inferred. The accepted-stack manager installed and physically
-verified the artifact as accepted deployment
-`e3c2471a-2419-422d-8dac-0faf5681a790`; that accepted-baseline action is not a
-Test Slot deployment and creates no Test Slot history. Canary 1 remains a
-historical artifact only and is not a rollback release.
+Source `e3a13df63e041949a8341a025ac4d937ebacdf83`
 
-The retained clean Temurin 25.0.4.1 / Gradle 9.5.1 build passed all 28 focused
-tests against Minecraft 26.2 and pristine Matcha Flavoured 1.12. That remains
-static evidence independent of the external aggregate runtime result.
+### Static checks
 
-## Future regression setup
+Build the project for Minecraft 26.2 with Java 25. The project suite covers 26 tests. After building the ten coordinated projects, run the following from the repository root with paths to the verified publisher downloads and retained Foundation ZIP.
 
-1. Verify the exact accepted version, filename, SHA-256, source checkpoint,
-   dependencies, and enabled stack before testing. Stop on any identity,
-   readiness, dependency, or ownership mismatch.
-2. Launch the exact Minecraft 26.2 Matcha stack, run `/reload`, and stop on any
-   registry, Mixin, function, recipe, or resource-reload error.
-3. Prepare single armor pieces for HEAD, CHEST, LEGS, and FEET with
-   `main:freezing_protection` at levels I, II, and III. Off-slot pieces may be
-   provisioned by controlled commands; do not change Matcha's chest-only
-   supported-items/acquisition contract or maximum level III.
-4. Start each cold-water case without lingering effects. Matcha's penalties
-   last five seconds; Canary 2 prevents new application and deliberately does
-   not clear effects already applied by an earlier unprotected case.
+```text
+python -B tests/verify_matcha_stage1.py --official-mod "matcha-flavoured-1.12.5+dp.jar" --client-pack "MF_RP_1_12_3_26_2.zip" --foundation "Foundation v12.zip"
+```
 
-## Powdered-snow matrix
+### Runtime checks
 
-| Case | Required observation |
-| --- | --- |
-| No Frost Protection | Ordinary vanilla behavior returns: no solid walking surface, freeze ticks accumulate while exposed, the powder-snow overlay appears, and full freezing can damage. |
-| Leather boots baseline | Solid walking surface without deliberate descent; freeze ticks do not accumulate, so no new overlay or freeze damage. Sneaking/deliberate descent remains possible. |
-| Frost Protection I, II, and III on HEAD | Every level matches the leather-boots baseline for walking, underlying freeze state, overlay, damage, and deliberate descent. |
-| Frost Protection I, II, and III on CHEST | Same leather-boots-equivalent result. |
-| Frost Protection I, II, and III on LEGS | Same leather-boots-equivalent result. |
-| Frost Protection I, II, and III on FEET | Same leather-boots-equivalent result. |
-| Remove the only qualifying piece | The next exposure immediately returns to ordinary traversal and freeze-tick accumulation. |
-| Equip while already partially frozen | Frozen ticks thaw through vanilla's leather-wearable path; there is no direct tick clear or HUD-only suppression. |
+Record observations against the exact filename and SHA-256 above in a user-directed disposable world. Verify startup, a repeated reload and a reconnect before reporting runtime results.
 
-Where useful, inspect `TicksFrozen` while testing. The decisive result is that
-the underlying value stays at zero for fresh protected exposure or thaws at
-the vanilla rate after protection is equipped; the overlay must follow that
-state rather than being independently hidden. Recheck representative cases
-after save/reload.
+1. For head, chest, legs and feet separately, test Frost Protection I, II and III in powder snow. Compare traversal, sinking, freeze ticks, overlay and damage with leather boots and bare equipment. Test mixed slots and players standing together. Repeat with the saved main:freezing_protection registry entry before the upstream item updater runs.
+2. In frozen-biome water compare protected and unprotected players side by side over multiple penalty ticks. Any single level III piece must suppress all cold-water penalties for its wearer. Check creative and spectator exclusion. Craft the Demeter book before and after reload and verify only Frost Protection III.
 
-## Matcha freezing/cold-water matrix
-
-Use a non-Creative player with water at `~ ~1 ~` in a biome in
-`#minecraft:is_frozen`. Matcha 1.12's complete active penalty set is Slowness V
-for five seconds, Darkness I for five seconds, and one point of `freeze`
-damage per qualifying tick. It applies Darkness, not Blindness.
-
-| Case | Required observation |
-| --- | --- |
-| No Frost Protection | All three Matcha penalties apply normally. |
-| Frost Protection I on each armor slot | Slowness and Darkness still apply; the penalty path still issues freeze damage, subject only to Matcha's existing level-scaled enchantment protection. |
-| Frost Protection II on each armor slot | Same normal Matcha penalty path, with only the existing level-scaled damage protection. |
-| Frost Protection III on HEAD | No new Slowness, Darkness, or freeze damage from this Matcha cold-water system. |
-| Frost Protection III on CHEST | Complete immunity remains and preserves Matcha's original maximum-level intent. |
-| Frost Protection III on LEGS | Complete immunity to all three penalties. |
-| Frost Protection III on FEET | Complete immunity to all three penalties. |
-| Multiple level-III pieces | Same boolean immunity; no stacking or additional behavior. |
-| Remove the last level-III piece | The normal three-penalty path resumes on the next qualifying tick. |
-| Co-located protected and unprotected players | The protected player remains immune while the unprotected player receives their own penalties; no nearest-player cross-targeting occurs. |
-| Unrelated environmental effect or damage | Behavior is unchanged; only the exact Matcha freezing-water condition function is redirected. |
-
-## Preserved contracts
-
-- Ordinary Frost Walker and its water behavior remain unchanged.
-- Blessing of Demeter keeps its exact recipe shape, ingredients, method, item
-  identity, name, lore, model, and count. The crafted book's complete stored
-  enchantment set is exactly `main:freezing_protection` level III; Frost Walker
-  and every additional enchantment are absent.
-- Recheck representative client and dedicated-server or multiplayer cases if
-  acceptance requires both authority paths.
-
-For a future row-scoped regression, record `PASS` only after every applicable
-row is observed against this exact artifact and stack. Stop and record `FAIL`
-or `INCONCLUSIVE` for any overlay/state disagreement, blocked deliberate
-descent, missing or leaked cold-water penalty, player cross-targeting, recipe
-drift, unrelated regression, or client/server disagreement. Record only
-observations actually made; do not infer row results from the current aggregate
-external report or from static tests.
+The [1.12 testing procedure](https://github.com/Resivore/Mynx-Flavoured-Workbench/blob/c5172fee26245bfb71b768f8dc5a89c1c7c0a1fd/projects/matcha-frost-protection/TESTING.md) retains the full previous release checklist and historical evidence. Reuse its unaffected controls alongside the cases above.

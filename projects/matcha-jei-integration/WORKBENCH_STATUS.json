@@ -21,10 +21,11 @@
       "Keep Matcha recipe knowledge idempotent and server-owned while JEI remains an optional client integration."
     ],
     "scope": [
-      "Preserve the accepted C2 baseline: seven JEI vanilla recipe categories, ten audited Matcha recipe namespaces, 315 exact component-bearing output ingredients, and idempotent server-side recipe awards.",
-      "Maintain C3's data-driven Matcha Villager Trades and Matcha Acquisition categories with 175 supported trade pages, 249 conservative acquisition pages, and 240 exact non-recipe identities.",
-      "Retain the exact JEI 30.18.0.144 subtype boundary: skip all 14 JEI-owned base interpreters, use the companion-owned exact-stack bridge for 19 identities, and keep the accepted component-manifest path for the other 221.",
-      "Preserve C4's effective post-resolution recipe catalog so compatibility replacements such as Blessing of Demeter remain authoritative. C8 retains source provenance through a shared conservative food canonicalizer, contributes the resulting exact Matcha stacks additively and idempotently without rebuilding or clearing global Creative Search, and synchronizes the exact plain defaults superseded by authoritative health-bearing Matcha foods."
+      "Use the seven vanilla JEI categories, loaded Matcha recipe holders and server-owned recipe knowledge.",
+      "Select eligible provider trade and loot resources through effective winners and loaded trade assignments.",
+      "Preserve JEI-owned vanilla subtype interpreters and enable component-aware discovery for the current Matcha carriers.",
+      "Preserve C4's effective post-resolution recipe catalog so compatibility replacements such as Blessing of Demeter remain authoritative. C8 retains source provenance through a shared conservative food canonicalizer, contributes the resulting exact Matcha stacks additively and idempotently without rebuilding or clearing global Creative Search, and synchronizes the exact plain defaults superseded by authoritative health-bearing Matcha foods.",
+      "Discovers candidate IDs from the provider resource stack, resolves effective resources and reads final recipe holders. Retains source-aware food selection, conservative loot/trade eligibility and JEI interpreter ownership."
     ],
     "boundaries": {
       "owned_paths": [
@@ -54,13 +55,13 @@
         "type": "MOD",
         "identifier": "fabric-api",
         "requirement": "0.157.0+26.2",
-        "reason": "Exact Fabric API used by the current C8 build."
+        "reason": "Exact Fabric API used by the current candidate build."
       },
       {
         "type": "DATA_PACK",
-        "identifier": "Matcha Flavoured",
-        "requirement": "1.12 (SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248); 26.2 1.0.0 bundle SHA-256 27669c5129a665f3287f341d56d7da617e65fe69d143b61b6f2f112b3c1ba608",
-        "reason": "Exact frozen Matcha content and bundle identities audited by this compatibility implementation."
+        "identifier": "MF_1_12_5_26_2.zip",
+        "requirement": "1.12.5, SHA-256 966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4",
+        "reason": "Verified publisher server-data input for the 26.2 compatibility contracts."
       },
       {
         "type": "MOD",
@@ -83,23 +84,22 @@
     ]
   },
   "state": {
-    "milestone": "Exact C7 has a user-reported external runtime FAIL for an incomplete generalized duplicate-elimination contract: its Glow Berries and Glow Berry Mash fix worked, but Braised Mushroom still appeared twice in discovery, once with Matcha's intended health benefits and once plain. The failure does not reclassify the successful Glow fix. Frozen-data reconstruction found that Braised Mushroom is an effect-bearing effective recipe output on the non-food minecraft:rabbit_foot carrier, which C7's intrinsic-food gate could not select, while source provenance had already been flattened. The complete generated catalog audit found 522 exact identities, eight multi-identity health-food families, seven with one authoritative effective recipe identity over stale trade/loot identities, and one ambiguous non-recipe family that must remain distinct; C8 retains provenance through a shared conservative canonicalizer and exposes 515 exact catalog identities. It also synchronizes demonstrated default-presentation replacements, including non-food recipe carriers, while preserving custom models, names, stack mechanics, potions, unrelated components, ambiguous families, C4 effective output authority, C5 safe additive Search behavior, C3 surfaces, and JEI ownership. C8 is STATIC_PASS and RUNTIME_UNTESTED. Exact C4's separate Search failure and accepted C3's external PASS remain release-bound; C2 remains rollback/provenance, and the dedicated-server-without-JEI gate remains unperformed.",
+    "milestone": "Matcha 1.12.5 Stage 1 candidate C9. Discovers candidate IDs from the provider resource stack, resolves effective resources and reads final recipe holders. Retains source-aware food selection, conservative loot/trade eligibility and JEI interpreter ownership. Coordinated integration awaits the owner trade matrix and client pack precedence checks.",
     "releases": {
       "current": {
-        "version": "C8 (0.3.4-canonical-food-catalog-canary8)",
-        "canary": 8,
-        "embedded_version": "0.3.4-canonical-food-catalog-canary8",
+        "version": "0.4.0-canary9",
+        "canary": 9,
         "artifact": {
-          "filename": "matcha-jei-integration-0.3.4-canonical-food-catalog-canary8.jar",
-          "sha256": "d92ade2de4c095089838323a5116e6dcb6b053046111a3ed6370c75c7dafc34f"
+          "filename": "matcha-jei-integration-0.4.0-canary9.jar",
+          "sha256": "1c17faef836a53eb2dee8f24a1dea34799c74c25af79d533a5a0f0f7bc155a10"
         },
-        "built_at": "2026-09-17T06:06:33.7794164Z",
-        "source_commit": "1b474782d0b308a7f47ea69f5b7294926ec99af8",
+        "built_at": "2026-11-24T00:29:49.663315Z",
+        "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83",
+        "summary": "Discovers effective Matcha 1.12.5 recipes and component-bearing stacks in JEI and Creative Search.",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        },
-        "summary": "Uses source-aware canonical food families so Creative Search and JEI expose the authoritative Matcha health identity without collapsing legitimate variants."
+        }
       },
       "accepted": {
         "version": "C3 (legacy 0.2.0-nonrecipe-discovery-canary1)",
@@ -129,10 +129,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-17T06:07:13Z",
-    "updated_at": "2026-09-17T06:07:13Z",
-    "last_codex_at": "2026-09-17T06:07:13Z",
-    "source_commit": "1b474782d0b308a7f47ea69f5b7294926ec99af8"
+    "revision": 9,
+    "activity_at": "2026-11-24T00:40:27Z",
+    "updated_at": "2026-11-24T00:40:27Z",
+    "last_codex_at": "2026-11-24T00:40:27Z",
+    "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83"
   }
 }

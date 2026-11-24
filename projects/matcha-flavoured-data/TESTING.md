@@ -1,46 +1,26 @@
 # Testing
 
-## Exact candidate
+## Matcha 1.12.5 Stage 1, Canary 3
 
-Canary 2 packages the exact server `data/` tree and exact `pack.mcmeta` from
-`Matcha_Flavoured_1_12.zip` (12,248,989 bytes, SHA-256
-`6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248`) as the
-Fabric built-in pack `matcha_flavoured_data:matcha_flavoured_1_12`. It is
-registered with `PackActivationType.ALWAYS_ENABLED`; no client `assets/` are
-in this mod. The original zip remains the separate client resource pack.
+`matcha-flavoured-data-0.2.0-canary3.jar`
 
-This exact candidate is deployed in Test Slot A and its artifact hash and
-Fabric dependency graph are `READY_TO_TEST_VERIFIED`; it has no Minecraft
-runtime result. Resume only in the dedicated Matcha Flavoured 26.2 Workbench,
-never the protected 26.1.2 gameplay instance.
+SHA-256 `034f1f281078a81ae2c8dbc84481f96a0527c4c67bd8739399f1c578da3b6807`
 
-## Required runtime matrix
+Source `e3a13df63e041949a8341a025ac4d937ebacdf83`
 
-1. With this exact JAR and Matcha Frost Protection installed, create a fresh
-   singleplayer world with no Matcha world datapack selected. The Create World
-   screen must pass `Preparing for world creation...`, open normally, and
-   create the world. Confirm `food:glow_berry_crumble`,
-   `blessings:frost_walker_frost_protection`,
-   `main:environmental/check_freezing_water_conditions`, and the expected
-   Frost Protection-modified Blessing of Demeter result are available.
-2. Repeat from a fresh world without Matcha Frost Protection. World creation
-   must still complete and the same embedded Matcha data must be present.
-3. Back up an existing disposable test world that enables the exact legacy
-   `Matcha_Flavoured_1_12.zip`, then load it with this JAR also installed.
-   Confirm representative recipes, functions, loot, and tags are unchanged
-   and no duplicate behavior occurs. The static package test proves both
-   layers are byte-identical and tag membership is idempotent; this step is
-   still required before a runtime PASS.
+### Static checks
 
-Stop and record `FAIL` or `INCONCLUSIVE` for any reload/world-creation error,
-missing resource, altered Frost Protection result, tag-content drift, or
-duplicate behavior. Do not edit world files or enable/disable the legacy pack
-automatically.
+Build the project for Minecraft 26.2 with Java 25. The project suite covers 2 tests. After building the ten coordinated projects, run the following from the repository root with paths to the verified publisher downloads and retained Foundation ZIP.
 
-## Preferred legacy-world migration
+```text
+python -B tests/verify_matcha_stage1.py --official-mod "matcha-flavoured-1.12.5+dp.jar" --client-pack "MF_RP_1_12_3_26_2.zip" --foundation "Foundation v12.zip"
+```
 
-After a successful backup and explicit verification that the embedded data is
-working, disable or remove the old world-scoped Matcha datapack so the world
-has one Matcha server-data source. Keep the original zip available as the
-client resource pack. This is a user-directed cleanup, never an automated
-world mutation by this mod.
+### Runtime checks
+
+Record observations against the exact filename and SHA-256 above in a user-directed disposable world. Verify startup, a repeated reload and a reconnect before reporting runtime results.
+
+1. Start a new disposable world, then open a copy of a 1.12 world with the old provider removed. Inspect /datapack list enabled and the reload log for exactly one Matcha generation. Repeat /reload twice and check startup, tick and advancement functions. In a separate copy deliberately enable a renamed old world datapack and require an explicit duplicate-generation failure.
+2. Use client pack 1.12.3. With Village Restoration enabled, inspect the five village types and placement using spacing 80, separation 50 and salt 10387312. Record the selected resource-pack order and check Foundation and Continuity against representative models.
+
+The [1.12 testing procedure](https://github.com/Resivore/Mynx-Flavoured-Workbench/blob/c5172fee26245bfb71b768f8dc5a89c1c7c0a1fd/projects/matcha-flavoured-data/TESTING.md) retains the full previous release checklist and historical evidence. Reuse its unaffected controls alongside the cases above.

@@ -49,3 +49,13 @@
 - Artifact: Current and accepted are exact `matcha-frost-protection-0.1.0-canary2.jar`, version `0.1.0-canary2`, 18,373 bytes, SHA-256 `88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742`, release source checkpoint `0d3d6650355a38758ff23227b34bc9bda5826d68`, accepted deployment `e3c2471a-2419-422d-8dac-0faf5681a790`. No artifact was rebuilt or substituted, and no rollback release exists.
 - Result: `ACCEPTED` — `STATIC_PASS`; `READY_TO_TEST_VERIFIED`; user-reported external `RUNTIME_PASS`; `CURRENT_IS_ACCEPTED`; `NO_ROLLBACK`; no blocker; accepted Stack v10; and no Test Slot deployment history.
 - Next state: Preserve this exact accepted identity and narrow behavior contract. Use the focused matrices in `TESTING.md` for any future regression and record only observations actually made; any successor requires its own exact identity and independent runtime evidence.
+
+## 2026-11-24T00:40:27Z — Prepare Matcha 1.12.5 Stage 1 Canary 3
+- Revision: 6
+- Source checkpoint: `e3a13df63e041949a8341a025ac4d937ebacdf83`
+- Changes: Uses the 1.12.5 freezing-water guard and Demeter recipe. Only the resulting stored enchantments are replaced. The existing player-local penalty chain remains in effect.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 26 project tests. The ten-JAR distribution and migration-boundary fixture passed.
+- Runtime: RUNTIME_UNTESTED on the isolated candidate branch.
+- Artifact: C3 `matcha-frost-protection-0.2.0-canary3.jar`, 19,052 bytes, SHA-256 `d13bb3122a35f8c7bb573057582b69904accdbaf367e49255cb7c831637b572b`, built_at `2026-11-24T00:39:22.387124Z`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: For head, chest, legs and feet separately, test Frost Protection I, II and III in powder snow. Compare traversal, sinking, freeze ticks, overlay and damage with leather boots and bare equipment. Test mixed slots and players standing together. Repeat with the saved main:freezing_protection registry entry before the upstream item updater runs.

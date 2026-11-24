@@ -37,7 +37,8 @@
       "Package, statically verify, retain, and document Canary 1 without launching Minecraft or changing any testing profile.",
       "Generate C2 overrides for the exact Rubblemite and Veiled Leaves loot tables, the Void Campfire recipe, and the Veiled Sapling recipe; use one narrow custom crafting serializer only because current Matcha Kindling is a component-bearing vanilla item rather than a separate registry entry.",
       "For C3, synchronize that existing custom serializer through Fabric's recipe API so JEI consumes the resolved holder/display, provide only a conflict-free component-subtype fallback when Matcha x JEI Integration is absent, and add one three-key English companion language override ordered after Enderscape.",
-      "For C4 and C5, own only the Enderscape-specific canonical Veiled Leaves shader classification, apply it before generic BGE canonical-parent propagation, and keep every common adjustment independent of Iris and shaders."
+      "For C4 and C5, own only the Enderscape-specific canonical Veiled Leaves shader classification, apply it before generic BGE canonical-parent propagation, and keep every common adjustment independent of Iris and shaders.",
+      "Build-time source fingerprints and a generation-specific runtime capability replace the C2 provider pin. Food loot and the displayed Kindling stack use current components while existing equipment, Rubblemite, sapling and shader adjustments retain their scope."
     ],
     "boundaries": {
       "owned_paths": [
@@ -97,14 +98,14 @@
       {
         "type": "PROJECT",
         "identifier": "a0a522b0-bc02-48dc-81de-efc8757171c5",
-        "requirement": "Matcha Flavoured Data 0.1.0-canary2 accepted current artifact (SHA-256 0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639)",
-        "reason": "Defines C1 food identities and C2's Kindling identity: minecraft:chicken_spawn_egg carrying minecraft:item_model minecraft:beacon_kindling."
+        "requirement": "workbench_matcha_data_1_12_5",
+        "reason": "Supplies the current food and Kindling components."
       },
       {
         "type": "PROJECT",
         "identifier": "4d983099-3bfc-5df1-9788-32683ddfc6db",
-        "requirement": "Current C8 architecture; accepted runtime evidence remains C3-only",
-        "reason": "Owns the richer Matcha component subtype when installed; C3 conditionally defers to it without changing that project."
+        "requirement": "Optional Stage 1 JEI integration",
+        "reason": "Keeps ownership of the shared Matcha subtype catalog."
       },
       {
         "type": "MOD",
@@ -133,18 +134,18 @@
     ]
   },
   "state": {
-    "milestone": "Canary 5 preserves the Enderscape Integration identity and every C1-C4 adjustment while correcting two statically discovered optional-client ordering gates. Its Iris callback now seeds otherwise-unmapped canonical Veiled Leaves at injector order 900 before BGE's default-order generic canonical-parent pass, and its mixin plugin gates only that optional Iris callback so all common pruning, loot, food, recipe, advancement, JEI, and localization behavior remains active without Iris. Explicit canonical and physical shader assignments still win; controlled build/static validation passed, and no Minecraft, Iris, Complementary, BGE, or JEI runtime observation has been supplied.",
+    "milestone": "Matcha 1.12.5 Stage 1 candidate C6. Build-time source fingerprints and a generation-specific runtime capability replace the C2 provider pin. Food loot and the displayed Kindling stack use current components while existing equipment, Rubblemite, sapling and shader adjustments retain their scope. Coordinated integration awaits the owner trade matrix and client pack precedence checks.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary5",
-        "canary": 5,
-        "embedded_version": "0.1.0-canary5",
+        "version": "0.2.0-canary6",
+        "canary": 6,
         "artifact": {
-          "filename": "enderscape-integration-0.1.0-canary5.jar",
-          "sha256": "fb1b5d94d434c76d6350b495294a72904a4e1d42611faef8912fd03ad30db560"
+          "filename": "enderscape-integration-0.2.0-canary6.jar",
+          "sha256": "72934f737240c491757ea1a6af08aef506efeef980682b5c3a8bbe27df14824b"
         },
-        "built_at": "2026-09-22T04:14:49.3068769Z",
-        "source_commit": "d3836552f464612ef5c330b9ca9d27e8056fda0c",
+        "built_at": "2026-11-24T00:30:09.664124Z",
+        "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83",
+        "summary": "Uses the migrated Matcha food and Kindling identities while preserving Enderscape acquisition controls.",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": [
@@ -153,10 +154,9 @@
               "relationship": "depends",
               "dependency_id": "minecraft",
               "predicate": "=26.2",
-              "reason": "Canary 5 retains the controlled Minecraft 26.2 recipe synchronization/display, advancement, tag, Creative, food, component, language-resource, and resource-pack interfaces while correcting only optional client callback ordering and gating.",
+              "reason": "Targets the 26.2 registry, display and recipe synchronization interfaces.",
               "regression_evidence": [
-                "A clean Java 25 Gradle 9.5.1 stageCanaryArtifact build produced enderscape-integration-0.1.0-canary5.jar, SHA-256 fb1b5d94d434c76d6350b495294a72904a4e1d42611faef8912fd03ad30db560, from implementation checkpoint d3836552f464612ef5c330b9ca9d27e8056fda0c.",
-                "Thirty focused JUnit tests retain C1-C4 resource, recipe, JEI, localization, discovery, identity, and shader-fallback contracts while proving every common mixin remains eligible when the exact optional Iris hook is unavailable."
+                "The generator and thirty integration tests check the 26.2 serializer, components, loot, discovery and shader boundaries."
               ]
             },
             {
@@ -172,17 +172,6 @@
             },
             {
               "consumer_id": "enderscape_integration",
-              "relationship": "depends",
-              "dependency_id": "matcha_flavoured_data",
-              "predicate": "=0.1.0-canary2",
-              "reason": "C5 retains C2's custom Void Campfire serializer and exact Matcha C2 component-bearing Beacon Kindling identity; a normal item-only recipe would accept ordinary chicken spawn eggs.",
-              "regression_evidence": [
-                "The generator pins Matcha's beacon_kindling recipe SHA-256 e2a91a3d1f9f29c183561bf720967bc41b87e8be1693d6918d07462181ba1fb1 and fails closed if its item, model, marker, or beacon_kindling tag changes.",
-                "fabric.mod.json still requires matcha_flavoured_data =0.1.0-canary2, and executable tests verify the custom matcher/display and actual JEI recipe UID preserve the authoritative base item/model identity rather than a vanilla stick or ordinary chicken spawn egg."
-              ]
-            },
-            {
-              "consumer_id": "enderscape_integration",
               "relationship": "suggests",
               "dependency_id": "iris",
               "predicate": "=1.11.2+mc26.2",
@@ -193,8 +182,7 @@
               ]
             }
           ]
-        },
-        "summary": "Orders canonical Veiled Leaves classification before generic BGE inheritance and keeps every common Enderscape Integration mixin active without Iris."
+        }
       },
       "accepted": null,
       "rollback": null,
@@ -202,16 +190,16 @@
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
-      "build": "CONTROLLED_VALIDATION_PASS",
+      "build": "STATIC_PASS",
       "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 6,
-    "activity_at": "2026-09-22T04:14:49.3068769Z",
-    "updated_at": "2026-09-22T04:14:49.3068769Z",
-    "last_codex_at": "2026-09-22T04:14:49.3068769Z",
-    "source_commit": "d3836552f464612ef5c330b9ca9d27e8056fda0c"
+    "revision": 7,
+    "activity_at": "2026-11-24T00:40:27Z",
+    "updated_at": "2026-11-24T00:40:27Z",
+    "last_codex_at": "2026-11-24T00:40:27Z",
+    "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83"
   }
 }

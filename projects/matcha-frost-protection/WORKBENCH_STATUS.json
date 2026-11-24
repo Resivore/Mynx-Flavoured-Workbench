@@ -10,7 +10,7 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Make Frost Protection I or higher on any single equipped armor slot reproduce leather-boots-equivalent powdered-snow traversal and freezing-state behavior, including no freeze-tick accumulation, overlay, or freeze damage while preserving deliberate descent.",
       "Make Frost Protection III on any one equipped armor slot completely bypass Matcha Flavoured's freezing/cold-water penalty system for that player.",
@@ -18,11 +18,12 @@
       "Preserve Frost Protection's supported-items and maximum-level contracts, ordinary Frost Walker, and unrelated vanilla and Matcha Flavoured behavior."
     ],
     "scope": [
-      "Pin the exact Matcha Flavoured 1.12 Frost Protection definition, complete freezing-water tick/function chain and penalties, and Blessing of Demeter recipe plus vanilla Minecraft 26.2's leather-boots powdered-snow collision, entity-inside, freeze-state, damage, and overlay seams.",
+      "Pin the exact Matcha Flavoured 1.12.5 Frost Protection definition, complete freezing-water tick/function chain and penalties, and Blessing of Demeter recipe plus vanilla Minecraft 26.2's leather-boots powdered-snow collision, entity-inside, freeze-state, damage, and overlay seams.",
       "Extend vanilla's powdered-snow walkability decision and leather-wearable canFreeze decision so Frost Protection I or higher on the helmet, chestplate, leggings, or boots supplies the complete relevant leather-boots behavior without directly changing collision descent, entityInside, freeze ticks, damage, or HUD rendering.",
-      "Redirect only the resolved main:environmental/check_freezing_water_conditions function to a fail-closed canonical per-player guard: exact Frost Protection III on head, chest, legs, or feet bypasses the complete Matcha penalty path, while unqualified players receive the exact upstream Slowness V, Darkness I, and one-point freeze-damage commands with player-local targeting.",
+      "Redirect only the resolved matcha:environmental/check_freezing_water_conditions function to a fail-closed canonical per-player guard: exact Frost Protection III on head, chest, legs, or feet bypasses the complete Matcha penalty path, while unqualified players receive the exact upstream Slowness V, Darkness I, and one-point freeze-damage commands with player-local targeting.",
       "Replace only the enchantments produced by the resolved Blessing of Demeter recipe so its resulting book contains exactly Frost Protection III, with the existing Frost Walker II and Frost Protection II enchantments absent and no unintended additional enchantments.",
-      "Verify the Canary 2 powdered-snow visual/freezing matrix, complete Matcha cold-water penalty matrix, co-located-player isolation, Demeter result, save/reload, and representative multiplayer behavior during controlled runtime acceptance."
+      "Verify the current and saved enchantment powdered-snow visual/freezing matrix, complete Matcha cold-water penalty matrix, co-located-player isolation, Demeter result, save/reload, and representative multiplayer behavior during controlled runtime acceptance.",
+      "Uses the 1.12.5 freezing-water guard and Demeter recipe. Only the resulting stored enchantments are replaced. The existing player-local penalty chain remains in effect."
     ],
     "boundaries": {
       "owned_paths": [
@@ -45,47 +46,51 @@
         "type": "MOD",
         "identifier": "minecraft",
         "requirement": "=26.2",
-        "reason": "Exact target game version whose powdered-snow collision, entity-inside, freeze-state, damage, overlay, and enchantment behavior Canary 2 preserves and extends narrowly."
+        "reason": "Exact target game version whose powdered-snow collision, entity-inside, freeze-state, damage, overlay, and enchantment behavior the candidate preserves and extends narrowly."
       },
       {
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader minimum declared by Canary 2."
+        "reason": "Fabric runtime loader minimum declared by the candidate."
       },
       {
         "type": "DATA_PACK",
-        "identifier": "Matcha Flavoured",
-        "requirement": "1.12 (SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248)",
-        "reason": "Exact pinned Frost Protection enchantment, complete freezing-water chain and penalties, and Blessing of Demeter recipe contracts extended by Canary 2."
+        "identifier": "MF_1_12_5_26_2.zip",
+        "requirement": "1.12.5, SHA-256 966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4",
+        "reason": "Verified publisher server-data input for the 26.2 compatibility contracts."
       },
       {
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Required Java release for Minecraft 26.2 and the Canary 2 build."
+        "reason": "Required Java release for Minecraft 26.2 and the the candidate build."
       },
       {
         "type": "TOOL",
         "identifier": "gradle",
         "requirement": "9.5.1",
-        "reason": "Exact build-tool version used for the retained Canary 2 artifact."
+        "reason": "Exact build-tool version used for the retained the candidate artifact."
       }
     ]
   },
   "state": {
-    "milestone": "Exact Canary 2 received the user's aggregate external runtime PASS and is accepted in Workbench Stack v10 after manager installation and physical verification; it has no Test Slot deployment history, no checklist-row observations were supplied or inferred, and Canary 1 remains a historical artifact only.",
+    "milestone": "Matcha 1.12.5 Stage 1 candidate C3. Uses the 1.12.5 freezing-water guard and Demeter recipe. Only the resulting stored enchantments are replaced. The existing player-local penalty chain remains in effect. Coordinated integration awaits the owner trade matrix and client pack precedence checks.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
-        "canary": 2,
+        "version": "0.2.0-canary3",
+        "canary": 3,
         "artifact": {
-          "filename": "matcha-frost-protection-0.1.0-canary2.jar",
-          "sha256": "88ae708cbf2a9b1f5fe3b322579c3e7b507c7e0420cadb40aca796dba5b4a742"
+          "filename": "matcha-frost-protection-0.2.0-canary3.jar",
+          "sha256": "d13bb3122a35f8c7bb573057582b69904accdbaf367e49255cb7c831637b572b"
         },
-        "built_at": "2026-08-31T02:02:21.4581357Z",
-        "source_commit": "0d3d6650355a38758ff23227b34bc9bda5826d68",
-        "summary": "Makes Frost Protection armor reproduce leather-boots powdered-snow traversal and freezing protection."
+        "built_at": "2026-11-24T00:39:22.387124Z",
+        "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83",
+        "summary": "Preserves powdered-snow traversal and individual cold-water protection with the migrated Frost Protection enchantment.",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "0.1.0-canary2",
@@ -99,20 +104,20 @@
         "summary": "Makes Frost Protection armor reproduce leather-boots powdered-snow traversal and freezing protection."
       },
       "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "runtime": "RUNTIME_PASS"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-01T02:35:20Z",
-    "updated_at": "2026-09-01T02:35:20Z",
-    "last_codex_at": "2026-09-01T02:35:20Z",
-    "source_commit": "e405fbcf4900788f1c4bee2df68a130f72bfc239"
+    "revision": 6,
+    "activity_at": "2026-11-24T00:40:27Z",
+    "updated_at": "2026-11-24T00:40:27Z",
+    "last_codex_at": "2026-11-24T00:40:27Z",
+    "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83"
   }
 }

@@ -14,15 +14,16 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Make Inventory Particles correctly render the six selected Matcha component-backed and Ribbits stack identities without changing Inventory Particles, Matcha Flavoured, or Ribbits.",
       "Provide exclusive stack-aware spawner dispatch for only those exact target stacks while leaving all non-target Inventory Particles behavior untouched."
     ],
     "scope": [
-      "C4 is a narrow client-side Fabric compatibility mod. It marks its six data-defined Inventory Particles spawners during config linking and, immediately before a spawner runs, suppresses every nonmatching spawner only for an exact target stack.",
-      "The exact targets are minecraft:poisonous_potato with minecraft:item_model minecraft:green_curry, minecraft:ramen, or minecraft:heart_container; ribbits:glowcap; ribbits:toadstool_heart; and minecraft:filled_map with both minecraft:map_id and minecraft:custom_data.ribbits:ribbit_village_explorer_map=true.",
-      "C4 retains five standalone replacement particle definitions and no longer overlays Inventory Particles dirt_sand, potion, fallback-family, or other upstream JSON resources."
+      "C5 is a narrow client-side Fabric compatibility mod. It marks its six data-defined Inventory Particles spawners during config linking and, immediately before a spawner runs, suppresses every nonmatching spawner only for an exact target stack.",
+      "The exact targets are minecraft:poisonous_potato with minecraft:item_model green_curry, ramen, or heart_container in the current matcha or saved minecraft namespace; ribbits:glowcap; ribbits:toadstool_heart; and minecraft:filled_map with both minecraft:map_id and minecraft:custom_data.ribbits:ribbit_village_explorer_map=true.",
+      "C5 retains five standalone replacement particle definitions and no longer overlays Inventory Particles dirt_sand, potion, fallback-family, or other upstream JSON resources.",
+      "Updates component predicates and exclusive dispatch for the three migrated Matcha model identities. The existing Ribbits and selected companion targets keep their particle definitions."
     ],
     "boundaries": {
       "owned_paths": [
@@ -61,9 +62,9 @@
       },
       {
         "type": "DATA_PACK",
-        "identifier": "Matcha_Flavoured_1_12.zip",
-        "requirement": "12,248,989 bytes; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
-        "reason": "Immutable authoritative source for the Green Curry, Ramen, and Crystal Heart poisonous-potato item-model identities."
+        "identifier": "MF_1_12_5_26_2.zip",
+        "requirement": "1.12.5, SHA-256 966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4",
+        "reason": "Verified publisher server-data input for the 26.2 compatibility contracts."
       },
       {
         "type": "OTHER",
@@ -86,22 +87,22 @@
     ]
   },
   "state": {
-    "milestone": "The exact current release is ACCEPTED by owner direction following the user's external/gameplay testing. Existing build, deployment, and runtime classifications are preserved; this administrative transition infers no new runtime result.",
+    "milestone": "Matcha 1.12.5 Stage 1 candidate C5. Updates component predicates and exclusive dispatch for the three migrated Matcha model identities. The existing Ribbits and selected companion targets keep their particle definitions. Coordinated integration awaits the owner trade matrix and client pack precedence checks.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary4",
-        "canary": 4,
+        "version": "0.2.0-canary5",
+        "canary": 5,
         "artifact": {
-          "filename": "inventory-particles-matcha-compat-0.1.0-canary4.jar",
-          "sha256": "e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b"
+          "filename": "inventory-particles-matcha-compat-0.2.0-canary5.jar",
+          "sha256": "4cff7167fe263d698f02d9e3261a88d016657907d7c04a04745861f3a70ce321"
         },
-        "built_at": "2026-09-11T18:11:02.9488154Z",
-        "source_commit": "63e9b84116c718db92bbeb289933538e75cb28c2",
+        "built_at": "2026-11-24T00:09:20.008418Z",
+        "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83",
+        "summary": "Recognizes current and saved Matcha food and Crystal Heart models in the six approved particle holders.",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        },
-        "summary": "Renders selected Matcha and Ribbits component-backed identities correctly in Inventory Particles."
+        }
       },
       "accepted": {
         "version": "0.1.0-canary4",
@@ -119,7 +120,7 @@
         "summary": "Renders selected Matcha and Ribbits component-backed identities correctly in Inventory Particles."
       },
       "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
@@ -129,10 +130,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 5,
-    "activity_at": "2026-09-14T08:09:29Z",
-    "updated_at": "2026-09-14T08:09:29Z",
-    "last_codex_at": "2026-09-14T08:09:29Z",
-    "source_commit": "f511f435c623883c5ee1474e9227acb73fb2df68"
+    "revision": 6,
+    "activity_at": "2026-11-24T00:40:27Z",
+    "updated_at": "2026-11-24T00:40:27Z",
+    "last_codex_at": "2026-11-24T00:40:27Z",
+    "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83"
   }
 }

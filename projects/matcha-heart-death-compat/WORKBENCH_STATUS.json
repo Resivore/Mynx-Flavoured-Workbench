@@ -18,18 +18,18 @@
     ]
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
       "Preserve Matcha Crystal Heart progression as explicit semantic main-hand use instead of automatic inventory-entry consumption.",
       "Preserve project-owned persistent maximum-health state and one-heart-per-death debt from Matcha's 30-heart cap down to the five-heart floor, with Reinforced repair only below the normal ten-heart baseline.",
       "Own the narrow Heart, death, recipe, loot, Echo Shard discovery, and Resonant Favour crafting boundary consolidated in Canary 10 without forking Matcha or changing unrelated Matcha behavior."
     ],
     "scope": [
-      "Recognize a Matcha Crystal Heart only as minecraft:poisonous_potato with minecraft:item_model=minecraft:heart_container; ordinary poisonous potatoes fail closed, inventory movement never applies a Heart, and use remains main-hand right-click only.",
+      "Recognize a Matcha Crystal Heart only as minecraft:poisonous_potato with a current matcha:heart_container or saved minecraft:heart_container model; ordinary poisonous potatoes fail closed, inventory movement never applies a Heart, and use remains main-hand right-click only.",
       "Persist sanitized even maximum-health values from 10 through 60 health points; preserve a valid adopted value, fall back to 20 for malformed, odd, or out-of-range state, add two points for a Crystal Heart only from 20 through 58, subtract two points on every death to a floor of 10, and add two points for a Reinforced Heart only below 20 with a cap of 20.",
       "Provide the ordinary component item matcha_heart_death_compat:resonant_favour with the supplied exact sprite; craft it as four Echo Shards around Divine Favour, use it in the e e/ere/ e  Reinforced Heart recipe, and use Divine Fragment plus Divine Favour in the f f/fdf/ f  Crystal Heart recipe.",
-      "Own exactly the three established authoritative post-prepare recipe replacements, plus the packaged Resonant Favour and Reinforced recipes, two authoritative advancements, four Echo-scarcity loot tables, and the two conflicting Matcha Heart functions through the fail-closed reload seams retained from Canary 8.",
-      "Preserve Ancient City loot as the remaining unchanged Echo Shard source, Silk-Touch-only Sculk Sensor, Calibrated Sculk Sensor, and Sculk Shrieker item drops, and the existing Music Disc 5 and Swift Sneak/Soul Speed sinks."
+      "Owns the permanent-health writer, advancement floors and selected payouts, Wither and lethal-heart paths. Heart sources, recipe identities, saved models and Luck-dependent loot odds are exercised against the official distribution.",
+      "Preserve Ancient City loot as the sole remaining Echo Shard source with the accepted effective acquisition odds, Silk-Touch-only Sculk Sensor, Calibrated Sculk Sensor, and Sculk Shrieker item drops, and the existing Music Disc 5 and Swift Sneak/Soul Speed sinks."
     ],
     "boundaries": {
       "owned_paths": [
@@ -50,7 +50,7 @@
         "type": "TOOL",
         "identifier": "java",
         "requirement": "25",
-        "reason": "Minecraft 26.2 and the Canary 11 Fabric build target Java 25."
+        "reason": "Minecraft 26.2 and the the candidate Fabric build target Java 25."
       },
       {
         "type": "MOD",
@@ -62,7 +62,7 @@
         "type": "MOD",
         "identifier": "fabricloader",
         "requirement": ">=0.19.3",
-        "reason": "Fabric runtime loader floor declared by Canary 11."
+        "reason": "Fabric runtime loader floor declared by the candidate."
       },
       {
         "type": "MOD",
@@ -78,25 +78,29 @@
       },
       {
         "type": "DATA_PACK",
-        "identifier": "Matcha_Flavoured_1_12.zip",
-        "requirement": "SHA-256 6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248",
-        "reason": "Frozen upstream contract reference for the semantic Crystal Heart, recipe, advancement, function, loot, and Echo Shard overlay behavior."
+        "identifier": "MF_1_12_5_26_2.zip",
+        "requirement": "1.12.5, SHA-256 966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4",
+        "reason": "Verified publisher server-data input for the 26.2 compatibility contracts."
       }
     ]
   },
   "state": {
-    "milestone": "Exact Canary 11 is accepted in Workbench Stack v11 under the user's explicit USER_APPROVED_UNTESTED_PROMOTION authorization: version 0.1.10-canary11, 39,105 bytes, SHA-256 a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9, source 8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3. The accepted-baseline installation is not a Test Slot deployment or Minecraft runtime PASS; C11 remains independently runtime untested and inherits no evidence. Previous accepted C10 remains repository provenance at version 0.1.9-canary10, 34,751 bytes, SHA-256 f86442ec69ed8afb86d52c97db2e899223c25a659ef7c19f245e51ac642bbc90, source f9c877d14956616bc3f46f3239ac3b512e1ee9c4, while exact runtime-passed C8 remains the declared rollback at version 0.1.7-canary8, 31,176 bytes, SHA-256 cb36d6917dc61b17f2d8b5cea0d09cb4c1455e04aaca2c186ecaebe5e9960aa2, source 4707b35150cc4169b2eee68b8683f9dfb27c158e.",
+    "milestone": "Matcha 1.12.5 Stage 1 candidate C12. Owns the permanent-health writer, advancement floors and selected payouts, Wither and lethal-heart paths. Heart sources, recipe identities, saved models and Luck-dependent loot odds are exercised against the official distribution. Coordinated integration awaits the owner trade matrix and client pack precedence checks.",
     "releases": {
       "current": {
-        "version": "0.1.10-canary11",
-        "canary": 11,
+        "version": "0.2.0-canary12",
+        "canary": 12,
         "artifact": {
-          "filename": "matcha-heart-death-compat-0.1.10-canary11.jar",
-          "sha256": "a0570179f85d32ec6740d9136ad50890b9c797500661cd2ed2325da5b6b1e4a9"
+          "filename": "matcha-heart-death-compat-0.2.0-canary12.jar",
+          "sha256": "3ea8384b403a4048ce72c6de711ad2afc3ffa361534e7fd7f176da3ce66f862e"
         },
-        "built_at": "2026-09-01T02:16:52.0902258Z",
-        "source_commit": "8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3",
-        "summary": "Keeps Matcha Crystal Heart progression as deliberate main-hand use rather than inventory consumption."
+        "built_at": "2026-11-24T00:36:31.191844Z",
+        "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83",
+        "summary": "Preserves Workbench death debt, deliberate heart use and Echo Shard scarcity under Matcha 1.12.5.",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": {
         "version": "0.1.10-canary11",
@@ -118,7 +122,7 @@
         },
         "source_commit": "4707b35150cc4169b2eee68b8683f9dfb27c158e"
       },
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "ROLLBACK_DIFFERS_FROM_ACCEPTED"
     },
     "validation": {
@@ -128,10 +132,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-09-01T03:24:52Z",
-    "updated_at": "2026-09-01T03:24:52Z",
-    "last_codex_at": "2026-09-01T03:24:52Z",
-    "source_commit": "cedb14dbc15f336d5b2ef853218f07e2d2650a17"
+    "revision": 9,
+    "activity_at": "2026-11-24T00:40:27Z",
+    "updated_at": "2026-11-24T00:40:27Z",
+    "last_codex_at": "2026-11-24T00:40:27Z",
+    "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83"
   }
 }

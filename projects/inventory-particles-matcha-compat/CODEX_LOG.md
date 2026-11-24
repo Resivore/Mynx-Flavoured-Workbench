@@ -50,3 +50,13 @@
 - Artifact: Current release identity is unchanged: version 0.1.0-canary4, filename inventory-particles-matcha-compat-0.1.0-canary4.jar, SHA-256 e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b, source 63e9b84116c718db92bbeb289933538e75cb28c2.
 - Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
 - Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.
+
+## 2026-11-24T00:40:27Z — Prepare Matcha 1.12.5 Stage 1 Canary 5
+- Revision: 6
+- Source checkpoint: `e3a13df63e041949a8341a025ac4d937ebacdf83`
+- Changes: Updates component predicates and exclusive dispatch for the three migrated Matcha model identities. The existing Ribbits and selected companion targets keep their particle definitions.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 8 project tests. The ten-JAR distribution and migration-boundary fixture passed.
+- Runtime: RUNTIME_UNTESTED on the isolated candidate branch.
+- Artifact: C5 `inventory-particles-matcha-compat-0.2.0-canary5.jar`, 13,879 bytes, SHA-256 `4cff7167fe263d698f02d9e3261a88d016657907d7c04a04745861f3a70ce321`, built_at `2026-11-24T00:09:20.008418Z`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Compare saved and current Green Curry, Ramen and Crystal Heart items alongside an ordinary poisonous potato. Check the exclusive animation, colour and particle timing for each item. Confirm selecting another item restores its normal Inventory Particles behavior.

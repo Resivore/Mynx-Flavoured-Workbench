@@ -1,0 +1,79 @@
+{
+  "$schema": "../../schemas/workbench-status.schema.json",
+  "schema_version": 3,
+  "identity": {
+    "uuid": "76f6dff7-3bb7-4148-b23f-b0ed3bc99e87",
+    "name": "Matcha Intrinsic Update Compatibility",
+    "project_id": "matcha-intrinsic-update-compat",
+    "aliases": [],
+    "legacy_names": [],
+    "legacy_ids": []
+  },
+  "definition": {
+    "lifecycle": "ACTIVE",
+    "goals": [
+      "Restores six reachable slot-specific enchantment writes for equipment updated by Matcha 1.12.5."
+    ],
+    "scope": [
+      "Adapts six publisher-supplied writers to 26.2, directs the offhand write to the offhand and clears held scratch storage after writes and on load. All 146 call sites and all 78 same-name recipe overlaps are checked."
+    ],
+    "boundaries": {
+      "owned_paths": [
+        "projects/matcha-intrinsic-update-compat"
+      ],
+      "exclusions": [
+        "Smithing recipe edits, unrelated equipment changes and migration to Minecraft 26.3."
+      ]
+    },
+    "dependencies": [
+      {
+        "type": "MOD",
+        "identifier": "minecraft",
+        "requirement": "26.2",
+        "reason": "Command parser, item modifiers and equipment slots used by the writers."
+      },
+      {
+        "type": "MOD",
+        "identifier": "workbench_matcha_data_1_12_5",
+        "requirement": "*",
+        "reason": "The six missing functions are specific to this generation."
+      }
+    ]
+  },
+  "state": {
+    "milestone": "Matcha 1.12.5 Stage 1 candidate C1. Adapts six publisher-supplied writers to 26.2, directs the offhand write to the offhand and clears held scratch storage after writes and on load. All 146 call sites and all 78 same-name recipe overlaps are checked. Coordinated integration awaits the owner trade matrix and client pack precedence checks.",
+    "releases": {
+      "current": {
+        "version": "0.1.0-canary1",
+        "canary": 1,
+        "artifact": {
+          "filename": "matcha-intrinsic-update-compat-0.1.0-canary1.jar",
+          "sha256": "3ab950e214252adb89364bab563c14d3c500a2ad75844773555b98b7f78026ef"
+        },
+        "built_at": "2026-11-24T00:22:40.799872Z",
+        "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83",
+        "summary": "Restores six reachable slot-specific enchantment writes for equipment updated by Matcha 1.12.5.",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
+      },
+      "accepted": null,
+      "rollback": null,
+      "accepted_current": "NO_ACCEPTED",
+      "accepted_rollback": "NO_ROLLBACK"
+    },
+    "validation": {
+      "build": "STATIC_PASS",
+      "runtime": "RUNTIME_UNTESTED"
+    },
+    "blocker": null
+  },
+  "synchronization": {
+    "revision": 1,
+    "activity_at": "2026-11-24T00:40:27Z",
+    "updated_at": "2026-11-24T00:40:27Z",
+    "last_codex_at": "2026-11-24T00:40:27Z",
+    "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83"
+  }
+}

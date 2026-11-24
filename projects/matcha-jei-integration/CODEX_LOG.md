@@ -79,3 +79,13 @@
 - Artifact: Current C8 `matcha-jei-integration-0.3.4-canonical-food-catalog-canary8.jar`, 91,529 bytes, SHA-256 `d92ade2de4c095089838323a5116e6dcb6b053046111a3ed6370c75c7dafc34f`, finalized at `2026-09-17T06:06:33.7794164Z` from source checkpoint `1b474782d0b308a7f47ea69f5b7294926ec99af8`; accepted C3 and rollback/provenance C2 identities remain exact and unchanged.
 - Result: ACTIVE — C8 is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`, with a release-scoped `CAPABILITY_OR_PROVIDER` runtime-dependency-policy attestation and no exceptions. No blocker is recorded.
 - Next state: Under explicit runtime ownership, run the focused C8 matrix: require exactly one health-bearing Braised Mushroom in Creative Search and JEI; preserve the successful Glow identities; verify automatic coverage across other default-presentation foods, custom-model and unrelated-component controls, Crafting Table, Prayer/Blessing of Demeter, C3 surfaces, early/repeated `/reload`, disconnect/reconnect restoration, and logs. Keep the dedicated-server-without-JEI gate separate until tested.
+
+## 2026-11-24T00:40:27Z — Prepare Matcha 1.12.5 Stage 1 Canary 9
+- Revision: 9
+- Source checkpoint: `e3a13df63e041949a8341a025ac4d937ebacdf83`
+- Changes: Discovers candidate IDs from the provider resource stack, resolves effective resources and reads final recipe holders. Retains source-aware food selection, conservative loot/trade eligibility and JEI interpreter ownership.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 21 project tests. The ten-JAR distribution and migration-boundary fixture passed.
+- Runtime: RUNTIME_UNTESTED on the isolated candidate branch.
+- Artifact: C9 `matcha-jei-integration-0.4.0-canary9.jar`, 91,045 bytes, SHA-256 `1c17faef836a53eb2dee8f24a1dea34799c74c25af79d533a5a0f0f7bc155a10`, built_at `2026-11-24T00:29:49.663315Z`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Compare Creative and JEI results for Braised Mushroom, Glow Berries, Glow Berry Mash and same-carrier stacks with distinct models, food, custom data or enchantments. Check exact subtype UIDs, recipe-book awards and the seven vanilla categories. Check Prayer and Blessing of Demeter after Frost Protection replaces its result.

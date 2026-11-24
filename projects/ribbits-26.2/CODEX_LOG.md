@@ -366,3 +366,13 @@
 - Artifact: Current unaccepted artifact is restored exactly to `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar`, 3,377,508 bytes, SHA-256 `088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd`, built `2026-09-18T05:47:40.8628936Z` from C27 source checkpoint `9fe0bf18b3799e749fdf736a3b330d5bee8e23e2`. Accepted C24 remains unchanged.
 - Result: C28/C29 are retired; C27 is restored as the exact active private line with no new Ribbits Canary.
 - Next state: Preserve exact C27/C24 identities and use the C27 procedure only if the owner elects to gather new runtime evidence. VWR C20 owns any further Fisherman rod pose work.
+
+## 2026-11-24T00:40:27Z — Prepare Matcha 1.12.5 Stage 1 Canary 28
+- Revision: 37
+- Source checkpoint: `e3a13df63e041949a8341a025ac4d937ebacdf83`
+- Changes: Rebinds fingerprinted stack and compass lookups, Opal and heart matching. The established Estus Flask potion is an offer-only historical stack. The private assembler verifies the exact public resource against the packaged JAR.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 177 project tests. The ten-JAR distribution and migration-boundary fixture passed.
+- Runtime: RUNTIME_UNTESTED on the isolated candidate branch.
+- Artifact: C28 `ribbits-private-reconstruction-4.1.6+26.2-matcha125-canary28.jar`, 3,379,192 bytes, SHA-256 `0490d604ef8e14afe0cb89a80199fa937c0e98e9c4e6808065ffae6ca6edd740`, built_at `2026-11-24T00:34:36.919828Z`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Open saved merchants and generate fresh merchants at every existing tier. Compare exact inputs, outputs, prices and restock behavior, including Estus Flask potion, foods, Opal, four compass buybacks and Crystal Heart. Check a renamed, generic or wrong-component substitute is rejected wherever strict matching applies.

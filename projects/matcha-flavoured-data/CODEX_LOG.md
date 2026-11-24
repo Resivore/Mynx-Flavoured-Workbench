@@ -29,3 +29,13 @@
 - Artifact: Accepted C2 is `matcha-flavoured-data-0.1.0-canary2.jar`, SHA-256 `0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639`, source checkpoint `d55a044f750e06e082c39f1aa08d6f62f7070908`; it is the project's first accepted release and has no rollback predecessor.
 - Result: `ACCEPTED / STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_PASS`. The exact accepted artifact remains in the baseline; Slot A was cleared before its reassignment.
 - Next state: Preserve the exact accepted C2 identity and aggregate-only evidence. Any successor requires its own identity, validation, deployment, runtime evidence, and promotion decision.
+
+## 2026-11-24T00:40:27Z — Prepare Matcha 1.12.5 Stage 1 Canary 3
+- Revision: 4
+- Source checkpoint: `e3a13df63e041949a8341a025ac4d937ebacdf83`
+- Changes: The built-in pack registers as required. The packaged members match the publisher ZIP byte for byte. A second provider or a selected pack with legacy generation hooks fails closed.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 2 project tests. The ten-JAR distribution and migration-boundary fixture passed.
+- Runtime: RUNTIME_UNTESTED on the isolated candidate branch.
+- Artifact: C3 `matcha-flavoured-data-0.2.0-canary3.jar`, 3,718,414 bytes, SHA-256 `034f1f281078a81ae2c8dbc84481f96a0527c4c67bd8739399f1c578da3b6807`, built_at `2026-11-23T22:25:41.903854Z`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Start a new disposable world, then open a copy of a 1.12 world with the old provider removed. Inspect /datapack list enabled and the reload log for exactly one Matcha generation. Repeat /reload twice and check startup, tick and advancement functions. In a separate copy deliberately enable a renamed old world datapack and require an explicit duplicate-generation failure.

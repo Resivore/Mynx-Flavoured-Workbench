@@ -60,3 +60,13 @@
 - Runtime: No Minecraft launch, gameplay profile access, deployment, GameTest runtime, Iris runtime, Complementary runtime, BGE runtime, JEI runtime, or user runtime observation occurred. C5 remains `RUNTIME_UNTESTED` and no acceptance is inferred.
 - Result: ACTIVE — canonical C5 implementation and static evidence are recorded while all retained C1-C4 behavior and release history remain in scope.
 - Next state: Under explicit runtime ownership, run the Canary 5 matrix in `TESTING.md` against this exact artifact and record only supplied observations.
+
+## 2026-11-24T00:40:27Z — Prepare Matcha 1.12.5 Stage 1 Canary 6
+- Revision: 7
+- Source checkpoint: `e3a13df63e041949a8341a025ac4d937ebacdf83`
+- Changes: Build-time source fingerprints and a generation-specific runtime capability replace the C2 provider pin. Food loot and the displayed Kindling stack use current components while existing equipment, Rubblemite, sapling and shader adjustments retain their scope.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 30 project tests. The ten-JAR distribution and migration-boundary fixture passed.
+- Runtime: RUNTIME_UNTESTED on the isolated candidate branch.
+- Artifact: C6 `enderscape-integration-0.2.0-canary6.jar`, 64,302 bytes, SHA-256 `72934f737240c491757ea1a6af08aef506efeef980682b5c3a8bbe27df14824b`, built_at `2026-11-24T00:30:09.664124Z`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Check selected equipment and Rubble Chitin against loot, crafting, advancements, Creative and JEI. Compare each affected food effect, count, loot roll and entry weight to the existing procedure. Check the enchanted golden apple carrier and components. Open an existing container containing older items.
