@@ -944,6 +944,33 @@ def validate_log_append(previous: str, current: str, manifest: dict[str, Any] | 
         validate_codex_log(current, manifest)
 
 
+def _retained_artifacts_only(root: Path, directory: Path) -> bool:
+    """Retention may create the artifact directory before a project lands in this checkout."""
+    artifacts = directory / "artifacts"
+    if not artifacts.is_dir() or set(directory.iterdir()) != {artifacts}:
+        return False
+    files = list(artifacts.iterdir())
+    if not files or not all(path.is_file() and not path.is_symlink() for path in files):
+        return False
+    if not (root / ".git").exists():
+        return False
+    relative = directory.relative_to(root).as_posix()
+    if _git_text(root, "ls-files", "--", relative) or _git_text(root, "ls-tree", "HEAD", "--", relative):
+        return False
+    # Retention records one literal, anchored pattern per verified file. Generic
+    # ignore patterns must never hide an incomplete project.
+    exclude = Path(_git_text(root, "rev-parse", "--path-format=absolute", "--git-path", "info/exclude").strip())
+    if not exclude.is_file():
+        return False
+    rules = set(exclude.read_bytes().splitlines())
+    for path in files:
+        name = path.relative_to(root).as_posix()
+        literal = "".join("\\" + ch if ch in "\\[]*?" else ch for ch in name)
+        if ("/" + literal).encode("utf-8") not in rules:
+            return False
+    return True
+
+
 def project_directories(root: Path) -> list[Path]:
     result: list[Path] = []
     for container_name in ("projects", "resourcepacks"):
@@ -951,7 +978,7 @@ def project_directories(root: Path) -> list[Path]:
         if not container.exists():
             continue
         for child in sorted(container.iterdir(), key=lambda item: item.name.casefold()):
-            if child.is_dir() and not child.name.startswith("."):
+            if child.is_dir() and not child.name.startswith(".") and not _retained_artifacts_only(root, child):
                 result.append(child)
     return result
 
