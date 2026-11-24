@@ -227,7 +227,7 @@ The exact titles and maxima are:
 - Fisherman (5): Pond Forager; Coral Keeper; Amphibian Attendant; Opal Angler; Monument Mariner.
 - Merchant (3): Moss Peddler; Lantern Trader; Glowgoods Baron.
 - Chef (5): Tadpole Cook; Pond Cook; Swamp Chef; Grand Chef; Master of the Feast.
-- Sorcerer (4): Wart Whisperer; Gatecaller; Flask Sage; Deep-Pond Oracle.
+- Sorcerer (3): Wart Whisperer; Gatecaller; Deep-Pond Oracle (0, 5, and 30 XP).
 - Prospector (3): Pebble Picker; Vein-Seeker; Deep Delver.
 - Guard (4): Pond Sentry; Lily Warden; Marsh Marshal; Bulwark of the Bog.
 - Musician: unranked title Musician.
@@ -260,15 +260,15 @@ Unranked Musician (`ribbits:nitwit`) has one fixed `8 Glowcaps -> 1 Maraca` offe
 
 Every Chef always offers `2 Glowcaps -> 1 exact Glow Berry Crumble` and `1 Glowcap -> 1 exact Honey Ginger Tea`, each with `maxUses=8`.
 
-For every unlocked Tier 1–4, exactly one deterministic daily special is present. Tier 1 costs two Glowcaps and selects Pickled Carrots (5-minute Night Vision) or Rind Jam (5-minute Fire Resistance), `maxUses=8`. Tier 2 costs four and selects Gimmari (8-minute Water Breathing) or Bokguk (8-minute Conduit Power), `maxUses=6`. Tier 3 costs six and selects Golden Pickled Carrots (10-minute Night Vision), Melon Sorbet (10-minute Fire Resistance), Pumpkin Empanada (8-minute Resistance), Warped Pizza (5-minute Invisibility plus 3-minute Strength), or Warped Stroganoff (10-minute Invisibility), `maxUses=4`. Tier 4 costs twelve and selects Sweet Berry Danish (8-minute Health Boost II/four-heart behavior) or Golden Carrot Cupcake (20-minute Night Vision), `maxUses=2`. Every purchase returns exactly one prepared food.
+For every unlocked Tier 1–4, exactly one deterministic daily special is present. Tiers 1 through 4 draw from pools of 8, 9, 16, and 4 foods. The four prices are 2, 4, 6, and 12 Glowcaps with 8, 6, 4, and 2 uses respectively. Every purchase returns one prepared food.
 
-At Master of the Feast, one permanent equal-weight specialty is selected: `20 Glowcaps -> 1 Japanese Curry` with 30-minute Strength, Green Curry with 30-minute Speed, or Tonkotsu Ramen with 30-minute Haste (`maxUses=1`). It never rotates.
+At Master of the Feast, one permanent equal-weight specialty is selected from Japanese Curry, Green Curry, Tonkotsu Ramen, Paneer Makhani, and Pumpkin Curry. Each costs 20 Glowcaps with one use. Existing saved specialty indices retain their meanings.
 
 The daily menu is deterministic for entity, tier, and overworld day; each pool cycles before repetition where practical. Same-day menu open, normal restock, chunk reload, and restart do not change it. A newly unlocked tier receives its one selection immediately without perturbing lower tiers. Next-day replacement covers all eligible tiers but is deferred while a trading session remains open.
 
 ### Sorcerer (maximum 4)
 
-At every rank, the independent failed-map service exchanges one exact marked Uncharted Ribbit Map for one Toadstool Heart (`maxUses=16`, zero profession XP, zero multiplier) without affecting progression or the Benzene gate. Tier 1 buys 4 exact Benzene for one Glowcap (`maxUses=16`). Its first success immediately and persistently gates promotion to Gatecaller; this is item-gated, not advancement-gated, and the trade remains afterward. Tier 2 includes all sixteen `4 Ender Pearls + 1 matching Dye -> 2 matching Portal Catalysts` offers (`maxUses=8` each). Tier 3 sells one exact Estus Flask for two Glowcaps (`maxUses=1`). Tier 4 permanently selects `16 Glowcaps -> 1 exact Prayer of Will/Reach` or `1 exact Prayer of Eros/Silk Touch` (`maxUses=1`). Fortune and other Blessings are excluded.
+At every rank, the independent failed-map service exchanges one exact marked Uncharted Ribbit Map for one Toadstool Heart (`maxUses=16`, zero profession XP, zero multiplier) without affecting progression or the Benzene gate. Tier 1 buys 4 exact Benzene for one Glowcap (`maxUses=16`). Its first success immediately and persistently gates promotion to Gatecaller; this is item-gated, not advancement-gated, and the trade remains afterward. Tier 2 includes all sixteen `4 Ender Pearls + 1 matching Dye -> 2 matching Portal Catalysts` offers (`maxUses=8` each). Tier 3 unlocks at 30 XP and permanently selects `16 Glowcaps -> 1 exact Prayer of Will/Reach` or `1 exact Prayer of Eros/Silk Touch` (`maxUses=1`). Fortune and other Blessings are excluded.
 
 ### Prospector (maximum 3)
 

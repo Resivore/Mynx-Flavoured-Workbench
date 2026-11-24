@@ -16,6 +16,9 @@ public final class MatchaFlavouredData implements ModInitializer {
     public static final Identifier BUILTIN_PACK_ID =
             Identifier.fromNamespaceAndPath(MOD_ID, "matcha_flavoured_1_12_5");
 
+    public static final Identifier ADVANCEMENT_REPAIRS =
+            Identifier.fromNamespaceAndPath(MOD_ID, "advancement_repairs");
+
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     @Override
@@ -29,6 +32,10 @@ public final class MatchaFlavouredData implements ModInitializer {
                 PackActivationType.ALWAYS_ENABLED);
         if (!registered) {
             throw new IllegalStateException("Failed to register required Matcha data pack " + BUILTIN_PACK_ID);
+        }
+        if (!ResourceLoader.registerBuiltinPack(ADVANCEMENT_REPAIRS, container,
+                Component.literal("Matcha 1.12.5 advancement repairs"), PackActivationType.ALWAYS_ENABLED)) {
+            throw new IllegalStateException("Failed to register advancement repairs");
         }
         LOGGER.info("Registered {} as ALWAYS_ENABLED for create-world and server-data reloads.", BUILTIN_PACK_ID);
     }

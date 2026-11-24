@@ -31,16 +31,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-matcha125-canary28"
+CANDIDATE_VERSION = "4.1.6+26.2-matcha125-menu-canary28"
 CANDIDATE_CANARY = 28
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-matcha125-canary28.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-matcha125-menu-canary28.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-matcha125-canary28.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-matcha125-menu-canary28.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -146,7 +146,7 @@ SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 363
 # Exact deterministic Canary 27 private staging inventory. This is finalized
 # only after two independent assemblies produce the same per-file identities.
-OUTPUT_TOTAL_SIZE = 2_780_713
+OUTPUT_TOTAL_SIZE = 2_780_654
 SOURCE_EXTENSION_COUNTS = {
     ".json": 201,
     ".nbt": 29,
@@ -1236,8 +1236,7 @@ EN_US_MYNX_PROFESSION_TRANSLATIONS = {
     "entity.ribbits.merchant.chef.tier_5": "Master of the Feast",
     "entity.ribbits.merchant.sorcerer.tier_1": "Wart Whisperer",
     "entity.ribbits.merchant.sorcerer.tier_2": "Gatecaller",
-    "entity.ribbits.merchant.sorcerer.tier_3": "Flask Sage",
-    "entity.ribbits.merchant.sorcerer.tier_4": "Deep-Pond Oracle",
+    "entity.ribbits.merchant.sorcerer.tier_3": "Deep-Pond Oracle",
     "entity.ribbits.merchant.prospector.tier_1": "Pebble Picker",
     "entity.ribbits.merchant.prospector.tier_2": "Vein-Seeker",
     "entity.ribbits.merchant.prospector.tier_3": "Deep Delver",

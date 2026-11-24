@@ -38,7 +38,7 @@ class RibbitTradeModuleContractTest {
             assertEquals(null, duplicate, "duplicate concrete offer ID " + spec.id());
         }
 
-        assertEquals(130, actual.size(), "complete concrete descriptor count");
+        assertEquals(157, actual.size(), "complete concrete descriptor count");
         assertEquals(EXPECTED.keySet(), byId.keySet(), "missing, extra, or reordered offer descriptors");
         for (Map.Entry<String, ExpectedOffer> entry : EXPECTED.entrySet()) {
             String id = entry.getKey();
@@ -73,8 +73,8 @@ class RibbitTradeModuleContractTest {
                         "fisherman", 22L,
                         "merchant", 5L,
                         "nitwit", 1L,
-                        "chef", 16L,
-                        "sorcerer", 21L,
+                        "chef", 44L,
+                        "sorcerer", 20L,
                         "prospector", 18L,
                         "guard", 32L
                 ), countsBy(TradeOfferSpec::profession));
@@ -150,11 +150,11 @@ class RibbitTradeModuleContractTest {
 
         assertMaterializedCount("merchant", state -> { }, 5);
         assertMaterializedCount("nitwit", state -> { }, 1);
-        for (int tier1 = 0; tier1 < 2; tier1++) {
-            for (int tier2 = 0; tier2 < 2; tier2++) {
-                for (int tier3 = 0; tier3 < 5; tier3++) {
-                    for (int tier4 = 0; tier4 < 2; tier4++) {
-                        for (int master = 0; master < 3; master++) {
+        for (int tier1 = 0; tier1 < 8; tier1++) {
+            for (int tier2 = 0; tier2 < 9; tier2++) {
+                for (int tier3 = 0; tier3 < 16; tier3++) {
+                    for (int tier4 = 0; tier4 < 4; tier4++) {
+                        for (int master = 0; master < 5; master++) {
                             int a = tier1;
                             int b = tier2;
                             int c = tier3;
@@ -174,7 +174,7 @@ class RibbitTradeModuleContractTest {
         }
         for (int blessing = 0; blessing < 2; blessing++) {
             int choice = blessing;
-            assertMaterializedCount("sorcerer", state -> state.sorcererBlessingChoice(choice), 20);
+            assertMaterializedCount("sorcerer", state -> state.sorcererBlessingChoice(choice), 19);
         }
         for (int bullion = 0; bullion < 3; bullion++) {
             int choice = bullion;
@@ -209,7 +209,7 @@ class RibbitTradeModuleContractTest {
         assertProfile("merchant", 3, "Moss Peddler", "Lantern Trader", "Glowgoods Baron");
         assertProfile("chef", 5, "Tadpole Cook", "Pond Cook", "Swamp Chef", "Grand Chef",
                 "Master of the Feast");
-        assertProfile("sorcerer", 4, "Wart Whisperer", "Gatecaller", "Flask Sage", "Deep-Pond Oracle");
+        assertProfile("sorcerer", 3, "Wart Whisperer", "Gatecaller", "Deep-Pond Oracle");
         assertProfile("prospector", 3, "Pebble Picker", "Vein-Seeker", "Deep Delver");
         assertProfile("guard", 4, "Pond Sentry", "Lily Warden", "Marsh Marshal", "Bulwark of the Bog");
         assertProfile("nitwit", 0, "Musician");
@@ -257,7 +257,7 @@ class RibbitTradeModuleContractTest {
         RibbitTradeModule.normalizePersistentState(RibbitTradeModule.profile("sorcerer"), sorcerer);
         assertEquals(2, sorcerer.rank(), "Benzene promotion reaches rank two");
         assertEquals(5, sorcerer.xp(), "Benzene promotion uses the new rank-two floor");
-        assertEquals(4, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("sorcerer"), sorcerer, 50));
+        assertEquals(3, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("sorcerer"), sorcerer, 50));
 
         RibbitTradeState fisherman = new RibbitTradeState();
         assertEquals(4, RibbitTradeModule.rankForXp(RibbitTradeModule.profile("fisherman"), fisherman, 50));
@@ -300,7 +300,7 @@ class RibbitTradeModuleContractTest {
                 UUID.fromString("00000000-0000-0000-0000-000000000001"),
                 UUID.fromString("2a650718-ec62-568f-8dff-71258a4d6f3f"),
                 UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff"));
-        int[] pools = {2, 2, 5, 2};
+        int[] pools = {8, 9, 16, 4};
         for (UUID chef : chefs) {
             for (int tier = 1; tier <= 4; tier++) {
                 int pool = pools[tier - 1];
@@ -595,6 +595,63 @@ class RibbitTradeModuleContractTest {
                 "chef_master", 1);
         fixed(offers, "chef_tonkotsu_ramen", 5, 20, "matcha:food/oven/ramen", 1,
                 "chef_master", 2);
+        fixed(offers, "chef_brachio_chicken_nugget", 1, 2, "matcha:food/crafting/brachio_chicken_nugget", 8,
+                "chef_daily_1", 2);
+        fixed(offers, "chef_bunuelo", 1, 2, "matcha:food/crafting/bunuelo", 8,
+                "chef_daily_1", 3);
+        fixed(offers, "chef_ptero_chicken_nugget", 1, 2, "matcha:food/crafting/ptero_chicken_nugget", 8,
+                "chef_daily_1", 4);
+        fixed(offers, "chef_puerquito", 1, 2, "matcha:food/crafting/puerquito", 8,
+                "chef_daily_1", 5);
+        fixed(offers, "chef_stego_chicken_nugget", 1, 2, "matcha:food/crafting/stego_chicken_nugget", 8,
+                "chef_daily_1", 6);
+        fixed(offers, "chef_tricero_chicken_nugget", 1, 2, "matcha:food/crafting/tricero_chicken_nugget", 8,
+                "chef_daily_1", 7);
+        fixed(offers, "chef_cheese_pizza", 2, 4, "matcha:food/crafting/cheese_pizza", 6,
+                "chef_daily_2", 2);
+        fixed(offers, "chef_chocolate_chip_cookie", 2, 4, "matcha:food/crafting/chocolate_chip_cookie", 6,
+                "chef_daily_2", 3);
+        fixed(offers, "chef_french_toast", 2, 4, "matcha:food/crafting/french_toast", 6,
+                "chef_daily_2", 4);
+        fixed(offers, "chef_latke", 2, 4, "matcha:food/crafting/latke", 6,
+                "chef_daily_2", 5);
+        fixed(offers, "chef_mead", 2, 4, "matcha:food/crafting/mead", 6,
+                "chef_daily_2", 6);
+        fixed(offers, "chef_meat_pizza", 2, 4, "matcha:food/crafting/meat_pizza", 6,
+                "chef_daily_2", 7);
+        fixed(offers, "chef_mushroom_pizza", 2, 4, "matcha:food/crafting/mushroom_pizza", 6,
+                "chef_daily_2", 8);
+        fixed(offers, "chef_apple_empanada", 3, 6, "matcha:food/crafting/apple_empanada", 4,
+                "chef_daily_3", 5);
+        fixed(offers, "chef_brownie", 3, 6, "matcha:food/crafting/brownie", 4,
+                "chef_daily_3", 6);
+        fixed(offers, "chef_bruschetta", 3, 6, "matcha:food/crafting/bruschetta", 4,
+                "chef_daily_3", 7);
+        fixed(offers, "chef_carrot_cupcake", 3, 6, "matcha:food/crafting/carrot_cupcake", 4,
+                "chef_daily_3", 8);
+        fixed(offers, "chef_fish_and_chips", 3, 6, "matcha:food/crafting/fish_and_chips", 4,
+                "chef_daily_3", 9);
+        fixed(offers, "chef_gnocchi", 3, 6, "matcha:food/crafting/gnocchi", 4,
+                "chef_daily_3", 10);
+        fixed(offers, "chef_honied_french_toast", 3, 6, "matcha:food/crafting/honied_french_toast", 4,
+                "chef_daily_3", 11);
+        fixed(offers, "chef_kontomire_stew", 3, 6, "matcha:food/crafting/kontomire_stew", 4,
+                "chef_daily_3", 12);
+        fixed(offers, "chef_lumpia", 3, 6, "matcha:food/crafting/lumpia", 4,
+                "chef_daily_3", 13);
+        fixed(offers, "chef_pad_thai", 3, 6, "matcha:food/crafting/pad_thai", 4,
+                "chef_daily_3", 14);
+        fixed(offers, "chef_stroganoff", 3, 6, "matcha:food/crafting/stroganoff", 4,
+                "chef_daily_3", 15);
+        fixed(offers, "chef_ice_cream", 4, 12, "matcha:food/crafting/ice_cream", 2,
+                "chef_daily_4", 2);
+        fixed(offers, "chef_oatmeal", 4, 12, "matcha:food/crafting/oatmeal", 2,
+                "chef_daily_4", 3);
+        fixed(offers, "chef_paneer_makhani", 5, 20, "matcha:food/oven/paneer_makhani", 1,
+                "chef_master", 3);
+        fixed(offers, "chef_pumpkin_curry", 5, 20, "matcha:food/oven/pumpkin_curry", 1,
+                "chef_master", 4);
+
 
         add(offers, "sorcerer_failed_map_redemption", "sorcerer", 0,
                 item("minecraft:map", 1), null, "ribbits:toadstool_heart", 1, 16);
@@ -608,11 +665,9 @@ class RibbitTradeModuleContractTest {
                     item("minecraft:ender_pearl", 4), item("minecraft:" + color + "_dye", 1),
                     "customportals:" + color + "_portal_catalyst", 2, 8);
         }
-        add(offers, "sorcerer_estus_flask", "sorcerer", 3, glowcaps(2), null,
-                "recipe:ribbits:estus_flask", 1, 1);
-        choice(offers, "sorcerer_reach_blessing", "sorcerer", 4, glowcaps(16), null,
+        choice(offers, "sorcerer_reach_blessing", "sorcerer", 3, glowcaps(16), null,
                 "recipe:matcha:blessing/reach", 1, 1, "sorcerer_blessing", 0);
-        choice(offers, "sorcerer_silk_touch_blessing", "sorcerer", 4, glowcaps(16), null,
+        choice(offers, "sorcerer_silk_touch_blessing", "sorcerer", 3, glowcaps(16), null,
                 "recipe:matcha:blessing/silk_touch", 1, 1, "sorcerer_blessing", 1);
 
         String[][] tier1Tools = {

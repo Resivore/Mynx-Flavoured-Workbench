@@ -1,0 +1,61 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_primary_material": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:iron_ingot"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "matcha:crafting/iron_pickaxe"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_primary_material"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "matcha:crafting/rail_from_iron",
+      "matcha:crafting/minecart_from_iron",
+      "matcha:crafting/iron_trapdoor_from_iron",
+      "matcha:crafting/iron_pickaxe",
+      "matcha:crafting/iron_hoe",
+      "matcha:crafting/iron_axe",
+      "matcha:crafting/iron_shovel",
+      "matcha:crafting/iron_sword",
+      "matcha:crafting/iron_spear",
+      "matcha:crafting/iron_helmet",
+      "matcha:crafting/iron_chestplate",
+      "matcha:crafting/iron_leggings",
+      "matcha:crafting/iron_boots",
+      "matcha:crafting/iron_mattock",
+      "matcha:crafting/iron_door_from_iron",
+      "matcha:crafting/iron_chain_from_ingot",
+      "matcha:crafting/iron_chain",
+      "matcha:crafting/iron_bars",
+      "matcha:crafting/iron_dolabra",
+      "matcha:crafting/iron_shears",
+      "matcha:crafting/carbon_rich_iron",
+      "matcha:crafting/anvil",
+      "matcha:crafting/hopper_from_iron",
+      "matcha:crafting/detector_rail_from_iron",
+      "matcha:crafting/cauldron_from_iron",
+      "matcha:crafting/bucket_from_iron",
+      "matcha:crafting/activator_rail_from_iron",
+      "matcha:crafting/chemistry_stand",
+      "matcha:blast/iron_block_from_blasting_raw_iron_block",
+      "matcha:blast/iron_ingot_from_blasting_iron_materials"
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "gives": {
+    "id": "minecraft:emerald",
+    "count": 1
+  },
+  "given_item_modifiers": [],
+  "max_uses": 999,
+  "wants": {
+    "components": {
+      "minecraft:item_name": {
+        "translate": "item.kleispack.fish.sturgeon"
+      },
+      "minecraft:item_model": "matcha:sturgeon",
+      "minecraft:lore": [
+        {
+          "translate": "adv.kleispack.fishing.rarity.3",
+          "italic": false
+        }
+      ]
+    },
+    "count": 2,
+    "id": "minecraft:salmon"
+  },
+  "reputation_discount": 0,
+  "xp": 75
+}

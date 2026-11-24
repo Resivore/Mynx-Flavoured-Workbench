@@ -1,0 +1,308 @@
+row	decision	legacy_key	upstream_key	modification
+2	Keep mine	armorer/1/comparator	armorer/1/comparator	-
+3	Keep mine	armorer/1/composter	armorer/1/composter	-
+4	Keep mine	armorer/1/noteblock	armorer/1/noteblock	-
+5	Keep mine	armorer/1/redstone_block	armorer/1/redstone_block	-
+6	Keep mine	armorer/1/repeater	armorer/1/repeater	-
+7	Keep mine	armorer/2/redstone_lamp	armorer/2/redstone_lamp	-
+8	Keep mine	armorer/2/target	armorer/2/target	-
+9	Keep mine	armorer/2/waxed_copper_bulb	armorer/2/waxed_copper_bulb	-
+10	Keep mine	armorer/3/dispenser	armorer/3/dispenser	-
+11	Keep mine	armorer/3/dropper	armorer/3/dropper	-
+12	Keep mine	armorer/3/hopper	armorer/3/hopper	-
+13	Keep mine	armorer/3/observer	armorer/3/observer	-
+14	Keep mine	armorer/4/crafter	armorer/4/crafter	-
+15	Keep mine	armorer/4/piston	armorer/4/piston	-
+16	Keep mine	armorer/4/sticky_piston	armorer/4/sticky_piston	-
+17	Remove	armorer/5/lava_kit	armorer/5/lava_kit	-
+18	Keep mine	butcher/1/sweet_berry_toast	butcher/1/sweet_berry_toast	-
+19	Keep mine	butcher/1/sweet_berry_toast_recipe	butcher/1/sweet_berry_toast_recipe	-
+20	Keep mine	butcher/2/warped_stroganoff	butcher/2/warped_stroganoff	-
+21	Keep mine	butcher/2/warped_stroganoff_recipe	butcher/2/warped_stroganoff_recipe	-
+22	Keep mine	butcher/3/chorus_mochi	butcher/3/chorus_mochi	-
+23	Keep mine	butcher/3/chorus_mochi_recipe	butcher/3/chorus_mochi_recipe	-
+24	Keep mine	butcher/4/butcher_knife	butcher/4/butcher_knife	-
+25	Remove	butcher/5/filler	butcher/5/filler	-
+26	Keep mine	cartographer/1/mineshaft	cartographer/1/mineshaft	-
+27	Keep mine	cartographer/1/papal_outpost	cartographer/1/papal_outpost	-
+28	Keep mine	cartographer/1/sheaf_pottery_sherd	cartographer/1/sheaf_pottery_sherd	-
+29	Keep mine	cartographer/1/witch_hut	cartographer/1/witch_hut	-
+30	Keep mine	cartographer/2/brush	cartographer/2/brush	-
+31	Keep mine	cartographer/2/desert_temple	cartographer/2/desert_temple	-
+32	Keep mine	cartographer/2/howl_pottery_sherd	cartographer/2/howl_pottery_sherd	-
+33	Keep mine	cartographer/2/jungle_ruin	cartographer/2/jungle_ruin	-
+34	Keep mine	cartographer/2/trail_ruin	cartographer/2/trail_ruin	-
+35	Adopt 1.12.5	cartographer/3/abbey	cartographer/3/abbey_divine_comedy	-
+36	Adopt 1.12.5	cartographer/3/abbey	cartographer/3/abbey_paradise_lost	-
+37	Keep mine	cartographer/3/ocean_monument	cartographer/3/ocean_monument	-
+38	Keep mine	cartographer/3/snort_pottery_sherd	cartographer/3/snort_pottery_sherd	-
+39	Keep mine	cartographer/3/trial_chamber	cartographer/3/trial_chamber	-
+40	Keep mine	cartographer/3/warm_ocean_ruin	cartographer/3/warm_ocean_ruin	-
+41	Keep mine	cartographer/4/ancient_city	cartographer/4/ancient_city	-
+42	Keep mine	cartographer/4/mourner_pottery_sherd	cartographer/4/mourner_pottery_sherd	-
+43	Keep mine	cartographer/5/arms_up_pottery_sherd	cartographer/5/arms_up_pottery_sherd	-
+44	Keep mine	cartographer/5/cheerful_clay_statue	cartographer/5/cheerful_clay_statue	-
+45	Keep mine	cartographer/5/mournful_clay_statue	cartographer/5/mournful_clay_statue	-
+46	Keep mine	cartographer/5/woodland_mansion	cartographer/5/woodland_mansion	-
+47	Keep mine	cleric/1/splash_infested	cleric/1/splash_infested	-
+48	Remove	cleric/1/splash_invisibility		-
+49	Keep mine	cleric/1/splash_oozing	cleric/1/splash_oozing	-
+50	Keep mine	cleric/1/splash_pitch	cleric/1/splash_pitch	-
+51	Remove	cleric/1/splash_poison		-
+52	Keep mine	cleric/1/splash_slowness	cleric/1/splash_slowness	-
+53	Remove	cleric/1/splash_weakness		-
+54	Keep mine	cleric/1/splash_weaving	cleric/1/splash_weaving	-
+55	Keep mine	cleric/1/splash_wind_charged	cleric/1/splash_wind_charged	-
+56	Keep mine	cleric/1/splash_wither	cleric/1/splash_wither	-
+57	Remove	cleric/2/filler	cleric/2/filler	-
+58	Remove	cleric/3/filler	cleric/3/filler	-
+59	Remove	cleric/4/filler	cleric/4/filler	-
+60	Remove	cleric/5/filler	cleric/5/filler	-
+61	Keep mine	farmer/1/bonemeal	farmer/1/bonemeal	-
+62	Keep mine	farmer/1/exotic_seed_bundle	farmer/1/exotic_seed_bundle	-
+63	Keep mine	farmer/1/floral_bundle	farmer/1/floral_bundle	-
+64	Keep mine	farmer/1/mushy_bundle	farmer/1/mushy_bundle	-
+65	Keep mine	farmer/1/seed_bundle	farmer/1/seed_bundle	-
+66	Keep mine	farmer/2/blue_egg	farmer/2/blue_egg	-
+67	Keep mine	farmer/2/brown_egg	farmer/2/brown_egg	-
+68	Keep mine	farmer/2/white_egg	farmer/2/white_egg	-
+69	Keep mine	farmer/3/baby_cold_cow	farmer/3/baby_cold_cow	-
+70	Keep mine	farmer/3/baby_cold_pig	farmer/3/baby_cold_pig	-
+71	Keep mine	farmer/3/baby_temperate_cow	farmer/3/baby_temperate_cow	-
+72	Keep mine	farmer/3/baby_temperate_pig	farmer/3/baby_temperate_pig	-
+73	Keep mine	farmer/3/baby_warm_cow	farmer/3/baby_warm_cow	-
+74	Keep mine	farmer/3/baby_warm_pig	farmer/3/baby_warm_pig	-
+75	Remove	farmer/4/filler	farmer/4/filler	-
+76	Remove	farmer/5/filler	farmer/5/filler	-
+77	Keep mine	fisherman/1/alaska_blackfish	fisherman/2/alaska_blackfish	-
+78	Keep mine	fisherman/1/anchovy	fisherman/2/anchovy	-
+79	Keep mine	fisherman/1/bluegill	fisherman/2/bluegill	-
+80	Keep mine	fisherman/1/bujurqui	fisherman/2/bujurqui	-
+81	Keep mine	fisherman/1/cod	fisherman/2/cod	-
+82	Keep mine	fisherman/1/crappie	fisherman/2/crappie	-
+83	Keep mine	fisherman/1/freshwater_pufferfish	fisherman/2/freshwater_pufferfish	-
+84	Keep mine	fisherman/1/guppy	fisherman/2/guppy	-
+85	Keep mine	fisherman/1/humpback_whitefish	fisherman/2/humpback_whitefish	-
+86	Keep mine	fisherman/1/mediterranean_killifish	fisherman/2/mediterranean_killifish	-
+87	Keep mine	fisherman/1/pufferfish	fisherman/2/pufferfish	-
+88	Keep mine	fisherman/1/rainbow_wrasse	fisherman/2/rainbow_wrasse	-
+89	Keep mine	fisherman/1/salmon	fisherman/2/salmon	-
+90	Keep mine	fisherman/1/shad	fisherman/2/shad	-
+91	Keep mine	fisherman/1/striped_perch	fisherman/2/striped_perch	-
+92	Keep mine	fisherman/1/tropical_fish	fisherman/2/tropical_fish	-
+93	Keep mine	fisherman/2/black_seabass	fisherman/3/black_seabass	-
+94	Keep mine	fisherman/2/carp	fisherman/3/carp	-
+95	Keep mine	fisherman/2/flying_fish	fisherman/3/flying_fish	-
+96	Keep mine	fisherman/2/gurnard	fisherman/3/gurnard	-
+97	Keep mine	fisherman/2/herring	fisherman/3/herring	-
+98	Keep mine	fisherman/2/lamprey	fisherman/3/lamprey	-
+99	Keep mine	fisherman/2/mahi_mahi	fisherman/3/mahi_mahi	-
+100	Keep mine	fisherman/2/piranha	fisherman/3/piranha	-
+101	Keep mine	fisherman/2/spoonhead_sculpin	fisherman/3/spoonhead_sculpin	-
+102	Keep mine	fisherman/2/walleye	fisherman/3/walleye	-
+103	Keep mine	fisherman/3/armoured_catfish	fisherman/4/armoured_catfish	-
+104	Keep mine	fisherman/3/catfish	fisherman/4/catfish	-
+105	Keep mine	fisherman/3/flounder	fisherman/4/flounder	-
+106	Keep mine	fisherman/3/gar	fisherman/4/gar	-
+107	Keep mine	fisherman/3/monkfish	fisherman/4/monkfish	-
+108	Keep mine	fisherman/3/northern_pike	fisherman/4/northern_pike	-
+109	Keep mine	fisherman/3/painted_moray	fisherman/4/painted_moray	-
+110	Keep mine	fisherman/3/sturgeon	fisherman/4/sturgeon	-
+111	Keep mine	fisherman/3/tunisian_barb	fisherman/4/tunisian_barb	-
+112	Keep mine	fisherman/3/wolffish	fisherman/4/wolffish	-
+113	Keep mine	fisherman/4/arapaima	fisherman/5/arapaima	-
+114	Keep mine	fisherman/4/bass	fisherman/5/bass	-
+115	Keep mine	fisherman/4/echo_fish	fisherman/5/echo_fish	-
+116	Keep mine	fisherman/4/european_eel	fisherman/5/european_eel	-
+117	Keep mine	fisherman/4/muskellunge	fisherman/5/muskellunge	-
+118	Keep mine	fisherman/4/oarfish	fisherman/5/oarfish	-
+119	Keep mine	fisherman/4/opah	fisherman/5/opah	-
+120	Keep mine	fisherman/4/pale_fish	fisherman/5/pale_fish	-
+121	Keep mine	fisherman/4/siberian_sturgeon	fisherman/5/siberian_sturgeon	-
+122	Keep mine	fisherman/4/skate	fisherman/5/skate	-
+123	Keep mine	fisherman/4/swordfish	fisherman/5/swordfish	-
+124	Remove	fisherman/5/filler		-
+125	Keep mine	fletcher/1/apotropaic_arrow	fletcher/1/apotropaic_arrow	-
+126	Keep mine	fletcher/1/arrow	fletcher/1/arrow	-
+127	Keep mine	fletcher/1/nightshade_arrow	fletcher/1/nightshade_arrow	-
+128	Keep mine	fletcher/2/spectral_arrow	fletcher/2/spectral_arrow	-
+129	Keep mine	fletcher/3/compound_bow	fletcher/3/compound_bow	-
+130	Remove	fletcher/4/filler	fletcher/4/filler	-
+131	Remove	fletcher/5/filler	fletcher/5/filler	-
+132	Keep mine	leatherworker/1/birch_log	leatherworker/1/birch_log	-
+133	Keep mine	leatherworker/1/oak_log	leatherworker/1/oak_log	-
+134	Keep mine	leatherworker/1/spruce_log	leatherworker/1/spruce_log	-
+135	Keep mine	leatherworker/2/acacia_log	leatherworker/2/acacia_log	-
+136	Keep mine	leatherworker/2/cherry_log	leatherworker/2/cherry_log	-
+137	Keep mine	leatherworker/2/dark_oak_log	leatherworker/2/dark_oak_log	-
+138	Keep mine	leatherworker/2/jungle_log	leatherworker/2/jungle_log	-
+139	Keep mine	leatherworker/2/mangrove_log	leatherworker/2/mangrove_log	-
+140	Keep mine	leatherworker/3/crimson_log	leatherworker/3/crimson_log	-
+141	Keep mine	leatherworker/3/mushroom_stem	leatherworker/3/mushroom_stem	-
+142	Keep mine	leatherworker/3/pale_oak_log	leatherworker/3/pale_oak_log	-
+143	Keep mine	leatherworker/3/warped_log	leatherworker/3/warped_log	-
+144	Keep mine	leatherworker/4/hatchet	leatherworker/4/hatchet	-
+145	Keep mine	leatherworker/5/filler	leatherworker/5/filler	-
+146	Keep mine	leatherworker/5/red_mushroom_block		-
+147	Keep mine	librarian/1/divine_comedy	librarian/1/divine_comedy	-
+148	Keep mine	librarian/1/ender_pearl	librarian/1/ender_pearl	-
+149	Modify	librarian/1/paradise_lost	librarian/1/paradise_lost	1 Paradise Lost → 1 Divine Fragment
+150	Adopt 1.12.5	librarian/2/avesta	librarian/2/avesta	-
+151	Adopt 1.12.5	librarian/2/quran	librarian/2/quran	-
+152	Adopt 1.12.5	librarian/2/tanakh	librarian/2/tanakh	-
+153	Adopt 1.12.5	librarian/3/enoch	librarian/3/enoch	-
+154	Adopt 1.12.5	librarian/4/solomon	librarian/4/solomon	-
+155	Remove	librarian/5/filler		-
+156	Keep mine	mason/1/andesite	mason/1/bulk_andesite	-
+157	Keep mine	mason/1/diorite	mason/1/bulk_diorite	-
+158	Keep mine	mason/1/granite	mason/1/bulk_granite	-
+159	Keep mine	mason/1/stone	mason/1/bulk_stone	-
+160	Keep mine	mason/2/deepslate	mason/2/bulk_deepslate	-
+161	Keep mine	mason/2/glass	mason/2/bulk_glass	-
+162	Keep mine	mason/2/smooth_red_sandstone	mason/2/bulk_smooth_red_sandstone	-
+163	Keep mine	mason/2/smooth_sandstone	mason/2/bulk_smooth_sandstone	-
+164	Keep mine	mason/2/terracotta	mason/2/bulk_terracotta	-
+165	Keep mine	mason/2/tuff	mason/2/bulk_tuff	-
+166	Keep mine	mason/3/calcite	mason/3/bulk_calcite	-
+167	Keep mine	mason/3/flowstone	mason/3/bulk_flowstone	-
+168	Keep mine	mason/3/malachite	mason/3/bulk_malachite	-
+169	Keep mine	mason/4/blackstone	mason/4/bulk_blackstone	-
+170	Remove	mason/4/quartz_emerald	mason/4/bulk_quartz_emerald	-
+171	Keep mine	mason/4/smooth_basalt	mason/4/bulk_smooth_basalt	-
+172	Keep mine	mason/4/smooth_quartz	mason/4/bulk_smooth_quartz	-
+173	Keep mine	mason/5/filler	mason/5/filler	-
+174	Keep mine	shepherd/1/black_wool	shepherd/1/black_wool	-
+175	Keep mine	shepherd/1/blue_wool	shepherd/1/blue_wool	-
+176	Keep mine	shepherd/1/brown_wool	shepherd/1/brown_wool	-
+177	Keep mine	shepherd/1/cyan_wool	shepherd/1/cyan_wool	-
+178	Keep mine	shepherd/1/gray_wool	shepherd/1/gray_wool	-
+179	Keep mine	shepherd/1/green_wool	shepherd/1/green_wool	-
+180	Keep mine	shepherd/1/light_blue_wool	shepherd/1/light_blue_wool	-
+181	Keep mine	shepherd/1/light_gray_wool	shepherd/1/light_gray_wool	-
+182	Keep mine	shepherd/1/lime_wool	shepherd/1/lime_wool	-
+183	Keep mine	shepherd/1/magenta_wool	shepherd/1/magenta_wool	-
+184	Keep mine	shepherd/1/orange_wool	shepherd/1/orange_wool	-
+185	Keep mine	shepherd/1/pink_wool	shepherd/1/pink_wool	-
+186	Keep mine	shepherd/1/purple_wool	shepherd/1/purple_wool	-
+187	Keep mine	shepherd/1/red_wool	shepherd/1/red_wool	-
+188	Keep mine	shepherd/1/white_wool	shepherd/1/white_wool	-
+189	Keep mine	shepherd/1/yellow_wool	shepherd/1/yellow_wool	-
+190	Keep mine	shepherd/2/baby_cold_sheep	shepherd/2/baby_cold_sheep	-
+191	Keep mine	shepherd/2/baby_temperate_sheep	shepherd/2/baby_temperate_sheep	-
+192	Keep mine	shepherd/2/baby_warm_sheep	shepherd/2/baby_warm_sheep	-
+193	Modify	shepherd/2/shepherds_shears	shepherd/2/shepherds_shears	8 Emerald → 1 Hepatizon Shears
+194	Keep mine	shepherd/3/crook	shepherd/3/crook	-
+195	Keep mine	shepherd/4/filler	shepherd/4/filler	-
+196	Keep mine	shepherd/5/filler	shepherd/5/filler	-
+197	Keep mine	toolsmith/1/opal_earrings	toolsmith/1/opal_earrings	-
+198	Keep mine	toolsmith/2/ruby_circlet	toolsmith/2/ruby_circlet	-
+199	Keep mine	toolsmith/3/amber_earrings	toolsmith/3/amber_earrings	-
+200	Adopt 1.12.5	toolsmith/4/bronze_laurel	toolsmith/4/hepatizon_laurel	-
+201	Keep mine	toolsmith/4/topaz_earrings	toolsmith/4/topaz_earrings	-
+202	Keep mine	toolsmith/5/sell_amber	toolsmith/5/sell_amber	-
+203	Keep mine	toolsmith/5/sell_opal	toolsmith/5/sell_opal	-
+204	Keep mine	toolsmith/5/sell_ruby	toolsmith/5/sell_ruby	-
+205	Keep mine	toolsmith/5/sell_topaz	toolsmith/5/sell_topaz	-
+206	Keep mine	wandering_trader/adult_asylum_seeker_1	wandering_trader/asylum_seeker	-
+207	Keep mine	wandering_trader/adult_asylum_seeker_2	wandering_trader/asylum_seeker	-
+208	Keep mine	wandering_trader/adult_asylum_seeker_3	wandering_trader/asylum_seeker	-
+209	Keep mine	wandering_trader/adult_asylum_seeker_4	wandering_trader/asylum_seeker	-
+210	Keep mine	wandering_trader/adult_asylum_seeker_5	wandering_trader/asylum_seeker	-
+211	Keep mine	wandering_trader/adult_asylum_seeker_6	wandering_trader/asylum_seeker	-
+212	Keep mine	wandering_trader/adult_asylum_seeker_7	wandering_trader/asylum_seeker	-
+213	Keep mine	wandering_trader/child_asylum_seeker	wandering_trader/asylum_seeker	-
+214	Keep mine	wandering_trader/child_asylum_seeker_2	wandering_trader/asylum_seeker	-
+215	Keep mine	wandering_trader/music_disc_11	wandering_trader/music_disc_11	-
+216	Keep mine	wandering_trader/music_disc_13	wandering_trader/music_disc_13	-
+217	Keep mine	wandering_trader/music_disc_5	wandering_trader/music_disc_5	-
+218	Keep mine	wandering_trader/music_disc_blocks	wandering_trader/music_disc_blocks	-
+219	Keep mine	wandering_trader/music_disc_cat	wandering_trader/music_disc_cat	-
+220	Keep mine	wandering_trader/music_disc_chirp	wandering_trader/music_disc_chirp	-
+221	Keep mine	wandering_trader/music_disc_creator	wandering_trader/music_disc_creator	-
+222	Keep mine	wandering_trader/music_disc_creator_music_box	wandering_trader/music_disc_creator_music_box	-
+223	Keep mine	wandering_trader/music_disc_far	wandering_trader/music_disc_far	-
+224	Keep mine	wandering_trader/music_disc_lava_chicken	wandering_trader/music_disc_lava_chicken	-
+225	Keep mine	wandering_trader/music_disc_mall	wandering_trader/music_disc_mall	-
+226	Keep mine	wandering_trader/music_disc_mellohi	wandering_trader/music_disc_mellohi	-
+227	Keep mine	wandering_trader/music_disc_otherside	wandering_trader/music_disc_otherside	-
+228	Keep mine	wandering_trader/music_disc_pigstep	wandering_trader/music_disc_pigstep	-
+229	Keep mine	wandering_trader/music_disc_precipice	wandering_trader/music_disc_precipice	-
+230	Keep mine	wandering_trader/music_disc_relic	wandering_trader/music_disc_relic	-
+231	Keep mine	wandering_trader/music_disc_stal	wandering_trader/music_disc_stal	-
+232	Keep mine	wandering_trader/music_disc_strad	wandering_trader/music_disc_strad	-
+233	Keep mine	wandering_trader/music_disc_tears	wandering_trader/music_disc_tears	-
+234	Keep mine	wandering_trader/music_disc_wait	wandering_trader/music_disc_wait	-
+235	Keep mine	wandering_trader/music_disc_ward	wandering_trader/music_disc_ward	-
+236	Keep mine	wandering_trader/village_desert	wandering_trader/village_desert	-
+237	Keep mine	wandering_trader/village_plains	wandering_trader/village_plains	-
+238	Keep mine	wandering_trader/village_savanna	wandering_trader/village_savanna	-
+239	Keep mine	wandering_trader/village_snowy	wandering_trader/village_snowy	-
+240	Keep mine	wandering_trader/village_taiga	wandering_trader/village_taiga	-
+241	Keep mine	wandering_trader/witch_hut	wandering_trader/witch_hut	-
+242	Adopt 1.12.5	weaponsmith/1/bronze_axe	weaponsmith/2/hepatizon_axe	-
+243	Adopt 1.12.5	weaponsmith/1/bronze_boots	weaponsmith/2/hepatizon_boots	-
+244	Adopt 1.12.5	weaponsmith/1/bronze_chestplate	weaponsmith/2/hepatizon_chestplate	-
+245	Adopt 1.12.5	weaponsmith/1/bronze_dolabra	weaponsmith/2/hepatizon_dolabra	-
+246	Adopt 1.12.5	weaponsmith/1/bronze_helmet	weaponsmith/2/hepatizon_helmet	-
+247	Adopt 1.12.5	weaponsmith/1/bronze_hoe	weaponsmith/2/hepatizon_hoe	-
+248	Adopt 1.12.5	weaponsmith/1/bronze_leggings	weaponsmith/2/hepatizon_leggings	-
+249	Adopt 1.12.5	weaponsmith/1/bronze_mattock	weaponsmith/2/hepatizon_mattock	-
+250	Adopt 1.12.5	weaponsmith/1/bronze_pickaxe	weaponsmith/2/hepatizon_pickaxe	-
+251	Adopt 1.12.5	weaponsmith/1/bronze_shovel	weaponsmith/2/hepatizon_shovel	-
+252	Adopt 1.12.5	weaponsmith/1/bronze_spear	weaponsmith/2/hepatizon_spear	-
+253	Adopt 1.12.5	weaponsmith/1/bronze_sword	weaponsmith/2/hepatizon_sword	-
+254	Adopt 1.12.5	weaponsmith/1/electrum_axe	weaponsmith/2/electrum_axe	-
+255	Adopt 1.12.5	weaponsmith/1/electrum_boots	weaponsmith/2/electrum_boots	-
+256	Adopt 1.12.5	weaponsmith/1/electrum_chestplate	weaponsmith/2/electrum_chestplate	-
+257	Adopt 1.12.5	weaponsmith/1/electrum_dolabra	weaponsmith/2/electrum_dolabra	-
+258	Adopt 1.12.5	weaponsmith/1/electrum_helmet	weaponsmith/2/electrum_helmet	-
+259	Adopt 1.12.5	weaponsmith/1/electrum_hoe	weaponsmith/2/electrum_hoe	-
+260	Adopt 1.12.5	weaponsmith/1/electrum_leggings	weaponsmith/2/electrum_leggings	-
+261	Adopt 1.12.5	weaponsmith/1/electrum_mattock	weaponsmith/2/electrum_mattock	-
+262	Adopt 1.12.5	weaponsmith/1/electrum_pickaxe	weaponsmith/2/electrum_pickaxe	-
+263	Adopt 1.12.5	weaponsmith/1/electrum_shovel	weaponsmith/2/electrum_shovel	-
+264	Adopt 1.12.5	weaponsmith/1/electrum_spear	weaponsmith/2/electrum_spear	-
+265	Adopt 1.12.5	weaponsmith/1/electrum_sword	weaponsmith/2/electrum_sword	-
+266	Adopt 1.12.5	weaponsmith/1/netherite_axe	weaponsmith/2/netherite_axe	-
+267	Adopt 1.12.5	weaponsmith/1/netherite_boots	weaponsmith/2/netherite_boots	-
+268	Adopt 1.12.5	weaponsmith/1/netherite_chestplate	weaponsmith/2/netherite_chestplate	-
+269	Adopt 1.12.5	weaponsmith/1/netherite_dolabra	weaponsmith/2/netherite_dolabra	-
+270	Adopt 1.12.5	weaponsmith/1/netherite_helmet	weaponsmith/2/netherite_helmet	-
+271	Adopt 1.12.5	weaponsmith/1/netherite_hoe	weaponsmith/2/netherite_hoe	-
+272	Adopt 1.12.5	weaponsmith/1/netherite_leggings	weaponsmith/2/netherite_leggings	-
+273	Adopt 1.12.5	weaponsmith/1/netherite_mattock	weaponsmith/2/netherite_mattock	-
+274	Adopt 1.12.5	weaponsmith/1/netherite_pickaxe	weaponsmith/2/netherite_pickaxe	-
+275	Adopt 1.12.5	weaponsmith/1/netherite_shovel	weaponsmith/2/netherite_shovel	-
+276	Adopt 1.12.5	weaponsmith/1/netherite_spear	weaponsmith/2/netherite_spear	-
+277	Adopt 1.12.5	weaponsmith/1/netherite_sword	weaponsmith/2/netherite_sword	-
+278	Adopt 1.12.5	weaponsmith/1/shakudo_axe	weaponsmith/2/shakudo_axe	-
+279	Adopt 1.12.5	weaponsmith/1/shakudo_boots	weaponsmith/2/shakudo_boots	-
+280	Adopt 1.12.5	weaponsmith/1/shakudo_chestplate	weaponsmith/2/shakudo_chestplate	-
+281	Adopt 1.12.5	weaponsmith/1/shakudo_dolabra	weaponsmith/2/shakudo_dolabra	-
+282	Adopt 1.12.5	weaponsmith/1/shakudo_helmet	weaponsmith/2/shakudo_helmet	-
+283	Adopt 1.12.5	weaponsmith/1/shakudo_hoe	weaponsmith/2/shakudo_hoe	-
+284	Adopt 1.12.5	weaponsmith/1/shakudo_leggings	weaponsmith/2/shakudo_leggings	-
+285	Adopt 1.12.5	weaponsmith/1/shakudo_mattock	weaponsmith/2/shakudo_mattock	-
+286	Adopt 1.12.5	weaponsmith/1/shakudo_pickaxe	weaponsmith/2/shakudo_pickaxe	-
+287	Adopt 1.12.5	weaponsmith/1/shakudo_shovel	weaponsmith/2/shakudo_shovel	-
+288	Adopt 1.12.5	weaponsmith/1/shakudo_spear	weaponsmith/2/shakudo_spear	-
+289	Adopt 1.12.5	weaponsmith/1/shakudo_sword	weaponsmith/2/shakudo_sword	-
+290	Remove	weaponsmith/2/filler	weaponsmith/3/filler	-
+291	Remove	weaponsmith/2/filler	weaponsmith/4/filler	-
+292	Remove	weaponsmith/2/filler	weaponsmith/5/filler	-
+293	Remove	weaponsmith/3/filler	weaponsmith/3/filler	-
+294	Remove	weaponsmith/4/filler	weaponsmith/4/filler	-
+295	Remove	weaponsmith/5/filler	weaponsmith/5/filler	-
+296	Adopt 1.12.5		cartographer/1/shipwreck	-
+297	Adopt 1.12.5		fisherman/1/anglers_almanac	-
+298	Remove		librarian/5/crystal_heart	-
+299	Modify		mason/1/dirt	1 Emerald → 2 Bulk Dirt
+300	Modify		mason/3/bulk_cinnabar	1 Emerald → 64 Cinnabar
+301	Adopt 1.12.5		toolsmith/1/amethyst_earrings	-
+302	Adopt 1.12.5		toolsmith/1/diamond_earrings	-
+303	Adopt 1.12.5		toolsmith/1/lapis_earrings	-
+304	Adopt 1.12.5		weaponsmith/1/obol_from_diamond	-
+305	Adopt 1.12.5		weaponsmith/1/obol_from_hepatizon	-
+306	Adopt 1.12.5		weaponsmith/1/obol_from_lapis	-
+307	Adopt 1.12.5		weaponsmith/1/silver_from_electrum	-
+308	Adopt 1.12.5		weaponsmith/2/netherite_claymore

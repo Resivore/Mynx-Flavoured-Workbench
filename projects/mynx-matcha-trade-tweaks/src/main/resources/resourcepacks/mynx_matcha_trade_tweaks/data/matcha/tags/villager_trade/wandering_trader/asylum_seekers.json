@@ -1,0 +1,14 @@
+{
+  "replace": true,
+  "values": [
+    "mynx_matcha_trade_tweaks:wandering_trader/adult_asylum_seeker_1",
+    "mynx_matcha_trade_tweaks:wandering_trader/adult_asylum_seeker_2",
+    "mynx_matcha_trade_tweaks:wandering_trader/adult_asylum_seeker_3",
+    "mynx_matcha_trade_tweaks:wandering_trader/adult_asylum_seeker_4",
+    "mynx_matcha_trade_tweaks:wandering_trader/adult_asylum_seeker_5",
+    "mynx_matcha_trade_tweaks:wandering_trader/adult_asylum_seeker_6",
+    "mynx_matcha_trade_tweaks:wandering_trader/adult_asylum_seeker_7",
+    "mynx_matcha_trade_tweaks:wandering_trader/child_asylum_seeker",
+    "mynx_matcha_trade_tweaks:wandering_trader/child_asylum_seeker_2"
+  ]
+}

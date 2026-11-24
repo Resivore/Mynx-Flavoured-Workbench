@@ -47,6 +47,8 @@ Ribbits remain normal `Merchant` entities using `MerchantOffer`, `MerchantOffers
 
 Tier thresholds are 0, 5, 15, 30, and 50 profession XP. Ordinary Tier 1–4 offers award 1, 2, 3, and 4 XP respectively; offers at a profession's maximum tier award zero. Lower unlocked tiers remain cumulative and keep their tier reward until maximum rank. All designed barter offers use a zero price multiplier, so demand does not change approved rates. Normal tier unlocks add their offers immediately. Tiered professions show merchant progress; Musician is unranked and does not.
 
+Sorcerers unlock their remaining ranks at 0, 5, and 30 XP. Opening a migrated Sorcerer retains its gate, XP, blessing choice, stock, and surviving offers. Until it qualifies for Oracle, a former Flask Sage displays Gatecaller.
+
 The saved rank and XP always use those exact Mynx thresholds. The merchant packet maps progress proportionally onto Minecraft's fixed Villager progress-bar breakpoints, and maps five-rank professions' final display to the fourth visible bar segment so the normal merchant screen continues to show a full progress bar instead of hiding it at vanilla level 5; this is a display-only adapter and does not alter progression or saved XP.
 
 | Profession | Maximum | Exact displayed ranks | Maximum materialized offers |
@@ -56,7 +58,7 @@ The saved rank and XP always use those exact Mynx thresholds. The merchant packe
 | Fisherman | 5 | Pond Forager; Coral Keeper; Amphibian Attendant; Opal Angler; Monument Mariner | 8 |
 | Merchant | 3 | Moss Peddler; Lantern Trader; Glowgoods Baron | 5 |
 | Chef | 5 | Tadpole Cook; Pond Cook; Swamp Chef; Grand Chef; Master of the Feast | 7 |
-| Sorcerer | 4 | Wart Whisperer; Gatecaller; Flask Sage; Deep-Pond Oracle | 20 |
+| Sorcerer | 3 | Wart Whisperer; Gatecaller; Deep-Pond Oracle | 19 |
 | Prospector | 3 | Pebble Picker; Vein-Seeker; Deep Delver | 16 |
 | Guard | 4 | Pond Sentry; Lily Warden; Marsh Marshal; Bulwark of the Bog | 11 weapons / 12 mount / 15 armor |
 | Musician | unranked | Musician | 1 |
@@ -65,7 +67,7 @@ Player-assigned custom entity names remain intact. Rank, XP, progression-gate co
 
 Persistent equal-weight choices are one linked Gardener Tier-1 pair; Farmer Tier-2 and Tier-3 choices; Fisherman aquatic material and one linked coral family; Chef Master specialty; Sorcerer Blessing; Prospector bullion; and one Guard branch. These choices do not reroll on menu open, restock, rank advancement, chunk reload, save/reload, restart, or dimension travel. Fisherman's first exact Opal buyback gates promotion from Opal Angler to Monument Mariner even at 100 ordinary XP. Sorcerer's first exact Benzene buyback immediately gates promotion to Gatecaller. Both gate offers remain available afterward.
 
-Chef permanently offers Glow Berry Crumble and Honey Ginger Tea. For every unlocked Tier 1–4, it materializes exactly one deterministic daily special for that Chef, tier, and overworld day. The selection is stable through ordinary restocks, menu reopen, chunk reload, and restart and cycles through the tier pool before repeating where practical. A tier unlocked mid-day receives one special immediately without changing lower-tier choices. A day boundary rotates all eligible tiers; if a trading session is open, replacement waits until that session closes. The Tier-5 Master specialty is one permanent equal-weight choice among Japanese Curry, Green Curry, and Tonkotsu Ramen and never rotates.
+Chef permanently offers Glow Berry Crumble and Honey Ginger Tea. For every unlocked Tier 1–4, it materializes exactly one deterministic daily special for that Chef, tier, and overworld day. The selection is stable through ordinary restocks, menu reopen, chunk reload, and restart and cycles through the tier pool before repeating where practical. A tier unlocked mid-day receives one special immediately without changing lower-tier choices. A day boundary rotates all eligible tiers; if a trading session is open, replacement waits until that session closes. The Tier-5 Master specialty is one permanent equal-weight choice among Japanese Curry, Green Curry, Tonkotsu Ramen, Paneer Makhani, and Pumpkin Curry and never rotates.
 
 The strict stock system persists the current overworld day, restocks used that day, and last restock game time. A new day supplies fresh initial stock and resets the allowance. An exhausted offer is required for either ordinary restock; at most two ordinary restocks occur per day and at least 2,400 ticks separate them. Restocking refreshes current offers without rerolling choices or Chef menus. Unload, relog, restart, dimension changes, and backward time changes cannot reset or bypass the allowance. The intended maximum is initial stock plus two restocks, with no workstation, POI, schedule, home, or work window.
 

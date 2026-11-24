@@ -1,0 +1,37 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_primary_material": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:diamond"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_primary_material"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "matcha:crafting/diamond_pickaxe",
+      "matcha:crafting/diamond_axe",
+      "matcha:crafting/diamond_shovel",
+      "matcha:crafting/diamond_hoe",
+      "matcha:crafting/diamond_sword",
+      "matcha:crafting/diamond_helmet",
+      "matcha:crafting/diamond_chestplate",
+      "matcha:crafting/diamond_leggings",
+      "matcha:crafting/diamond_boots",
+      "matcha:crafting/diamond_mattock",
+      "matcha:crafting/diamond_dolabra",
+      "matcha:crafting/diamond_spear",
+      "matcha:blast/diamond_from_blasting_diamond_materials"
+    ]
+  }
+}

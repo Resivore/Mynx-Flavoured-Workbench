@@ -47,7 +47,7 @@ final class MatchaDataPackContractTest {
                 assertArrayEquals(entryBytes(source, member.getName()), entryBytes(jar, target), target);
             }
             assertEquals(expected, jar.stream().filter(e -> !e.isDirectory())
-                    .map(ZipEntry::getName).filter(n -> n.startsWith("resourcepacks/"))
+                    .map(ZipEntry::getName).filter(n -> n.startsWith(prefix))
                     .collect(java.util.stream.Collectors.toSet()));
             assertFalse(jar.stream().anyMatch(e -> e.getName().startsWith("data/")));
         }
@@ -65,6 +65,14 @@ final class MatchaDataPackContractTest {
         assertEquals(1, matches.size());
         Pack provider = matches.getFirst();
         assertTrue(provider.isRequired());
+        Pack repairs = packs.stream().filter(pack -> pack.getId().equals(
+                MatchaFlavouredData.ADVANCEMENT_REPAIRS.toString())).findFirst().orElseThrow();
+        assertTrue(repairs.isRequired());
+        try (var manager = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(repairs.open(), provider.open()))) {
+            assertEquals(repairs.getId(), manager.getResource(
+                    Identifier.parse("matcha:advancement/recipe_unlocks/cyan_wool.json")).orElseThrow().sourcePackId());
+        }
+
         for (int reload = 0; reload < 2; reload++) {
             try (var manager = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(provider.open()))) {
                 for (String path : List.of("matcha:function/setup/load.mcfunction",

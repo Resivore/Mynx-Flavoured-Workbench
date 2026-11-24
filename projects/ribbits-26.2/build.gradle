@@ -106,12 +106,12 @@ if (privateResourcesDir != null) {
             if (manifest.schema?.toString() != 'mynx-ribbits-private-resource-manifest/v1' ||
                 manifest.classification?.toString() != 'PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS' ||
                 manifest.candidate?.version?.toString() != project.mod_version.toString() ||
-                manifest.candidate?.version?.toString() != '4.1.6+26.2-matcha125-canary28' ||
+                manifest.candidate?.version?.toString() != '4.1.6+26.2-matcha125-menu-canary28' ||
                 (manifest.candidate?.canary as int) != 28 ||
                 manifest.candidate?.private_artifact_filename?.toString() !=
-                    'ribbits-private-reconstruction-4.1.6+26.2-matcha125-canary28.jar' ||
+                    'ribbits-private-reconstruction-4.1.6+26.2-matcha125-menu-canary28.jar' ||
                 manifest.candidate?.source_only_artifact_filename?.toString() !=
-                    'ribbits-source-only-4.1.6+26.2-matcha125-canary28.jar') {
+                    'ribbits-source-only-4.1.6+26.2-matcha125-menu-canary28.jar') {
                 throw new GradleException("Private manifest classification is not eligible for private packaging: ${manifest.classification}")
             }
             if ((manifest.blockers as List)) {
@@ -348,10 +348,10 @@ if (privateResourcesDir != null) {
             ]
             if ((manifest.pristine.selected_file_count as int) != 287 ||
                 (manifest.output.file_count as int) != 363 ||
-                (manifest.output.total_size as long) != 2780713L ||
+                (manifest.output.total_size as long) != 2780654L ||
                 expectedFiles.size() != 363) {
                 throw new GradleException(
-                    'Private manifest does not preserve the exact 287-input / 363-output / 2,780,713-byte contract'
+                    'Private manifest does not preserve the exact 287-input / 363-output / 2,780,654-byte contract'
                 )
             }
 
@@ -1127,7 +1127,7 @@ if (privateResourcesDir != null) {
                 (manifest.migrations?.cutout_concrete_models as int) != 30 ||
                 (manifest.migrations?.block_item_translation_keys_added as int) != 154 ||
                 (manifest.migrations?.small_brown_english_translation_keys_added as int) != 2 ||
-                (manifest.migrations?.en_us_mynx_profession_keys_added_or_changed as int) != 46 ||
+                (manifest.migrations?.en_us_mynx_profession_keys_added_or_changed as int) != 45 ||
                 (manifest.migrations?.small_brown_toadstool_derived_resources_added as int) != 12 ||
                 (manifest.migrations?.spawn_egg_models_migrated as int) != 10) {
                 throw new GradleException('Private manifest profession/model/item counts differ')

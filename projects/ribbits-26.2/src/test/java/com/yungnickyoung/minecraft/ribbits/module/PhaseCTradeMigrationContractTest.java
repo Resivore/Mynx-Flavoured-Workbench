@@ -46,9 +46,27 @@ class PhaseCTradeMigrationContractTest {
     }
 
     @Test
-    void everyExistingSorcererRankRecognizesItsExactCanaryThreeShape() throws Exception {
-        int[] expectedPhaseBCounts = {1, 17, 18, 19};
-        for (int rank = 1; rank <= 4; rank++) {
+    void savedFlaskSageAndOracleKeepEarnedXpAndBlessingChoice() {
+        for (int previous : List.of(3, 4)) {
+            RibbitTradeState state = new RibbitTradeState();
+            state.sorcererBenzeneGate(true);
+            state.sorcererBlessingChoice(1);
+            state.rank(previous);
+            int xp = previous == 3 ? 22 : 30;
+            state.xp(xp);
+            RibbitTradeModule.migrateSorcererRank(state);
+            RibbitTradeModule.normalizePersistentState(RibbitTradeModule.profile("sorcerer"), state);
+            assertEquals(previous - 1, state.rank());
+            assertEquals(xp, state.xp());
+            assertEquals(1, state.sorcererBlessingChoice());
+            assertTrue(state.sorcererBenzeneGate());
+        }
+    }
+
+    @Test
+    void everyRemainingRankCanPrependRedemptionAfterRetiredFlaskRemoval() throws Exception {
+        int[] expectedPhaseBCounts = {1, 17, 18};
+        for (int rank = 1; rank <= 3; rank++) {
             List<TradeOfferSpec> phaseC = selectedSorcererSpecs(rank);
             assertEquals(expectedPhaseBCounts[rank - 1] + 1, phaseC.size(),
                     "Phase C Sorcerer rank " + rank);

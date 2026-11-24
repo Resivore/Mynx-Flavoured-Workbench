@@ -1,246 +1,208 @@
-"""Generate Canary 1's explicit deltas against the accepted Matcha data tree.
-
-The source pack is read only. Run this from anywhere with Python 3.11+.
-Only changed trade resources and five membership/pool pairs are emitted.
-"""
-
+"""Reproduce the reviewed 1.12.5 overlay and its effective matrix from immutable inputs."""
 from __future__ import annotations
 
+import argparse
+import csv
+import hashlib
+import io
 import json
 import os
+import re
+import subprocess
+from collections import Counter, defaultdict
 from copy import deepcopy
 from pathlib import Path
-
+from zipfile import ZipFile
 
 PROJECT = Path(__file__).resolve().parent
 ROOT = PROJECT.parents[1]
-BASE = (
-    ROOT
-    / "projects/matcha-flavoured-data/src/main/resources/resourcepacks/matcha_flavoured_1_12"
-)
-OVERLAY = PROJECT / "src/main/resources/resourcepacks/mynx_matcha_trade_tweaks"
-
-# IDs verified against current 26.2 registry/dependency artifacts, not guessed
-# from the spreadsheet's display names.
-ITEMS = {
-    "waxed_copper_pipe": "simple_copper_pipes:waxed_copper_pipe",
-    "waxed_copper_fitting": "simple_copper_pipes:waxed_copper_fitting",
-    "copper_hopper": "copperhopper:copper_hopper",
-    # Matcha's resource pack renames/retextures the vanilla beetroot seeds.
-    "tomato_seeds": "minecraft:beetroot_seeds",
-}
-
-CHANGES: dict[str, dict] = {}
+PACK = PROJECT / "src/main/resources/resourcepacks/mynx_matcha_trade_tweaks"
+if os.name == "nt":
+    PACK = Path("\\\\?\\" + str(PACK))
+BASELINE = "fc5295af0b46e2c8aa93d3fc5464b1951a5467fe"
+ARCHIVE = ROOT / "projects/matcha-flavoured-data/upstream/MF_1_12_5_26_2.zip"
+OLD = "projects/matcha-flavoured-data/src/main/resources/resourcepacks/matcha_flavoured_1_12/"
+CUSTOM = "projects/mynx-matcha-trade-tweaks/src/main/resources/resourcepacks/mynx_matcha_trade_tweaks/"
+KINDS = ("trade_set", "tags/villager_trade", "villager_trade")
+STACKS = ("wants", "additional_wants", "gives")
+REPORT = PROJECT / "tools/trade_reconciliation.tsv"
 
 
-def add(names: str, *, level: int, profession: str, **changes: object) -> None:
-    for name in names.split():
-        key = f"{profession}/{level}/{name}"
-        if key in CHANGES:
-            raise ValueError(f"Duplicate change: {key}")
-        CHANGES[key] = dict(changes)
+def trade_path(key):
+    namespace, path = key.split(":")
+    return f"data/{namespace}/villager_trade/{path}.json"
 
 
-# Armorer
-add("comparator redstone_block repeater", level=1, profession="armorer",
-    gives_count={"comparator": 16, "redstone_block": 16, "repeater": 32})
-add("noteblock", level=1, profession="armorer",
-    gives_id="waxed_copper_pipe", gives_count=32)
-add("redstone_lamp waxed_copper_bulb", level=2, profession="armorer", gives_count=16)
-add("target", level=2, profession="armorer",
-    gives_id="waxed_copper_fitting", gives_count=8)
-add("dispenser hopper", level=3, profession="armorer", gives_count=8)
-add("dropper observer", level=3, profession="armorer", gives_count=16)
-add("crafter piston sticky_piston", level=4, profession="armorer", gives_count=8)
-add("lava_kit", level=5, profession="armorer",
-    gives_id="copper_hopper", gives_count=8)
-
-# Butcher
-add("sweet_berry_toast", level=1, profession="butcher", gives_count=2)
-add("warped_stroganoff", level=2, profession="butcher", gives_count=1)
-add("chorus_mochi", level=3, profession="butcher", gives_count=2)
-add("butcher_knife", level=4, profession="butcher",
-    wants_count=8, gives_count=1)
-
-# Cartographer: the old statue-specific goat-horn components cannot describe
-# the replacement item.
-add("cheerful_clay_statue mournful_clay_statue", level=5,
-    profession="cartographer", wants_count=1,
-    gives_id="minecraft:emerald", gives_count=16)
-
-# Farmer
-add("bonemeal", level=1, profession="farmer", gives_count=8)
-for name, item in {
-    "exotic_seed_bundle": "minecraft:wheat_seeds",
-    "floral_bundle": "minecraft:pumpkin_seeds",
-    "mushy_bundle": "minecraft:melon_seeds",
-    "seed_bundle": "tomato_seeds",
-}.items():
-    add(name, level=1, profession="farmer", gives_id=item, gives_count=8,
-        remove_additional_wants=(name == "exotic_seed_bundle"))
-add("blue_egg brown_egg white_egg", level=2, profession="farmer",
-    wants_count=8, max_uses=1)
-add("baby_cold_cow baby_cold_pig baby_temperate_cow baby_temperate_pig "
-    "baby_warm_cow baby_warm_pig", level=3, profession="farmer",
-    wants_count=16, max_uses=1)
-
-# Fisherman buybacks; preserve each fish ID and emerald output.
-add("alaska_blackfish anchovy bluegill bujurqui cod crappie "
-    "freshwater_pufferfish guppy humpback_whitefish mediterranean_killifish "
-    "pufferfish rainbow_wrasse salmon shad striped_perch tropical_fish",
-    level=1, profession="fisherman", wants_count=6)
-add("black_seabass carp flying_fish gurnard herring lamprey mahi_mahi "
-    "piranha spoonhead_sculpin walleye", level=2, profession="fisherman",
-    wants_count=4)
-add("armoured_catfish catfish flounder gar monkfish northern_pike "
-    "painted_moray sturgeon tunisian_barb wolffish", level=3,
-    profession="fisherman", wants_count=2)
-
-# Leatherworker
-add("birch_log oak_log spruce_log", level=1, profession="leatherworker",
-    gives_count=16)
-add("acacia_log cherry_log dark_oak_log jungle_log mangrove_log", level=2,
-    profession="leatherworker", gives_count=16)
-add("crimson_log mushroom_stem pale_oak_log warped_log", level=3,
-    profession="leatherworker", gives_count=16)
-add("filler", level=5, profession="leatherworker",
-    wants_id="minecraft:emerald", wants_count=1,
-    gives_id="minecraft:brown_mushroom_block", gives_count=16,
-    remove_given_item_modifiers=True)
-
-# Librarian: named-book input components stay exactly as Matcha defined them.
-add("divine_comedy paradise_lost", level=1, profession="librarian",
-    gives_id="minecraft:emerald", gives_count=6)
-add("ender_pearl", level=1, profession="librarian", gives_count=1)
-
-# Mason
-add("andesite diorite granite stone", level=1, profession="mason",
-    gives_count=64)
-add("deepslate glass smooth_red_sandstone smooth_sandstone tuff", level=2,
-    profession="mason", gives_count=32)
-add("terracotta", level=2, profession="mason", gives_count=16)
-add("calcite", level=3, profession="mason", gives_count=32)
-add("flowstone", level=3, profession="mason",
-    gives_id="minecraft:dripstone_block", gives_count=32)
-add("malachite", level=3, profession="mason", gives_count=16)
-add("blackstone smooth_basalt smooth_quartz", level=4, profession="mason",
-    gives_count=16)
-# Matcha's bulk sales encode the block in a chicken-spawn-egg entity_data
-# component. These requests are direct block stacks, so discard that wrapper.
-for level, names in {
-    1: "andesite diorite granite stone",
-    2: "deepslate glass smooth_red_sandstone smooth_sandstone tuff",
-    3: "calcite",
-}.items():
-    for name in names.split():
-        CHANGES[f"mason/{level}/{name}"]["gives_id"] = f"minecraft:{name}"
-
-# Shepherd
-add("black_wool blue_wool brown_wool cyan_wool gray_wool green_wool "
-    "light_blue_wool light_gray_wool lime_wool magenta_wool orange_wool "
-    "pink_wool purple_wool red_wool white_wool yellow_wool", level=1,
-    profession="shepherd", gives_count=16)
-add("baby_cold_sheep baby_temperate_sheep baby_warm_sheep", level=2,
-    profession="shepherd", wants_count=16, max_uses=1)
-add("shepherds_shears", level=2, profession="shepherd", wants_count=8)
-add("crook", level=3, profession="shepherd", wants_count=8)
-
-REMOVALS = {
-    "armorer/1/composter",
-    "butcher/1/sweet_berry_toast_recipe",
-    "butcher/2/warped_stroganoff_recipe",
-    "butcher/3/chorus_mochi_recipe",
-}
-POOL_MEMBERSHIP = {
-    ("armorer", 1): {"remove": {"composter"}},
-    ("butcher", 1): {"remove": {"sweet_berry_toast_recipe"}},
-    ("butcher", 2): {"remove": {"warped_stroganoff_recipe"}},
-    ("butcher", 3): {"remove": {"chorus_mochi_recipe"}},
-    ("leatherworker", 5): {"add": ["red_mushroom_block"]},
-}
+def canonical(obj):
+    return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
-def read(relative: str) -> dict:
-    target = BASE / relative
-    if os.name == "nt":
-        target = Path("\\\\?\\" + str(target))
-    return json.loads(target.read_text(encoding="utf-8"))
+def legacy():
+    # Read both exact tracked trees at the last main before this migration.
+    args = [prefix + "data/minecraft/" + kind for prefix in (OLD, CUSTOM) for kind in KINDS]
+    blob = subprocess.check_output(["git", "-c", f"safe.directory={ROOT.as_posix()}",
+                                    "archive", "--format=zip", BASELINE, "--", *args], cwd=ROOT)
+    result = {}
+    with ZipFile(io.BytesIO(blob)) as archive:
+        for prefix in (OLD, CUSTOM):
+            for name in archive.namelist():
+                if name.startswith(prefix) and name.endswith(".json"):
+                    result[name[len(prefix):]] = json.loads(archive.read(name))
+    return result
 
 
-def write(relative: str, value: dict) -> None:
-    target = OVERLAY / relative
-    if os.name == "nt":
-        target = Path("\\\\?\\" + str(target))
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n",
-                      encoding="utf-8", newline="\n")
+def pools(data):
+    result = {}
+    for name, definition in data.items():
+        if name.startswith("data/minecraft/trade_set/"):
+            namespace, pool = definition["trades"][1:].split(":")
+            path = f"data/{namespace}/tags/villager_trade/{pool}.json"
+            members = data[path]["values"]
+            assert len(members) == len(set(members)), path
+            result[name] = (path, members, definition["amount"])
+    assert len(result) == 68
+    return result
 
 
-def resolved(item: str) -> str:
-    item = ITEMS.get(item, item)
-    if item == "UNRESOLVED" or ":" not in item:
-        raise ValueError(f"Unresolved item ID: {item}")
-    return item
+def keep(old, new, key):
+    # Preserve all economic fields. Use successor components for corresponding
+    # semantic items, including gems and equipment whose underlying ID changed.
+    result = deepcopy(new)
+    for name in ("xp", "max_uses", "reputation_discount"):
+        if name in old:
+            result[name] = old[name]
+        else:
+            result.pop(name, None)
+    for name in STACKS:
+        if name not in old:
+            result.pop(name, None)
+            continue
+        prior = old[name]
+        successor = new.get(name, {})
+        if not prior.get("components") and prior["id"] != successor.get("id"):
+            result[name] = deepcopy(prior)
+            if name == "gives":
+                result.pop("given_item_modifiers", None)
+        else:
+            result[name] = deepcopy(successor)
+            if prior.get("count", 1) != successor.get("count", 1):
+                result[name]["count"] = prior.get("count", 1)
+    if "asylum_seeker" in key:
+        # Nine fixed age/culture/cause applications. The new random item modifier
+        # would replace those choices after the trade is generated.
+        result = deepcopy(old)
+        components = result["gives"]["components"]
+        current = new["gives"]["components"]
+        for name in ("minecraft:item_model", "minecraft:item_name", "minecraft:custom_data"):
+            components[name] = current[name]
+    return result
 
 
-def scalar(change: object, name: str) -> object:
-    return change[name] if isinstance(change, dict) else change
+def modify(trade, key, archive):
+    result = deepcopy(trade)
+    if key == "librarian/1/paradise_lost":
+        result["gives"] = json.loads(archive.read("data/matcha/recipe/crafting/divine_fragment.json"))["result"]
+        result["gives"]["count"] = 1
+    elif key == "shepherd/2/shepherds_shears":
+        result["wants"]["count"] = 8
+    elif key == "mason/1/dirt":
+        result["gives"]["count"] = 2
+    elif key == "mason/3/bulk_cinnabar":
+        result["gives"] = result["gives"]["components"]["use_remainder"]
+        assert result["gives"] == {"id": "minecraft:cinnabar", "count": 64}
+    else:
+        raise ValueError(key)
+    return result
 
 
-def main() -> None:
-    assert len(CHANGES) == 124, len(CHANGES)
-    assert len(REMOVALS) == 4
-    for key, spec in sorted(CHANGES.items()):
-        relative = f"data/minecraft/villager_trade/{key}.json"
-        trade = deepcopy(read(relative))
-        name = key.rsplit("/", 1)[1]
-        if "wants_id" in spec:
-            trade["wants"] = {"id": resolved(spec["wants_id"])}
-        if "wants_count" in spec:
-            trade["wants"]["count"] = scalar(spec["wants_count"], name)
-        if "gives_id" in spec:
-            old_components = trade["gives"].get("components")
-            trade["gives"] = {"id": resolved(spec["gives_id"])}
-            if spec.get("preserve_result_components") and old_components:
-                trade["gives"]["components"] = old_components
-        if "gives_count" in spec:
-            trade["gives"]["count"] = scalar(spec["gives_count"], name)
-        if "max_uses" in spec:
-            trade["max_uses"] = spec["max_uses"]
-        if spec.get("remove_additional_wants"):
-            trade.pop("additional_wants", None)
-        if spec.get("remove_given_item_modifiers"):
-            trade.pop("given_item_modifiers", None)
-        write(relative, trade)
+def reconcile(archive):
+    before = legacy()
+    upstream = {name: json.loads(archive.read(name)) for name in archive.namelist()
+                if name.endswith(".json") and any("/" + kind + "/" in name for kind in KINDS)}
+    prior_pools, new_pools = pools(before), pools(upstream)
+    old_set = {key: name for name, (_, members, _) in prior_pools.items() for key in members}
+    new_set = {key: name for name, (_, members, _) in new_pools.items() for key in members}
+    with (PROJECT / "tools/review.tsv").open(encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream, delimiter="\t"))
+    assert Counter(r["decision"] for r in rows) == {"Keep mine": 214, "Adopt 1.12.5": 66, "Modify": 4, "Remove": 23}
+    assert set(old_set) <= {"minecraft:" + r["legacy_key"] for r in rows}
+    assert set(new_set) <= {"matcha:" + r["upstream_key"] for r in rows}
+    expected = defaultdict(list)
+    output = {}
+    report = io.StringIO()
+    writer = csv.writer(report, delimiter="\t", lineterminator="\n")
+    writer.writerow(("row", "decision", "legacy", "upstream", "effective_set", "effective_id",
+                     "wants", "additional_wants", "gives", "max_uses", "xp", "definition_sha256"))
+    for row in rows:
+        choice, old, new = (row[k] for k in ("decision", "legacy_key", "upstream_key"))
+        old_id, new_id = "minecraft:" + old, "matcha:" + new
+        key, group, effective = "", "", None
+        if choice == "Keep mine" and old_id in old_set:
+            group = old_set[old_id]
+            prior = before[trade_path(old_id)]
+            if new and "asylum_seeker" not in old:
+                key = new_id
+            else:
+                key = "mynx_matcha_trade_tweaks:" + old
+            effective = keep(prior, upstream[trade_path(new_id)], old) if new else deepcopy(prior)
+            if old.startswith("butcher/") and old.split("/")[-1] in ("sweet_berry_toast", "warped_stroganoff", "chorus_mochi"):
+                recipe = "data/matcha/recipe/food/crafting/" + old.split("/")[-1] + ".json"
+                effective["gives"] = dict(json.loads(archive.read(recipe))["result"], count=prior["gives"]["count"])
+        elif choice in ("Adopt 1.12.5", "Modify"):
+            key, group = new_id, new_set[new_id]
+            target = upstream[trade_path(new_id)]
+            effective = target if choice == "Adopt 1.12.5" else modify(target, new, archive)
+        fields = [""] * 5 + ["-"]
+        if effective is not None:
+            assert key not in expected[group], key
+            expected[group].append(key)
+            path = trade_path(key)
+            if effective != upstream.get(path):
+                output[path] = effective
+            fields = [canonical(effective[k]) if k in effective else "" for k in STACKS] + [
+                effective.get("max_uses", ""), effective.get("xp", ""),
+                hashlib.sha256(canonical(effective).encode()).hexdigest()]
+        writer.writerow([row["row"], choice, old, new, group, key, *fields])
+    for name, (path, members, amount) in new_pools.items():
+        wanted = expected[name]
+        if set(wanted) != set(members):
+            output[path] = {"replace": True, "values": wanted}
+        _, previous, selections = prior_pools[name]
+        count = len(wanted) if selections >= len(previous) else min(len(wanted), selections)
+        # An empty named holder set draws no offers even on codecs requiring positive amount.
+        if wanted and min(amount, len(wanted)) != count:
+            output[name] = dict(upstream[name], amount=float(count))
+    actual = pools(upstream | output)
+    for group, (_, members, _) in actual.items():
+        assert set(members) == set(expected[group]), group
+        for key in members:
+            assert trade_path(key) in (output.keys() | upstream.keys()), key
+    return output, report.getvalue()
 
-    brown_path = OVERLAY / "data/minecraft/villager_trade/leatherworker/5/filler.json"
-    if os.name == "nt":
-        brown_path = Path("\\\\?\\" + str(brown_path))
-    brown = json.loads(brown_path.read_text(encoding="utf-8"))
-    red = deepcopy(brown)
-    red["gives"]["id"] = "minecraft:red_mushroom_block"
-    write("data/minecraft/villager_trade/leatherworker/5/red_mushroom_block.json", red)
 
-    for (profession, level), edit in POOL_MEMBERSHIP.items():
-        tag_path = f"data/minecraft/tags/villager_trade/{profession}/custom_level_{level}.json"
-        tag = read(tag_path)
-        before = list(tag["values"])
-        removed = {f"minecraft:{profession}/{level}/{name}" for name in edit.get("remove", ())}
-        assert removed <= set(before)
-        tag["values"] = [value for value in before if value not in removed]
-        tag["values"].extend(f"minecraft:{profession}/{level}/{name}"
-                             for name in edit.get("add", ()))
-        assert len(tag["values"]) == len(set(tag["values"]))
-        tag["replace"] = True
-        write(tag_path, tag)
-
-        set_path = f"data/minecraft/trade_set/{profession}/level_{level}.json"
-        trade_set = read(set_path)
-        trade_set["amount"] = float(len(tag["values"]))
-        write(set_path, trade_set)
-
-    print(f"Wrote {len(CHANGES)} changed, {len(REMOVALS)} removed via pools, "
-          "1 new trade, and 5 tag/trade-set overrides")
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--write", action="store_true")
+    args = parser.parse_args()
+    assert hashlib.sha256(ARCHIVE.read_bytes()).hexdigest() == "966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4"
+    with ZipFile(ARCHIVE) as archive:
+        output, report = reconcile(archive)
+    existing = {file.relative_to(PACK).as_posix(): file for file in (PACK / "data").rglob("*.json")
+                if any("/" + kind + "/" in file.as_posix() for kind in KINDS)}
+    if args.write:
+        for name in existing.keys() - output.keys():
+            existing[name].unlink()
+        for name, value in output.items():
+            path = PACK / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+        REPORT.write_text(report, encoding="utf-8", newline="\n")
+    else:
+        assert existing.keys() == output.keys()
+        for name, path in existing.items():
+            assert json.loads(path.read_bytes()) == output[name], name
+        assert REPORT.read_text(encoding="utf-8") == report
+    print(f"307 decisions verified across all 68 active sets; {len(output)} resource overrides.")
 
 
 if __name__ == "__main__":

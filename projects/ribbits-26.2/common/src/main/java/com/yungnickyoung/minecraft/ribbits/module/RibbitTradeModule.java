@@ -143,6 +143,32 @@ public final class RibbitTradeModule {
 
     private static final StackRef GLOWCAP = StackRef.item("ribbits:glowcap");
     private static final Map<String, TradeProfile> PROFILES = createProfiles();
+    // Saved menu choices are indices. Append new foods after the established choices.
+    private static final List<List<FixedStack>> CHEF_POOLS = List.of(
+            List.of(FixedStack.PICKLED_CARROTS, FixedStack.RIND_JAM,
+                    FixedStack.BRACHIO_CHICKEN_NUGGET, FixedStack.BUNUELO,
+                    FixedStack.PTERO_CHICKEN_NUGGET, FixedStack.PUERQUITO,
+                    FixedStack.STEGO_CHICKEN_NUGGET, FixedStack.TRICERO_CHICKEN_NUGGET),
+            List.of(FixedStack.GIMMARI, FixedStack.BOKGUK,
+                    FixedStack.CHEESE_PIZZA, FixedStack.CHOCOLATE_CHIP_COOKIE,
+                    FixedStack.FRENCH_TOAST, FixedStack.LATKE,
+                    FixedStack.MEAD, FixedStack.MEAT_PIZZA,
+                    FixedStack.MUSHROOM_PIZZA),
+            List.of(FixedStack.GOLDEN_PICKLED_CARROTS, FixedStack.MELON_SORBET,
+                    FixedStack.PUMPKIN_EMPANADA, FixedStack.WARPED_PIZZA,
+                    FixedStack.WARPED_STROGANOFF, FixedStack.APPLE_EMPANADA,
+                    FixedStack.BROWNIE, FixedStack.BRUSCHETTA,
+                    FixedStack.CARROT_CUPCAKE, FixedStack.FISH_AND_CHIPS,
+                    FixedStack.GNOCCHI, FixedStack.HONIED_FRENCH_TOAST,
+                    FixedStack.KONTOMIRE_STEW, FixedStack.LUMPIA,
+                    FixedStack.PAD_THAI, FixedStack.STROGANOFF),
+            List.of(FixedStack.SWEET_BERRY_DANISH, FixedStack.GOLDEN_CARROT_CUPCAKE,
+                    FixedStack.ICE_CREAM, FixedStack.OATMEAL),
+            List.of(FixedStack.JAPANESE_CURRY, FixedStack.GREEN_CURRY,
+                    FixedStack.TONKOTSU_RAMEN, FixedStack.PANEER_MAKHANI,
+                    FixedStack.PUMPKIN_CURRY));
+    private static final int[] CHEF_PRICES = {2, 4, 6, 12, 20};
+    private static final int[] CHEF_STOCK = {8, 6, 4, 2, 1};
     private static final List<TradeOfferSpec> ALL_OFFERS = createOffers();
     private static final Map<Identifier, List<RibbitExternalTradeOffer>> EXTERNAL_OFFERS = new TreeMap<>();
 
@@ -158,8 +184,8 @@ public final class RibbitTradeModule {
         profile(profiles, "merchant", 3, "Moss Peddler", "Lantern Trader", "Glowgoods Baron");
         profile(profiles, "chef", 5, "Tadpole Cook", "Pond Cook", "Swamp Chef",
                 "Grand Chef", "Master of the Feast");
-        profile(profiles, "sorcerer", 4, "Wart Whisperer", "Gatecaller",
-                "Flask Sage", "Deep-Pond Oracle");
+        profile(profiles, "sorcerer", 3, "Wart Whisperer", "Gatecaller",
+                "Deep-Pond Oracle");
         profile(profiles, "prospector", 3, "Pebble Picker", "Vein-Seeker", "Deep Delver");
         profile(profiles, "guard", 4, "Pond Sentry", "Lily Warden",
                 "Marsh Marshal", "Bulwark of the Bog");
@@ -261,32 +287,16 @@ public final class RibbitTradeModule {
                 FixedStack.GLOW_BERRY_CRUMBLE, 8, "always", 0);
         addFixed(offers, "chef_honey_ginger_tea", "chef", 1, 1,
                 FixedStack.HONEY_GINGER_TEA, 8, "always", 0);
-        addFixed(offers, "chef_pickled_carrots", "chef", 1, 2,
-                FixedStack.PICKLED_CARROTS, 8, "chef_daily_1", 0);
-        addFixed(offers, "chef_rind_jam", "chef", 1, 2,
-                FixedStack.RIND_JAM, 8, "chef_daily_1", 1);
-        addFixed(offers, "chef_gimmari", "chef", 2, 4,
-                FixedStack.GIMMARI, 6, "chef_daily_2", 0);
-        addFixed(offers, "chef_bokguk", "chef", 2, 4,
-                FixedStack.BOKGUK, 6, "chef_daily_2", 1);
-        FixedStack[] tier3Foods = {FixedStack.GOLDEN_PICKLED_CARROTS, FixedStack.MELON_SORBET,
-                FixedStack.PUMPKIN_EMPANADA, FixedStack.WARPED_PIZZA, FixedStack.WARPED_STROGANOFF};
-        String[] tier3Ids = {"golden_pickled_carrots", "melon_sorbet", "pumpkin_empanada",
-                "warped_pizza", "warped_stroganoff"};
-        for (int i = 0; i < tier3Foods.length; i++) {
-            addFixed(offers, "chef_" + tier3Ids[i], "chef", 3, 6,
-                    tier3Foods[i], 4, "chef_daily_3", i);
+        for (int tier = 1; tier <= CHEF_POOLS.size(); tier++) {
+            List<FixedStack> pool = CHEF_POOLS.get(tier - 1);
+            String selection = tier == 5 ? "chef_master" : "chef_daily_" + tier;
+            for (int option = 0; option < pool.size(); option++) {
+                FixedStack food = pool.get(option);
+                String id = "chef_" + food.name().toLowerCase(java.util.Locale.ROOT);
+                addFixed(offers, id, "chef", tier, CHEF_PRICES[tier - 1],
+                        food, CHEF_STOCK[tier - 1], selection, option);
+            }
         }
-        addFixed(offers, "chef_sweet_berry_danish", "chef", 4, 12,
-                FixedStack.SWEET_BERRY_DANISH, 2, "chef_daily_4", 0);
-        addFixed(offers, "chef_golden_carrot_cupcake", "chef", 4, 12,
-                FixedStack.GOLDEN_CARROT_CUPCAKE, 2, "chef_daily_4", 1);
-        addFixed(offers, "chef_japanese_curry", "chef", 5, 20,
-                FixedStack.JAPANESE_CURRY, 1, "chef_master", 0);
-        addFixed(offers, "chef_green_curry", "chef", 5, 20,
-                FixedStack.GREEN_CURRY, 1, "chef_master", 1);
-        addFixed(offers, "chef_tonkotsu_ramen", "chef", 5, 20,
-                FixedStack.TONKOTSU_RAMEN, 1, "chef_master", 2);
 
         add(offers, "sorcerer_failed_map_redemption", "sorcerer", 0,
                 failedMap(1), null, item("ribbits:toadstool_heart"), 1, 16);
@@ -301,11 +311,9 @@ public final class RibbitTradeModule {
                     item("minecraft:ender_pearl", 4), item("minecraft:" + color + "_dye", 1),
                     item("customportals:" + color + "_portal_catalyst"), 2, 8);
         }
-        add(offers, "sorcerer_estus_flask", "sorcerer", 3, glowcaps(2), null,
-                StackRef.fixed(FixedStack.ESTUS_FLASK), 1, 1);
-        addChoice(offers, "sorcerer_reach_blessing", "sorcerer", 4, glowcaps(16), null,
+        addChoice(offers, "sorcerer_reach_blessing", "sorcerer", 3, glowcaps(16), null,
                 StackRef.fixed(FixedStack.REACH_BLESSING), 1, 1, "sorcerer_blessing", 0);
-        addChoice(offers, "sorcerer_silk_touch_blessing", "sorcerer", 4, glowcaps(16), null,
+        addChoice(offers, "sorcerer_silk_touch_blessing", "sorcerer", 3, glowcaps(16), null,
                 StackRef.fixed(FixedStack.SILK_TOUCH_BLESSING), 1, 1,
                 "sorcerer_blessing", 1);
 
@@ -488,7 +496,7 @@ public final class RibbitTradeModule {
             rank = state.fishermanOpalGate() ? Math.max(rank, 5) : Math.min(rank, 4);
         }
         state.rank(rank);
-        int xpFloor = XP_THRESHOLDS[Math.max(0, rank - 1)];
+        int xpFloor = xpThreshold(profile, rank);
         state.xp(Math.max(xpFloor, state.xp()));
     }
 
@@ -513,7 +521,7 @@ public final class RibbitTradeModule {
             case "guard" -> state.guardBranch(validOrRoll(state.guardBranch(), 3, random));
             case "chef" -> {
                 if (state.rank() >= 5) {
-                    state.chefMasterSpecialty(validOrRoll(state.chefMasterSpecialty(), 3, random));
+                    state.chefMasterSpecialty(validOrRoll(state.chefMasterSpecialty(), CHEF_POOLS.get(4).size(), random));
                 }
             }
             default -> { }
@@ -588,7 +596,7 @@ public final class RibbitTradeModule {
         boolean newDay = state.chefMenuDay() != day;
         for (int tier = 1; tier <= maxDailyTier; tier++) {
             if (newDay || state.chefMenu(tier) < 0) {
-                int poolSize = tier == 3 ? 5 : 2;
+                int poolSize = CHEF_POOLS.get(tier - 1).size();
                 state.chefMenu(tier, deterministicChefMenu(ribbit.getUUID(), tier, day, poolSize));
             }
         }
@@ -829,13 +837,31 @@ public final class RibbitTradeModule {
         return Gate.NONE;
     }
 
+    public static int xpThreshold(TradeProfile profile, int rank) {
+        // Deep-Pond Oracle keeps its original 30 XP unlock after Flask Sage retires.
+        return "sorcerer".equals(profile.profession) && rank == 3 ? 30 : XP_THRESHOLDS[rank - 1];
+    }
+
+    public static void migrateSorcererRank(RibbitTradeState state) {
+        if (state.rank() >= 3) state.rank(state.rank() - 1);
+    }
+
+    public static void removeRetiredFlaskOffer(RibbitEntity ribbit, MerchantOffers offers) {
+        if (offers.isEmpty()) return;
+        ItemStack flask = MatchaStackCatalog.resolve(ribbit.level(), FixedStack.ESTUS_FLASK);
+        offers.removeIf(offer -> offer.getItemCostA().count() == 2
+                && BuiltInRegistries.ITEM.getKey(offer.getItemCostA().item().value()).toString().equals("ribbits:glowcap")
+                && offer.getItemCostB().isEmpty() && offer.getResult().getCount() == 1
+                && offer.getMaxUses() == 1 && ItemStack.isSameItemSameComponents(offer.getResult(), flask));
+    }
+
     public static int rankForXp(TradeProfile profile, RibbitTradeState state, int xp) {
         if (!profile.tiered()) {
             return 0;
         }
         int rank = 1;
         for (int tier = 2; tier <= profile.maxTier; tier++) {
-            if (xp >= XP_THRESHOLDS[tier - 1]) {
+            if (xp >= xpThreshold(profile, tier)) {
                 rank = tier;
             }
         }
@@ -857,8 +883,8 @@ public final class RibbitTradeModule {
         if (rank >= profile.maxTier) {
             return vanilla[Math.min(rank, 4)];
         }
-        int sourceMin = XP_THRESHOLDS[rank - 1];
-        int sourceMax = XP_THRESHOLDS[Math.min(rank, 4)];
+        int sourceMin = xpThreshold(profile, rank);
+        int sourceMax = xpThreshold(profile, rank + 1);
         int targetMin = vanilla[rank - 1];
         int targetMax = vanilla[rank];
         double progress = sourceMax <= sourceMin ? 0.0 : Math.max(0.0, Math.min(1.0,

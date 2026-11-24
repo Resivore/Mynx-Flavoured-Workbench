@@ -1,6 +1,8 @@
 package dev.resivore.mynxmatchatradetweaks;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
@@ -25,13 +27,19 @@ public final class MynxMatchaTradeTweaks implements ModInitializer {
         boolean registered = ResourceLoader.registerBuiltinPack(
                 BUILTIN_PACK_ID,
                 container,
-                Component.literal("Mynx Matcha Trade Tweaks Canary 1"),
+                Component.literal("Mynx Matcha Trade Tweaks Canary 2"),
                 PackActivationType.ALWAYS_ENABLED);
         if (!registered) {
             throw new IllegalStateException(
                     "Failed to register the required built-in server-data pack " + BUILTIN_PACK_ID);
         }
 
+        ServerEntityEvents.ENTITY_LOAD.register(
+                (entity, level) -> {
+                    if (entity instanceof Villager villager) {
+                        SavedTradeCleanup.onLoad(villager);
+                    }
+                });
         LOGGER.info("Registered {} as ALWAYS_ENABLED for narrow Matcha trade overrides.", BUILTIN_PACK_ID);
     }
 }

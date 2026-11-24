@@ -1832,7 +1832,7 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-matcha125-canary28", tools.CANDIDATE_VERSION)
+        self.assertEqual("4.1.6+26.2-matcha125-menu-canary28", tools.CANDIDATE_VERSION)
         self.assertEqual(28, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
@@ -1842,7 +1842,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             tools.PRIVATE_MANIFEST_CLASSIFICATION,
         )
         self.assertEqual(363, tools.OUTPUT_FILE_COUNT)
-        self.assertEqual(2_780_713, tools.OUTPUT_TOTAL_SIZE)
+        self.assertEqual(2_780_654, tools.OUTPUT_TOTAL_SIZE)
         self.assertEqual(2_563, tools.SORCERER_LOOT_OUTPUT_SIZE)
         self.assertEqual(
             "5b06e06502bf11f661161e89bf34e329d8f23268b7b0104371038c38ad9b378d",
@@ -2543,7 +2543,6 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "sorcerer": (
                 "Wart Whisperer",
                 "Gatecaller",
-                "Flask Sage",
                 "Deep-Pond Oracle",
             ),
             "prospector": ("Pebble Picker", "Vein-Seeker", "Deep Delver"),
@@ -2565,7 +2564,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             for key, value in tools.EN_US_MYNX_PROFESSION_TRANSLATIONS.items()
             if key.startswith("entity.ribbits.merchant.")
         }
-        self.assertEqual(30, len(expected_titles))
+        self.assertEqual(29, len(expected_titles))
         self.assertEqual(expected_titles, actual_titles)
 
     def test_naturalist_baby_translation_is_public_and_private_assembly_contract(self) -> None:

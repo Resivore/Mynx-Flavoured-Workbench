@@ -1,7 +1,21 @@
 {
   "pack": {
-    "min_format": [107, 1],
-    "max_format": [107, 1],
-    "description": "Mynx Matcha Trade Tweaks Canary 1"
+    "min_format": [
+      107,
+      1
+    ],
+    "max_format": [
+      107,
+      1
+    ],
+    "description": "Reviewed Mynx Matcha trades"
+  },
+  "filter": {
+    "block": [
+      {
+        "namespace": "matcha",
+        "path": "function/favorite_food/.*"
+      }
+    ]
   }
 }

@@ -51,6 +51,7 @@ public final class MatchaDataScanner {
     private static final Logger LOGGER = LoggerFactory.getLogger("matcha_jei_integration/data");
     private static final String MATCHA_PROVIDER = "matcha_flavoured_data:matcha_flavoured_1_12_5";
     private static final FileToIdConverter RECIPE_FILES = FileToIdConverter.json("recipe");
+    private static final String TRADE_OVERLAY = "mynx_matcha_trade_tweaks:mynx_matcha_trade_tweaks";
     private static final FileToIdConverter TRADE_FILES = FileToIdConverter.registry(Registries.VILLAGER_TRADE);
     private static final FileToIdConverter LOOT_FILES = FileToIdConverter.registry(Registries.LOOT_TABLE);
     private static final Map<MinecraftServer, ServerState> STATES = new WeakHashMap<>();
@@ -235,7 +236,9 @@ public final class MatchaDataScanner {
         LinkedHashMap<Identifier, ResourceDocument> documents = new LinkedHashMap<>();
         var effective = converter.listMatchingResources(resources);
         converter.listMatchingResourceStacks(resources).entrySet().stream()
-                .filter(entry -> entry.getValue().stream().anyMatch(layer -> MATCHA_PROVIDER.equals(layer.sourcePackId())))
+                .filter(entry -> entry.getValue().stream().anyMatch(layer ->
+                        MATCHA_PROVIDER.equals(layer.sourcePackId())
+                                || (converter == TRADE_FILES && TRADE_OVERLAY.equals(layer.sourcePackId()))))
                 .filter(entry -> effective.containsKey(entry.getKey()))
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> {

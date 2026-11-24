@@ -61,6 +61,62 @@ class MatchaStackCatalogFingerprintTest {
                     "7b02e440ea5bd0aa9bb7f6d03adbf8389583c7731f39f2f09bf98ef2813d90ea"),
             entry(FixedStack.TONKOTSU_RAMEN,
                     "40eee757ea734d1f720d38b222cbf6d7dae9d720be7c3655c7af319faf8c060c"),
+            entry(FixedStack.BRACHIO_CHICKEN_NUGGET,
+                    "3ce805798b1c705c6e313c260a2d77d95f790fd5df6328c483875752da979e34"),
+            entry(FixedStack.BUNUELO,
+                    "60d131f1a22e832616796723d95ad650c668c5021b17c747b8d90f7718196f8a"),
+            entry(FixedStack.PTERO_CHICKEN_NUGGET,
+                    "81bb848e5c4628a8ad2f0d1212aef2cdaa157f8c72aec96797e3087af1309fbb"),
+            entry(FixedStack.PUERQUITO,
+                    "6dc1056407d72b0e8bd01dab4ce23722aa489345eecca11ccbf4f47e5ae678d1"),
+            entry(FixedStack.STEGO_CHICKEN_NUGGET,
+                    "c583bd8150d5aacbb2680dc1abac0c3e6c61bf63137c9d2a8e49721ea33c188a"),
+            entry(FixedStack.TRICERO_CHICKEN_NUGGET,
+                    "d145928ec936206b30664a3f9e205b0785204fdc9731f91f8e5758ab5cca7860"),
+            entry(FixedStack.CHEESE_PIZZA,
+                    "a3e03bd71b2f79477a6a6dfda8afc2c4486316db33a74cfab7a9e6a5d197f5e2"),
+            entry(FixedStack.CHOCOLATE_CHIP_COOKIE,
+                    "67fdf2492f9d34ee2a65683655b2dc3f09a360ac3a0074ab8ebdab15606553a5"),
+            entry(FixedStack.FRENCH_TOAST,
+                    "2965b336da2090a37160672e46c8bd5b0b3380b2f85b875abd60526266311d45"),
+            entry(FixedStack.LATKE,
+                    "8e5192188a175954f5e427d2605f591680ba795062ebadbb110a29786414c510"),
+            entry(FixedStack.MEAD,
+                    "6088835f7e627b8612d5f418d0aa197df4ab0709df6b1c2015d0e2f151f02cae"),
+            entry(FixedStack.MEAT_PIZZA,
+                    "59bfa5c19171dd333cf6bc26bce6f964bbfad5d0f8410e1c8dfe8e57cce74278"),
+            entry(FixedStack.MUSHROOM_PIZZA,
+                    "3a3e16c1b81a196c376d39fb48e91f5aabd01a1c19ec9165fea0d21c84c1540f"),
+            entry(FixedStack.APPLE_EMPANADA,
+                    "45085c351674ebbc2c175afa9abd1dd6a84ec09d92eece24dca21491a762e30e"),
+            entry(FixedStack.BROWNIE,
+                    "20f6032b14c1104e9749e887d57342a9dbaadc9bc09c7d3977c8300a6268b6ea"),
+            entry(FixedStack.BRUSCHETTA,
+                    "82253e525f7de21a8390799fb91ac18f3392ebe3966f294907d807f3a83f254b"),
+            entry(FixedStack.CARROT_CUPCAKE,
+                    "3763294b1e6d0c558ebe6526e45dee1a5855aa270203ac8ab87c597c84062bdb"),
+            entry(FixedStack.FISH_AND_CHIPS,
+                    "8903bd001640d8daa875259865c58955d5e64c2ed0bd0ca841cb30a6fe912422"),
+            entry(FixedStack.GNOCCHI,
+                    "4cd2b2e24ef576d42da4221608fb8a70efe8d21b0a8d834e471b82961e8afb95"),
+            entry(FixedStack.HONIED_FRENCH_TOAST,
+                    "1b7498c5cee0e36827d5e370957c1e7814bdb63309aae3437477428d93afafa8"),
+            entry(FixedStack.KONTOMIRE_STEW,
+                    "0034796b74c90e264369c849ee31b1a267a7b1656e77e12ae650a40c2fac9b04"),
+            entry(FixedStack.LUMPIA,
+                    "4b8a3159d7a5e9ae6cf0740e81808601e59299511b5bf379d1cd6332fdc6b322"),
+            entry(FixedStack.PAD_THAI,
+                    "d7ddb03f39490efc030dfa457778185869546d1951bec47dac6afdbb3be828a3"),
+            entry(FixedStack.STROGANOFF,
+                    "5cd3387b3ba62127cc81c02092c667f4ba675b7674a685a8cf1c306b3330c818"),
+            entry(FixedStack.ICE_CREAM,
+                    "fc2ee7cb8323fc9f65e9a70fb5dab3dd10ef37783775671061aa2f5c7e1d9406"),
+            entry(FixedStack.OATMEAL,
+                    "2ce5007c5c12825a7a8c1ae6462aa8161cdc3b0f8c9dc40b3b02e2b4cd25d238"),
+            entry(FixedStack.PANEER_MAKHANI,
+                    "d72c45cf2232bbafab76517fbb0fc3f40d15bbff709e2e34bc29d26ac9d2c70b"),
+            entry(FixedStack.PUMPKIN_CURRY,
+                    "dc0b5a1c0840f5473b9ee9cb765416bb15be9cd748326a12a0f3c6809b0cf27d"),
             entry(FixedStack.BENZENE,
                     "bb4fb30940e4151f5be4ae7f6fb23df0a30192e4a9dd258bd50a9933a343cf6e"),
             entry(FixedStack.ESTUS_FLASK,
@@ -85,7 +141,7 @@ class MatchaStackCatalogFingerprintTest {
 
     @Test
     void everyFixedStackHasThePinnedAuditedResultContract() {
-        assertEquals(26, FixedStack.values().length);
+        assertEquals(54, FixedStack.values().length);
         assertEquals(EXPECTED_RESULT_CONTRACTS.keySet(),
                 new HashSet<>(java.util.List.of(FixedStack.values())));
         for (FixedStack stack : FixedStack.values()) {
@@ -93,7 +149,7 @@ class MatchaStackCatalogFingerprintTest {
             assertEquals(EXPECTED_RESULT_CONTRACTS.get(stack), digest, stack.recipeId().toString());
             assertTrue(digest.matches("[0-9a-f]{64}"), stack.recipeId().toString());
         }
-        assertEquals(26, new HashSet<>(EXPECTED_RESULT_CONTRACTS.values()).size());
+        assertEquals(54, new HashSet<>(EXPECTED_RESULT_CONTRACTS.values()).size());
     }
 
     @Test

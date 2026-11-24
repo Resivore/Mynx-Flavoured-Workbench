@@ -228,10 +228,14 @@ public class RibbitEntity extends AgeableMob implements
 
         this.tradeState.read(valueInput,
                 this.getRibbitData().getProfession() == RibbitProfessionModule.NITWIT);
+        boolean legacySorcerer = this.getRibbitData().getProfession() == RibbitProfessionModule.SORCERER
+                && !valueInput.getBooleanOr("MynxThreeTierSorcerer", false);
+        if (legacySorcerer) RibbitTradeModule.migrateSorcererRank(this.tradeState);
         RibbitTradeModule.normalizePersistentState(this);
 
         valueInput.read("Offers", MerchantOffers.CODEC)
                 .ifPresent(offers -> {
+                    if (legacySorcerer) RibbitTradeModule.removeRetiredFlaskOffer(this, offers);
                     this.offers = offers;
                     RibbitTradeModule.restoreStrictComponentMatching(this, offers);
                 });
@@ -261,6 +265,9 @@ public class RibbitEntity extends AgeableMob implements
             offersToSave = this.getOffers();
         }
         this.tradeState.write(valueOutput);
+        if (this.getRibbitData().getProfession() == RibbitProfessionModule.SORCERER) {
+            valueOutput.putBoolean("MynxThreeTierSorcerer", true);
+        }
         if (offersToSave != null && !offersToSave.isEmpty()) {
             valueOutput.store("Offers", MerchantOffers.CODEC, offersToSave);
         }
@@ -951,7 +958,7 @@ public class RibbitEntity extends AgeableMob implements
         if (!profile.tiered()) {
             return;
         }
-        int maxXp = RibbitTradeModule.XP_THRESHOLDS[profile.maxTier() - 1];
+        int maxXp = RibbitTradeModule.xpThreshold(profile, profile.maxTier());
         int nextXp = Math.max(this.tradeState.xp(), Math.min(i, maxXp));
         int oldRank = this.tradeState.rank();
         this.tradeState.xp(nextXp);
