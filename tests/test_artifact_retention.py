@@ -144,6 +144,19 @@ class RetentionRepository:
 
 
 class ArtifactRetentionTests(unittest.TestCase):
+    def test_retention_only_directory_is_not_a_project_on_an_older_checkout(self) -> None:
+        from tools.workbench import project_directories
+
+        fixture = RetentionRepository(self)
+        retain_current_artifact(fixture.task, fixture.project)
+        project = fixture.primary / fixture.project
+        fixture.git(fixture.primary, "rm", fixture.project + "/WORKBENCH_STATUS.json")
+        self.assertIn(project, project_directories(fixture.primary))
+        fixture.git(fixture.primary, "commit", "-m", "Simulate checkout without the candidate")
+        self.assertNotIn(project, project_directories(fixture.primary))
+        (project / "artifacts" / "unrecorded.jar").write_bytes(b"unrecorded")
+        self.assertIn(project, project_directories(fixture.primary))
+
     def test_real_linked_worktree_retains_projects_and_resourcepacks(self) -> None:
         for container in ("projects", "resourcepacks"):
             with self.subTest(container=container):
