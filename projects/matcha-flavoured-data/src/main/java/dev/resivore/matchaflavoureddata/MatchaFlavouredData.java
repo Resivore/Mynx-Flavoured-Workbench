@@ -10,11 +10,11 @@ import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Registers the unmodified Matcha 1.12 server-data tree before world creation reloads. */
+/** Registers the unmodified Matcha 1.12.5 server-data tree before world creation reloads. */
 public final class MatchaFlavouredData implements ModInitializer {
     public static final String MOD_ID = "matcha_flavoured_data";
     public static final Identifier BUILTIN_PACK_ID =
-            Identifier.fromNamespaceAndPath(MOD_ID, "matcha_flavoured_1_12");
+            Identifier.fromNamespaceAndPath(MOD_ID, "matcha_flavoured_1_12_5");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
@@ -25,7 +25,7 @@ public final class MatchaFlavouredData implements ModInitializer {
         boolean registered = ResourceLoader.registerBuiltinPack(
                 BUILTIN_PACK_ID,
                 container,
-                Component.literal("Matcha Flavoured 1.12 server data"),
+                Component.literal("Matcha Flavoured 1.12.5 server data"),
                 PackActivationType.ALWAYS_ENABLED);
         if (!registered) {
             throw new IllegalStateException("Failed to register required Matcha data pack " + BUILTIN_PACK_ID);

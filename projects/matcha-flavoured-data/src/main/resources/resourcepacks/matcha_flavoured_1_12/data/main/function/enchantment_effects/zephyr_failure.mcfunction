@@ -1,1 +1,0 @@
-scoreboard players set @p sneaking 0

@@ -1,9 +1,0 @@
-{
-	"type": "minecraft:stonecutting",
-	"group": "barrel",
-	"ingredient": "#minecraft:logs",
-	"result": {
-		"count": 1,
-		"id": "minecraft:barrel"
-	}
-}

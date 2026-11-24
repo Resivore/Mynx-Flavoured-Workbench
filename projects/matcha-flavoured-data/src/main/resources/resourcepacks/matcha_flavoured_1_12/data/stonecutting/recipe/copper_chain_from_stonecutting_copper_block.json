@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "group": "copper_chain",
-  "ingredient": "minecraft:copper_block",
-  "result": {
-    "count": 54,
-    "id": "minecraft:copper_chain"
-  }
-}

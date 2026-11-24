@@ -3,12 +3,19 @@
   "id": "matcha_flavoured_data",
   "version": "${version}",
   "name": "Matcha Flavoured Data",
-  "description": "Always-enabled exact Matcha Flavoured 1.12 server data for Minecraft 26.2.",
-  "authors": ["Resivore compatibility workbench"],
-  "license": "MIT",
+  "description": "Always-enabled exact Matcha Flavoured 1.12.5 server data for Minecraft 26.2.",
+  "authors": [
+    "Resivore compatibility workbench"
+  ],
+  "license": [
+    "MIT",
+    "CC-BY-NC-SA-4.0"
+  ],
   "environment": "*",
   "entrypoints": {
-    "main": ["dev.resivore.matchaflavoureddata.MatchaFlavouredData"]
+    "main": [
+      "dev.resivore.matchaflavoureddata.MatchaFlavouredData"
+    ]
   },
   "depends": {
     "fabricloader": ">=0.19.3",
@@ -18,9 +25,21 @@
   },
   "custom": {
     "workbench:matcha_source": {
-      "filename": "Matcha_Flavoured_1_12.zip",
-      "size": 12248989,
-      "sha256": "6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248"
+      "filename": "MF_1_12_5_26_2.zip",
+      "size": 3127758,
+      "sha256": "966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4",
+      "url": "https://modrinth.com/datapack/matcha-flavoured/version/cwZ158UI",
+      "author": "Klei",
+      "license": "CC-BY-NC-SA-4.0"
     }
-  }
+  },
+  "breaks": {
+    "mr_matcha_flavoured": "*"
+  },
+  "provides": [
+    "workbench_matcha_data_1_12_5"
+  ],
+  "mixins": [
+    "matcha_flavoured_data.mixins.json"
+  ]
 }

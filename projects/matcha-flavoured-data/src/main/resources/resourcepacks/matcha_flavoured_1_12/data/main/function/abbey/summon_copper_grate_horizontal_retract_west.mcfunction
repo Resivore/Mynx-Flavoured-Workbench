@@ -1,1 +1,0 @@
-summon minecraft:marker ~ ~ ~ {Tags:["copper_eye_grate_horizontal_retract"],Rotation:[90,0]}

@@ -1,1 +1,0 @@
-kill @n[type=marker]

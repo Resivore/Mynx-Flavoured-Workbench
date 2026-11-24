@@ -1,1 +1,0 @@
-effect give @p minecraft:haste 1 1 true
