@@ -119,6 +119,11 @@ public final class MatchaHeartDeathCompat implements ModInitializer {
 
     public static void sanitizeCrystal(ItemStack stack) {
         if (isCrystalHeart(stack)) {
+            if (LEGACY_MODEL.equals(stack.get(DataComponents.ITEM_MODEL))) {
+                net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+                    if (!tag.contains("version")) tag.putInt("version", 1);
+                });
+            }
             stack.set(DataComponents.ITEM_MODEL, MATCHA_MODEL);
             stack.remove(DataComponents.DEATH_PROTECTION);
             stack.remove(DataComponents.CONSUMABLE);

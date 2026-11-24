@@ -69,7 +69,12 @@ final class ProductionCodecContractTest {
             ItemStack heart = new ItemStack(Items.POISONOUS_POTATO);
             heart.set(DataComponents.ITEM_MODEL, Identifier.parse(model));
             heart.set(DataComponents.DEATH_PROTECTION, new ItemStack(Items.TOTEM_OF_UNDYING).get(DataComponents.DEATH_PROTECTION));
+            net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA, heart,
+                    tag -> tag.putString("owner", "saved"));
             MatchaHeartDeathCompat.sanitizeCrystal(heart);
+            var data = heart.get(DataComponents.CUSTOM_DATA).copyTag();
+            assertEquals("saved", data.getString("owner").orElseThrow());
+            if (model.equals("minecraft:heart_container")) assertEquals(1, data.getInt("version").orElseThrow());
             assertEquals(Identifier.parse("matcha:heart_container"), heart.get(DataComponents.ITEM_MODEL));
             assertFalse(heart.has(DataComponents.DEATH_PROTECTION));
             assertFalse(heart.has(DataComponents.CONSUMABLE));

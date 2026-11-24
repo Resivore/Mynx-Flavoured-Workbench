@@ -82,6 +82,32 @@ def check_boundaries(pack, legacy):
     print("129 owner trade changes preserved. Five village definitions and placement set verified.")
 
 
+def check_acquisition_odds(jar, legacy):
+    # Effective weights are max(0, floor(weight + quality * luck)). Entries with
+    # quality zero can be combined at every luck value. Keep other terms separate.
+    def denominator(entries):
+        constant = sum(e.get("weight", 1) for e in entries if not e.get("quality"))
+        variable = sorted((e.get("weight", 1), e["quality"]) for e in entries if e.get("quality"))
+        return constant, variable
+
+    for table, old_target, target in (
+        ("ancient_city", "minecraft:echo_shard", "minecraft:echo_shard"),
+        ("trial_chambers/reward_ominous_unique", "minecraft:kleis_items/crystal_heart",
+         "matcha:treasure/crystal_heart"),
+    ):
+        path = f"data/minecraft/loot_table/chests/{table}.json"
+        before = json.loads(legacy.read(path))["pools"][0]
+        after = json.loads(jar.read("resourcepacks/heart_progression/" + path))["pools"][0]
+        assert {k: v for k, v in before.items() if k != "entries"} == {
+            k: v for k, v in after.items() if k != "entries"}
+        assert denominator(before["entries"]) == denominator(after["entries"])
+        def selected(pool, name):
+            entry, = (e for e in pool["entries"] if name in (e.get("name"), e.get("value")))
+            return {k: v for k, v in entry.items() if k not in ("value", "name")}
+        assert selected(before, old_target) == selected(after, target)
+    print("Roll counts, selected entries and effective Luck-dependent denominators equal the 1.12 baseline.")
+
+
 def check_built_stack(pack, legacy):
     projects = (*CONSUMERS, "matcha-flavoured-data", "matcha-intrinsic-update-compat", "ribbits-26.2")
     providers = []
@@ -107,6 +133,7 @@ def check_built_stack(pack, legacy):
                 assert "data/ribbits/recipe/estus_flask.json" not in members(jar)
                 assert meta["depends"]["matcha_heart_death_compat"] == ">=0.2.0-0"
             if project == "matcha-heart-death-compat":
+                check_acquisition_odds(jar, legacy)
                 recipe = "data/matcha/recipe/crafting/crystal_heart.json"
                 assert jar.read(recipe) == jar.read("resourcepacks/heart_progression/" + recipe)
     assert providers == ["matcha-flavoured-data"], providers
