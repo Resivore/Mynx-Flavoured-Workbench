@@ -79,3 +79,13 @@
 - Artifact: Current C8 `matcha-jei-integration-0.3.4-canonical-food-catalog-canary8.jar`, 91,529 bytes, SHA-256 `d92ade2de4c095089838323a5116e6dcb6b053046111a3ed6370c75c7dafc34f`, finalized at `2026-09-17T06:06:33.7794164Z` from source checkpoint `1b474782d0b308a7f47ea69f5b7294926ec99af8`; accepted C3 and rollback/provenance C2 identities remain exact and unchanged.
 - Result: ACTIVE — C8 is `STATIC_PASS`, `NOT_DEPLOYED`, and `RUNTIME_UNTESTED`, with a release-scoped `CAPABILITY_OR_PROVIDER` runtime-dependency-policy attestation and no exceptions. No blocker is recorded.
 - Next state: Under explicit runtime ownership, run the focused C8 matrix: require exactly one health-bearing Braised Mushroom in Creative Search and JEI; preserve the successful Glow identities; verify automatic coverage across other default-presentation foods, custom-model and unrelated-component controls, Crafting Table, Prayer/Blessing of Demeter, C3 surfaces, early/repeated `/reload`, disconnect/reconnect restoration, and logs. Keep the dedicated-server-without-JEI gate separate until tested.
+
+## 2026-11-24T16:34:20Z — Migrate to Matcha 1.12.5, Canary 9
+- Revision: 9
+- Source checkpoint: `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`
+- Changes: Resolves reviewed trades from both loaded packs, including nine fixed asylum applications and the additional mushroom-block sale.
+- Build/static: All 21 Java tests passed. The coordinated packaged-stack fixture passed.
+- Runtime: RUNTIME_UNTESTED. No Minecraft profile or server deployment was used.
+- Artifact: C9 `matcha-jei-integration-0.4.1-canary9.jar`, 91,157 bytes, SHA-256 `544f0bfe58c9952de0bf891d84490294f4b14d45244344f875d2be552a7268e6`, built_at `2026-11-24T16:21:54.792641Z`, artifact source `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Follow TESTING.md and record owner-directed runtime observations against this release.

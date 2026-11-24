@@ -29,3 +29,13 @@
 - Artifact: Accepted C2 is `matcha-flavoured-data-0.1.0-canary2.jar`, SHA-256 `0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639`, source checkpoint `d55a044f750e06e082c39f1aa08d6f62f7070908`; it is the project's first accepted release and has no rollback predecessor.
 - Result: `ACCEPTED / STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_PASS`. The exact accepted artifact remains in the baseline; Slot A was cleared before its reassignment.
 - Next state: Preserve the exact accepted C2 identity and aggregate-only evidence. Any successor requires its own identity, validation, deployment, runtime evidence, and promotion decision.
+
+## 2026-11-24T16:34:20Z — Migrate to Matcha 1.12.5, Canary 3
+- Revision: 4
+- Source checkpoint: `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`
+- Changes: Retains 6,050 byte-identical publisher members and overlays 14 advancement definitions with verified recipe and reward targets.
+- Build/static: Both Java tests passed and the official distribution matched every embedded publisher member. The coordinated packaged-stack fixture passed.
+- Runtime: RUNTIME_UNTESTED. No Minecraft profile or server deployment was used.
+- Artifact: C3 `matcha-flavoured-data-0.2.1-canary3.jar`, 3,727,730 bytes, SHA-256 `a659433747497cb7ddb44267d489edd22949aadae92a9bea701d99785d83fa65`, built_at `2026-11-24T16:26:41.629621Z`, artifact source `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Follow TESTING.md and record owner-directed runtime observations against this release.

@@ -12,10 +12,11 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Apply the 129 actionable Edited Matcha Trades rows as a narrow higher-priority Minecraft Java 26.2 Fabric datapack overlay."
+      "Implements the 307 reviewed trade decisions and removes dynamic favorite-food buybacks from new and saved villagers."
     ],
     "scope": [
-      "Override 124 individual Matcha villager trades, remove four explicit non-filler offers through five minimal membership/pool overrides, and add one Leatherworker Master offer."
+      "Resolves 68 Matcha pools and 280 eligible offers, preserves the approved economy, filters the 42 food writers, and cleans their persisted offers on entity load.",
+      "The owner decision table and effective matrix are recorded under tools/."
     ],
     "boundaries": {
       "owned_paths": [
@@ -46,41 +47,35 @@
       },
       {
         "type": "MOD",
-        "identifier": "matcha_flavoured_data",
+        "identifier": "workbench_matcha_data_1_12_5",
         "requirement": "*",
-        "reason": "Accepted underlying Matcha trade data provider."
+        "reason": "Capability for the reviewed generation of Matcha trade registries."
       },
       {
         "type": "MOD",
         "identifier": "copper_pipe",
         "requirement": "*",
         "reason": "Stable Simple Copper Pipes provider alias for pipe and fitting items."
-      },
-      {
-        "type": "MOD",
-        "identifier": "copperhopper",
-        "requirement": "*",
-        "reason": "Copper hopper result provider."
       }
     ]
   },
   "state": {
-    "milestone": "Canary 1 implements the sheet's 124 trade changes, four effective removals, and one added Leatherworker Master trade. Java 25/Gradle 9.5.1 build and the 129-row static contract passed. The ignored JAR is retained for dedicated Minecraft runtime testing; no Test Slot deployment or runtime observation occurred.",
+    "milestone": "Resolves 68 Matcha pools and 280 eligible offers, preserves the approved economy, filters the 42 food writers, and cleans their persisted offers on entity load. Coordinated static checks passed. Minecraft runtime verification is pending.",
     "releases": {
       "current": {
-        "version": "0.1.0+26.2-canary1",
-        "canary": 1,
+        "version": "0.2.0+26.2-canary2",
+        "canary": 2,
         "artifact": {
-          "filename": "mynx-matcha-trade-tweaks-0.1.0+26.2-canary1.jar",
-          "sha256": "f0cd947b19a2fd6b242cc1ef5133a39367384eddb27daaa0edfe0ce8435cca9b"
+          "filename": "mynx-matcha-trade-tweaks-0.2.0+26.2-canary2.jar",
+          "sha256": "46b4ec2d45e1ccfe8e3789bbb02a23d8f895e40c43e4a64d55f927f35421679f"
         },
-        "built_at": "2026-09-13T21:02:11.1786410Z",
-        "source_commit": "2144aa1111b310bbfc5bd8dc87613c8dae494201",
+        "built_at": "2026-11-24T16:14:29.563094Z",
+        "source_commit": "1ce48a4c2b288c0a18d71e625531e56b618b7ae7",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Applies the actionable Matcha trade edits as a narrow higher-priority datapack overlay."
+        "summary": "Implements the 307 reviewed trade decisions and removes dynamic favorite-food buybacks from new and saved villagers."
       },
       "accepted": null,
       "rollback": null,
@@ -94,10 +89,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-09-13T20:59:13Z",
-    "updated_at": "2026-09-13T20:59:13Z",
-    "last_codex_at": "2026-09-13T20:59:13Z",
-    "source_commit": "2144aa1111b310bbfc5bd8dc87613c8dae494201"
+    "revision": 2,
+    "activity_at": "2026-11-24T16:34:20Z",
+    "updated_at": "2026-11-24T16:34:20Z",
+    "last_codex_at": "2026-11-24T16:34:20Z",
+    "source_commit": "1ce48a4c2b288c0a18d71e625531e56b618b7ae7"
   }
 }

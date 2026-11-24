@@ -19,7 +19,8 @@
       "Restore vanilla 26.2 Netherrack, Nether Bricks and End Stone Bricks above Matcha Flavoured and supply Matcha Red Sandstone artwork for AMC's Button, Pressure Plate, Parapet, Gothic Window, Arrow Slit and Louvered Shutter.",
       "Recolor all five native BBB and four native Macaw's Windows Red Sandstone forms in Foundation, retaining provider geometry, state selection and decorative artwork.",
       "Maintain the existing Cut Red Sandstone side overlay on smooth blocks and slabs using the exact Matcha side artwork and the original per-tile masks.",
-      "Foundation v11 preserves the Goop palette for Silver Birch, restores ordinary Birch and its provider artwork, and adds Wisteria and Silver Birch to the existing plank CTM system. The log-top sprites remain in Mynx Trees. Unrelated foliage, Red Sandstone, Nether and End entries retain their previous payloads."
+      "Foundation v11 preserves the Goop palette for Silver Birch, restores ordinary Birch and its provider artwork, and adds Wisteria and Silver Birch to the existing plank CTM system. The log-top sprites remain in Mynx Trees. Unrelated foliage, Red Sandstone, Nether and End entries retain their previous payloads.",
+      "Adds 18 aliases of existing helmet icons and equipment textures for five armor families. The v12 asset payloads are preserved byte for byte."
     ],
     "boundaries": {
       "owned_paths": [
@@ -67,27 +68,39 @@
         "identifier": "mcwwindows",
         "requirement": "Optional native provider. Build reference is Macaw's Windows 2.4.2 for Fabric 26.2, SHA-256 40ba9c55f191f8bd4758293683ed2bcf6d0c76c8f54f9fc8a0dccabdbcfd36ad.",
         "reason": "Provides four Red Sandstone window blocks with twenty frame models and one shared glass-only center."
+      },
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "Foundation v12.zip",
+        "requirement": "Exact v13 build input, SHA-256 c45fbc7b8f9b41807c59d0a6addcbf5a8a98ad5361df793cd8cecc8454a71143",
+        "reason": "Source of the existing Foundation textures."
+      },
+      {
+        "type": "RESOURCE_PACK",
+        "identifier": "MF_RP_1_12_3_26_2.zip",
+        "requirement": "Identifier reference for the 1.12.5 distribution",
+        "reason": "Provides model and equipment routes for the existing armor overrides."
       }
     ]
   },
   "state": {
-    "milestone": "Mossy Oak timber uses Matcha bark and cut ends with shadow-only moss, including the vanilla stripped side inherited by Matcha. Owner runtime and visual verification pending.",
+    "milestone": "Adds 18 aliases of existing helmet icons and equipment textures for five armor families. The v12 asset payloads are preserved byte for byte. Coordinated static checks passed. Minecraft runtime verification is pending.",
     "releases": {
       "current": {
-        "version": "v12",
-        "canary": 8,
-        "embedded_version": "v12",
+        "version": "v13",
+        "canary": 9,
+        "embedded_version": "v13",
         "artifact": {
-          "filename": "Foundation v12.zip",
-          "sha256": "c45fbc7b8f9b41807c59d0a6addcbf5a8a98ad5361df793cd8cecc8454a71143"
+          "filename": "Foundation v13.zip",
+          "sha256": "fbdf6df9962cf99b0f806f1be2974b16753efdb83687045c531c8e90a0791478"
         },
-        "built_at": "2026-11-23T18:18:29.703504Z",
-        "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed",
+        "built_at": "2026-11-24T16:21:22.348510Z",
+        "source_commit": "1ce48a4c2b288c0a18d71e625531e56b618b7ae7",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
         },
-        "summary": "Mossy Oak timber uses Matcha bark and cut ends with shadow-only moss, including the vanilla stripped side inherited by Matcha."
+        "summary": "Restores existing Foundation armor artwork at the 18 texture identifiers now used by the Matcha client pack."
       },
       "accepted": null,
       "rollback": null,
@@ -101,10 +114,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 8,
-    "activity_at": "2026-11-23T18:27:10.760883Z",
-    "updated_at": "2026-11-23T18:27:10.760883Z",
-    "last_codex_at": "2026-11-23T18:27:10.760883Z",
-    "source_commit": "89894f94140ea3df9a51d1a6aa1d71fbc1a27fed"
+    "revision": 9,
+    "activity_at": "2026-11-24T16:34:20Z",
+    "updated_at": "2026-11-24T16:34:20Z",
+    "last_codex_at": "2026-11-24T16:34:20Z",
+    "source_commit": "1ce48a4c2b288c0a18d71e625531e56b618b7ae7"
   }
 }

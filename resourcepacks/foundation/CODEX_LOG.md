@@ -171,3 +171,13 @@ M assets/minecraft/optifine/ctm/_overlays/cut_red_sandstone/8.png
 - Artifact: `Foundation v12.zip`, 15,466,043 bytes, SHA-256 `c45fbc7b8f9b41807c59d0a6addcbf5a8a98ad5361df793cd8cecc8454a71143`, finalized `2026-11-23T18:18:29.703504Z`, embedded version `v12`.
 - Result: ACTIVE / STATIC_PASS.
 - Next state: Owner checks placed and inventory appearance using TESTING.md.
+
+## 2026-11-24T16:34:20Z — Migrate to Matcha 1.12.5, Canary 9
+- Revision: 9
+- Source checkpoint: `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`
+- Changes: Adds 18 aliases of existing helmet icons and equipment textures for five armor families. The v12 asset payloads are preserved byte for byte.
+- Build/static: All 18 changed references resolve. All retained v12 members except pack metadata match byte for byte. The coordinated packaged-stack fixture passed.
+- Runtime: RUNTIME_UNTESTED. No Minecraft profile or server deployment was used.
+- Artifact: C9 `Foundation v13.zip`, 15,483,290 bytes, SHA-256 `fbdf6df9962cf99b0f806f1be2974b16753efdb83687045c531c8e90a0791478`, built_at `2026-11-24T16:21:22.348510Z`, artifact source `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Follow TESTING.md and record owner-directed runtime observations against this release.

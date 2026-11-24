@@ -12,15 +12,17 @@
     "legacy_ids": []
   },
   "definition": {
-    "lifecycle": "ACCEPTED",
+    "lifecycle": "ACTIVE",
     "goals": [
-      "Make the exact Matcha Flavoured 1.12 server-data tree automatically available during Minecraft 26.2 Fabric create-world preparation and normal world reloads.",
+      "Loads the complete official Matcha 1.12.5 server data once during world preparation and reload.",
       "Preserve all existing Matcha namespaces, identifiers, source bytes, and server-data behavior without moving its client resource-pack assets."
     ],
     "scope": [
-      "Package only the exact source pack.mcmeta and 2,433 files from the Matcha 1.12 data/ tree as one Fabric built-in server-data pack.",
+      "Embed all publisher files from MF_1_12_5_26_2.zip, including metadata and credits, in one required Fabric server-data pack.",
       "Register the pack as ALWAYS_ENABLED without globally reordering other packs, preserving the existing Matcha Vanilla Village Restoration module's explicit higher-priority village restoration.",
-      "Statically verify byte identity, all original namespaces and minecraft overrides, Frost Protection and Ribbits contracts, packaged-JAR contents, and exact-legacy-pack coexistence semantics."
+      "Verify member-by-member identity and reject a second selected generation at load and reload.",
+      "The built-in pack registers as required. The packaged members match the publisher ZIP byte for byte. A second provider or a selected pack with legacy generation hooks fails closed.",
+      "Retains 6,050 byte-identical publisher members and overlays 14 advancement definitions with verified recipe and reward targets."
     ],
     "boundaries": {
       "owned_paths": [
@@ -54,9 +56,9 @@
       },
       {
         "type": "DATA_PACK",
-        "identifier": "Matcha_Flavoured_1_12.zip",
-        "requirement": "12,248,989 bytes; SHA-256 6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
-        "reason": "Immutable source of every embedded server-data file and pack metadata."
+        "identifier": "MF_1_12_5_26_2.zip",
+        "requirement": "1.12.5, SHA-256 966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4",
+        "reason": "Verified publisher server-data input for the 26.2 compatibility contracts."
       },
       {
         "type": "PROJECT",
@@ -67,22 +69,22 @@
     ]
   },
   "state": {
-    "milestone": "Canary 2 is the first accepted Matcha Flavoured Data release. The exact built-in server-data pack matcha_flavoured_data:matcha_flavoured_1_12 remains ALWAYS_ENABLED; user-reported aggregate PASS applies only to this exact C2 and supplied no individual checklist-row observations.",
+    "milestone": "Retains 6,050 byte-identical publisher members and overlays 14 advancement definitions with verified recipe and reward targets. Coordinated static checks passed. Minecraft runtime verification is pending.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary2",
-        "canary": 2,
+        "version": "0.2.1-canary3",
+        "canary": 3,
         "artifact": {
-          "filename": "matcha-flavoured-data-0.1.0-canary2.jar",
-          "sha256": "0850c7ff0680cf42436cd2b72055af77970075cf438ff429bdb55723af444639"
+          "filename": "matcha-flavoured-data-0.2.1-canary3.jar",
+          "sha256": "a659433747497cb7ddb44267d489edd22949aadae92a9bea701d99785d83fa65"
         },
-        "built_at": "2026-09-07T01:29:12.4389646Z",
-        "source_commit": "d55a044f750e06e082c39f1aa08d6f62f7070908",
+        "built_at": "2026-11-24T16:26:41.629621Z",
+        "source_commit": "1ce48a4c2b288c0a18d71e625531e56b618b7ae7",
+        "summary": "Loads the official 1.12.5 data once and repairs unresolved advancement references in a separate required pack.",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
           "exceptions": []
-        },
-        "summary": "Makes the Matcha Flavoured 1.12 server-data pack available during world preparation and reloads."
+        }
       },
       "accepted": {
         "version": "0.1.0-canary2",
@@ -100,20 +102,20 @@
         "summary": "Makes the Matcha Flavoured 1.12 server-data pack available during world preparation and reloads."
       },
       "rollback": null,
-      "accepted_current": "CURRENT_IS_ACCEPTED",
+      "accepted_current": "CURRENT_DIFFERS_FROM_ACCEPTED",
       "accepted_rollback": "NO_ROLLBACK"
     },
     "validation": {
       "build": "STATIC_PASS",
-      "runtime": "RUNTIME_PASS"
+      "runtime": "RUNTIME_UNTESTED"
     },
     "blocker": null
   },
   "synchronization": {
-    "revision": 3,
-    "activity_at": "2026-09-07T15:42:09Z",
-    "updated_at": "2026-09-07T15:42:09Z",
-    "last_codex_at": "2026-09-07T15:42:09Z",
-    "source_commit": "4672129049bffd14e0fe3a14ec4ea83cf8d5409c"
+    "revision": 4,
+    "activity_at": "2026-11-24T16:34:20Z",
+    "updated_at": "2026-11-24T16:34:20Z",
+    "last_codex_at": "2026-11-24T16:34:20Z",
+    "source_commit": "1ce48a4c2b288c0a18d71e625531e56b618b7ae7"
   }
 }

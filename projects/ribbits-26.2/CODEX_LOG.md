@@ -366,3 +366,13 @@
 - Artifact: Current unaccepted artifact is restored exactly to `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar`, 3,377,508 bytes, SHA-256 `088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd`, built `2026-09-18T05:47:40.8628936Z` from C27 source checkpoint `9fe0bf18b3799e749fdf736a3b330d5bee8e23e2`. Accepted C24 remains unchanged.
 - Result: C28/C29 are retired; C27 is restored as the exact active private line with no new Ribbits Canary.
 - Next state: Preserve exact C27/C24 identities and use the C27 procedure only if the owner elects to gather new runtime evidence. VWR C20 owns any further Fisherman rod pose work.
+
+## 2026-11-24T16:34:20Z — Migrate to Matcha 1.12.5, Canary 28
+- Revision: 37
+- Source checkpoint: `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`
+- Changes: Preserves sixteen prior Chef entries, appends the approved 28 recipe stacks, and migrates four saved Sorcerer ranks into three while preserving XP, gates, surviving offers and restock state.
+- Build/static: 178 Java tests and 55 assembler tests passed. The final private archive passed 363 resource checks including 266 JSON files. The coordinated packaged-stack fixture passed.
+- Runtime: RUNTIME_UNTESTED. No Minecraft profile or server deployment was used.
+- Artifact: C28 `ribbits-private-reconstruction-4.1.6+26.2-matcha125-menu-canary28.jar`, 3,383,342 bytes, SHA-256 `9e462df87c704542fa0f85d97d16857823c59b4192f2b03a4c333f3af3b91236`, built_at `2026-11-24T16:10:46.089075Z`, artifact source `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Follow TESTING.md and record owner-directed runtime observations against this release.

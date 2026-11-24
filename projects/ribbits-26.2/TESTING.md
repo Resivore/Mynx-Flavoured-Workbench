@@ -1,19 +1,28 @@
 # Testing
 
-## Canary 27 — focused toadstool and Gardener runtime procedure
+## Matcha 1.12.5, Canary 28
 
-This procedure is lifecycle-neutral. Record only Minecraft behavior actually observed against the exact `ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar` / SHA-256 `088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd`. Build, unit tests, private assembly, archive inspection, and resource validation are not Minecraft runtime evidence. Record any separately enabled resource pack because it can independently override visible models or textures.
+`ribbits-private-reconstruction-4.1.6+26.2-matcha125-menu-canary28.jar`
 
-1. **Identity and baseline behavior.** Confirm `ribbits:small_brown_toadstool`, `ribbits:toadstool`, `ribbits:brown_toadstool`, and `ribbits:red_toadstool` remain four distinct identities. Confirm the small brown item appears exactly once as **Brown Toadstool** and retains the small red plant's valid/invalid surfaces, random placement offset, half-block-high selection shape, no collision, sound, instant breaking, self-drop, pick-block result, ordinary stack limit, and `0.65` Composter participation.
-2. **Model parity.** Place or spread enough brown small toadstools to observe all four variants. Without an external pack masking the packaged resources, confirm every brown variant is fully volumetric, none is two crossed planes, and its physical model shape/detail matches the corresponding Matcha-donor red variant while retaining the brown cap texture and intended stem appearance. Confirm the Brown Toadstool inventory icon is centered with no visible blue key-color pixels.
-3. **Gardener tier 1.** Materialize new Gardeners and inspect their tier-1 exchanges. Each must offer exactly three of the five independent inputs: Red Mushroom → Toadstool, Brown Mushroom → Brown Toadstool, Oxeye Daisy → Swamp Daisy, Lily Pad → Giant Lilypad, and Small Dripleaf → Umbrella Leaf. Verify the chosen three survive restock and save/reload; do not infer exact selection odds from a finite sample.
-4. **Same-color spread and huge red growth.** Bonemeal red and brown small toadstools repeatedly in clear valid space. Confirm ordinary fallback spread remains same-color: red produces only red small plants and brown produces only brown small plants. Confirm a red small toadstool can instead grow a huge structure with the vanilla brown-mushroom shape using only `ribbits:red_toadstool` cap blocks and `ribbits:toadstool_stem` stem blocks.
-5. **Huge brown growth and obstruction fallback.** Confirm a brown small toadstool can grow a huge structure with the vanilla red-mushroom shape using only `ribbits:brown_toadstool` cap blocks and `ribbits:toadstool_stem` stem blocks. Bonemeal each color where its huge form cannot fit; confirm the source plant is restored, no partial giant remains, and its same-color spread fallback remains available.
-6. **Future village generation.** Generate new Ribbit villages and inspect both embedded-template plants and decoration vegetation. Confirm red and brown small toadstools can both occur, individual plants in one village can differ, and already-generated villages remain unchanged. The exact per-plant `0.5` red/brown probability is a static processor/data contract and must not be inferred from a finite runtime sample.
-7. **Scope boundary.** Confirm no vanilla mushroom cap/stem blocks appear in either huge Ribbits form and no new recipe, Toadstool Heart input, Wandering Ribbit trade, or economy presentation beyond the approved Gardener tier-1 exchange exists. Ordinary-biome-generation absence is primarily a static/reference-scope contract; do not claim it solely from failing to encounter the plant during play.
+SHA-256 `9e462df87c704542fa0f85d97d16857823c59b4192f2b03a4c333f3af3b91236`
 
-The exact huge-growth probability is the static vanilla 26.2 `0.4` contract and likewise must not be inferred from a short random sample. Record `PASS`, `FAIL`, or `INCONCLUSIVE` only for observations actually completed.
+Source `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`
 
-## Historical Canary 25 evidence boundary
+### Static checks
 
-Against exact Canary 25 (`ribbits-private-reconstruction-4.1.6+26.2-mynx-canary25.jar`, 3,372,969 bytes, SHA-256 `00ff8af7a86d8ea9a0580905e6592e31e362937895d66d5b0aca702247fa6064`, built `2026-09-18T02:51:32.2159711Z`, source `64e57751e5b2bdb157458d952a8595b804f6db14`), the user reported only that brown small-toadstool bonemeal spreading functioned and that smaller brown variants rendered as undesired flat/crossed planes beside the volumetric Matcha red models. Those observations establish no aggregate Canary 25 runtime classification and provide no Canary 27 runtime evidence.
+Build the project for Minecraft 26.2 with Java 25. The project suite covers 178 Java tests and 55 private-tool tests. After building the eleven coordinated mods, run the following from the repository root with paths to the verified publisher downloads and retained Foundation ZIP.
+
+```text
+python -B tests/verify_matcha_migration.py --official-mod "matcha-flavoured-1.12.5+dp.jar" --client-pack "MF_RP_1_12_3_26_2.zip" --foundation "Foundation v13.zip"
+```
+
+### Runtime checks
+
+Record observations against the exact filename and SHA-256 above in a user-directed disposable world. Verify startup, a repeated reload and a reconnect before reporting runtime results.
+
+1. Open saved merchants and generate fresh merchants at every existing tier. Compare exact inputs, outputs, prices and restock behavior, including foods, Opal, four compass buybacks and Crystal Heart. Check a renamed, generic or wrong-component substitute is rejected wherever strict matching applies.
+2. Craft the Toadstool Heart with both the saved and migrated canonical Crystal Heart and five foliage items. Reject Reinforced Hearts and ordinary potatoes. Verify recipe-book/JEI output, existing saved offers and current offers across reconnect, reload and server restart. Recheck the established private reconstruction boundaries.
+
+The [1.12 testing procedure](https://github.com/Resivore/Mynx-Flavoured-Workbench/blob/c5172fee26245bfb71b768f8dc5a89c1c7c0a1fd/projects/ribbits-26.2/TESTING.md) retains the full previous release checklist and historical evidence. Reuse its unaffected controls alongside the cases above.
+
+Exercise all three Sorcerer ranks at 0, 5 and 30 XP. Load old Flask Sages below and at the Oracle threshold, a saved Oracle and both gate states. Verify the retired potion offer disappears and other offers retain their uses, ordering and restock state. Exercise all five Chef pools, same-day stability, next-day rollover and the saved Master specialty.

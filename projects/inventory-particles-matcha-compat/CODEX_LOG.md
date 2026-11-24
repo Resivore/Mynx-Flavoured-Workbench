@@ -50,3 +50,13 @@
 - Artifact: Current release identity is unchanged: version 0.1.0-canary4, filename inventory-particles-matcha-compat-0.1.0-canary4.jar, SHA-256 e48c4821f8bead5da78205052bf3d1d20db98cccefd5004750a19d54858c1c8b, source 63e9b84116c718db92bbeb289933538e75cb28c2.
 - Result: ACCEPTED — owner-directed acceptance without fabricated runtime evidence.
 - Next state: Preserve the accepted release and historical evidence. A future successor may use TESTING while awaiting or receiving user runtime validation; no Workbench slot or profile allocation is required.
+
+## 2026-11-24T16:34:20Z — Migrate to Matcha 1.12.5, Canary 5
+- Revision: 6
+- Source checkpoint: `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`
+- Changes: Updates component predicates and exclusive dispatch for the three migrated Matcha model identities. The existing Ribbits and selected companion targets keep their particle definitions.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 8 project tests. The coordinated packaged-stack fixture passed.
+- Runtime: RUNTIME_UNTESTED. No Minecraft profile or server deployment was used.
+- Artifact: C5 `inventory-particles-matcha-compat-0.2.0-canary5.jar`, 13,879 bytes, SHA-256 `4cff7167fe263d698f02d9e3261a88d016657907d7c04a04745861f3a70ce321`, built_at `2026-11-24T00:09:20.008418Z`, artifact source `e3a13df63e041949a8341a025ac4d937ebacdf83`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Follow TESTING.md and record owner-directed runtime observations against this release.

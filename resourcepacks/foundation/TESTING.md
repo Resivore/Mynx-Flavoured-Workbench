@@ -1,5 +1,9 @@
 # Foundation verification
 
+## Canary 9 / v13 Matcha armor
+
+Enable Foundation above MF_RP_1_12_3_26_2.zip. Inspect the inventory helmet and both equipped layers on Bronze/Hepatizon, Shakudo, Steel, Electrum and Sturdy Leather. Check the leather overlay when dyed. Toggle Foundation, reload, and compare with the v12 treatments. Repeat the retained controls below with v13 in the same position.
+
 ## Canary 8 / v12 Mossy Oak
 
 Enable Foundation v12 above Matcha Flavoured 1.12. Place raw and stripped logs on three axes, both six-sided wood blocks, BGE timber shapes and AMC log parapets. Inspect their inventory models. Compare against the four Foundation surfaces in the final preview. Disable Foundation, reload, and repeat with the standalone timber. The stripped side uses Matcha’s vanilla fallback in both stacks. Check existing plank overlays at corners and confirm ordinary Oak keeps its original appearance.

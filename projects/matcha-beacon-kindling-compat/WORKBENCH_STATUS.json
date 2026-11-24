@@ -16,15 +16,16 @@
   "definition": {
     "lifecycle": "ACTIVE",
     "goals": [
-      "Coordinate Matcha Flavoured 1.12's Beacon Kindling Wandering Trader lifecycle with persistent exact-player, exact-marker, and exact-trader identity while preserving Matcha-owned content and visible behavior.",
-      "Replace only the unsafe scheduled, global, and nearest-selector lifecycle coordination at the seven audited Matcha function seams with active-time pause, resume, and exact-owner cleanup.",
+      "Coordinate Matcha Flavoured 1.12.5's Beacon Kindling Wandering Trader lifecycle with persistent exact-player, exact-marker, and exact-trader identity while preserving Matcha-owned content and visible behavior.",
+      "Replace only the unsafe scheduled, global, and nearest-selector lifecycle coordination at the eight audited Matcha function seams with active-time pause, resume, and exact-owner cleanup.",
       "Remain a narrow standalone Minecraft 26.2 Fabric companion without datapack or resource-pack overrides."
     ],
     "scope": [
-      "Intercept only the exact Matcha Beacon Kindling marker-spawn seam and the seven audited wandering-trader lifecycle function identifiers.",
+      "Intercept only the exact Matcha Beacon Kindling marker-spawn seam and the eight audited wandering-trader lifecycle function identifiers.",
       "Persist one summon record per player with exact marker, dimension, beacon position, phase, remaining active ticks, and exact trader identity; pause while the owner or recorded location cannot be processed.",
       "Suppress legacy scheduled duplicates and global or nearest cleanup while permitting Matcha's original trader-construction function once under the exact persisted marker guard.",
-      "Coordinate the pinned Matcha-defined placement effects, messages, advancement revocation, compatibility mirrors, departure, and cleanup outputs through exact identities without changing their intended player-facing behavior."
+      "Coordinate the pinned Matcha-defined placement effects, messages, advancement revocation, compatibility mirrors, departure, and cleanup outputs through exact identities without changing their intended player-facing behavior.",
+      "Moves the existing placement and lifecycle interceptions to the current functions and intercepts the new global no-beacons reset. Keeps the guarded upstream trader constructor."
     ],
     "boundaries": {
       "owned_paths": [
@@ -57,9 +58,9 @@
       },
       {
         "type": "DATA_PACK",
-        "identifier": "Matcha_Flavoured_1_12.zip",
-        "requirement": "SHA-256 6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248",
-        "reason": "Exact audited Matcha Beacon Kindling item, advancement, function, message, effect, trader, and trade contract."
+        "identifier": "MF_1_12_5_26_2.zip",
+        "requirement": "1.12.5, SHA-256 966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4",
+        "reason": "Verified publisher server-data input for the 26.2 compatibility contracts."
       },
       {
         "type": "TOOL",
@@ -82,18 +83,22 @@
     ]
   },
   "state": {
-    "milestone": "Exact Canary 1 is retained after a Java 25 clean build with 26/26 focused tests and byte-identical artifact reproduction; it remains GENERATED / STATIC-AUTOMATED PASS / RUNTIME UNTESTED / NOT DEPLOYED.",
+    "milestone": "Moves the existing placement and lifecycle interceptions to the current functions and intercepts the new global no-beacons reset. Keeps the guarded upstream trader constructor. Coordinated static checks passed. Minecraft runtime verification is pending.",
     "releases": {
       "current": {
-        "version": "0.1.0-canary1",
-        "canary": 1,
+        "version": "0.2.0-canary2",
+        "canary": 2,
         "artifact": {
-          "filename": "matcha-beacon-kindling-compat-0.1.0-canary1.jar",
-          "sha256": "b343dd5f000913731a9e256126f18adf085c7e364645ce9f9940692d693e1e0e"
+          "filename": "matcha-beacon-kindling-compat-0.2.0-canary2.jar",
+          "sha256": "1c6115c3227e891de21ee5a8bbd59626810e4225ccc3babee258c8cbdb7d9edd"
         },
-        "built_at": "2026-08-29T22:24:37.7138810Z",
-        "source_commit": "7375e0d10a4cba7e0dfc2204ba8628cedbe0cbf4",
-        "summary": "Coordinates Matcha Beacon Kindling trader identity while preserving Matcha-owned content and behavior."
+        "built_at": "2026-11-24T00:15:26.338994Z",
+        "source_commit": "e3a13df63e041949a8341a025ac4d937ebacdf83",
+        "summary": "Coordinates the Matcha 1.12.5 Kindling lifecycle using exact owner, marker and trader identities.",
+        "runtime_dependency_policy": {
+          "contract": "CAPABILITY_OR_PROVIDER",
+          "exceptions": []
+        }
       },
       "accepted": null,
       "rollback": null,
@@ -107,10 +112,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 1,
-    "activity_at": "2026-08-28T22:52:51Z",
-    "updated_at": "2026-08-29T22:17:38Z",
-    "last_codex_at": "2026-08-29T22:17:38Z",
-    "source_commit": "7375e0d10a4cba7e0dfc2204ba8628cedbe0cbf4"
+    "revision": 2,
+    "activity_at": "2026-11-24T16:34:20Z",
+    "updated_at": "2026-11-24T16:34:20Z",
+    "last_codex_at": "2026-11-24T16:34:20Z",
+    "source_commit": "1ce48a4c2b288c0a18d71e625531e56b618b7ae7"
   }
 }

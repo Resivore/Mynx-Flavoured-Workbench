@@ -9,3 +9,13 @@
 - Artifact: Current/unaccepted `matcha-beacon-kindling-compat-0.1.0-canary1.jar`, version `0.1.0-canary1`, mod ID `matcha_beacon_kindling_compat`, 47,044 bytes, SHA-256 `B343DD5F000913731A9E256126F18ADF085C7E364645CE9F9940692D693E1E0E`, legacy source `0800c64490ad01ecd9d8d11e5c61968fd71834a4`, legacy retention `16f3269db2447798bd64290fb7b51dabaabe191c`; no accepted or rollback release exists.
 - Result: ACTIVE — exact Canary 1 remains GENERATED / STATIC-AUTOMATED PASS / RUNTIME UNTESTED / NOT DEPLOYED, is not accepted, and has no recorded project blocker. Mynx repository and Sheet synchronization initialize this preserved UUID independently at revision 1.
 - Next state: Under explicit Test Slot ownership, deploy only the exact retained Canary 1 with the pinned Matcha dependency and complete the focused current runtime matrix before any promotion; use a new revision for every future state change.
+
+## 2026-11-24T16:34:20Z — Migrate to Matcha 1.12.5, Canary 2
+- Revision: 2
+- Source checkpoint: `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`
+- Changes: Moves the existing placement and lifecycle interceptions to the current functions and intercepts the new global no-beacons reset. Keeps the guarded upstream trader constructor.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 26 project tests. The coordinated packaged-stack fixture passed.
+- Runtime: RUNTIME_UNTESTED. No Minecraft profile or server deployment was used.
+- Artifact: C2 `matcha-beacon-kindling-compat-0.2.0-canary2.jar`, 47,089 bytes, SHA-256 `1c6115c3227e891de21ee5a8bbd59626810e4225ccc3babee258c8cbdb7d9edd`, built_at `2026-11-24T00:15:26.338994Z`, artifact source `e3a13df63e041949a8341a025ac4d937ebacdf83`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Follow TESTING.md and record owner-directed runtime observations against this release.

@@ -69,3 +69,13 @@
 - Artifact: Current and accepted `0.1.2-canary3` is unchanged `coal-consolidation-0.1.2-canary3.jar`, 11,711 bytes, SHA-256 `f1d36dfad276927d527cc911d92f47ee979ef7600479f950c76ed25dd18eb871`, from release source `d2ad841f6a8edfbc765ec681d803b193e5d1f7ad`; no rollback release is designated, and no candidate binary was rebuilt or altered.
 - Result: ACCEPTED — exact C3 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_PASS`, current and accepted in verified Stack v6, with no separate rollback and no blocker.
 - Next state: Preserve this exact accepted identity. Any material successor requires a distinct version and artifact, independent static and runtime evidence, and a separately authorized accepted-stack transition; do not reuse failed C1 or unaccepted C2 as rollback.
+
+## 2026-11-24T16:34:20Z — Migrate to Matcha 1.12.5, Canary 4
+- Revision: 8
+- Source checkpoint: `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`
+- Changes: Places the ten owned recipes above upstream filters and enforces the final furnace and smoker holders. Legacy charcoal conversion and viewer restrictions stay available.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 19 project tests. The coordinated packaged-stack fixture passed.
+- Runtime: RUNTIME_UNTESTED. No Minecraft profile or server deployment was used.
+- Artifact: C4 `coal-consolidation-0.2.0-canary4.jar`, 16,781 bytes, SHA-256 `35cd9e9271b1000801b45816ab3c57bae34f792d61666e6c63f76567d3c49ec8`, built_at `2026-11-24T00:15:27.518896Z`, artifact source `e3a13df63e041949a8341a025ac4d937ebacdf83`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Follow TESTING.md and record owner-directed runtime observations against this release.

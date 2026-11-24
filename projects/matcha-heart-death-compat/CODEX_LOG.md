@@ -79,3 +79,13 @@
 - Artifact: Accepted/current C11 `projects/matcha-heart-death-compat/artifacts/matcha-heart-death-compat-0.1.10-canary11.jar`, version `0.1.10-canary11`, 39,105 bytes, SHA-256 `A0570179F85D32EC6740D9136AD50890B9C797500661CD2ED2325DA5B6B1E4A9`, source `8a0002235c6b0921f4d7f6a4cbf73b18ccc421a3`; previous accepted provenance C10 `matcha-heart-death-compat-0.1.9-canary10.jar`, 34,751 bytes, SHA-256 `F86442EC69ED8AFB86D52C97DB2E899223C25A659EF7C19F245E51AC642BBC90`, source `f9c877d14956616bc3f46f3239ac3b512e1ee9c4`; rollback C8 `matcha-heart-death-compat-0.1.7-canary8.jar`, 31,176 bytes, SHA-256 `CB36D6917DC61B17F2D8B5CEA0D09CB4C1455E04AACA2C186ECAEBE5E9960AA2`, source `4707b35150cc4169b2eee68b8683f9dfb27c158e`.
 - Result: ACCEPTED — exact C11 is `STATIC_PASS / READY_TO_TEST_VERIFIED / RUNTIME_UNTESTED`, current and accepted in Stack v11 under the explicit untested-promotion exception; no Minecraft PASS was fabricated.
 - Next state: Keep exact C11 as the accepted Matcha Death Rebalance baseline, C10 as predecessor provenance, and exact runtime-passed C8 as rollback. If C11 is later runtime-tested, bind only the observed result to this exact identity and do not infer it from acceptance or predecessor evidence.
+
+## 2026-11-24T16:34:20Z — Migrate to Matcha 1.12.5, Canary 12
+- Revision: 9
+- Source checkpoint: `1ce48a4c2b288c0a18d71e625531e56b618b7ae7`
+- Changes: Owns the permanent-health writer, advancement floors and selected payouts, Wither and lethal-heart paths. Heart sources, recipe identities, saved models and Luck-dependent loot odds are exercised against the official distribution.
+- Build/static: Java 25 and Gradle 9.5.1 build passed with 47 project tests. The coordinated packaged-stack fixture passed.
+- Runtime: RUNTIME_UNTESTED. No Minecraft profile or server deployment was used.
+- Artifact: C12 `matcha-heart-death-compat-0.2.0-canary12.jar`, 60,857 bytes, SHA-256 `3ea8384b403a4048ce72c6de711ad2afc3ffa361534e7fd7f176da3ce66f862e`, built_at `2026-11-24T00:36:31.191844Z`, artifact source `e3a13df63e041949a8341a025ac4d937ebacdf83`.
+- Result: ACTIVE, STATIC_PASS.
+- Next state: Follow TESTING.md and record owner-directed runtime observations against this release.
