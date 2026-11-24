@@ -57,7 +57,8 @@ class MatchaDataContractTest {
                 () -> assertTrue(command.contains("equipment:{legs:")),
                 () -> assertTrue(command.contains("equipment:{feet:")),
                 () -> assertEquals(4, occurrences(command, "\"matcha:freezing_protection\":3")),
-                () -> assertEquals(4, occurrences(command, "unless entity @s[nbt=")),
+                () -> assertEquals(4, occurrences(command, "\"main:freezing_protection\":3")),
+                () -> assertEquals(8, occurrences(command, "unless entity @s[nbt=")),
                 () -> assertTrue(command.endsWith(
                         "if biome ~ ~ ~ #minecraft:is_frozen run function "
                                 + "matcha_frost_protection:environmental/freezing_water")),

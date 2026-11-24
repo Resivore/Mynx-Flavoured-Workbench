@@ -77,8 +77,13 @@ def check_boundaries(pack, legacy):
     for project in CONSUMERS:
         for path in (PROJECTS / project / "src/main").rglob("*"):
             if path.suffix in (".java", ".json", ".mcfunction"):
+                source = path.read_text(encoding="utf-8")
+                if project == "matcha-frost-protection":
+                    # 1.12.5 retains this registry key to upgrade existing enchanted armour.
+                    assert "data/main/enchantment/freezing_protection.json" in members(pack)
+                    source = source.replace('"main:freezing_protection"', '"saved_frost"')
                 assert not re.search(r'[" ](?:main|blessings|food|crafting|smithing_table|smoking|smelting):',
-                                     path.read_text(encoding="utf-8")), path
+                                     source), path
     print("129 owner trade changes preserved. Five village definitions and placement set verified.")
 
 

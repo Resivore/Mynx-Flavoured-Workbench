@@ -1,7 +1,6 @@
 package dev.resivore.matchafrost;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.IntPredicate;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.Holder;
@@ -18,6 +17,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 public final class FrostProtectionTraversal {
     static final ResourceKey<Enchantment> FROST_PROTECTION = ResourceKey.create(
             Registries.ENCHANTMENT, Identifier.parse("matcha:freezing_protection"));
+    static final ResourceKey<Enchantment> SAVED_FROST_PROTECTION = ResourceKey.create(
+            Registries.ENCHANTMENT, Identifier.parse("main:freezing_protection"));
     static final List<EquipmentSlot> ARMOR_SLOTS = List.of(
             EquipmentSlot.HEAD,
             EquipmentSlot.CHEST,
@@ -43,17 +44,13 @@ public final class FrostProtectionTraversal {
     }
 
     private static boolean hasFrostProtection(Player player, IntPredicate qualifyingLevel) {
-        Optional<Holder.Reference<Enchantment>> frostProtection = player.registryAccess()
-                .lookupOrThrow(Registries.ENCHANTMENT)
-                .get(FROST_PROTECTION);
-        if (frostProtection.isEmpty()) {
-            return false;
+        var enchantments = player.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        for (var key : List.of(FROST_PROTECTION, SAVED_FROST_PROTECTION)) {
+            var holder = enchantments.get(key);
+            if (holder.isPresent() && hasQualifyingArmor(
+                    slot -> levelOn(player, slot, holder.get()), qualifyingLevel)) return true;
         }
-
-        Holder<Enchantment> enchantment = frostProtection.get();
-        return hasQualifyingArmor(
-                slot -> levelOn(player, slot, enchantment),
-                qualifyingLevel);
+        return false;
     }
 
     static boolean hasQualifyingArmor(ToIntFunction<EquipmentSlot> levelBySlot) {

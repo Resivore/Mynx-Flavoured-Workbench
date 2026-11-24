@@ -18,16 +18,19 @@ public final class MatchaFreezingWaterFunctionEnforcer {
     static final String EXPECTED_UPSTREAM_CONDITION_COMMAND =
             "execute as @a[gamemode=!creative,gamemode=!spectator] at @s if block ~ ~1 ~ water run execute unless predicate matcha:armour_enchants/freezing_protection run execute if biome ~ ~ ~ #minecraft:is_frozen run function matcha:environmental/freezing_water";
     static final String EXPECTED_CANONICAL_CONDITION_COMMAND =
-            "execute as @a[gamemode=!creative,gamemode=!spectator] at @s if block ~ ~1 ~ water unless entity "
-                    + "@s[nbt={equipment:{head:{components:{\"minecraft:enchantments\":{"
-                    + "\"matcha:freezing_protection\":3}}}}}] unless entity "
-                    + "@s[nbt={equipment:{chest:{components:{\"minecraft:enchantments\":{"
-                    + "\"matcha:freezing_protection\":3}}}}}] unless entity "
-                    + "@s[nbt={equipment:{legs:{components:{\"minecraft:enchantments\":{"
-                    + "\"matcha:freezing_protection\":3}}}}}] unless entity "
-                    + "@s[nbt={equipment:{feet:{components:{\"minecraft:enchantments\":{"
-                    + "\"matcha:freezing_protection\":3}}}}}] if biome ~ ~ ~ #minecraft:is_frozen "
-                    + "run function matcha_frost_protection:environmental/freezing_water";
+            "execute as @a[gamemode=!creative,gamemode=!spectator] at @s if block ~ ~1 ~ water"
+                    + armorGuards("matcha:freezing_protection") + armorGuards("main:freezing_protection")
+                    + " if biome ~ ~ ~ #minecraft:is_frozen run function matcha_frost_protection:environmental/freezing_water";
+
+    private static String armorGuards(String enchantment) {
+        var command = new StringBuilder();
+        for (String slot : List.of("head", "chest", "legs", "feet")) {
+            command.append(" unless entity @s[nbt={equipment:{").append(slot)
+                    .append(":{components:{\"minecraft:enchantments\":{\"")
+                    .append(enchantment).append("\":3}}}}}]");
+        }
+        return command.toString();
+    }
     static final List<String> EXPECTED_CANONICAL_PENALTY_COMMANDS = List.of(
             "effect give @s slowness 5 4 true",
             "effect give @s darkness 5 0 true",
