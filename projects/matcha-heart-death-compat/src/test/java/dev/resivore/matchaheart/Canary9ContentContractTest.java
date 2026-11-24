@@ -68,7 +68,7 @@ final class Canary9ContentContractTest {
 
         resonantRecipe = decodeRecipe(
                 "/data/matcha_heart_death_compat/recipe/resonant_favour.json", registries);
-        crystalRecipe = decodeRecipe("/data/crafting/recipe/crystal_heart.json", registries);
+        crystalRecipe = decodeRecipe("/data/matcha/recipe/crafting/crystal_heart.json", registries);
     }
 
     @Test
@@ -179,7 +179,7 @@ final class Canary9ContentContractTest {
                             data, path, crystalOutputs, reinforcedOutputs, resonantOutputs));
         }
 
-        assertEquals(List.of("crafting/recipe/crystal_heart.json"), crystalOutputs);
+        assertEquals(List.of("matcha/recipe/crafting/crystal_heart.json"), crystalOutputs);
         assertEquals(List.of(
                 "matcha_heart_death_compat/recipe/reinforced_crystal_heart.json"),
                 reinforcedOutputs);
@@ -227,7 +227,7 @@ final class Canary9ContentContractTest {
                 return;
             }
             JsonElement model = components.get("minecraft:item_model");
-            if ("minecraft:heart_container".equals(model.getAsString())) {
+            if ("matcha:heart_container".equals(model.getAsString())) {
                 crystalOutputs.add(relative);
             } else if ("matcha_heart_death_compat:reinforced_crystal_heart"
                     .equals(model.getAsString())) {

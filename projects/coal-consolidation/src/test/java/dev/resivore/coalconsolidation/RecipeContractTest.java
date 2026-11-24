@@ -17,15 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RecipeContractTest {
-    private static final Path DATA = Path.of("src", "main", "resources", "data");
+    private static final Path DATA = Path.of("src/main/resources/resourcepacks/coal_recipes/data");
     private static final List<Path> EXPLICIT_CONSUMER_OVERRIDES = List.of(
             Path.of("minecraft", "recipe", "copper_torch.json"),
             Path.of("minecraft", "recipe", "fire_charge.json"),
             Path.of("minecraft", "recipe", "soul_torch.json"),
             Path.of("minecraft", "recipe", "torch.json"),
-            Path.of("crafting", "recipe", "black_dye.json"),
-            Path.of("crafting", "recipe", "fire_charge.json"),
-            Path.of("crafting", "recipe", "torch.json"));
+            Path.of("matcha", "recipe", "crafting", "black_dye.json"),
+            Path.of("matcha", "recipe", "crafting", "fire_charge.json"),
+            Path.of("matcha", "recipe", "crafting", "torch.json"));
 
     @Test
     void vanillaSmeltingKeepsEveryBurnableLogAndWoodVariantButProducesCoal() throws IOException {
@@ -40,7 +40,7 @@ final class RecipeContractTest {
 
     @Test
     void matchaSmokingKeepsItsLogTagTimingAndExperienceButProducesCoal() throws IOException {
-        JsonObject recipe = recipe("smoking/recipe/charcoal.json");
+        JsonObject recipe = recipe("matcha/recipe/kiln/charcoal.json");
 
         assertEquals("minecraft:smoking", string(recipe, "type"));
         assertEquals("#minecraft:logs_that_burn", string(recipe, "ingredient"));
@@ -51,7 +51,7 @@ final class RecipeContractTest {
 
     @Test
     void sharedVanillaTagPreservesRepresentativeOakNonOakAndBarkInputs() throws IOException {
-        for (String path : List.of("minecraft/recipe/charcoal.json", "smoking/recipe/charcoal.json")) {
+        for (String path : List.of("minecraft/recipe/charcoal.json", "matcha/recipe/kiln/charcoal.json")) {
             assertEquals("#minecraft:logs_that_burn", string(recipe(path), "ingredient"),
                     "Minecraft 26.2 expands this tag over oak_log, spruce_log, and oak_wood representatives");
         }
@@ -96,7 +96,7 @@ final class RecipeContractTest {
     @Test
     void ordinaryCoalsTagRecipesAndUnrelatedCoalRecipesRemainUntouched() throws IOException {
         assertFalse(Files.exists(DATA.resolve("minecraft/recipe/campfire.json")));
-        assertFalse(Files.exists(DATA.resolve("crafting/recipe/coal_alternate.json")));
+        assertFalse(Files.exists(DATA.resolve("matcha/recipe/crafting/coal_alternate.json")));
         assertFalse(Files.exists(DATA.resolve("minecraft/tags/item/coals.json")));
 
         Set<String> minecraftOverrides = directJsonNames(DATA.resolve("minecraft/recipe"));

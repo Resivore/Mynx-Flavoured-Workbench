@@ -22,7 +22,8 @@ final class ClientBoundaryContractTest {
         JsonObject entrypoints = metadata.getAsJsonObject("entrypoints");
         JsonObject depends = metadata.getAsJsonObject("depends");
 
-        assertFalse(entrypoints.has("main"));
+        assertEquals("dev.resivore.coalconsolidation.CoalConsolidation",
+                entrypoints.getAsJsonArray("main").get(0).getAsString());
         assertTrue(entrypoints.has("client"));
         assertEquals(1, metadata.getAsJsonArray("mixins").size());
         assertEquals("coal_consolidation.mixins.json",

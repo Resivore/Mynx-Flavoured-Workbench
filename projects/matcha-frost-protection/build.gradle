@@ -19,6 +19,7 @@ def workbenchRoot = providers.gradleProperty('workbench_root')
         .get()
 
 dependencies {
+    testRuntimeOnly('dev.resivore:matcha-flavoured-data') { transitive = false }
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 

@@ -77,12 +77,12 @@ class MatchaExactCatalogTest {
                 .resolve("matcha_frost_protection/canonical/blessing_of_demeter.json");
         String recipe = Files.readString(canonicalRecipe);
 
-        assertTrue(recipe.contains("\"main:freezing_protection\": 3"));
+        assertTrue(recipe.contains("\"matcha:freezing_protection\": 3"));
         assertFalse(recipe.contains("minecraft:frost_walker"));
         assertFalse(recipe.contains("minecraft:frost_protection"));
         assertTrue(recipe.contains("\"minecraft:item_name\""));
         assertTrue(recipe.contains("\"minecraft:lore\""));
-        assertTrue(recipe.contains("\"minecraft:item_model\": \"minecraft:blessing_demeter\""));
+        assertTrue(recipe.contains("\"minecraft:item_model\": \"matcha:blessing_demeter\""));
     }
 
     @Test

@@ -56,7 +56,7 @@ class MixinScopeTest {
         assertTrue(source.contains("MatchaFreezingWaterFunctionEnforcer.targets"));
         assertTrue(source.contains("library.getFunctions()"));
         assertTrue(enforcer.contains(
-                "main:environmental/check_freezing_water_conditions"));
+                "matcha:environmental/check_freezing_water_conditions"));
         assertTrue(enforcer.contains(
                 "matcha_frost_protection:environmental/check_freezing_water_conditions"));
         assertFalse(source.contains("freezing_water"));

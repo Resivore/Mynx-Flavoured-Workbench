@@ -6,3 +6,5 @@ pluginManagement {
 }
 
 rootProject.name = 'matcha-jei-integration'
+
+includeBuild('../matcha-flavoured-data')

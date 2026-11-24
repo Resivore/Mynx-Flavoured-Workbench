@@ -1,0 +1,100 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "add": false,
+              "count": {
+                "type": "minecraft:uniform",
+                "max": 3,
+                "min": 1
+              },
+              "function": "minecraft:set_count"
+            }
+          ],
+          "name": "minecraft:echo_shard",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:food/minecraft/enchanted_golden_apple",
+          "weight": 1,
+          "quality": 1
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha_heart_death_compat:ancient_city_other",
+          "weight": 69
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 10,
+        "min": 5
+      }
+    },
+    {
+      "bonus_rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:ward_armor_trim_smithing_template",
+          "quality": -1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:silence_armor_trim_smithing_template",
+          "quality": -1
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:treasure/topaz",
+          "weight": 5,
+          "quality": 1
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:treasure/crystal_heart",
+          "weight": 2,
+          "quality": 1
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:treasure/divine_fragment",
+          "weight": 2,
+          "quality": 2,
+          "functions": [
+            {
+              "count": {
+                "type": "minecraft:uniform",
+                "max": 1,
+                "min": 3
+              },
+              "function": "minecraft:set_count"
+            }
+          ]
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:chests/uncommon/treasure_ores",
+          "functions": []
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:constant",
+        "value": 1
+      }
+    }
+  ],
+  "random_sequence": "minecraft:chests/ancient_city"
+}

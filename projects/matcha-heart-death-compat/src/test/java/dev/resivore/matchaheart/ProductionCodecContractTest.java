@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Lifecycle;
+import net.minecraft.core.component.DataComponents;
 import java.lang.reflect.Proxy;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,6 +64,22 @@ final class ProductionCodecContractTest {
     }
 
     @Test
+    void savedAndStructureHeartsLoseVanillaProtectionInEitherHandWithoutAffectingTotems() {
+        for (String model : List.of("minecraft:heart_container", "matcha:heart_container")) {
+            ItemStack heart = new ItemStack(Items.POISONOUS_POTATO);
+            heart.set(DataComponents.ITEM_MODEL, Identifier.parse(model));
+            heart.set(DataComponents.DEATH_PROTECTION, new ItemStack(Items.TOTEM_OF_UNDYING).get(DataComponents.DEATH_PROTECTION));
+            MatchaHeartDeathCompat.sanitizeCrystal(heart);
+            assertEquals(Identifier.parse("matcha:heart_container"), heart.get(DataComponents.ITEM_MODEL));
+            assertFalse(heart.has(DataComponents.DEATH_PROTECTION));
+            assertFalse(heart.has(DataComponents.CONSUMABLE));
+        }
+        ItemStack totem = new ItemStack(Items.TOTEM_OF_UNDYING);
+        MatchaHeartDeathCompat.sanitizeCrystal(totem);
+        assertTrue(totem.has(DataComponents.DEATH_PROTECTION));
+    }
+
+    @Test
     void everyCanonicalResourceDecodesThroughItsProductionCodec() {
         HeartDataContract.RECIPE_RESOURCES.values()
                 .forEach(path -> AuthoritativeData.decodeRecipe(path, registries));
@@ -74,17 +91,17 @@ final class ProductionCodecContractTest {
 
     @Test
     void recipeMapEnforcementReplacesOnlyTheThreeOwnedIdsAndPreservesEverySentinel() {
-        Recipe<?> upstreamCrystal = craftingRecipe("crafting:sculk_sensor");
-        Recipe<?> upstreamSensor = craftingRecipe("crafting:sculk_shrieker");
-        Recipe<?> upstreamShrieker = craftingRecipe("crafting:crystal_heart");
-        Recipe<?> unrelated = craftingRecipe("crafting:sculk_sensor");
-        Recipe<?> dramaticDoors = craftingRecipe("crafting:sculk_sensor");
-        Recipe<?> reinforced = craftingRecipe("crafting:sculk_sensor");
-        Recipe<?> resonantFavour = craftingRecipe("crafting:sculk_sensor");
+        Recipe<?> upstreamCrystal = craftingRecipe("matcha:crafting/sculk_sensor");
+        Recipe<?> upstreamSensor = craftingRecipe("matcha:crafting/sculk_shrieker");
+        Recipe<?> upstreamShrieker = craftingRecipe("matcha:crafting/crystal_heart");
+        Recipe<?> unrelated = craftingRecipe("matcha:crafting/sculk_sensor");
+        Recipe<?> dramaticDoors = craftingRecipe("matcha:crafting/sculk_sensor");
+        Recipe<?> reinforced = craftingRecipe("matcha:crafting/sculk_sensor");
+        Recipe<?> resonantFavour = craftingRecipe("matcha:crafting/sculk_sensor");
         RecipeMap resolved = RecipeMap.create(List.of(
-                holder("crafting:crystal_heart", upstreamCrystal),
-                holder("crafting:sculk_sensor", upstreamSensor),
-                holder("crafting:sculk_shrieker", upstreamShrieker),
+                holder("matcha:crafting/crystal_heart", upstreamCrystal),
+                holder("matcha:crafting/sculk_sensor", upstreamSensor),
+                holder("matcha:crafting/sculk_shrieker", upstreamShrieker),
                 holder("other:untouched", unrelated),
                 holder("dramaticdoors:tall_oak_door", dramaticDoors),
                 holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced),
@@ -93,9 +110,9 @@ final class ProductionCodecContractTest {
         RecipeMap enforced = RecipeMapEnforcer.enforce(resolved, registries);
 
         assertEquals(7, enforced.values().size());
-        assertNotSame(upstreamCrystal, recipe(enforced, "crafting:crystal_heart"));
-        assertNotSame(upstreamSensor, recipe(enforced, "crafting:sculk_sensor"));
-        assertNotSame(upstreamShrieker, recipe(enforced, "crafting:sculk_shrieker"));
+        assertNotSame(upstreamCrystal, recipe(enforced, "matcha:crafting/crystal_heart"));
+        assertNotSame(upstreamSensor, recipe(enforced, "matcha:crafting/sculk_sensor"));
+        assertNotSame(upstreamShrieker, recipe(enforced, "matcha:crafting/sculk_shrieker"));
         assertSame(unrelated, recipe(enforced, "other:untouched"));
         assertSame(dramaticDoors, recipe(enforced, "dramaticdoors:tall_oak_door"));
         assertSame(reinforced, recipe(enforced, HeartDataContract.REINFORCED_RECIPE_ID));
@@ -104,8 +121,8 @@ final class ProductionCodecContractTest {
 
     @Test
     void recipeMapEnforcementPropagatesDecodeAndRebuildFailuresFailClosed() {
-        Recipe<?> reinforced = craftingRecipe("crafting:sculk_sensor");
-        Recipe<?> resonantFavour = craftingRecipe("crafting:sculk_sensor");
+        Recipe<?> reinforced = craftingRecipe("matcha:crafting/sculk_sensor");
+        Recipe<?> resonantFavour = craftingRecipe("matcha:crafting/sculk_sensor");
         RecipeMap resolved = RecipeMap.create(List.of(
                 holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced),
                 holder(HeartDataContract.RESONANT_FAVOUR_RECIPE_ID, resonantFavour)));
@@ -118,7 +135,7 @@ final class ProductionCodecContractTest {
         assertEquals("canonical decode failed", decodeFailure.getCause().getMessage());
 
         LinkedHashMap<Identifier, Recipe<?>> brokenReplacements = new LinkedHashMap<>();
-        brokenReplacements.put(Identifier.parse("crafting:crystal_heart"),
+        brokenReplacements.put(Identifier.parse("matcha:crafting/crystal_heart"),
                 recipeThatFailsMapRebuild());
         IllegalStateException rebuildFailure = assertThrows(IllegalStateException.class,
                 () -> RecipeMapEnforcer.enforce(resolved, () -> brokenReplacements));
@@ -128,7 +145,7 @@ final class ProductionCodecContractTest {
 
     @Test
     void recipeMapEnforcementFailsClosedWhenEitherOwnedCanary9RecipeDidNotDecode() {
-        Recipe<?> reinforced = craftingRecipe("crafting:sculk_sensor");
+        Recipe<?> reinforced = craftingRecipe("matcha:crafting/sculk_sensor");
         RecipeMap missingResonant = RecipeMap.create(List.of(
                 holder(HeartDataContract.REINFORCED_RECIPE_ID, reinforced)));
 
@@ -143,13 +160,13 @@ final class ProductionCodecContractTest {
     @Test
     void sensorRecipeHasTheExactTwoRowSculkLayout() {
         JsonObject json = AuthoritativeData.readJson(
-                HeartDataContract.RECIPE_RESOURCES.get("crafting:sculk_sensor")).getAsJsonObject();
+                HeartDataContract.RECIPE_RESOURCES.get("matcha:crafting/sculk_sensor")).getAsJsonObject();
         assertEquals(List.of("v v", "sss"), strings(json.getAsJsonArray("pattern")));
         assertEquals("minecraft:sculk_vein", json.getAsJsonObject("key").get("v").getAsString());
         assertEquals("minecraft:sculk", json.getAsJsonObject("key").get("s").getAsString());
         assertFalse(json.toString().contains("minecraft:echo_shard"));
 
-        Recipe<CraftingInput> recipe = craftingRecipe("crafting:sculk_sensor");
+        Recipe<CraftingInput> recipe = craftingRecipe("matcha:crafting/sculk_sensor");
         assertTrue(recipe.matches(CraftingInput.of(3, 2, List.of(
                 new ItemStack(Items.SCULK_VEIN), ItemStack.EMPTY, new ItemStack(Items.SCULK_VEIN),
                 new ItemStack(Items.SCULK), new ItemStack(Items.SCULK), new ItemStack(Items.SCULK))), null));
@@ -158,14 +175,14 @@ final class ProductionCodecContractTest {
     @Test
     void shriekerRecipeHasTheExactThreeRowSculkAndBoneLayout() {
         JsonObject json = AuthoritativeData.readJson(
-                HeartDataContract.RECIPE_RESOURCES.get("crafting:sculk_shrieker")).getAsJsonObject();
+                HeartDataContract.RECIPE_RESOURCES.get("matcha:crafting/sculk_shrieker")).getAsJsonObject();
         assertEquals(List.of("b b", "v v", "sss"), strings(json.getAsJsonArray("pattern")));
         assertEquals("minecraft:bone", json.getAsJsonObject("key").get("b").getAsString());
         assertEquals("minecraft:sculk_vein", json.getAsJsonObject("key").get("v").getAsString());
         assertEquals("minecraft:sculk", json.getAsJsonObject("key").get("s").getAsString());
         assertFalse(json.toString().contains("minecraft:echo_shard"));
 
-        Recipe<CraftingInput> recipe = craftingRecipe("crafting:sculk_shrieker");
+        Recipe<CraftingInput> recipe = craftingRecipe("matcha:crafting/sculk_shrieker");
         assertTrue(recipe.matches(CraftingInput.of(3, 3, List.of(
                 new ItemStack(Items.BONE), ItemStack.EMPTY, new ItemStack(Items.BONE),
                 new ItemStack(Items.SCULK_VEIN), ItemStack.EMPTY, new ItemStack(Items.SCULK_VEIN),
@@ -201,8 +218,8 @@ final class ProductionCodecContractTest {
     void echoShardAdvancementUnlocksOnlyTheDiscRecipe() {
         JsonObject json = AuthoritativeData.readJson(
                 HeartDataContract.ADVANCEMENT_RESOURCES.get(
-                        "main:recipe_unlocks/echo_shard")).getAsJsonObject();
-        assertEquals(List.of("crafting:music_disc_5"),
+                        "matcha:recipe_unlocks/echo_shard")).getAsJsonObject();
+        assertEquals(List.of("matcha:crafting/music_disc_5"),
                 strings(json.getAsJsonObject("rewards").getAsJsonArray("recipes")));
         assertEquals("minecraft:echo_shard", json.getAsJsonObject("criteria")
                 .getAsJsonObject("has_primary_material")

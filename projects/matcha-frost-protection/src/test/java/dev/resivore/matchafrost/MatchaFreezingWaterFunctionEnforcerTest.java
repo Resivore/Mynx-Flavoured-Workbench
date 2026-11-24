@@ -126,7 +126,7 @@ class MatchaFreezingWaterFunctionEnforcerTest {
     @Test
     void usesExactFunctionIdentities() {
         assertTrue(MatchaFreezingWaterFunctionEnforcer.targets(
-                Identifier.parse("main:environmental/check_freezing_water_conditions")));
+                Identifier.parse("matcha:environmental/check_freezing_water_conditions")));
         assertEquals(
                 "matcha_frost_protection:environmental/check_freezing_water_conditions",
                 MatchaFreezingWaterFunctionEnforcer.CANONICAL_FUNCTION.toString());

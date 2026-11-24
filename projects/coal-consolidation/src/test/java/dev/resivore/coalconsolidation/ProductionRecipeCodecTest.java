@@ -62,10 +62,10 @@ final class ProductionRecipeCodecTest {
             "minecraft/fire_charge",
             "minecraft/soul_torch",
             "minecraft/torch",
-            "smoking/charcoal",
-            "crafting/black_dye",
-            "crafting/fire_charge",
-            "crafting/torch",
+            "matcha/kiln/charcoal",
+            "matcha/crafting/black_dye",
+            "matcha/crafting/fire_charge",
+            "matcha/crafting/torch",
             "coal_consolidation/charcoal_to_coal");
     private static final Map<String, Recipe<?>> RECIPES = new LinkedHashMap<>();
 
@@ -86,7 +86,7 @@ final class ProductionRecipeCodecTest {
         bindRecipeTagsForCodecTests();
 
         for (String recipeResource : RECIPE_RESOURCES) {
-            String resource = "/data/" + recipeResource.replaceFirst("/", "/recipe/") + ".json";
+            String resource = "/resourcepacks/coal_recipes/data/" + recipeResource.replaceFirst("/", "/recipe/") + ".json";
             try (var stream = ProductionRecipeCodecTest.class.getResourceAsStream(resource)) {
                 assertNotNull(stream, () -> "packaged recipe is missing: " + resource);
                 var json = JsonParser.parseReader(
@@ -120,7 +120,7 @@ final class ProductionRecipeCodecTest {
     @Test
     void cookingOverridesRemainFurnaceAndSmokerRecipes() {
         SmeltingRecipe smelting = assertInstanceOf(SmeltingRecipe.class, RECIPES.get("minecraft/charcoal"));
-        SmokingRecipe smoking = assertInstanceOf(SmokingRecipe.class, RECIPES.get("smoking/charcoal"));
+        SmokingRecipe smoking = assertInstanceOf(SmokingRecipe.class, RECIPES.get("matcha/kiln/charcoal"));
 
         assertCookingRoute(smelting, 200);
         assertCookingRoute(smoking, 100);
@@ -164,7 +164,7 @@ final class ProductionRecipeCodecTest {
                   "result": { "id": "minecraft:charcoal" }
                 }
                 """);
-        Path productionPack = Path.of("src", "main", "resources").toAbsolutePath().normalize();
+        Path productionPack = Path.of("src/main/resources/resourcepacks/coal_recipes").toAbsolutePath().normalize();
         try (var resources = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(
                 new PathPackResources(packLocation("coal-consolidation-lower"), productionPack),
                 new PathPackResources(packLocation("later-vanilla"), competingPack)))) {
@@ -189,7 +189,7 @@ final class ProductionRecipeCodecTest {
     void effectiveReloadOverridesALaterSmokingCharcoalResourceAndPreservesMetadata(
             @TempDir Path tempDir) throws IOException {
         Path competingPack = tempDir.resolve("later-smoking");
-        writeRecipe(competingPack, "smoking", "charcoal", """
+        writeRecipe(competingPack, "matcha", "kiln/charcoal", """
                 {
                   "type": "minecraft:smoking",
                   "category": "food",
@@ -201,18 +201,18 @@ final class ProductionRecipeCodecTest {
                   "result": { "id": "minecraft:charcoal" }
                 }
                 """);
-        Path productionPack = Path.of("src", "main", "resources").toAbsolutePath().normalize();
+        Path productionPack = Path.of("src/main/resources/resourcepacks/coal_recipes").toAbsolutePath().normalize();
         try (var resources = new MultiPackResourceManager(PackType.SERVER_DATA, List.of(
                 new PathPackResources(packLocation("coal-consolidation-lower"), productionPack),
                 new PathPackResources(packLocation("later-smoking"), competingPack)))) {
             assertEquals("later-smoking",
-                    resources.getResource(Identifier.parse("smoking:recipe/charcoal.json"))
+                    resources.getResource(Identifier.parse("matcha:recipe/kiln/charcoal.json"))
                             .orElseThrow().sourcePackId());
 
             TestRecipeManager manager = new TestRecipeManager(registries);
             RecipeMap prepared = manager.prepareForTest(resources);
-            RecipeHolder<?> preparedHolder = prepared.byKey(recipeKey("smoking:charcoal"));
-            assertEquals(recipeKey("smoking:charcoal"), preparedHolder.id());
+            RecipeHolder<?> preparedHolder = prepared.byKey(recipeKey("matcha:kiln/charcoal"));
+            assertEquals(recipeKey("matcha:kiln/charcoal"), preparedHolder.id());
             SmokingRecipe preparedSmoking = assertInstanceOf(
                     SmokingRecipe.class, preparedHolder.value());
             assertCookingRoute(preparedSmoking, 100, Items.CHARCOAL);
@@ -221,7 +221,7 @@ final class ProductionRecipeCodecTest {
 
             manager.applyForTest(prepared, resources);
 
-            RecipeHolder<?> effectiveHolder = manager.byKey(recipeKey("smoking:charcoal"))
+            RecipeHolder<?> effectiveHolder = manager.byKey(recipeKey("matcha:kiln/charcoal"))
                     .orElseThrow();
             assertEquals(preparedHolder.id(), effectiveHolder.id());
             SmokingRecipe effectiveSmoking = assertInstanceOf(
@@ -237,7 +237,7 @@ final class ProductionRecipeCodecTest {
     @Test
     void enforcementFailsClosedWhenEitherOwnedTargetIsMissingOrHasTheWrongType() {
         RecipeHolder<?> furnace = holder("minecraft:charcoal", RECIPES.get("minecraft/charcoal"));
-        RecipeHolder<?> smoker = holder("smoking:charcoal", RECIPES.get("smoking/charcoal"));
+        RecipeHolder<?> smoker = holder("matcha:kiln/charcoal", RECIPES.get("matcha/kiln/charcoal"));
 
         assertThrows(IllegalStateException.class,
                 () -> CharcoalRecipeEnforcer.enforce(RecipeMap.create(List.of(smoker))));
@@ -245,12 +245,12 @@ final class ProductionRecipeCodecTest {
                 () -> CharcoalRecipeEnforcer.enforce(RecipeMap.create(List.of(furnace))));
         assertThrows(IllegalStateException.class, () -> CharcoalRecipeEnforcer.enforce(
                 RecipeMap.create(List.of(
-                        holder("minecraft:charcoal", RECIPES.get("smoking/charcoal")),
+                        holder("minecraft:charcoal", RECIPES.get("matcha/kiln/charcoal")),
                         smoker))));
         assertThrows(IllegalStateException.class, () -> CharcoalRecipeEnforcer.enforce(
                 RecipeMap.create(List.of(
                         furnace,
-                        holder("smoking:charcoal", RECIPES.get("minecraft/charcoal"))))));
+                        holder("matcha:kiln/charcoal", RECIPES.get("minecraft/charcoal"))))));
     }
 
     @SuppressWarnings("unchecked")

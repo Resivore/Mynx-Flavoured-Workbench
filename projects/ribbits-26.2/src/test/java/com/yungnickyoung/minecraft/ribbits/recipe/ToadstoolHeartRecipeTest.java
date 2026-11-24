@@ -91,6 +91,13 @@ class ToadstoolHeartRecipeTest {
         ItemStack exact = originalCrystalHeart();
         assertTrue(ToadstoolHeartRecipe.isOriginalCrystalHeart(exact));
 
+        ItemStack saved = exact.copy();
+        saved.set(DataComponents.ITEM_MODEL, Identifier.withDefaultNamespace("heart_container"));
+        saved.remove(DataComponents.CUSTOM_DATA);
+        assertTrue(ToadstoolHeartRecipe.isOriginalCrystalHeart(saved));
+        exact.remove(DataComponents.CUSTOM_DATA);
+        assertFalse(ToadstoolHeartRecipe.isOriginalCrystalHeart(exact));
+
         ItemStack wrongBase = new ItemStack(Items.APPLE);
         wrongBase.set(DataComponents.ITEM_MODEL, ToadstoolHeartRecipe.CRYSTAL_HEART_MODEL);
         assertFalse(ToadstoolHeartRecipe.isOriginalCrystalHeart(wrongBase));
@@ -125,6 +132,8 @@ class ToadstoolHeartRecipeTest {
         stack.set(DataComponents.RARITY, Rarity.RARE);
         stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
         stack.remove(DataComponents.CONSUMABLE);
+        net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA, stack,
+                tag -> tag.putInt("version", 1));
         return stack;
     }
 

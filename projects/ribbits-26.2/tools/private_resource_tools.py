@@ -31,16 +31,16 @@ from typing import Any
 EXPECTED_PRISTINE_SHA256 = (
     "4cf86564aed393410fb1dbca3a9ce2425382307655e92bb6b43f3ddcee5bf731"
 )
-CANDIDATE_VERSION = "4.1.6+26.2-mynx-canary27"
-CANDIDATE_CANARY = 27
+CANDIDATE_VERSION = "4.1.6+26.2-matcha125-canary28"
+CANDIDATE_CANARY = 28
 PRIVATE_MANIFEST_SCHEMA = "mynx-ribbits-private-resource-manifest/v1"
 PRIVATE_MANIFEST_CLASSIFICATION = (
     "PRIVATE MYNX ASSEMBLY STAGED / NONREDISTRIBUTABLE DONOR ASSETS"
 )
 PRIVATE_ARTIFACT_FILENAME = (
-    "ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar"
+    "ribbits-private-reconstruction-4.1.6+26.2-matcha125-canary28.jar"
 )
-SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-mynx-canary27.jar"
+SOURCE_ONLY_ARTIFACT_FILENAME = "ribbits-source-only-4.1.6+26.2-matcha125-canary28.jar"
 SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
     {
         "assets/ribbits/items/glowcap.json",
@@ -57,6 +57,7 @@ SOURCE_SAFE_PUBLIC_RESOURCE_PATHS = frozenset(
         "data/ribbits/item_modifier/ribbit_village_explorer_result.json",
         "data/ribbits/loot_table/chests/swamp_hut_map.json",
         "data/ribbits/recipe/toadstool_heart.json",
+        "data/ribbits/trade_item/estus_flask.json",
         "data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json",
         "data/ribbits/tags/worldgen/biome/allows_wandering_ribbit_spawns.json",
         "data/ribbits/tags/worldgen/biome/without_wandering_ribbit_spawns.json",
@@ -139,7 +140,7 @@ REQUIRED_FABRIC_DEPENDENCIES = {
     "geckolib": ">=5.5.1",
     "cloth-config2": ">=26.2.155",
     "customportals": ">=4.0.0",
-    "matcha_heart_death_compat": ">=0.1.10-0",
+    "matcha_heart_death_compat": ">=0.2.0-0",
 }
 SOURCE_FILE_COUNT = 287  # 285 assets/data files plus icon.png and logo.png
 OUTPUT_FILE_COUNT = 363

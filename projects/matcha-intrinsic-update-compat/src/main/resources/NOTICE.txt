@@ -1,0 +1,5 @@
+Six slot writers adapted from Klei's Matcha Flavoured publisher archive, version oJ73XIAC.
+https://modrinth.com/datapack/matcha-flavoured/version/oJ73XIAC
+SHA-256 651692da813a8c73cd4c6c3b1432d21c2bbdab9d347e5f83ecf9632a886a2cda
+CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/
+Changes for Minecraft 26.2: write offhand updates to weapon.offhand and release temporary held enchantment data after each write.

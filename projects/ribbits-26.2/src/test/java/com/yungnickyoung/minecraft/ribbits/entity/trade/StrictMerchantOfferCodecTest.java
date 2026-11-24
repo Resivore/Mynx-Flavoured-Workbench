@@ -102,7 +102,7 @@ class StrictMerchantOfferCodecTest {
         MerchantOffer restored = StrictMerchantOffer.restoreFromTemplate(roundTrip(template), template);
         assertTrue(restored.satisfiedBy(opal.copy(), ItemStack.EMPTY));
         assertFalse(restored.satisfiedBy(
-                        new ItemStack(Items.FERMENTED_SPIDER_EYE), ItemStack.EMPTY),
+                        new ItemStack(Items.POISONOUS_POTATO), ItemStack.EMPTY),
                 "a plain Fermented Spider Eye must never satisfy the Opal gate");
 
         ItemStack renamedOpal = opal.copy();

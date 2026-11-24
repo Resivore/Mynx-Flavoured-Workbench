@@ -17,7 +17,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public final class FrostProtectionTraversal {
     static final ResourceKey<Enchantment> FROST_PROTECTION = ResourceKey.create(
-            Registries.ENCHANTMENT, Identifier.parse("main:freezing_protection"));
+            Registries.ENCHANTMENT, Identifier.parse("matcha:freezing_protection"));
     static final List<EquipmentSlot> ARMOR_SLOTS = List.of(
             EquipmentSlot.HEAD,
             EquipmentSlot.CHEST,

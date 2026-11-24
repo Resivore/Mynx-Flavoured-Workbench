@@ -96,12 +96,12 @@ final class HeartUseFeedbackTest {
                 StandardCharsets.UTF_8);
 
         int serverMainHandGuard = initializer.indexOf(
-                "level.isClientSide() || hand != InteractionHand.MAIN_HAND");
+                "if (hand != InteractionHand.MAIN_HAND) return InteractionResult.FAIL");
         int rejectionGate = initializer.indexOf("if (after == before)");
         int consume = initializer.indexOf("stack.shrink(1)");
         int stateChange = initializer.indexOf("setState(serverPlayer, after)");
         int feedbackDispatch = initializer.indexOf("HeartUseFeedback.emitSuccessful(");
-        int success = initializer.indexOf("return InteractionResult.SUCCESS");
+        int success = initializer.lastIndexOf("return InteractionResult.SUCCESS");
 
         assertTrue(serverMainHandGuard >= 0);
         assertTrue(serverMainHandGuard < rejectionGate);

@@ -6,3 +6,5 @@ pluginManagement {
 }
 
 rootProject.name = 'enderscape-integration'
+
+includeBuild('../matcha-flavoured-data')

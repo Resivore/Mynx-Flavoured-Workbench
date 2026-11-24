@@ -23,7 +23,7 @@ public final class CharcoalRecipeEnforcer {
             Identifier.parse("minecraft:charcoal"));
     private static final ResourceKey<Recipe<?>> SMOKER_CHARCOAL_RECIPE = ResourceKey.create(
             Registries.RECIPE,
-            Identifier.parse("smoking:charcoal"));
+            Identifier.parse("matcha:kiln/charcoal"));
 
     private CharcoalRecipeEnforcer() {}
 
@@ -31,7 +31,7 @@ public final class CharcoalRecipeEnforcer {
         try {
             ArrayList<RecipeHolder<?>> recipes = new ArrayList<>(resolved.values());
             int furnaceIndex = findUnique(recipes, FURNACE_CHARCOAL_RECIPE, "minecraft:charcoal");
-            int smokerIndex = findUnique(recipes, SMOKER_CHARCOAL_RECIPE, "smoking:charcoal");
+            int smokerIndex = findUnique(recipes, SMOKER_CHARCOAL_RECIPE, "matcha:kiln/charcoal");
 
             RecipeHolder<?> furnaceHolder = recipes.get(furnaceIndex);
             if (furnaceHolder.value().getClass() != SmeltingRecipe.class) {
@@ -44,7 +44,7 @@ public final class CharcoalRecipeEnforcer {
             RecipeHolder<?> smokerHolder = recipes.get(smokerIndex);
             if (smokerHolder.value().getClass() != SmokingRecipe.class) {
                 throw new IllegalStateException(
-                        "Resolved smoking:charcoal is not a smoking recipe: "
+                        "Resolved matcha:kiln/charcoal is not a smoking recipe: "
                                 + smokerHolder.value().getClass().getName());
             }
             SmokingRecipe smokerRecipe = (SmokingRecipe) smokerHolder.value();
@@ -68,7 +68,7 @@ public final class CharcoalRecipeEnforcer {
 
             RecipeMap enforced = RecipeMap.create(recipes);
             LOGGER.info(
-                    "Enforced minecraft:charcoal furnace and smoking:charcoal smoker outputs "
+                    "Enforced minecraft:charcoal furnace and matcha:kiln/charcoal smoker outputs "
                             + "as one minecraft:coal after recipe reload");
             return enforced;
         } catch (RuntimeException exception) {

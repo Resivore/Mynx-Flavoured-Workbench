@@ -8,19 +8,19 @@ import java.util.function.Supplier;
 
 /** Exact identifiers and order-independent replacement logic for the Matcha heart boundary. */
 public final class HeartDataContract {
-    public static final String MATCHA_ARCHIVE = "originals/datapacks/Matcha_Flavoured_1_12.zip";
+    public static final String MATCHA_ARCHIVE = "projects/matcha-flavoured-data/upstream/MF_1_12_5_26_2.zip";
     public static final String MATCHA_SHA256 =
-            "6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248";
-    public static final String RECIPE_ID = "crafting:crystal_heart";
+            "966843D0AEB3860479721EF34791A631E62BC225FDAA918DD2AD90C49977E5B4";
+    public static final String RECIPE_ID = "matcha:crafting/crystal_heart";
     public static final String REINFORCED_RECIPE_ID = "matcha_heart_death_compat:reinforced_crystal_heart";
     public static final String RESONANT_FAVOUR_RECIPE_ID =
             "matcha_heart_death_compat:resonant_favour";
     public static final String MATCHA_BASE_ITEM = "minecraft:poisonous_potato";
-    public static final String MATCHA_ITEM_MODEL = "minecraft:heart_container";
+    public static final String MATCHA_ITEM_MODEL = "matcha:heart_container";
     public static final String MATCHA_ITEM_NAME = "item.kleispack.crystal_heart";
-    public static final String ADVANCEMENT_ID = "main:mechanics/heart_container_obtained";
-    public static final String PROCESS_FUNCTION_ID = "main:mechanic/heart_container/process_heart_container";
-    public static final String DEATH_FUNCTION_ID = "main:mechanic/heart_container/detect_death";
+    public static final String ADVANCEMENT_ID = "matcha:mechanics/crystal_heart_used";
+    public static final String PROCESS_FUNCTION_ID = "matcha:mechanics/heart_container/use_crystal_heart";
+    public static final String DEATH_FUNCTION_ID = "matcha:mechanics/heart_container/detect_death";
     public static final Set<String> BLOCKED_FUNCTIONS = Set.of(PROCESS_FUNCTION_ID, DEATH_FUNCTION_ID);
     public static final Map<String, String> LOOT_TABLE_RESOURCES;
     public static final Map<String, String> RECIPE_RESOURCES;
@@ -39,16 +39,16 @@ public final class HeartDataContract {
         LOOT_TABLE_RESOURCES = Collections.unmodifiableMap(lootTables);
 
         LinkedHashMap<String, String> recipes = new LinkedHashMap<>();
-        recipes.put(RECIPE_ID, "data/crafting/recipe/crystal_heart.json");
-        recipes.put("crafting:sculk_sensor", "data/crafting/recipe/sculk_sensor.json");
-        recipes.put("crafting:sculk_shrieker", "data/crafting/recipe/sculk_shrieker.json");
+        recipes.put(RECIPE_ID, "data/matcha/recipe/crafting/crystal_heart.json");
+        recipes.put("matcha:crafting/sculk_sensor", "data/matcha/recipe/crafting/sculk_sensor.json");
+        recipes.put("matcha:crafting/sculk_shrieker", "data/matcha/recipe/crafting/sculk_shrieker.json");
         RECIPE_RESOURCES = Collections.unmodifiableMap(recipes);
 
         LinkedHashMap<String, String> advancements = new LinkedHashMap<>();
         advancements.put(ADVANCEMENT_ID,
-                "data/main/advancement/mechanics/heart_container_obtained.json");
-        advancements.put("main:recipe_unlocks/echo_shard",
-                "data/main/advancement/recipe_unlocks/echo_shard.json");
+                "data/matcha/advancement/mechanics/crystal_heart_used.json");
+        advancements.put("matcha:recipe_unlocks/echo_shard",
+                "data/matcha/advancement/recipe_unlocks/echo_shard.json");
         ADVANCEMENT_RESOURCES = Collections.unmodifiableMap(advancements);
     }
 

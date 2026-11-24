@@ -54,11 +54,11 @@ class WanderingRibbitCompassTradesTest {
     @Test
     void identityPredicateSeparatesEveryTierButAllowsMutableCompassData() {
         ItemStack ordinary = new ItemStack(Items.COMPASS);
-        ItemStack copper = compass("minecraft:copper_compass",
+        ItemStack copper = compass("matcha:copper_compass",
                 "item.kleispack.copper_compass");
-        ItemStack golden = compass("minecraft:golden_compass",
+        ItemStack golden = compass("matcha:golden_compass",
                 "item.kleispack.golden_compass");
-        ItemStack titanium = compass("minecraft:titanium_compass",
+        ItemStack titanium = compass("matcha:titanium_compass",
                 "item.kleispack.titanium_compass");
         List<ItemStack> tiers = List.of(ordinary, copper, golden, titanium);
 
@@ -110,7 +110,7 @@ class WanderingRibbitCompassTradesTest {
     @Test
     void buybackTermsAreTwoUsesZeroXpAndZeroPriceMovement() {
         MerchantOffer offer = WanderingRibbitCompassTrades.buyback(
-                compass("minecraft:copper_compass", "item.kleispack.copper_compass"),
+                compass("matcha:copper_compass", "item.kleispack.copper_compass"),
                 Items.EMERALD, 2);
 
         assertFalse(offer instanceof StrictMerchantOffer,
@@ -125,11 +125,11 @@ class WanderingRibbitCompassTradesTest {
     @Test
     void intendedFourBuybacksKeepTheirExactRewardOrderAndTierMatching() {
         ItemStack ordinary = new ItemStack(Items.COMPASS);
-        ItemStack copper = compass("minecraft:copper_compass",
+        ItemStack copper = compass("matcha:copper_compass",
                 "item.kleispack.copper_compass");
-        ItemStack golden = compass("minecraft:golden_compass",
+        ItemStack golden = compass("matcha:golden_compass",
                 "item.kleispack.golden_compass");
-        ItemStack titanium = compass("minecraft:titanium_compass",
+        ItemStack titanium = compass("matcha:titanium_compass",
                 "item.kleispack.titanium_compass");
         List<ItemStack> inputs = List.of(ordinary, copper, golden, titanium);
 
@@ -162,7 +162,7 @@ class WanderingRibbitCompassTradesTest {
 
     @Test
     void vanillaOfferCodecPreservesTheTwoComponentIdentityPredicate() {
-        ItemStack titanium = compass("minecraft:titanium_compass",
+        ItemStack titanium = compass("matcha:titanium_compass",
                 "item.kleispack.titanium_compass");
         MerchantOffer encoded = WanderingRibbitCompassTrades.buyback(
                 titanium, Items.EMERALD, 8);
@@ -175,7 +175,7 @@ class WanderingRibbitCompassTradesTest {
                 new LodestoneTracker(Optional.empty(), false));
         assertTrue(decoded.satisfiedBy(customizedTitanium, ItemStack.EMPTY));
         assertFalse(decoded.satisfiedBy(
-                compass("minecraft:copper_compass", "item.kleispack.copper_compass"),
+                compass("matcha:copper_compass", "item.kleispack.copper_compass"),
                 ItemStack.EMPTY));
         assertInstanceOf(MerchantOffer.class, decoded);
     }

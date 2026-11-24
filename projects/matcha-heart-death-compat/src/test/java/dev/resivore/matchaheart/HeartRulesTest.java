@@ -4,6 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 final class HeartRulesTest {
+    @Test void everyPersistedEvenValueHasExactlyOneLegalTransitionPerEvent() {
+        for (int value = 10; value <= 60; value += 2) {
+            assertEquals(value, HeartRules.sanitize(value));
+            assertEquals(Math.max(10, value - 2), HeartRules.afterDeath(value));
+            assertEquals(value >= 20 && value < 60 ? value + 2 : value, HeartRules.afterCrystal(value));
+            assertEquals(value < 20 ? value + 2 : value, HeartRules.afterReinforced(value));
+        }
+    }
+
     @Test void crystalMatrix() {
         assertEquals(22, HeartRules.afterCrystal(20));
         assertEquals(32, HeartRules.afterCrystal(30));

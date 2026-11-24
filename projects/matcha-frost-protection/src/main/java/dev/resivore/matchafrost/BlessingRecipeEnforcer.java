@@ -11,7 +11,7 @@ import net.minecraft.world.item.crafting.RecipeMap;
 
 public final class BlessingRecipeEnforcer {
     static final Identifier TARGET_RECIPE =
-            Identifier.parse("blessings:frost_walker_frost_protection");
+            Identifier.parse("matcha:blessing/frost_walker_frost_protection");
     static final String CANONICAL_RESOURCE =
             "matcha_frost_protection/canonical/blessing_of_demeter.json";
 

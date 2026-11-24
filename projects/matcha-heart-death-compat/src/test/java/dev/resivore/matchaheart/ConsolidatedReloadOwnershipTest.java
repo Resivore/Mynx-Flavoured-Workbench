@@ -27,7 +27,7 @@ final class ConsolidatedReloadOwnershipTest {
         assertEquals(List.of(
                 "RecipeManagerMixin",
                 "ServerAdvancementManagerMixin",
-                "ServerFunctionManagerMixin"), strings(mixins.getAsJsonArray("mixins")));
+                "ServerFunctionManagerMixin", "LivingEntityMixin", "HeartPackPriorityMixin"), strings(mixins.getAsJsonArray("mixins")));
 
         String recipeMixin = source("src/main/java/dev/resivore/matchaheart/mixin/RecipeManagerMixin.java");
         assertEquals(1, occurrences(recipeMixin, "@ModifyVariable("));

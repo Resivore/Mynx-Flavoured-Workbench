@@ -26,10 +26,10 @@ import java.util.List;
  */
 final class MatchaCompassCatalog {
     static final Identifier TITANIUM_LOOT_RESOURCE =
-            Identifier.parse("minecraft:loot_table/chests/equipment/special_compass.json");
+            Identifier.parse("matcha:loot_table/equipment/compass/titanium.json");
     static final String TITANIUM_ENTRY_CONTRACT_SHA256 =
-            "d9cb0c40eaed8c05e7b634cf2043ac196927d56120be558be3bd091ae1661116";
-    static final Identifier TITANIUM_MODEL = Identifier.parse("minecraft:titanium_compass");
+            "0ce3e6cb700e8fd841637e7117676b0ad54c61213f76bf78c14f90e1a34d1969";
+    static final Identifier TITANIUM_MODEL = Identifier.parse("matcha:titanium_compass");
     static final String TITANIUM_NAME_KEY = "item.kleispack.titanium_compass";
 
     private MatchaCompassCatalog() {
@@ -41,12 +41,12 @@ final class MatchaCompassCatalog {
      * 6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248).
      */
     enum RecipeCompass {
-        COPPER("crafting:copper_compass",
-                "afaf346942b288588aed7fdd018caae5d1a9dc1d1250d4ad8b1d7fdb1bb26a6e",
-                "minecraft:copper_compass", "item.kleispack.copper_compass"),
-        GOLDEN("crafting:golden_compass",
-                "16c631e5ea09614dcdf7625c9631d7ffb2ad5f359e034052031209f1c5bd6fcc",
-                "minecraft:golden_compass", "item.kleispack.golden_compass");
+        COPPER("matcha:crafting/copper_compass",
+                "aeccd676282170cdf6cc468baf4338f64a64d4c5ae4c8e0dede5b545a979af4c",
+                "matcha:copper_compass", "item.kleispack.copper_compass"),
+        GOLDEN("matcha:crafting/golden_compass",
+                "e566c6eb12041dc927b4d9afcf6f6de0799237b3014beb7da256f6f5a22b353e",
+                "matcha:golden_compass", "item.kleispack.golden_compass");
 
         private final Identifier recipeId;
         private final String resultContractSha256;

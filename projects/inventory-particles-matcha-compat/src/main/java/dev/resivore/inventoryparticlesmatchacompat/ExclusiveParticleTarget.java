@@ -49,13 +49,16 @@ enum ExclusiveParticleTarget {
     /** Package-visible for focused tests and for keeping the registry extraction separate. */
     static Optional<ExclusiveParticleTarget> find(StackIdentity stack) {
         if (stack.itemId().equals(Identifier.withDefaultNamespace("poisonous_potato"))) {
-            if (GREEN_CURRY_MODEL.equals(stack.itemModel())) {
+            if (GREEN_CURRY_MODEL.equals(stack.itemModel())
+                    || Identifier.parse("matcha:green_curry").equals(stack.itemModel())) {
                 return Optional.of(GREEN_CURRY);
             }
-            if (RAMEN_MODEL.equals(stack.itemModel())) {
+            if (RAMEN_MODEL.equals(stack.itemModel())
+                    || Identifier.parse("matcha:ramen").equals(stack.itemModel())) {
                 return Optional.of(RAMEN);
             }
-            if (CRYSTAL_HEART_MODEL.equals(stack.itemModel())) {
+            if (CRYSTAL_HEART_MODEL.equals(stack.itemModel())
+                    || Identifier.parse("matcha:heart_container").equals(stack.itemModel())) {
                 return Optional.of(CRYSTAL_HEART);
             }
             return Optional.empty();

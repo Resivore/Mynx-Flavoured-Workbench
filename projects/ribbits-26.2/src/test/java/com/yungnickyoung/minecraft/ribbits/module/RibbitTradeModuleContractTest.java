@@ -341,11 +341,11 @@ class RibbitTradeModuleContractTest {
                 "prospector_electrum:second"), exactInputs);
 
         TradeOfferSpec electrum = offer("prospector_electrum");
-        assertEquals("recipe:crafting:divine_fragment", electrum.second().stack().auditIdentity());
+        assertEquals("recipe:matcha:crafting/divine_fragment", electrum.second().stack().auditIdentity());
         assertEquals(1, electrum.second().count());
         assertTrue(electrum.second().exactComponents(), "plain Turtle Scutes must not match");
-        assertEquals("recipe:crafting:electrum_alloy", electrum.result().auditIdentity());
-        assertEquals("crafting:divine_fragment", FixedStack.DIVINE_FRAGMENT.recipeId().toString());
+        assertEquals("recipe:matcha:crafting/electrum_alloy", electrum.result().auditIdentity());
+        assertEquals("matcha:crafting/divine_fragment", FixedStack.DIVINE_FRAGMENT.recipeId().toString());
         assertEquals("minecraft:turtle_scute", FixedStack.DIVINE_FRAGMENT.expectedItemId().toString());
 
         assertTrue(RibbitTradeModule.allOffers().stream()
@@ -557,7 +557,7 @@ class RibbitTradeModuleContractTest {
         add(offers, "fisherman_axolotl_bucket", "fisherman", 3, glowcaps(1), null,
                 "minecraft:axolotl_bucket", 1, 4);
         add(offers, "fisherman_opal_gate", "fisherman", 4,
-                exact("loot:minecraft:kleis_items/opal", 1), null, "ribbits:glowcap", 16, 2,
+                exact("loot:matcha:treasure/opal", 1), null, "ribbits:glowcap", 16, 2,
                 "always", 0, Gate.FISHERMAN_OPAL);
         add(offers, "fisherman_dry_sponge", "fisherman", 5, glowcaps(1), null,
                 "minecraft:sponge", 4, 1);
@@ -573,33 +573,33 @@ class RibbitTradeModuleContractTest {
         add(offers, "musician_maraca", "nitwit", 0, glowcaps(8), null,
                 "ribbits:maraca", 1, 4);
 
-        fixed(offers, "chef_glow_berry_crumble", 1, 2, "food:glow_berry_crumble", 8, "always", 0);
-        fixed(offers, "chef_honey_ginger_tea", 1, 1, "food:honey_ginger_tea", 8, "always", 0);
-        fixed(offers, "chef_pickled_carrots", 1, 2, "food:pickled_carrots", 8, "chef_daily_1", 0);
-        fixed(offers, "chef_rind_jam", 1, 2, "food:rind_jam", 8, "chef_daily_1", 1);
-        fixed(offers, "chef_gimmari", 2, 4, "food:gimmari", 6, "chef_daily_2", 0);
-        fixed(offers, "chef_bokguk", 2, 4, "food:bokguk", 6, "chef_daily_2", 1);
+        fixed(offers, "chef_glow_berry_crumble", 1, 2, "matcha:food/crafting/glow_berry_crumble", 8, "always", 0);
+        fixed(offers, "chef_honey_ginger_tea", 1, 1, "matcha:food/oven/honey_ginger_tea", 8, "always", 0);
+        fixed(offers, "chef_pickled_carrots", 1, 2, "matcha:food/crafting/pickled_carrots", 8, "chef_daily_1", 0);
+        fixed(offers, "chef_rind_jam", 1, 2, "matcha:food/crafting/rind_jam", 8, "chef_daily_1", 1);
+        fixed(offers, "chef_gimmari", 2, 4, "matcha:food/crafting/gimmari", 6, "chef_daily_2", 0);
+        fixed(offers, "chef_bokguk", 2, 4, "matcha:food/crafting/bokguk", 6, "chef_daily_2", 1);
         String[] tier3Foods = {"golden_pickled_carrots", "melon_sorbet", "pumpkin_empanada",
                 "warped_pizza", "warped_stroganoff"};
         for (int i = 0; i < tier3Foods.length; i++) {
-            fixed(offers, "chef_" + tier3Foods[i], 3, 6, "food:" + tier3Foods[i], 4,
+            fixed(offers, "chef_" + tier3Foods[i], 3, 6, "matcha:food/crafting/" + tier3Foods[i], 4,
                     "chef_daily_3", i);
         }
-        fixed(offers, "chef_sweet_berry_danish", 4, 12, "food:sweet_berry_danish", 2,
+        fixed(offers, "chef_sweet_berry_danish", 4, 12, "matcha:food/crafting/sweet_berry_danish", 2,
                 "chef_daily_4", 0);
-        fixed(offers, "chef_golden_carrot_cupcake", 4, 12, "food:golden_carrot_cupcake", 2,
+        fixed(offers, "chef_golden_carrot_cupcake", 4, 12, "matcha:food/crafting/golden_carrot_cupcake", 2,
                 "chef_daily_4", 1);
-        fixed(offers, "chef_japanese_curry", 5, 20, "food:japanese_curry", 1,
+        fixed(offers, "chef_japanese_curry", 5, 20, "matcha:food/oven/japanese_curry", 1,
                 "chef_master", 0);
-        fixed(offers, "chef_green_curry", 5, 20, "food:green_curry", 1,
+        fixed(offers, "chef_green_curry", 5, 20, "matcha:food/oven/green_curry", 1,
                 "chef_master", 1);
-        fixed(offers, "chef_tonkotsu_ramen", 5, 20, "food:ramen", 1,
+        fixed(offers, "chef_tonkotsu_ramen", 5, 20, "matcha:food/oven/ramen", 1,
                 "chef_master", 2);
 
         add(offers, "sorcerer_failed_map_redemption", "sorcerer", 0,
                 item("minecraft:map", 1), null, "ribbits:toadstool_heart", 1, 16);
         add(offers, "sorcerer_benzene_gate", "sorcerer", 1,
-                exact("recipe:crafting:benzene", 4), null, "ribbits:glowcap", 1, 16,
+                exact("recipe:matcha:crafting/benzene", 4), null, "ribbits:glowcap", 1, 16,
                 "always", 0, Gate.SORCERER_BENZENE);
         String[] colors = {"white", "orange", "magenta", "light_blue", "yellow", "lime",
                 "pink", "gray", "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black"};
@@ -609,11 +609,11 @@ class RibbitTradeModuleContractTest {
                     "customportals:" + color + "_portal_catalyst", 2, 8);
         }
         add(offers, "sorcerer_estus_flask", "sorcerer", 3, glowcaps(2), null,
-                "recipe:crafting:estus_flask", 1, 1);
+                "recipe:ribbits:estus_flask", 1, 1);
         choice(offers, "sorcerer_reach_blessing", "sorcerer", 4, glowcaps(16), null,
-                "recipe:blessings:reach", 1, 1, "sorcerer_blessing", 0);
+                "recipe:matcha:blessing/reach", 1, 1, "sorcerer_blessing", 0);
         choice(offers, "sorcerer_silk_touch_blessing", "sorcerer", 4, glowcaps(16), null,
-                "recipe:blessings:silk_touch", 1, 1, "sorcerer_blessing", 1);
+                "recipe:matcha:blessing/silk_touch", 1, 1, "sorcerer_blessing", 1);
 
         String[][] tier1Tools = {
                 {"golden_shovel", "2"}, {"iron_shovel", "2"}, {"golden_hoe", "4"},
@@ -639,13 +639,13 @@ class RibbitTradeModuleContractTest {
         add(offers, "prospector_pointed_dripstone", "prospector", 2, glowcaps(1), null,
                 "minecraft:pointed_dripstone", 4, 16);
         add(offers, "prospector_carbon_rich_iron", "prospector", 3, glowcaps(2), null,
-                "recipe:crafting:carbon_rich_iron", 1, 8);
+                "recipe:matcha:crafting/carbon_rich_iron", 1, 8);
         choice(offers, "prospector_hepatizon", "prospector", 3, glowcaps(8), null,
-                "recipe:crafting:bronze_alloy", 1, 1, "prospector_bullion", 0);
+                "recipe:matcha:crafting/bronze_alloy", 1, 1, "prospector_bullion", 0);
         choice(offers, "prospector_shakudo", "prospector", 3, glowcaps(16), null,
-                "recipe:crafting:shakudo_alloy", 1, 1, "prospector_bullion", 1);
+                "recipe:matcha:crafting/shakudo_alloy", 1, 1, "prospector_bullion", 1);
         add(offers, "prospector_electrum", "prospector", 3, glowcaps(16),
-                exact("recipe:crafting:divine_fragment", 1), "recipe:crafting:electrum_alloy",
+                exact("recipe:matcha:crafting/divine_fragment", 1), "recipe:matcha:crafting/electrum_alloy",
                 1, 1, "prospector_bullion", 2, Gate.NONE);
 
         String[][] weapons1 = {{"golden_spear", "2"}, {"iron_spear", "2"},

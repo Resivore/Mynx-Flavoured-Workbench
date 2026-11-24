@@ -22,7 +22,8 @@ import org.slf4j.LoggerFactory;
 public final class MatchaHeartDeathCompat implements ModInitializer {
     public static final String MOD_ID = "matcha_heart_death_compat";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    private static final Identifier MATCHA_MODEL = Identifier.withDefaultNamespace("heart_container");
+    private static final Identifier MATCHA_MODEL = Identifier.parse(HeartDataContract.MATCHA_ITEM_MODEL);
+    private static final Identifier LEGACY_MODEL = Identifier.withDefaultNamespace("heart_container");
     private static final Identifier REINFORCED_MODEL = Identifier.fromNamespaceAndPath(MOD_ID, "reinforced_crystal_heart");
 
     public static final AttachmentType<Integer> MAX_HEALTH = AttachmentRegistry.<Integer>builder()
@@ -33,6 +34,13 @@ public final class MatchaHeartDeathCompat implements ModInitializer {
     @Override
     public void onInitialize() {
         HeartItems.register();
+        var container = net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow();
+        if (!net.fabricmc.fabric.api.resource.v1.ResourceLoader.registerBuiltinPack(
+                Identifier.fromNamespaceAndPath(MOD_ID, "heart_progression"), container,
+                Component.literal("Workbench heart progression"),
+                net.fabricmc.fabric.api.resource.v1.pack.PackActivationType.ALWAYS_ENABLED)) {
+            throw new IllegalStateException("Could not enable the Matcha heart progression pack");
+        }
         LootTableEvents.REPLACE.register((key, original, source, registries) -> {
             String resourcePath = HeartDataContract.LOOT_TABLE_RESOURCES.get(key.identifier().toString());
             if (resourcePath == null) {
@@ -47,6 +55,13 @@ public final class MatchaHeartDeathCompat implements ModInitializer {
                 LOGGER.error("FATAL: could not enforce Echo Shard loot contract for {}; aborting data reload",
                         key.identifier(), exception);
                 throw new IllegalStateException("Unsafe Echo Shard loot contract for " + key.identifier(), exception);
+            }
+        });
+        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            ServerPlayer player = handler.getPlayer();
+            setState(player, state(player));
+            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+                sanitizeCrystal(player.getInventory().getItem(slot));
             }
         });
         UseItemCallback.EVENT.register(this::onUse);
@@ -65,15 +80,16 @@ public final class MatchaHeartDeathCompat implements ModInitializer {
     private InteractionResult onUse(net.minecraft.world.entity.player.Player player,
                                     net.minecraft.world.level.Level level,
                                     InteractionHand hand) {
-        if (level.isClientSide() || hand != InteractionHand.MAIN_HAND || !(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResult.PASS;
-        }
         ItemStack stack = player.getItemInHand(hand);
         boolean crystal = isCrystalHeart(stack);
         boolean reinforced = isReinforcedHeart(stack);
         if (!crystal && !reinforced) {
             return InteractionResult.PASS;
         }
+
+        if (hand != InteractionHand.MAIN_HAND) return InteractionResult.FAIL;
+        if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.SUCCESS;
+        if (crystal) sanitizeCrystal(stack);
 
         int before = state(serverPlayer);
         int after = crystal ? HeartRules.afterCrystal(before) : HeartRules.afterReinforced(before);
@@ -97,7 +113,16 @@ public final class MatchaHeartDeathCompat implements ModInitializer {
     }
 
     static boolean isCrystalHeart(ItemStack stack) {
-        return stack.is(Items.POISONOUS_POTATO) && MATCHA_MODEL.equals(stack.get(DataComponents.ITEM_MODEL));
+        Identifier model = stack.get(DataComponents.ITEM_MODEL);
+        return stack.is(Items.POISONOUS_POTATO) && (MATCHA_MODEL.equals(model) || LEGACY_MODEL.equals(model));
+    }
+
+    public static void sanitizeCrystal(ItemStack stack) {
+        if (isCrystalHeart(stack)) {
+            stack.set(DataComponents.ITEM_MODEL, MATCHA_MODEL);
+            stack.remove(DataComponents.DEATH_PROTECTION);
+            stack.remove(DataComponents.CONSUMABLE);
+        }
     }
 
     static boolean isReinforcedHeart(ItemStack stack) {

@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:music_disc/elegy_of_the_abbey",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:heavy_core",
+          "quality": 2
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:treasure/divine_fragment",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:prismarine_crystals",
+          "quality": 8
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:treasure/tanakh",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:treasure/quran",
+          "weight": 3
+        }
+      ]
+    }
+  ]
+}

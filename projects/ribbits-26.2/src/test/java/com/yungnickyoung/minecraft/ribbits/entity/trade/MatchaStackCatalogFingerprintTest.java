@@ -30,47 +30,47 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 class MatchaStackCatalogFingerprintTest {
     private static final Map<FixedStack, String> EXPECTED_RESULT_CONTRACTS = Map.ofEntries(
             entry(FixedStack.GLOW_BERRY_CRUMBLE,
-                    "c064c3201c4c44dedd6f8e9ec51107d6bf8db48cb9ca755b3dd69b4cb8fe54d8"),
+                    "f26a16561d4f6ab37cd524546a6a4c03a65590d10ef2b6060d74bad0f69c26d0"),
             entry(FixedStack.HONEY_GINGER_TEA,
-                    "0e3faaf4946150a2ced63bb76c7ade6763329ed6cf98959cefa125f69d536e02"),
+                    "371e965c948c1e8a8df46a019b911069814342d432a2ae1628395de0e25f5944"),
             entry(FixedStack.PICKLED_CARROTS,
-                    "b844bc604d3c9ac0ef6ccf6dc6eb0a07b4a0290b7ed7d4525b007b572640e8d0"),
+                    "2cad963ecad6876140ad3b545d222f34611f159b296069f3f608177d3cc797af"),
             entry(FixedStack.RIND_JAM,
-                    "0a0b06c482585a83e71ead3addb4ee7629352e091aec34b18fc8b7ec13149734"),
+                    "f054af52683bacfc9abd86b4fdc4cdb67dce08b8e514cf7fd09dc5da8543a4d0"),
             entry(FixedStack.GIMMARI,
-                    "d7e097e932457245e04fd775191a89b77290b36967909ad94e1b539576d85356"),
+                    "6a6d10d5ecf1ca2ccc3a2914b20f6c816a859c371db3e72081bc710921fa95a1"),
             entry(FixedStack.BOKGUK,
-                    "a9c4b66d5822f96f5f6ff1dc130985ed19904f30d71ddc3358bbc50cf72807db"),
+                    "1d424efa6b25858990d5259b2da6a03ff17ea3f20a762b3eba4394d8c9129507"),
             entry(FixedStack.GOLDEN_PICKLED_CARROTS,
-                    "491828999ebf66e4c087b1147ffc02dcd52cce734c87db1895ccdcb09be8bd3b"),
+                    "488ac0a4abafd74f364acc6d79aac51696912ceb50fffbce3b5911b6f60926ba"),
             entry(FixedStack.MELON_SORBET,
-                    "0a0a305672c275c80bc1542da1dafdbdbb9b3b1e6836311fb216f990f0d261be"),
+                    "ac896ede1636afedb077c28a33d72a6bf42a0fd8e0576761497049e73556921a"),
             entry(FixedStack.PUMPKIN_EMPANADA,
-                    "4c8f335cf0b68a6a7c0e081ece849a61bf4fc56780acfdca6af8ec0a61ee10e9"),
+                    "4aa72313400ae49ffb26c257b210df4127df2018ce111d15732fc971259368c2"),
             entry(FixedStack.WARPED_PIZZA,
-                    "3348e8211f9785d168a5e961852a280cfe7467355c32b0637581d4f455d34ef5"),
+                    "e161f06665198d6241bec8d3be5a57627b4f87fcb125961529ce27aac9c6a589"),
             entry(FixedStack.WARPED_STROGANOFF,
-                    "160ef7524ae7b5b7a16c814d45228dbd68add234e5b76066ba6b1836fa80d6cf"),
+                    "075e537632f1bf7c0cc18b9ca5b2d8531ef9ea14dbeda093c2411daf849058c8"),
             entry(FixedStack.SWEET_BERRY_DANISH,
-                    "d4ac8d81e6051ec9443e32000e0873c7ffdf0a270291ee5aeed4c1f5c1608062"),
+                    "8440acfc8fadf6e42a72cd05d48e2ced0bb7b7e00e1b0eb6920d3d1678fbf0ef"),
             entry(FixedStack.GOLDEN_CARROT_CUPCAKE,
-                    "5f10d771f35a3a65fa0af46fd649b45ccc1d40a6568ebd3e34350ef460dafad7"),
+                    "f2e87843ef3303c285057b6fe9b7695c92d67cacc7ae553b28175e268121039f"),
             entry(FixedStack.JAPANESE_CURRY,
-                    "5f0cc28abe03a02a29adac81b2b51a214f9ffcb808cf550f98366be4de8fbc4d"),
+                    "25f04d89698e3fb2d6aeae6872660c801631f38fa12852b291d7fa50d9567925"),
             entry(FixedStack.GREEN_CURRY,
-                    "fb7f996ffe2bbb3b7bac03e8e34f25209436b35e6a3f0213a24e00310a55b10b"),
+                    "7b02e440ea5bd0aa9bb7f6d03adbf8389583c7731f39f2f09bf98ef2813d90ea"),
             entry(FixedStack.TONKOTSU_RAMEN,
-                    "aacd5a5fd956eaca546d5494f7efca863909562291e00cf3552918f2341c0da8"),
+                    "40eee757ea734d1f720d38b222cbf6d7dae9d720be7c3655c7af319faf8c060c"),
             entry(FixedStack.BENZENE,
-                    "e487be207d1243e21ad3e22b2aae4f01f36991e01f0c1c8818bf2563da93474c"),
+                    "bb4fb30940e4151f5be4ae7f6fb23df0a30192e4a9dd258bd50a9933a343cf6e"),
             entry(FixedStack.ESTUS_FLASK,
                     "ec7b84853cad4b17a8edb5992e33604465c12f36b2cfcb1e485307b8aa4cc56a"),
             entry(FixedStack.REACH_BLESSING,
-                    "96a224ce3ea7d251fbb1fad4de8273b1a5ef67045c0c418f1b7b656b35f1e62d"),
+                    "c68cd1485734e645344bab124a553ca6afdbb950e6d9f3466038a63c13f3bc13"),
             entry(FixedStack.SILK_TOUCH_BLESSING,
-                    "07e7a800dad6478c06038ec63ed56784abd21cc0c88e1772594dfd058fbb1cac"),
+                    "872bb5b94ca61cbcf4d589957c19de839b9bc9907831355b4a27ea3eefa677eb"),
             entry(FixedStack.CARBON_RICH_IRON,
-                    "768c3c7d98cec838607b075310f164e044eeb7e6e60bd5fc54c5f2072cb11b06"),
+                    "2bb6ace178337ddf65f0af7e1de9354ac2751da3daef98da60a62903469531fa"),
             entry(FixedStack.HEPATIZON_ALLOY,
                     "eb76460c156a6bd20b103b8ed747e0c6e540ed2a1163fa5f768a5e78de02adf8"),
             entry(FixedStack.SHAKUDO_ALLOY,
@@ -78,9 +78,9 @@ class MatchaStackCatalogFingerprintTest {
             entry(FixedStack.ELECTRUM_ALLOY,
                     "b9d815288f637d303bb5e28ea8ad5cf2d97089debfda218eceb8cb0ef0d41a3f"),
             entry(FixedStack.DIVINE_FRAGMENT,
-                    "593a62e2da9c4c1e3cad1f173bf143b81243a3579e6b9a2a87b0b78582df4174"),
+                    "8fc469fcc5cf34b389bb3b463fe6ae20ee337267c6754e3b6619539a72e96a24"),
             entry(FixedStack.CRYSTAL_HEART,
-                    "34f33cb21c8433418e547ccc97d869097adfe19104331f0885d993d86c16ba6b")
+                    "7c706ab20f974dc6811eb5cb8efe10ad96354c522e9f95526038c360385423fa")
     );
 
     @Test
@@ -116,14 +116,7 @@ class MatchaStackCatalogFingerprintTest {
     @Test
     void divineFragmentContractPinsBaseCountRareRarityAndGlint() {
         JsonElement exact = JsonParser.parseString("""
-                {
-                  "id": "minecraft:turtle_scute",
-                  "count": 9,
-                  "components": {
-                    "minecraft:rarity": "rare",
-                    "minecraft:enchantment_glint_override": true
-                  }
-                }
+                {"components": {"minecraft:enchantment_glint_override": true, "minecraft:rarity": "rare", "minecraft:custom_data": {"version": 1}}, "count": 9, "id": "minecraft:turtle_scute"}
                 """);
         String expected = FixedStack.DIVINE_FRAGMENT.resultContractSha256();
 
@@ -146,13 +139,13 @@ class MatchaStackCatalogFingerprintTest {
 
     @Test
     void crystalHeartAndOpalContractsArePinnedToTheirActiveResourceLocations() {
-        assertEquals(Identifier.parse("crafting:recipe/crystal_heart.json"),
+        assertEquals(Identifier.parse("matcha:recipe/crafting/crystal_heart.json"),
                 MatchaStackCatalog.recipeResource(FixedStack.CRYSTAL_HEART.recipeId()));
-        assertEquals("34f33cb21c8433418e547ccc97d869097adfe19104331f0885d993d86c16ba6b",
+        assertEquals("7c706ab20f974dc6811eb5cb8efe10ad96354c522e9f95526038c360385423fa",
                 FixedStack.CRYSTAL_HEART.resultContractSha256());
-        assertEquals(Identifier.parse("minecraft:loot_table/kleis_items/opal.json"),
+        assertEquals(Identifier.parse("matcha:loot_table/treasure/opal.json"),
                 MatchaStackCatalog.OPAL_LOOT_RESOURCE);
-        assertEquals("81d6a8b292697f291b3025dbfe4b591fbe86a35b1231164cbdd05d8a8bd04c0e",
+        assertEquals("65878efb532070bf49eb65bcf779d108bca3b9a4396e40616ca7540957f01ce6",
                 MatchaStackCatalog.OPAL_ENTRY_CONTRACT_SHA256);
     }
 
@@ -183,11 +176,12 @@ class MatchaStackCatalogFingerprintTest {
 
         Path matchaZip = Path.of(configured).toAbsolutePath().normalize();
         assertTrue(Files.isRegularFile(matchaZip), matchaZip.toString());
-        assertEquals("6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248",
+        assertEquals("966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4",
                 sha256(matchaZip), "immutable Matcha 1.12 archive identity");
 
         try (ZipFile zip = new ZipFile(matchaZip.toFile())) {
             for (FixedStack stack : FixedStack.values()) {
+                if (stack == FixedStack.CRYSTAL_HEART || stack == FixedStack.ESTUS_FLASK) continue;
                 String entryName = "data/" + stack.recipeId().getNamespace() + "/recipe/"
                         + stack.recipeId().getPath() + ".json";
                 JsonElement result = readZipJson(zip, entryName).getAsJsonObject().get("result");
@@ -197,7 +191,7 @@ class MatchaStackCatalogFingerprintTest {
             }
 
             JsonElement opalRoot = readZipJson(zip,
-                    "data/minecraft/loot_table/kleis_items/opal.json");
+                    "data/matcha/loot_table/treasure/opal.json");
             JsonElement opalEntry = opalRoot.getAsJsonObject().getAsJsonArray("pools").get(0)
                     .getAsJsonObject().getAsJsonArray("entries").get(0);
             assertEquals(MatchaStackCatalog.OPAL_ENTRY_CONTRACT_SHA256,
@@ -205,7 +199,7 @@ class MatchaStackCatalogFingerprintTest {
         }
 
         Path crystalRecipe = Path.of(System.getProperty("user.dir"))
-                .resolve("../matcha-heart-death-compat/src/main/resources/data/crafting/recipe/crystal_heart.json")
+                .resolve("../matcha-heart-death-compat/src/main/resources/data/matcha/recipe/crafting/crystal_heart.json")
                 .normalize();
         assertTrue(Files.isRegularFile(crystalRecipe), crystalRecipe.toString());
         try (var reader = Files.newBufferedReader(crystalRecipe, StandardCharsets.UTF_8)) {

@@ -13,24 +13,26 @@ public final class MatchaContract {
     public static final String OWNED_TRADER_TAG = "matcha_beacon_kindling_compat_owned_trader";
     public static final String TIMER_OBJECTIVE = "wandering_trader_timer_score";
 
-    public static final Identifier ITEM_MODEL = Identifier.parse("minecraft:beacon_kindling");
-    public static final Identifier ADVANCEMENT = Identifier.parse("main:mechanics/beacon_kindling");
+    public static final Identifier ITEM_MODEL = Identifier.parse("matcha:beacon_kindling");
+    public static final Identifier ADVANCEMENT = Identifier.parse("matcha:mechanics/beacon_kindling");
     public static final Identifier SUMMON_FUNCTION = Identifier.parse(
-            "main:mechanic/wandering_trader/summon_wandering_trader");
+            "matcha:mechanics/wandering_trader/summon_wandering_trader");
 
     public static final String PLACEMENT_FUNCTION =
-            "main:mechanic/wandering_trader/beacon_kindling_placed";
+            "matcha:mechanics/wandering_trader/beacon_kindling_placed";
     public static final String TIMER_FUNCTION =
-            "main:mechanic/wandering_trader/check_wandering_trader_timer_loop";
+            "matcha:mechanics/wandering_trader/check_wandering_trader_timer_loop";
     public static final String INITIALISE_FUNCTION =
-            "main:mechanic/wandering_trader/initialise_wandering_trader_spawn";
+            "matcha:mechanics/wandering_trader/initialise_wandering_trader_spawn";
     public static final String SUMMON_FUNCTION_ID = SUMMON_FUNCTION.toString();
     public static final String KILL_FUNCTION =
-            "main:mechanic/wandering_trader/kill_wandering_trader";
+            "matcha:mechanics/wandering_trader/kill_wandering_trader";
     public static final String EARLY_KILL_FUNCTION =
-            "main:mechanic/wandering_trader/kill_wandering_trader_early";
+            "matcha:mechanics/wandering_trader/kill_wandering_trader_early";
     public static final String KILL_BEACON_FUNCTION =
-            "main:mechanic/wandering_trader/kill_this_beacon";
+            "matcha:mechanics/wandering_trader/kill_this_beacon";
+
+    public static final String RESET_FUNCTION = "matcha:mechanics/wandering_trader/no_beacons_reset";
 
     private static final Set<String> PATCHED_FUNCTIONS = Set.of(
             PLACEMENT_FUNCTION,
@@ -39,7 +41,7 @@ public final class MatchaContract {
             SUMMON_FUNCTION_ID,
             KILL_FUNCTION,
             EARLY_KILL_FUNCTION,
-            KILL_BEACON_FUNCTION
+            KILL_BEACON_FUNCTION, RESET_FUNCTION
     );
 
     public static final String DUPLICATE_MESSAGE =

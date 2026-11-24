@@ -1832,8 +1832,8 @@ class SmallBrownToadstoolResourceTest(unittest.TestCase):
 
 class DonorBoundaryContractTest(unittest.TestCase):
     def test_exact_accounting_contains_only_approved_visual_members_and_outputs(self) -> None:
-        self.assertEqual("4.1.6+26.2-mynx-canary27", tools.CANDIDATE_VERSION)
-        self.assertEqual(27, tools.CANDIDATE_CANARY)
+        self.assertEqual("4.1.6+26.2-matcha125-canary28", tools.CANDIDATE_VERSION)
+        self.assertEqual(28, tools.CANDIDATE_CANARY)
         self.assertEqual(
             "mynx-ribbits-private-resource-manifest/v1", tools.PRIVATE_MANIFEST_SCHEMA
         )
@@ -2211,6 +2211,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
             "data/ribbits/item_modifier/ribbit_village_explorer_result.json",
             "data/ribbits/loot_table/chests/swamp_hut_map.json",
             "data/ribbits/recipe/toadstool_heart.json",
+            "data/ribbits/trade_item/estus_flask.json",
             "data/ribbits/tags/worldgen/structure/on_ribbit_village_explorer_maps.json",
             "data/ribbits/tags/worldgen/biome/allows_wandering_ribbit_spawns.json",
             "data/ribbits/tags/worldgen/biome/without_wandering_ribbit_spawns.json",
@@ -2385,7 +2386,7 @@ class DonorBoundaryContractTest(unittest.TestCase):
         )
         self.assertEqual(">=4.0.0", tools.REQUIRED_FABRIC_DEPENDENCIES["customportals"])
         self.assertEqual(
-            ">=0.1.10-0",
+            ">=0.2.0-0",
             tools.REQUIRED_FABRIC_DEPENDENCIES["matcha_heart_death_compat"],
         )
 

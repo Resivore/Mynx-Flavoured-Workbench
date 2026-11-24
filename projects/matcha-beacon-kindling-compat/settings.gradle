@@ -6,3 +6,5 @@ pluginManagement {
 }
 
 rootProject.name = 'matcha-beacon-kindling-compat'
+
+includeBuild('../matcha-flavoured-data')

@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 class MatchaColdWaterGuardTest {
     private static final Pattern ARMOR_GUARD = Pattern.compile(
-            "equipment:\\{(head|chest|legs|feet):.*?\"main:freezing_protection\":(\\d+)");
+            "equipment:\\{(head|chest|legs|feet):.*?\"matcha:freezing_protection\":(\\d+)");
 
     @Test
     void packagedGuardRequiresExactLevelThreeOnExactlyTheFourArmorSlots()

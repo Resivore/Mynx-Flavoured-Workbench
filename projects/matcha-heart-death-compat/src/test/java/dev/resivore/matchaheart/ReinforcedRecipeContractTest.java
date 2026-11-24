@@ -131,7 +131,7 @@ final class ReinforcedRecipeContractTest {
         assertTrue(outputComponents.has("!minecraft:consumable"));
 
         assertEquals("minecraft:poisonous_potato", HeartDataContract.MATCHA_BASE_ITEM);
-        assertEquals("minecraft:heart_container", HeartDataContract.MATCHA_ITEM_MODEL);
+        assertEquals("matcha:heart_container", HeartDataContract.MATCHA_ITEM_MODEL);
         assertEquals("item.kleispack.crystal_heart", HeartDataContract.MATCHA_ITEM_NAME);
 
         ItemStack assembled = reinforcedRecipe.assemble(reinforcedInput(

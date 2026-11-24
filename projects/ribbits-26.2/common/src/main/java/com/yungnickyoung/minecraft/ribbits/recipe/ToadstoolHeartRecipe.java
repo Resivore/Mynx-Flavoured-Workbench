@@ -32,7 +32,7 @@ import java.util.List;
  * shaped ingredient would incorrectly accept every poisonous potato.
  */
 public final class ToadstoolHeartRecipe extends CustomRecipe {
-    public static final Identifier CRYSTAL_HEART_MODEL = Identifier.withDefaultNamespace("heart_container");
+    public static final Identifier CRYSTAL_HEART_MODEL = Identifier.fromNamespaceAndPath("matcha", "heart_container");
     public static final ToadstoolHeartRecipe INSTANCE = new ToadstoolHeartRecipe();
     public static final MapCodec<ToadstoolHeartRecipe> CODEC = MapCodec.unit(() -> INSTANCE);
     public static final StreamCodec<RegistryFriendlyByteBuf, ToadstoolHeartRecipe> STREAM_CODEC =
@@ -60,7 +60,11 @@ public final class ToadstoolHeartRecipe extends CustomRecipe {
     }
 
     public static boolean isOriginalCrystalHeart(ItemStack stack) {
-        return ItemStack.isSameItemSameComponents(stack, originalCrystalHeartStack());
+        if (ItemStack.isSameItemSameComponents(stack, originalCrystalHeartStack())) return true;
+        ItemStack saved = originalCrystalHeartStack();
+        saved.set(DataComponents.ITEM_MODEL, Identifier.withDefaultNamespace("heart_container"));
+        saved.remove(DataComponents.CUSTOM_DATA);
+        return ItemStack.isSameItemSameComponents(stack, saved);
     }
 
     public static ItemStack originalCrystalHeartStack() {
@@ -70,6 +74,8 @@ public final class ToadstoolHeartRecipe extends CustomRecipe {
         stack.set(DataComponents.RARITY, Rarity.RARE);
         stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
         stack.remove(DataComponents.CONSUMABLE);
+        net.minecraft.world.item.component.CustomData.update(DataComponents.CUSTOM_DATA, stack,
+                tag -> tag.putInt("version", 1));
         return stack;
     }
 

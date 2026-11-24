@@ -10,26 +10,23 @@ import net.minecraft.resources.Identifier;
 
 public final class MatchaFreezingWaterFunctionEnforcer {
     static final Identifier TARGET_FUNCTION =
-            Identifier.parse("main:environmental/check_freezing_water_conditions");
+            Identifier.parse("matcha:environmental/check_freezing_water_conditions");
     static final Identifier CANONICAL_FUNCTION = Identifier.parse(
             "matcha_frost_protection:environmental/check_freezing_water_conditions");
     static final Identifier CANONICAL_PENALTY_FUNCTION =
             Identifier.parse("matcha_frost_protection:environmental/freezing_water");
     static final String EXPECTED_UPSTREAM_CONDITION_COMMAND =
-            "execute at @a[gamemode=!creative] if block ~ ~1 ~ water run execute unless entity "
-                    + "@p[nbt={equipment:{chest:{components:{\"minecraft:enchantments\":{"
-                    + "\"main:freezing_protection\":3}}}}}] run execute if biome ~ ~ ~ "
-                    + "#minecraft:is_frozen run function main:environmental/freezing_water";
+            "execute as @a[gamemode=!creative,gamemode=!spectator] at @s if block ~ ~1 ~ water run execute unless predicate matcha:armour_enchants/freezing_protection run execute if biome ~ ~ ~ #minecraft:is_frozen run function matcha:environmental/freezing_water";
     static final String EXPECTED_CANONICAL_CONDITION_COMMAND =
-            "execute as @a[gamemode=!creative] at @s if block ~ ~1 ~ water unless entity "
+            "execute as @a[gamemode=!creative,gamemode=!spectator] at @s if block ~ ~1 ~ water unless entity "
                     + "@s[nbt={equipment:{head:{components:{\"minecraft:enchantments\":{"
-                    + "\"main:freezing_protection\":3}}}}}] unless entity "
+                    + "\"matcha:freezing_protection\":3}}}}}] unless entity "
                     + "@s[nbt={equipment:{chest:{components:{\"minecraft:enchantments\":{"
-                    + "\"main:freezing_protection\":3}}}}}] unless entity "
+                    + "\"matcha:freezing_protection\":3}}}}}] unless entity "
                     + "@s[nbt={equipment:{legs:{components:{\"minecraft:enchantments\":{"
-                    + "\"main:freezing_protection\":3}}}}}] unless entity "
+                    + "\"matcha:freezing_protection\":3}}}}}] unless entity "
                     + "@s[nbt={equipment:{feet:{components:{\"minecraft:enchantments\":{"
-                    + "\"main:freezing_protection\":3}}}}}] if biome ~ ~ ~ #minecraft:is_frozen "
+                    + "\"matcha:freezing_protection\":3}}}}}] if biome ~ ~ ~ #minecraft:is_frozen "
                     + "run function matcha_frost_protection:environmental/freezing_water";
     static final List<String> EXPECTED_CANONICAL_PENALTY_COMMANDS = List.of(
             "effect give @s slowness 5 4 true",

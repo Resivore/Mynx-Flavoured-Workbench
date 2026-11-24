@@ -4,15 +4,22 @@
   "version": "${version}",
   "name": "Matcha Frost Protection",
   "description": "Completes Frost Protection's leather-equivalent powdered-snow behavior, generalizes Matcha cold-water immunity, and narrows Blessing of Demeter to Frost Protection III.",
-  "authors": ["Resivore"],
+  "authors": [
+    "Resivore"
+  ],
   "environment": "*",
   "entrypoints": {
-    "main": ["dev.resivore.matchafrost.MatchaFrostProtection"]
+    "main": [
+      "dev.resivore.matchafrost.MatchaFrostProtection"
+    ]
   },
-  "mixins": ["matcha_frost_protection.mixins.json"],
+  "mixins": [
+    "matcha_frost_protection.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.19.3",
     "minecraft": "=26.2",
-    "java": ">=25"
+    "java": ">=25",
+    "workbench_matcha_data_1_12_5": "*"
   }
 }

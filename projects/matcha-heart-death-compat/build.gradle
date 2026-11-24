@@ -10,6 +10,7 @@ base { archivesName = project.archives_base_name }
 repositories { maven { url = 'https://maven.fabricmc.net/' } }
 
 dependencies {
+    testRuntimeOnly('dev.resivore:matcha-flavoured-data') { transitive = false }
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
@@ -21,6 +22,9 @@ dependencies {
 }
 
 processResources {
+    from('src/main/resources/data/matcha') {
+        into 'resourcepacks/heart_progression/data/matcha'
+    }
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') { expand 'version': project.version }
 }

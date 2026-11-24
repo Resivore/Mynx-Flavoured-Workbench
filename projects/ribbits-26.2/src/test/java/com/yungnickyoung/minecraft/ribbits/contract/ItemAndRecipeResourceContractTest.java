@@ -87,7 +87,8 @@ class ItemAndRecipeResourceContractTest {
         assertEquals(2, requirements.size(), "both unlock ingredients are required");
         assertEquals(1, requirements.get(0).getAsJsonArray().size());
         assertEquals("has_small_toadstool", requirements.get(0).getAsJsonArray().get(0).getAsString());
-        assertEquals(1, requirements.get(1).getAsJsonArray().size());
+        assertEquals(2, requirements.get(1).getAsJsonArray().size());
+        assertEquals("has_saved_crystal_heart", requirements.get(1).getAsJsonArray().get(1).getAsString());
         assertEquals("has_original_crystal_heart", requirements.get(1).getAsJsonArray().get(0).getAsString());
         assertTrue(implementation.contains("input.ingredientCount() != 6"));
         assertEquals(5, occurrences(implementation, ".is(toadstool)"));

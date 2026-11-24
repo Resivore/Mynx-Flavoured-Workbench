@@ -25,15 +25,15 @@ final class HeartDataContractTest {
                 "data/minecraft/loot_table/blocks/sculk_shrieker.json"),
                 HeartDataContract.LOOT_TABLE_RESOURCES);
         assertEquals(Map.of(
-                HeartDataContract.RECIPE_ID, "data/crafting/recipe/crystal_heart.json",
-                "crafting:sculk_sensor", "data/crafting/recipe/sculk_sensor.json",
-                "crafting:sculk_shrieker", "data/crafting/recipe/sculk_shrieker.json"),
+                HeartDataContract.RECIPE_ID, "data/matcha/recipe/crafting/crystal_heart.json",
+                "matcha:crafting/sculk_sensor", "data/matcha/recipe/crafting/sculk_sensor.json",
+                "matcha:crafting/sculk_shrieker", "data/matcha/recipe/crafting/sculk_shrieker.json"),
                 HeartDataContract.RECIPE_RESOURCES);
         assertEquals(Map.of(
                 HeartDataContract.ADVANCEMENT_ID,
-                "data/main/advancement/mechanics/heart_container_obtained.json",
-                "main:recipe_unlocks/echo_shard",
-                "data/main/advancement/recipe_unlocks/echo_shard.json"),
+                "data/matcha/advancement/mechanics/crystal_heart_used.json",
+                "matcha:recipe_unlocks/echo_shard",
+                "data/matcha/advancement/recipe_unlocks/echo_shard.json"),
                 HeartDataContract.ADVANCEMENT_RESOURCES);
     }
 

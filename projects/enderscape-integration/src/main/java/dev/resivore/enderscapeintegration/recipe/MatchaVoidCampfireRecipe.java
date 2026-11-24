@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  * authoritative identity without creating or registering a companion item.
  */
 public final class MatchaVoidCampfireRecipe extends CustomRecipe {
-    public static final Identifier MATCHA_KINDLING_MODEL = Identifier.withDefaultNamespace("beacon_kindling");
+    public static final Identifier MATCHA_KINDLING_MODEL = Identifier.parse("matcha:beacon_kindling");
     public static final Identifier VOID_SHALE_ID = Identifier.parse("enderscape:void_shale");
     public static final Identifier VOID_CAMPFIRE_ID = Identifier.parse("enderscape:void_campfire");
     public static final MatchaVoidCampfireRecipe INSTANCE = new MatchaVoidCampfireRecipe();
@@ -128,7 +128,8 @@ public final class MatchaVoidCampfireRecipe extends CustomRecipe {
 
     public static boolean isMatchaKindling(ItemStack stack) {
         return stack.is(Items.CHICKEN_SPAWN_EGG)
-                && MATCHA_KINDLING_MODEL.equals(stack.get(DataComponents.ITEM_MODEL));
+                && (MATCHA_KINDLING_MODEL.equals(stack.get(DataComponents.ITEM_MODEL))
+                    || Identifier.withDefaultNamespace("beacon_kindling").equals(stack.get(DataComponents.ITEM_MODEL)));
     }
 
     static boolean isVoidShaleId(Identifier id) {
@@ -148,8 +149,24 @@ public final class MatchaVoidCampfireRecipe extends CustomRecipe {
 
     /** The exact component-qualified input exposed by the authoritative display. */
     public static ItemStack matchaKindlingDisplayStack() {
-        ItemStack stack = new ItemStack(Items.CHICKEN_SPAWN_EGG);
-        stack.set(DataComponents.ITEM_MODEL, MATCHA_KINDLING_MODEL);
-        return stack;
+        return DisplayStack.KINDLING.copy();
+    }
+
+    private static final class DisplayStack {
+        private static final ItemStack KINDLING = read();
+
+        private static ItemStack read() {
+            try (var input = MatchaVoidCampfireRecipe.class.getResourceAsStream("/enderscape_integration/beacon_kindling.json")) {
+                if (input == null) throw new IllegalStateException("Missing Matcha Kindling display");
+                var registry = net.minecraft.core.RegistryAccess.fromRegistryOfRegistries(
+                        net.minecraft.core.registries.BuiltInRegistries.REGISTRY);
+                var json = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(
+                        input, java.nio.charset.StandardCharsets.UTF_8));
+                return ItemStack.CODEC.parse(registry.createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE),
+                        json).getOrThrow();
+            } catch (java.io.IOException e) {
+                throw new IllegalStateException("Cannot load Matcha Kindling display", e);
+            }
+        }
     }
 }

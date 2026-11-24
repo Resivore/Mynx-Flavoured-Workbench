@@ -5,7 +5,9 @@
   "mixins": [
     "RecipeManagerMixin",
     "ServerAdvancementManagerMixin",
-    "ServerFunctionManagerMixin"
+    "ServerFunctionManagerMixin",
+    "LivingEntityMixin",
+    "HeartPackPriorityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

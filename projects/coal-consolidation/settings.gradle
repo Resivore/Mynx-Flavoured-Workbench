@@ -6,3 +6,5 @@ pluginManagement {
 }
 
 rootProject.name = 'coal-consolidation'
+
+includeBuild('../matcha-flavoured-data')

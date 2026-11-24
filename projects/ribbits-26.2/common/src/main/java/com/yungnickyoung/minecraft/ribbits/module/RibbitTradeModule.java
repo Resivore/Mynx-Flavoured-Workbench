@@ -90,7 +90,7 @@ public final class RibbitTradeModule {
             if (this.fixedStack != null) {
                 return "recipe:" + this.fixedStack.recipeId();
             }
-            return this.opal ? "loot:minecraft:kleis_items/opal" : this.registryId;
+            return this.opal ? "loot:matcha:treasure/opal" : this.registryId;
         }
     }
 

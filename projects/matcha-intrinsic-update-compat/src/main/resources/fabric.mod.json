@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "matcha_intrinsic_update_compat",
+  "version": "${version}",
+  "name": "Matcha Intrinsic Update Compatibility",
+  "description": "Completes the six slot-local equipment update writes in Matcha 1.12.5.",
+  "environment": "*",
+  "authors": [
+    "Resivore compatibility workbench"
+  ],
+  "license": "CC-BY-NC-SA-4.0",
+  "depends": {
+    "minecraft": "26.2",
+    "fabricloader": ">=0.19.3",
+    "fabric-resource-loader-v1": "*",
+    "workbench_matcha_data_1_12_5": "*"
+  }
+}

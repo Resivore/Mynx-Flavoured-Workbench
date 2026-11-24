@@ -3,7 +3,8 @@
   "package": "dev.resivore.coalconsolidation.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "RecipeManagerMixin"
+    "RecipeManagerMixin",
+    "CoalPackPriorityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

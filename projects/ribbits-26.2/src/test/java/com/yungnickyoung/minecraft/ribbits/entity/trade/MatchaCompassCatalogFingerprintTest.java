@@ -25,35 +25,35 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class MatchaCompassCatalogFingerprintTest {
     private static final String MATCHA_SHA256 =
-            "6209783021c358044abedabacee471faff5bd4080437d4e3b5e51963f1804248";
+            "966843d0aeb3860479721ef34791a631e62bc225fdaa918dd2ad90c49977e5b4";
 
     @Test
     void recipeAndLootFingerprintsPinAllThreeOptionalCompassContracts() {
         assertEquals(2, MatchaCompassCatalog.RecipeCompass.values().length);
-        assertEquals(Identifier.parse("crafting:copper_compass"),
+        assertEquals(Identifier.parse("matcha:crafting/copper_compass"),
                 MatchaCompassCatalog.RecipeCompass.COPPER.recipeId());
-        assertEquals("afaf346942b288588aed7fdd018caae5d1a9dc1d1250d4ad8b1d7fdb1bb26a6e",
+        assertEquals("aeccd676282170cdf6cc468baf4338f64a64d4c5ae4c8e0dede5b545a979af4c",
                 MatchaCompassCatalog.RecipeCompass.COPPER.resultContractSha256());
-        assertEquals(Identifier.parse("minecraft:copper_compass"),
+        assertEquals(Identifier.parse("matcha:copper_compass"),
                 MatchaCompassCatalog.RecipeCompass.COPPER.itemModel());
         assertEquals("item.kleispack.copper_compass",
                 MatchaCompassCatalog.RecipeCompass.COPPER.itemNameKey());
 
-        assertEquals(Identifier.parse("crafting:golden_compass"),
+        assertEquals(Identifier.parse("matcha:crafting/golden_compass"),
                 MatchaCompassCatalog.RecipeCompass.GOLDEN.recipeId());
-        assertEquals("16c631e5ea09614dcdf7625c9631d7ffb2ad5f359e034052031209f1c5bd6fcc",
+        assertEquals("e566c6eb12041dc927b4d9afcf6f6de0799237b3014beb7da256f6f5a22b353e",
                 MatchaCompassCatalog.RecipeCompass.GOLDEN.resultContractSha256());
-        assertEquals(Identifier.parse("minecraft:golden_compass"),
+        assertEquals(Identifier.parse("matcha:golden_compass"),
                 MatchaCompassCatalog.RecipeCompass.GOLDEN.itemModel());
         assertEquals("item.kleispack.golden_compass",
                 MatchaCompassCatalog.RecipeCompass.GOLDEN.itemNameKey());
 
         assertEquals(Identifier.parse(
-                        "minecraft:loot_table/chests/equipment/special_compass.json"),
+                        "matcha:loot_table/equipment/compass/titanium.json"),
                 MatchaCompassCatalog.TITANIUM_LOOT_RESOURCE);
-        assertEquals("d9cb0c40eaed8c05e7b634cf2043ac196927d56120be558be3bd091ae1661116",
+        assertEquals("0ce3e6cb700e8fd841637e7117676b0ad54c61213f76bf78c14f90e1a34d1969",
                 MatchaCompassCatalog.TITANIUM_ENTRY_CONTRACT_SHA256);
-        assertEquals(Identifier.parse("minecraft:titanium_compass"),
+        assertEquals(Identifier.parse("matcha:titanium_compass"),
                 MatchaCompassCatalog.TITANIUM_MODEL);
         assertEquals("item.kleispack.titanium_compass",
                 MatchaCompassCatalog.TITANIUM_NAME_KEY);
@@ -62,38 +62,13 @@ class MatchaCompassCatalogFingerprintTest {
     @Test
     void canonicalContractsRejectModelNameAndBaseItemDrift() {
         JsonElement copper = JsonParser.parseString("""
-                {
-                  "components": {
-                    "minecraft:item_model": "minecraft:copper_compass",
-                    "minecraft:item_name": {"translate": "item.kleispack.copper_compass"}
-                  },
-                  "count": 1,
-                  "id": "minecraft:compass"
-                }
+                {"components": {"minecraft:item_model": "matcha:copper_compass", "minecraft:item_name": {"translate": "item.kleispack.copper_compass"}, "minecraft:custom_data": {"version": 1}}, "count": 1, "id": "minecraft:compass"}
                 """);
         JsonElement golden = JsonParser.parseString("""
-                {
-                  "components": {
-                    "minecraft:item_model": "minecraft:golden_compass",
-                    "minecraft:item_name": {"translate": "item.kleispack.golden_compass"}
-                  },
-                  "count": 1,
-                  "id": "minecraft:compass"
-                }
+                {"components": {"minecraft:item_model": "matcha:golden_compass", "minecraft:item_name": {"translate": "item.kleispack.golden_compass"}, "minecraft:custom_data": {"version": 1}}, "count": 1, "id": "minecraft:compass"}
                 """);
         JsonElement titanium = JsonParser.parseString("""
-                {
-                  "type": "minecraft:item",
-                  "name": "minecraft:compass",
-                  "quality": 2,
-                  "functions": [{
-                    "function": "minecraft:set_components",
-                    "components": {
-                      "minecraft:item_model": "minecraft:titanium_compass",
-                      "minecraft:item_name": {"translate": "item.kleispack.titanium_compass"}
-                    }
-                  }]
-                }
+                {"type": "minecraft:item", "name": "minecraft:compass", "functions": [{"function": "minecraft:set_components", "components": {"minecraft:item_model": "matcha:titanium_compass", "minecraft:item_name": {"translate": "item.kleispack.titanium_compass"}, "minecraft:custom_data": {"version": 1}}}]}
                 """);
 
         assertEquals(MatchaCompassCatalog.RecipeCompass.COPPER.resultContractSha256(),
@@ -141,7 +116,7 @@ class MatchaCompassCatalogFingerprintTest {
             }
 
             JsonElement titaniumRoot = readZipJson(zip,
-                    "data/minecraft/loot_table/chests/equipment/special_compass.json");
+                    "data/matcha/loot_table/equipment/compass/titanium.json");
             JsonElement titaniumEntry = titaniumRoot.getAsJsonObject()
                     .getAsJsonArray("pools").get(0).getAsJsonObject()
                     .getAsJsonArray("entries").get(0);

@@ -34,13 +34,13 @@ class CoordinatorArchitectureTest {
     private static final String SUMMON_RECORD = "dev/resivore/matchabeacon/state/SummonRecord.java";
 
     private static final Set<String> EXPECTED_PATCHED_IDS = Set.of(
-            "main:mechanic/wandering_trader/beacon_kindling_placed",
-            "main:mechanic/wandering_trader/check_wandering_trader_timer_loop",
-            "main:mechanic/wandering_trader/initialise_wandering_trader_spawn",
-            "main:mechanic/wandering_trader/summon_wandering_trader",
-            "main:mechanic/wandering_trader/kill_wandering_trader",
-            "main:mechanic/wandering_trader/kill_wandering_trader_early",
-            "main:mechanic/wandering_trader/kill_this_beacon");
+            "matcha:mechanics/wandering_trader/beacon_kindling_placed",
+            "matcha:mechanics/wandering_trader/check_wandering_trader_timer_loop",
+            "matcha:mechanics/wandering_trader/initialise_wandering_trader_spawn",
+            "matcha:mechanics/wandering_trader/summon_wandering_trader",
+            "matcha:mechanics/wandering_trader/kill_wandering_trader",
+            "matcha:mechanics/wandering_trader/kill_wandering_trader_early",
+            "matcha:mechanics/wandering_trader/kill_this_beacon", "matcha:mechanics/wandering_trader/no_beacons_reset");
 
     @Test
     void coordinatorUsesServerGlobalSavedDataAndExactServerEvents() throws IOException {
@@ -107,7 +107,7 @@ class CoordinatorArchitectureTest {
         String coordinator = normalized(source(COORDINATOR));
 
         Set<String> actualIds = new HashSet<>();
-        Matcher ids = Pattern.compile("\"(main:mechanic/wandering_trader/[a-z_]+)\"")
+        Matcher ids = Pattern.compile("\"(matcha:mechanics/wandering_trader/[a-z_]+)\"")
                 .matcher(contract);
         while (ids.find()) {
             actualIds.add(ids.group(1));
@@ -118,7 +118,7 @@ class CoordinatorArchitectureTest {
         Set<String> expectedConstants = Set.of(
                 "PLACEMENT_FUNCTION", "TIMER_FUNCTION", "INITIALISE_FUNCTION",
                 "SUMMON_FUNCTION_ID", "KILL_FUNCTION", "EARLY_KILL_FUNCTION",
-                "KILL_BEACON_FUNCTION");
+                "KILL_BEACON_FUNCTION", "RESET_FUNCTION");
         String patchedSet = section(contract, "PATCHED_FUNCTIONS = Set.of(", ");");
         Set<String> actualConstants = new HashSet<>();
         Matcher constants = Pattern.compile("\\b[A-Z][A-Z0-9_]+\\b").matcher(patchedSet);

@@ -42,72 +42,72 @@ import java.util.TreeMap;
 public final class MatchaStackCatalog {
     private static final Gson CANONICAL_GSON = new GsonBuilder().disableHtmlEscaping().create();
     static final Identifier OPAL_LOOT_RESOURCE =
-            Identifier.parse("minecraft:loot_table/kleis_items/opal.json");
+            Identifier.parse("matcha:loot_table/treasure/opal.json");
     static final String OPAL_ENTRY_CONTRACT_SHA256 =
-            "81d6a8b292697f291b3025dbfe4b591fbe86a35b1231164cbdd05d8a8bd04c0e";
+            "65878efb532070bf49eb65bcf779d108bca3b9a4396e40616ca7540957f01ce6";
 
     private MatchaStackCatalog() {
     }
 
     /**
      * SHA-256 values cover canonicalized recipe {@code result} JSON, not protected resource bytes.
-     * Matcha contracts were derived from immutable Matcha_Flavoured_1_12.zip
-     * (SHA-256 6209783021C358044ABEDABACEE471FAFF5BD4080437D4E3B5E51963F1804248).
+     * Recipe contracts use MF_1_12_5_26_2.zip. The offer-only Estus Flask retains the
+     * Matcha Flavoured 1.12 potion by Klei (CC BY-NC-SA 4.0).
      * Crystal Heart is also verified against the coordinated matcha-heart-death-compat recipe.
      */
     public enum FixedStack {
-        GLOW_BERRY_CRUMBLE("food:glow_berry_crumble", "minecraft:poisonous_potato",
-                "c064c3201c4c44dedd6f8e9ec51107d6bf8db48cb9ca755b3dd69b4cb8fe54d8"),
-        HONEY_GINGER_TEA("food:honey_ginger_tea", "minecraft:poisonous_potato",
-                "0e3faaf4946150a2ced63bb76c7ade6763329ed6cf98959cefa125f69d536e02"),
-        PICKLED_CARROTS("food:pickled_carrots", "minecraft:poisonous_potato",
-                "b844bc604d3c9ac0ef6ccf6dc6eb0a07b4a0290b7ed7d4525b007b572640e8d0"),
-        RIND_JAM("food:rind_jam", "minecraft:poisonous_potato",
-                "0a0b06c482585a83e71ead3addb4ee7629352e091aec34b18fc8b7ec13149734"),
-        GIMMARI("food:gimmari", "minecraft:poisonous_potato",
-                "d7e097e932457245e04fd775191a89b77290b36967909ad94e1b539576d85356"),
-        BOKGUK("food:bokguk", "minecraft:poisonous_potato",
-                "a9c4b66d5822f96f5f6ff1dc130985ed19904f30d71ddc3358bbc50cf72807db"),
-        GOLDEN_PICKLED_CARROTS("food:golden_pickled_carrots", "minecraft:poisonous_potato",
-                "491828999ebf66e4c087b1147ffc02dcd52cce734c87db1895ccdcb09be8bd3b"),
-        MELON_SORBET("food:melon_sorbet", "minecraft:poisonous_potato",
-                "0a0a305672c275c80bc1542da1dafdbdbb9b3b1e6836311fb216f990f0d261be"),
-        PUMPKIN_EMPANADA("food:pumpkin_empanada", "minecraft:poisonous_potato",
-                "4c8f335cf0b68a6a7c0e081ece849a61bf4fc56780acfdca6af8ec0a61ee10e9"),
-        WARPED_PIZZA("food:warped_pizza", "minecraft:poisonous_potato",
-                "3348e8211f9785d168a5e961852a280cfe7467355c32b0637581d4f455d34ef5"),
-        WARPED_STROGANOFF("food:warped_stroganoff", "minecraft:poisonous_potato",
-                "160ef7524ae7b5b7a16c814d45228dbd68add234e5b76066ba6b1836fa80d6cf"),
-        SWEET_BERRY_DANISH("food:sweet_berry_danish", "minecraft:poisonous_potato",
-                "d4ac8d81e6051ec9443e32000e0873c7ffdf0a270291ee5aeed4c1f5c1608062"),
-        GOLDEN_CARROT_CUPCAKE("food:golden_carrot_cupcake", "minecraft:poisonous_potato",
-                "5f10d771f35a3a65fa0af46fd649b45ccc1d40a6568ebd3e34350ef460dafad7"),
-        JAPANESE_CURRY("food:japanese_curry", "minecraft:poisonous_potato",
-                "5f0cc28abe03a02a29adac81b2b51a214f9ffcb808cf550f98366be4de8fbc4d"),
-        GREEN_CURRY("food:green_curry", "minecraft:poisonous_potato",
-                "fb7f996ffe2bbb3b7bac03e8e34f25209436b35e6a3f0213a24e00310a55b10b"),
-        TONKOTSU_RAMEN("food:ramen", "minecraft:poisonous_potato",
-                "aacd5a5fd956eaca546d5494f7efca863909562291e00cf3552918f2341c0da8"),
-        BENZENE("crafting:benzene", "minecraft:endermite_spawn_egg",
-                "e487be207d1243e21ad3e22b2aae4f01f36991e01f0c1c8818bf2563da93474c"),
-        ESTUS_FLASK("crafting:estus_flask", "minecraft:potion",
+        GLOW_BERRY_CRUMBLE("matcha:food/crafting/glow_berry_crumble", "minecraft:poisonous_potato",
+                "f26a16561d4f6ab37cd524546a6a4c03a65590d10ef2b6060d74bad0f69c26d0"),
+        HONEY_GINGER_TEA("matcha:food/oven/honey_ginger_tea", "minecraft:poisonous_potato",
+                "371e965c948c1e8a8df46a019b911069814342d432a2ae1628395de0e25f5944"),
+        PICKLED_CARROTS("matcha:food/crafting/pickled_carrots", "minecraft:poisonous_potato",
+                "2cad963ecad6876140ad3b545d222f34611f159b296069f3f608177d3cc797af"),
+        RIND_JAM("matcha:food/crafting/rind_jam", "minecraft:poisonous_potato",
+                "f054af52683bacfc9abd86b4fdc4cdb67dce08b8e514cf7fd09dc5da8543a4d0"),
+        GIMMARI("matcha:food/crafting/gimmari", "minecraft:poisonous_potato",
+                "6a6d10d5ecf1ca2ccc3a2914b20f6c816a859c371db3e72081bc710921fa95a1"),
+        BOKGUK("matcha:food/crafting/bokguk", "minecraft:poisonous_potato",
+                "1d424efa6b25858990d5259b2da6a03ff17ea3f20a762b3eba4394d8c9129507"),
+        GOLDEN_PICKLED_CARROTS("matcha:food/crafting/golden_pickled_carrots", "minecraft:poisonous_potato",
+                "488ac0a4abafd74f364acc6d79aac51696912ceb50fffbce3b5911b6f60926ba"),
+        MELON_SORBET("matcha:food/crafting/melon_sorbet", "minecraft:poisonous_potato",
+                "ac896ede1636afedb077c28a33d72a6bf42a0fd8e0576761497049e73556921a"),
+        PUMPKIN_EMPANADA("matcha:food/crafting/pumpkin_empanada", "minecraft:poisonous_potato",
+                "4aa72313400ae49ffb26c257b210df4127df2018ce111d15732fc971259368c2"),
+        WARPED_PIZZA("matcha:food/crafting/warped_pizza", "minecraft:poisonous_potato",
+                "e161f06665198d6241bec8d3be5a57627b4f87fcb125961529ce27aac9c6a589"),
+        WARPED_STROGANOFF("matcha:food/crafting/warped_stroganoff", "minecraft:poisonous_potato",
+                "075e537632f1bf7c0cc18b9ca5b2d8531ef9ea14dbeda093c2411daf849058c8"),
+        SWEET_BERRY_DANISH("matcha:food/crafting/sweet_berry_danish", "minecraft:poisonous_potato",
+                "8440acfc8fadf6e42a72cd05d48e2ced0bb7b7e00e1b0eb6920d3d1678fbf0ef"),
+        GOLDEN_CARROT_CUPCAKE("matcha:food/crafting/golden_carrot_cupcake", "minecraft:poisonous_potato",
+                "f2e87843ef3303c285057b6fe9b7695c92d67cacc7ae553b28175e268121039f"),
+        JAPANESE_CURRY("matcha:food/oven/japanese_curry", "minecraft:poisonous_potato",
+                "25f04d89698e3fb2d6aeae6872660c801631f38fa12852b291d7fa50d9567925"),
+        GREEN_CURRY("matcha:food/oven/green_curry", "minecraft:poisonous_potato",
+                "7b02e440ea5bd0aa9bb7f6d03adbf8389583c7731f39f2f09bf98ef2813d90ea"),
+        TONKOTSU_RAMEN("matcha:food/oven/ramen", "minecraft:poisonous_potato",
+                "40eee757ea734d1f720d38b222cbf6d7dae9d720be7c3655c7af319faf8c060c"),
+        BENZENE("matcha:crafting/benzene", "minecraft:endermite_spawn_egg",
+                "bb4fb30940e4151f5be4ae7f6fb23df0a30192e4a9dd258bd50a9933a343cf6e"),
+        ESTUS_FLASK("ribbits:estus_flask", "minecraft:potion",
                 "ec7b84853cad4b17a8edb5992e33604465c12f36b2cfcb1e485307b8aa4cc56a"),
-        REACH_BLESSING("blessings:reach", "minecraft:enchanted_book",
-                "96a224ce3ea7d251fbb1fad4de8273b1a5ef67045c0c418f1b7b656b35f1e62d"),
-        SILK_TOUCH_BLESSING("blessings:silk_touch", "minecraft:enchanted_book",
-                "07e7a800dad6478c06038ec63ed56784abd21cc0c88e1772594dfd058fbb1cac"),
-        CARBON_RICH_IRON("crafting:carbon_rich_iron", "minecraft:piglin_brute_spawn_egg",
-                "768c3c7d98cec838607b075310f164e044eeb7e6e60bd5fc54c5f2072cb11b06"),
-        HEPATIZON_ALLOY("crafting:bronze_alloy", "minecraft:phantom_membrane",
+        REACH_BLESSING("matcha:blessing/reach", "minecraft:enchanted_book",
+                "c68cd1485734e645344bab124a553ca6afdbb950e6d9f3466038a63c13f3bc13"),
+        SILK_TOUCH_BLESSING("matcha:blessing/silk_touch", "minecraft:enchanted_book",
+                "872bb5b94ca61cbcf4d589957c19de839b9bc9907831355b4a27ea3eefa677eb"),
+        CARBON_RICH_IRON("matcha:crafting/carbon_rich_iron", "minecraft:piglin_brute_spawn_egg",
+                "2bb6ace178337ddf65f0af7e1de9354ac2751da3daef98da60a62903469531fa"),
+        HEPATIZON_ALLOY("matcha:crafting/bronze_alloy", "minecraft:phantom_membrane",
                 "eb76460c156a6bd20b103b8ed747e0c6e540ed2a1163fa5f768a5e78de02adf8"),
-        SHAKUDO_ALLOY("crafting:shakudo_alloy", "minecraft:shulker_shell",
+        SHAKUDO_ALLOY("matcha:crafting/shakudo_alloy", "minecraft:shulker_shell",
                 "89b858dfdffadc865c29f9ca055869fbd70a913992c12f03a346e38a0493dc41"),
-        ELECTRUM_ALLOY("crafting:electrum_alloy", "minecraft:heart_of_the_sea",
+        ELECTRUM_ALLOY("matcha:crafting/electrum_alloy", "minecraft:heart_of_the_sea",
                 "b9d815288f637d303bb5e28ea8ad5cf2d97089debfda218eceb8cb0ef0d41a3f"),
-        DIVINE_FRAGMENT("crafting:divine_fragment", "minecraft:turtle_scute",
-                "593a62e2da9c4c1e3cad1f173bf143b81243a3579e6b9a2a87b0b78582df4174"),
-        CRYSTAL_HEART("crafting:crystal_heart", "minecraft:poisonous_potato",
-                "34f33cb21c8433418e547ccc97d869097adfe19104331f0885d993d86c16ba6b");
+        DIVINE_FRAGMENT("matcha:crafting/divine_fragment", "minecraft:turtle_scute",
+                "8fc469fcc5cf34b389bb3b463fe6ae20ee337267c6754e3b6619539a72e96a24"),
+        CRYSTAL_HEART("matcha:crafting/crystal_heart", "minecraft:poisonous_potato",
+                "7c706ab20f974dc6811eb5cb8efe10ad96354c522e9f95526038c360385423fa");
 
         private final Identifier recipeId;
         private final Identifier expectedItemId;
@@ -137,6 +137,14 @@ public final class MatchaStackCatalog {
             throw new IllegalStateException("Exact Matcha stacks may only be resolved server-side");
         }
 
+        if (fixedStack == FixedStack.ESTUS_FLASK) {
+            // 1.12.5 removed this recipe. Keep the accepted offer-only potion and its exact components.
+            var result = readJson(serverLevel.getServer().getResourceManager(),
+                    Identifier.parse("ribbits:trade_item/estus_flask.json"));
+            validateFingerprint("Ribbit Estus Flask offer", result, fixedStack.resultContractSha256());
+            return ItemStack.CODEC.parse(serverLevel.registryAccess().createSerializationContext(
+                    com.mojang.serialization.JsonOps.INSTANCE), result).getOrThrow();
+        }
         validateRecipeResultContract(serverLevel, fixedStack);
         ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, fixedStack.recipeId());
         RecipeHolder<?> holder = serverLevel.recipeAccess().byKey(key).orElseThrow(() ->
@@ -157,12 +165,16 @@ public final class MatchaStackCatalog {
                 + fixedStack.recipeId());
     }
 
-    /** Exact current Opal loot-stack contract from minecraft:kleis_items/opal. */
+    /** Exact current Opal loot-stack contract from matcha:treasure/opal. */
     public static ItemStack opal() {
-        ItemStack stack = new ItemStack(Items.FERMENTED_SPIDER_EYE);
-        stack.set(DataComponents.ITEM_MODEL, Identifier.parse("minecraft:opal"));
+        ItemStack stack = new ItemStack(Items.POISONOUS_POTATO);
+        stack.set(DataComponents.ITEM_MODEL, Identifier.parse("matcha:opal"));
         stack.set(DataComponents.ITEM_NAME,
                 Component.translatable("item.kleispack.opal").withColor(0xAB85AD));
+        stack.remove(DataComponents.CONSUMABLE);
+        var version = new net.minecraft.nbt.CompoundTag();
+        version.putInt("version", 1);
+        stack.set(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(version));
         return stack;
     }
 
@@ -179,7 +191,7 @@ public final class MatchaStackCatalog {
         }
         validateOpalContract(level);
         ItemStack opal = opal();
-        if (!Identifier.parse("minecraft:fermented_spider_eye")
+        if (!Identifier.parse("minecraft:poisonous_potato")
                 .equals(BuiltInRegistries.ITEM.getKey(opal.getItem()))) {
             throw new IllegalStateException("Opal base-item contract changed");
         }

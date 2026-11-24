@@ -15,7 +15,7 @@
   "result": {
     "components": {
       "minecraft:stored_enchantments": {
-        "main:freezing_protection": 3
+        "matcha:freezing_protection": 3
       },
       "minecraft:item_name": {
         "translate": "item.kleispack.blessing"
@@ -27,7 +27,7 @@
           "italic": false
         }
       ],
-      "minecraft:item_model": "minecraft:blessing_demeter"
+      "minecraft:item_model": "matcha:blessing_demeter"
     },
     "count": 1,
     "id": "minecraft:enchanted_book"

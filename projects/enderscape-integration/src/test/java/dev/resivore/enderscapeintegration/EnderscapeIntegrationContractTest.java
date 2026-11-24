@@ -39,13 +39,13 @@ final class EnderscapeIntegrationContractTest {
             "stronghold/spawner/basic", "supplements/end_city_treasure", "supplements/stronghold_library");
     private static final Set<String> REMOVED_LOOT_ITEMS = Set.of("enderscape:mirror", "enderscape:dagger");
     private static final Map<String, String> MATCHA_SOURCE_HASHES = Map.of(
-            "food/recipe/bread.json", "af1b66671b199b4fe6d7f828e3354928c570c6d8af71a3c93e01ca5342ccc3cb",
-            "food/recipe/golden_carrot.json", "e2a10c7adecfa1f5c543de7faff54398f94bcf66e3a8d5fd955589a6010e8ba9",
-            "minecraft/loot_table/food/carrot.json", "3a835cbbbb03bd1f44c6ab69b321746527f9d22308a95f8075f7299cd05f80d4",
-            "minecraft/loot_table/food/golden_apple.json", "e0bc60586726b342e6e588dccebe4b1970c39618cc6dcfc1e12d6fbed1ae0563",
-            "minecraft/loot_table/food/enchanted_golden_apple.json", "98cd922eb2666c0235072eab4fc9cf4a1ad2e8834da44dff17da86bdac1dfa44",
-            "minecraft/loot_table/blocks/chorus_plant.json", "9e3bf88454f5badccadda87d962913df073776b35b64d4731856e8b87b849a4e",
-            "crafting/recipe/beacon_kindling.json", "e2a91a3d1f9f29c183561bf720967bc41b87e8be1693d6918d07462181ba1fb1");
+            "matcha/recipe/food/oven/bread.json", "b0ff60be2dd3d2df3371c4205ac44ac988cd164dc50bb4fd47d7acc9ba7c47bb",
+            "matcha/recipe/food/crafting/golden_carrot.json", "27619fe1476fb35bdf49f0675474d9a7e983dfe73707db7f450d9b09287c73f7",
+            "matcha/loot_table/food/minecraft/carrot.json", "421e463c24057d1b70689c9eb72eba7b8405800fcd284b4ad451d97db96c754a",
+            "matcha/loot_table/food/minecraft/golden_apple.json", "d6f321ace78c3d6d4d8eb2435d40cd0b1627495ed40681394bc2d26a9ea8be2f",
+            "matcha/loot_table/food/minecraft/enchanted_golden_apple.json", "468041d0097aad534e072e51b5f53534c6c5597d571aa72030f7e38e6b5dfc3d",
+            "matcha/loot_table/food/minecraft/chorus_fruit.json", "6010967d62847fae950407fc6fce1329b7e3f159a279139a410423bd0a0ea64f",
+            "matcha/recipe/crafting/beacon_kindling.json", "e42435adbe34b6d3654a5cf1f6c9e75f38d0797ce125eaa5f2258b128fbf4fed");
 
     @Test
     void exactInputsAndMatchaIdentityAuthoritiesRemainPinned() throws Exception {
@@ -88,17 +88,19 @@ final class EnderscapeIntegrationContractTest {
     @Test
     void everyAuditedMatchaFoodOccurrenceGetsIdentityOnlyComponents() throws Exception {
         Map<String, JsonObject> canonical = canonicalComponents();
-        try (ZipFile jar = new ZipFile(packagedJar().toFile())) {
+        try (ZipFile jar = new ZipFile(packagedJar().toFile());
+             ZipFile upstream = new ZipFile(enderscapeJar().toFile())) {
             for (String table : LOOT_TABLES) {
-                JsonObject generated = json(jar, PACK_PREFIX + "data/enderscape/loot_table/" + table + ".json");
-                for (Map.Entry<String, JsonObject> expected : canonical.entrySet()) {
-                    for (JsonObject entry : itemEntries(generated, Set.of(expected.getKey()))) {
-                        JsonObject components = lastSetComponents(entry);
-                        assertNotNull(components, () -> table + " missing identity patch for " + expected.getKey());
-                        assertEquals(expected.getValue(), components, table + " " + expected.getKey());
-                        assertFalse(entry.toString().contains("minecraft:set_count\",\"count\":{\"min\":1"),
-                                "Matcha helper count must not replace Enderscape count");
-                    }
+                String path = "data/enderscape/loot_table/" + table + ".json";
+                JsonObject generated = json(jar, PACK_PREFIX + path);
+                var before = itemEntries(json(upstream, path), canonical.keySet());
+                var after = itemEntries(generated, canonical.keySet());
+                assertEquals(before.size(), after.size(), table);
+                for (int i = 0; i < before.size(); i++) {
+                    String original = before.get(i).get("name").getAsString();
+                    String carrier = original.equals("minecraft:enchanted_golden_apple") ? "minecraft:golden_apple" : original;
+                    assertEquals(carrier, after.get(i).get("name").getAsString());
+                    assertEquals(canonical.get(original), lastSetComponents(after.get(i)), table + " " + original);
                 }
                 // Current Matcha cod presentation is fishing-source-only.  The
                 // structure-loot Cod entry must remain component-free.
@@ -180,11 +182,11 @@ final class EnderscapeIntegrationContractTest {
 
     @Test
     void c2VoidCampfireUsesExactMatchaKindlingAndNotTheUpstreamStickRecipe() throws Exception {
-        JsonObject kindling = parse(matchaDataRoot().resolve("crafting/recipe/beacon_kindling.json"));
+        JsonObject kindling = parse(matchaDataRoot().resolve("matcha/recipe/crafting/beacon_kindling.json"));
         JsonObject result = kindling.getAsJsonObject("result");
         assertEquals("minecraft:chicken_spawn_egg", result.get("id").getAsString());
         JsonObject components = result.getAsJsonObject("components");
-        assertEquals("minecraft:beacon_kindling", components.get("minecraft:item_model").getAsString());
+        assertEquals("matcha:beacon_kindling", components.get("minecraft:item_model").getAsString());
         assertTrue(components.getAsJsonObject("minecraft:entity_data").getAsJsonArray("Tags")
                 .asList().stream().anyMatch(tag -> "beacon_kindling".equals(tag.getAsString())));
 
@@ -397,12 +399,12 @@ final class EnderscapeIntegrationContractTest {
 
     private static Map<String, JsonObject> canonicalComponents() throws IOException {
         Map<String, JsonObject> components = new LinkedHashMap<>();
-        components.put("minecraft:bread", recipeComponents("food/recipe/bread.json"));
-        components.put("minecraft:golden_carrot", recipeComponents("food/recipe/golden_carrot.json"));
-        components.put("minecraft:carrot", sourceComponents("minecraft/loot_table/food/carrot.json", "minecraft:carrot"));
-        components.put("minecraft:golden_apple", sourceComponents("minecraft/loot_table/food/golden_apple.json", "minecraft:golden_apple"));
-        components.put("minecraft:enchanted_golden_apple", sourceComponents("minecraft/loot_table/food/enchanted_golden_apple.json", "minecraft:enchanted_golden_apple"));
-        components.put("minecraft:chorus_fruit", sourceComponents("minecraft/loot_table/blocks/chorus_plant.json", "minecraft:chorus_fruit"));
+        components.put("minecraft:bread", recipeComponents("matcha/recipe/food/oven/bread.json"));
+        components.put("minecraft:golden_carrot", recipeComponents("matcha/recipe/food/crafting/golden_carrot.json"));
+        components.put("minecraft:carrot", sourceComponents("matcha/loot_table/food/minecraft/carrot.json", "minecraft:carrot"));
+        components.put("minecraft:golden_apple", sourceComponents("matcha/loot_table/food/minecraft/golden_apple.json", "minecraft:golden_apple"));
+        components.put("minecraft:enchanted_golden_apple", sourceComponents("matcha/loot_table/food/minecraft/enchanted_golden_apple.json", "minecraft:golden_apple"));
+        components.put("minecraft:chorus_fruit", sourceComponents("matcha/loot_table/food/minecraft/chorus_fruit.json", "minecraft:chorus_fruit"));
         return components;
     }
 
@@ -449,7 +451,7 @@ final class EnderscapeIntegrationContractTest {
     }
 
     private static Path matchaDataRoot() {
-        return Path.of(System.getProperty("workbenchRoot"), "projects/matcha-flavoured-data/src/main/resources/resourcepacks/matcha_flavoured_1_12/data");
+        return Path.of(System.getProperty("matchaDataRoot"));
     }
 
     private static String sha256(Path path) throws Exception {

@@ -19,7 +19,7 @@
     "minecraft": "=26.2",
     "java": ">=25",
     "enderscape": "=3.0.2+mc26.2",
-    "matcha_flavoured_data": "=0.1.0-canary2"
+    "workbench_matcha_data_1_12_5": "*"
   },
   "recommends": {
     "jei": ">=30.18.0"

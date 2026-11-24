@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
-import dev.resivore.matchajei.MatchaNamespaces;
 import dev.resivore.matchajei.data.MatchaDisplayData;
 import dev.resivore.matchajei.data.MatchaExactCatalog;
 import dev.resivore.matchajei.data.MatchaFoodDiscoveryCatalog;
@@ -17,7 +16,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
@@ -51,7 +49,7 @@ import java.util.WeakHashMap;
 
 public final class MatchaDataScanner {
     private static final Logger LOGGER = LoggerFactory.getLogger("matcha_jei_integration/data");
-    private static final String MATCHA_DESCRIPTION_MARKER = "klei's matcha flavoured";
+    private static final String MATCHA_PROVIDER = "matcha_flavoured_data:matcha_flavoured_1_12_5";
     private static final FileToIdConverter RECIPE_FILES = FileToIdConverter.json("recipe");
     private static final FileToIdConverter TRADE_FILES = FileToIdConverter.registry(Registries.VILLAGER_TRADE);
     private static final FileToIdConverter LOOT_FILES = FileToIdConverter.registry(Registries.LOOT_TABLE);
@@ -92,11 +90,10 @@ public final class MatchaDataScanner {
 
     private static ServerState initializeState(MinecraftServer server) {
         ResourceManager resources = server.getResourceManager();
-        Set<String> matchaPackIds = findMatchaPackIds(resources);
         HolderLookup.Provider registries = registryProvider(server);
         Map<Identifier, ProfessionLevel> assignments = loadedTradeAssignments(registries);
         Map<Identifier, ResourceDocument> trades = retainAssignedTrades(
-                readDocuments(TRADE_FILES.listMatchingResources(resources), TRADE_FILES, matchaPackIds),
+                readDocuments(resources, TRADE_FILES),
                 assignments,
                 true
         );
@@ -105,17 +102,16 @@ public final class MatchaDataScanner {
 
     private static MatchaJeiDataPayload scan(MinecraftServer server, ServerState state) {
         ResourceManager resources = server.getResourceManager();
-        Set<String> matchaPackIds = findMatchaPackIds(resources);
 
         Map<Identifier, ResourceDocument> recipes = readDocuments(
-                RECIPE_FILES.listMatchingResources(resources), RECIPE_FILES, matchaPackIds
+                resources, RECIPE_FILES
         );
         Map<Identifier, ResourceDocument> currentTrades = readDocuments(
-                TRADE_FILES.listMatchingResources(resources), TRADE_FILES, matchaPackIds
+                resources, TRADE_FILES
         );
         state.warnIfTradeResourcesChanged(retainAssignedTrades(currentTrades, state.assignments, false));
         Map<Identifier, ResourceDocument> lootTables = readDocuments(
-                LOOT_FILES.listMatchingResources(resources), LOOT_FILES, matchaPackIds
+                resources, LOOT_FILES
         );
         if (recipes.isEmpty() && state.trades.isEmpty() && lootTables.isEmpty()) {
             return MatchaJeiDataPayload.EMPTY;
@@ -165,31 +161,6 @@ public final class MatchaDataScanner {
                 base.listRegistries(),
                 reloadable.listRegistries().filter(registry -> !baseKeys.contains(registry.key()))
         ));
-    }
-
-    private static Set<String> findMatchaPackIds(ResourceManager resources) {
-        LinkedHashSet<String> metadataMatches = new LinkedHashSet<>();
-        resources.listPacks().forEach(pack -> {
-            try {
-                PackMetadataSection metadata = pack.getMetadataSection(PackMetadataSection.SERVER_TYPE);
-                if (metadata != null && metadata.description().getString().toLowerCase(Locale.ROOT)
-                        .contains(MATCHA_DESCRIPTION_MARKER)) {
-                    metadataMatches.add(pack.packId());
-                }
-            } catch (IOException | RuntimeException exception) {
-                LOGGER.debug("Unable to inspect datapack metadata for {}", pack.packId(), exception);
-            }
-        });
-
-        Set<String> recipeOwners = RECIPE_FILES.listMatchingResources(resources).entrySet().stream()
-                .filter(entry -> MatchaNamespaces.contains(RECIPE_FILES.fileToId(entry.getKey()).getNamespace()))
-                .map(entry -> entry.getValue().sourcePackId())
-                .collect(java.util.stream.Collectors.toSet());
-        metadataMatches.retainAll(recipeOwners);
-        if (metadataMatches.isEmpty()) {
-            LOGGER.info("No loaded Matcha datapack passed the metadata and recipe-namespace fingerprint");
-        }
-        return Set.copyOf(metadataMatches);
     }
 
     private static Map<Identifier, ProfessionLevel> loadedTradeAssignments(HolderLookup.Provider registries) {
@@ -258,17 +229,18 @@ public final class MatchaDataScanner {
     }
 
     private static Map<Identifier, ResourceDocument> readDocuments(
-            Map<Identifier, Resource> files,
-            FileToIdConverter converter,
-            Set<String> matchaPackIds
+            ResourceManager resources,
+            FileToIdConverter converter
     ) {
         LinkedHashMap<Identifier, ResourceDocument> documents = new LinkedHashMap<>();
-        files.entrySet().stream()
-                .filter(entry -> matchaPackIds.contains(entry.getValue().sourcePackId()))
+        var effective = converter.listMatchingResources(resources);
+        converter.listMatchingResourceStacks(resources).entrySet().stream()
+                .filter(entry -> entry.getValue().stream().anyMatch(layer -> MATCHA_PROVIDER.equals(layer.sourcePackId())))
+                .filter(entry -> effective.containsKey(entry.getKey()))
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> {
                     Identifier id = converter.fileToId(entry.getKey());
-                    try (BufferedReader reader = entry.getValue().openAsReader()) {
+                    try (BufferedReader reader = effective.get(entry.getKey()).openAsReader()) {
                         JsonElement parsed = JsonParser.parseReader(reader);
                         if (parsed.isJsonObject()) {
                             String raw = parsed.toString();
@@ -312,7 +284,9 @@ public final class MatchaDataScanner {
         LinkedHashMap<Identifier, Optional<ItemStack>> resolvedOutputs = new LinkedHashMap<>();
         rawFallbacks.keySet().stream().sorted().forEach(id -> {
             RecipeHolder<?> holder = resolvedRecipes.get(id);
-            if (holder != null) {
+            if (holder == null) {
+                resolvedOutputs.put(id, Optional.empty());
+            } else {
                 resolvedOutputs.put(id, staticallyRepresentableOutput(holder.value(), displayContext));
             }
         });

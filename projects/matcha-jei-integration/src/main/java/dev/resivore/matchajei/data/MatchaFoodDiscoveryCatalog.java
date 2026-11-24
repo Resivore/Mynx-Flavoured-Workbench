@@ -171,6 +171,10 @@ public final class MatchaFoodDiscoveryCatalog {
                     && defaultModel.equals(stack.get(DataComponents.ITEM_MODEL))) {
                 return;
             }
+            if (type == DataComponents.CUSTOM_DATA) {
+                var data = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+                if (data.size() == 1 && data.getIntOr("version", 0) == 1) return;
+            }
             identity.put(type, component.value());
         });
         return new FoodFamily(stack.getItem(), Map.copyOf(identity));

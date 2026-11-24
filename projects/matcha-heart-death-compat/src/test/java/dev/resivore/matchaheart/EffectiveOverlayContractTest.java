@@ -57,9 +57,10 @@ final class EffectiveOverlayContractTest {
         });
 
         assertEquals(Set.of(
-                "data/blessings/recipe/swift_sneak_soul_speed.json",
-                "data/crafting/recipe/music_disc_5.json",
-                "data/main/advancement/recipe_unlocks/echo_shard.json",
+                "data/matcha/recipe/blessing/swift_sneak_soul_speed.json",
+                "data/matcha/recipe/crafting/music_disc_5.json",
+                "data/matcha/advancement/fishing_sounds/junk.json",
+                "data/matcha/advancement/recipe_unlocks/echo_shard.json",
                 "data/matcha_heart_death_compat/recipe/reinforced_crystal_heart.json",
                 "data/matcha_heart_death_compat/recipe/resonant_favour.json",
                 "data/minecraft/loot_table/chests/ancient_city.json"), references);
@@ -75,20 +76,28 @@ final class EffectiveOverlayContractTest {
             }
         });
         assertEquals(Set.of(
-                "data/blessings/recipe/swift_sneak_soul_speed.json",
-                "data/crafting/recipe/music_disc_5.json",
-                "data/main/advancement/recipe_unlocks/echo_shard.json",
-                "data/main/function/setup/revoke_all_recipe_unlock_advancements.mcfunction",
+                "data/matcha/recipe/blessing/swift_sneak_soul_speed.json",
+                "data/matcha/recipe/crafting/music_disc_5.json",
+                "data/matcha/advancement/fishing_sounds/junk.json",
+                "data/matcha/advancement/recipe_unlocks/echo_shard.json",
+                "data/matcha/advancement/anglers_almanac/deep_dark/echo_shard.json",
                 "data/matcha_heart_death_compat/recipe/reinforced_crystal_heart.json",
                 "data/matcha_heart_death_compat/recipe/resonant_favour.json",
                 "data/minecraft/loot_table/chests/ancient_city.json"), references);
     }
 
     @Test
-    void ancientCityRemainsTheUnmodifiedMatchaLootSource() throws Exception {
+    void ancientCityKeepsTheC11EchoDistributionAcrossLuckValues() throws Exception {
         String path = "data/minecraft/loot_table/chests/ancient_city.json";
-        assertFalse(HeartDataContract.LOOT_TABLE_RESOURCES.containsValue(path));
-        assertEquals(matchaEntry(path), effectiveData().get(path));
+        JsonObject pool = JsonParser.parseString(effectiveData().get(path)).getAsJsonObject()
+                .getAsJsonArray("pools").get(0).getAsJsonObject();
+        var entries = pool.getAsJsonArray("entries");
+        assertEquals(3, entries.size());
+        assertEquals("minecraft:echo_shard", entries.get(0).getAsJsonObject().get("name").getAsString());
+        assertEquals(4, entries.get(0).getAsJsonObject().get("weight").getAsInt());
+        assertEquals(1, entries.get(1).getAsJsonObject().get("quality").getAsInt());
+        assertEquals(69, entries.get(2).getAsJsonObject().get("weight").getAsInt());
+        assertTrue(effectiveData().containsKey("data/matcha_heart_death_compat/loot_table/ancient_city_other.json"));
     }
 
     @Test
@@ -96,17 +105,17 @@ final class EffectiveOverlayContractTest {
         Map<String, String> effective = effectiveData();
 
         JsonObject disc = JsonParser.parseString(
-                effective.get("data/crafting/recipe/music_disc_5.json")).getAsJsonObject();
+                effective.get("data/matcha/recipe/crafting/music_disc_5.json")).getAsJsonObject();
         assertEquals("minecraft:echo_shard", disc.getAsJsonObject("key").get("X").getAsString());
         assertEquals(1, countSymbol(disc, 'X'));
 
         JsonObject blessing = JsonParser.parseString(
-                effective.get("data/blessings/recipe/swift_sneak_soul_speed.json")).getAsJsonObject();
+                effective.get("data/matcha/recipe/blessing/swift_sneak_soul_speed.json")).getAsJsonObject();
         assertEquals("minecraft:echo_shard", blessing.getAsJsonObject("key").get("F").getAsString());
         assertEquals(3, countSymbol(blessing, 'F'));
 
         JsonObject crystal = JsonParser.parseString(
-                effective.get("data/crafting/recipe/crystal_heart.json")).getAsJsonObject();
+                effective.get("data/matcha/recipe/crafting/crystal_heart.json")).getAsJsonObject();
         assertEquals(List.of("f f", "fdf", " f "),
                 crystal.getAsJsonArray("pattern").asList().stream()
                         .map(JsonElement::getAsString).toList());
@@ -120,7 +129,7 @@ final class EffectiveOverlayContractTest {
         JsonObject crystalComponents = crystalResult.getAsJsonObject("components");
         assertEquals("minecraft:poisonous_potato", crystalResult.get("id").getAsString());
         assertEquals(1, crystalResult.get("count").getAsInt());
-        assertEquals("minecraft:heart_container",
+        assertEquals("matcha:heart_container",
                 crystalComponents.get("minecraft:item_model").getAsString());
         assertEquals("item.kleispack.crystal_heart",
                 crystalComponents.getAsJsonObject("minecraft:item_name").get("translate").getAsString());
@@ -155,24 +164,24 @@ final class EffectiveOverlayContractTest {
     void recipeDiscoveryRemainsOwnedByTheCorrectMaterials() throws Exception {
         Map<String, String> effective = effectiveData();
         JsonObject vein = JsonParser.parseString(effective.get(
-                "data/main/advancement/recipe_unlocks/sculk_vein.json")).getAsJsonObject();
+                "data/matcha/advancement/recipe_unlocks/sculk_vein.json")).getAsJsonObject();
         Set<String> veinRewards = new HashSet<>();
         vein.getAsJsonObject("rewards").getAsJsonArray("recipes")
                 .forEach(recipe -> veinRewards.add(recipe.getAsString()));
-        assertEquals(Set.of("crafting:sculk", "crafting:sculk_sensor", "crafting:sculk_shrieker"),
+        assertEquals(Set.of("matcha:crafting/sculk", "matcha:crafting/sculk_sensor", "matcha:crafting/sculk_shrieker"),
                 veinRewards);
 
         JsonObject echo = JsonParser.parseString(effective.get(
-                "data/main/advancement/recipe_unlocks/echo_shard.json")).getAsJsonObject();
+                "data/matcha/advancement/recipe_unlocks/echo_shard.json")).getAsJsonObject();
         Set<String> echoRewards = new HashSet<>();
         echo.getAsJsonObject("rewards").getAsJsonArray("recipes")
                 .forEach(recipe -> echoRewards.add(recipe.getAsString()));
-        assertEquals(Set.of("crafting:music_disc_5"), echoRewards);
+        assertEquals(Set.of("matcha:crafting/music_disc_5"), echoRewards);
 
         JsonObject hellBound = JsonParser.parseString(effective.get(
-                "data/main/advancement/recipe_unlocks/hell_bound_book.json")).getAsJsonObject();
+                "data/matcha/advancement/recipe_unlocks/hell_bound_book.json")).getAsJsonObject();
         assertTrue(hellBound.getAsJsonObject("rewards").getAsJsonArray("recipes").asList().stream()
-                .anyMatch(recipe -> "blessings:swift_sneak_soul_speed".equals(recipe.getAsString())));
+                .anyMatch(recipe -> "matcha:blessing/swift_sneak_soul_speed".equals(recipe.getAsString())));
     }
 
     @Test
@@ -218,6 +227,21 @@ final class EffectiveOverlayContractTest {
 
         Path heartResources = WORKBENCH.resolve(
                 "projects/matcha-heart-death-compat/src/main/resources/data");
+        Path overlay = heartResources.getParent().resolve("resourcepacks/heart_progression");
+        var filters = JsonParser.parseString(Files.readString(overlay.resolve("pack.mcmeta")))
+                .getAsJsonObject().getAsJsonObject("filter").getAsJsonArray("block");
+        for (var filter : filters) {
+            var rule = filter.getAsJsonObject();
+            var pattern = java.util.regex.Pattern.compile("data/" + rule.get("namespace").getAsString()
+                    + "/" + rule.get("path").getAsString());
+            effective.keySet().removeIf(name -> pattern.matcher(name).matches());
+        }
+        applyOverlay(effective, heartResources);
+        applyOverlay(effective, overlay.resolve("data"));
+        return effective;
+    }
+
+    private static void applyOverlay(Map<String, String> effective, Path heartResources) throws IOException {
         try (var files = Files.walk(heartResources)) {
             files.filter(Files::isRegularFile)
                     .forEach(path -> {
@@ -229,7 +253,6 @@ final class EffectiveOverlayContractTest {
                         }
                     });
         }
-        return effective;
     }
 
     private static String matchaEntry(String path) throws IOException {

@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha_heart_death_compat:ominous_unique_other",
+          "quality": 1
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha_heart_death_compat:ominous_unique_other"
+        },
+        {
+          "type": "minecraft:loot_table",
+          "quality": 2,
+          "value": "matcha_heart_death_compat:ominous_unique_other"
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha_heart_death_compat:ominous_unique_other",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:loot_table",
+          "value": "matcha:treasure/crystal_heart",
+          "weight": 1
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "minecraft:chests/trial_chambers/reward_ominous_unique"
+}

@@ -1,0 +1,29 @@
+{
+  "pack": {
+    "min_format": [
+      107,
+      1
+    ],
+    "max_format": [
+      107,
+      1
+    ],
+    "description": "Workbench Matcha heart progression"
+  },
+  "filter": {
+    "block": [
+      {
+        "namespace": "matcha",
+        "path": "recipe/crafting/ominous_bottle\\.json"
+      },
+      {
+        "namespace": "matcha",
+        "path": "advancement/recipe_unlocks/echo_shard_or_ominous_bottle\\.json"
+      },
+      {
+        "namespace": "matcha",
+        "path": "villager_trade/librarian/5/crystal_heart\\.json"
+      }
+    ]
+  }
+}
