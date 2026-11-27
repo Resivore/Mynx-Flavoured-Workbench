@@ -13,6 +13,17 @@ import net.minecraft.world.entity.EntityTypes;
 public final class VillagerWorkRoutinesClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        net.fabricmc.fabric.api.resource.v1.ResourceLoader.get(net.minecraft.server.packs.PackType.CLIENT_RESOURCES)
+                .registerReloadListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(
+                        "villager_work_routines", "ribbits_rod_contract"),
+                        new net.fabricmc.fabric.api.resource.v1.reloader.SimpleReloadListener<Void>() {
+                            @Override protected Void prepare(net.minecraft.server.packs.resources.PreparableReloadListener.SharedState state) {
+                                return null;
+                            }
+                            @Override protected void apply(Void unused, net.minecraft.server.packs.resources.PreparableReloadListener.SharedState state) {
+                                RibbitsFishermanRodRenderer.invalidateResources();
+                            }
+                        });
         EntityRendererRegistry.register(VillagerWorkRoutines.FISHING_FLOAT, FishingFloatRenderer::new);
         EntityRendererRegistry.register(VillagerWorkRoutines.SHEARING_TOOL_MARKER, ShearingToolMarkerRenderer::new);
         LivingEntityRenderLayerRegistrationCallback.EVENT.register(

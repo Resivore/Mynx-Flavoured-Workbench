@@ -17,11 +17,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.resivore.villagerwork.FrogVillagerRodPose;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -35,7 +32,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 /**
- * VWR's direct C27 consumer for the installed Ribbits Fisherman geometry and texture.
+ * VWR's asset-contract consumer for the installed Ribbits Fisherman geometry and texture.
  *
  * <p>The raw {@code fishing_rod} shaft/reel/detail is rendered beneath the caller's Frog
  * Villager folded arms. The source bone's Ribbit-body pose is neutralized from its own live baked
@@ -49,10 +46,8 @@ final class RibbitsFishermanRodRenderer {
             "geckolib/models/fisherman_ribbit.geo.json");
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("ribbits",
             "textures/entity/ribbit.png");
-    private static final String C27_MODEL_SHA256 =
-            "3d358bb332560d216f04033265e187c22e34e034d7ab60fda00a2f510e57db79";
-    private static final String C27_TEXTURE_SHA256 =
-            "ba7c0a98b163bb69c266d988c4a0f1b9a9cbd8c6c9368f1b110b3a985adb4332";
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("villager_work_routines/ribbits");
+    private static String lastFailure;
     private static final RodVisual VISUAL = new RodVisual();
     private static final RodRenderer RENDERER = new RodRenderer();
 
@@ -68,21 +63,33 @@ final class RibbitsFishermanRodRenderer {
         } catch (RuntimeException | LinkageError error) {
             inspection = Inspection.probeFailure(error);
         }
-        if (!hasInstalledC27Resources()) return inspection.withSubmission(false,
-                "required model or texture resource is absent");
+        if (inspection.failure() != null) return diagnose(inspection);
         try {
-            return RENDERER.renderAtReferenceGrip(poseStack, collector, light, inspection, VISUAL,
-                    FrogVillagerRodPose.C33_SHAFT_TRANSLATION_APPLICATIONS);
+            return diagnose(RENDERER.renderAtReferenceGrip(poseStack, collector, light, inspection, VISUAL,
+                    FrogVillagerRodPose.C33_SHAFT_TRANSLATION_APPLICATIONS));
         } catch (RuntimeException | LinkageError error) {
-            return inspection.withSubmission(false,
-                    error.getClass().getName() + ": " + String.valueOf(error.getMessage()));
+            return diagnose(inspection.withSubmission(false,
+                    error.getClass().getName() + ": " + String.valueOf(error.getMessage())));
         }
     }
 
-    static boolean hasInstalledC27Resources() {
-        Minecraft minecraft = Minecraft.getInstance();
-        return minecraft.getResourceManager().getResource(MODEL_FILE).isPresent()
-                && minecraft.getResourceManager().getResource(TEXTURE).isPresent();
+    private static Inspection diagnose(Inspection inspection) {
+        if (inspection.failure() != null && !inspection.failure().equals(lastFailure)) {
+            lastFailure = inspection.failure();
+            LOGGER.warn("VWR Ribbits rod/line presentation unavailable: {}. {}. Restore compatible "
+                    + "Fisherman assets or remove the overriding resource pack, then reload resources; "
+                    + "if intentional, update VWR's asset contract. Server work routines and Ribbits "
+                    + "entities are unaffected.", inspection.failure(), inspection.resourceReport());
+        } else if (inspection.failure() == null) {
+            lastFailure = null;
+        }
+        return inspection;
+    }
+
+    static void invalidateResources() {
+        RENDERER.cachedInspection = null;
+        RENDERER.cachedLiveBoneChain = null;
+        lastFailure = null;
     }
 
     private static final class RodVisual implements GeoAnimatable {
@@ -118,9 +125,6 @@ final class RibbitsFishermanRodRenderer {
 
     private static class RodRenderer extends GeoObjectRenderer<RodVisual, Void, GeoRenderState> {
         private LiveCapture liveCapture;
-        private Object fingerprintedResourceManager;
-        private BakedGeoModel fingerprintedBakedModel;
-        private ResourceFingerprints cachedResourceFingerprints;
         private Object inspectedResourceManager;
         private BakedGeoModel inspectedBakedModel;
         private Inspection cachedInspection;
@@ -221,87 +225,55 @@ final class RibbitsFishermanRodRenderer {
 
         protected Inspection inspect() {
             Minecraft minecraft = Minecraft.getInstance();
+            Object resourceManager = minecraft.getResourceManager();
             String ribbitsVersion = FabricLoader.getInstance().getModContainer("ribbits")
                     .map(container -> container.getMetadata().getVersion().getFriendlyString())
                     .orElse("<missing>");
-            boolean exactC27 = "4.1.6+26.2-mynx-canary27".equals(ribbitsVersion);
-            Optional<Resource> modelResource = minecraft.getResourceManager().getResource(MODEL_FILE);
-            Optional<Resource> textureResource = minecraft.getResourceManager().getResource(TEXTURE);
-            boolean modelFilePresent = modelResource.isPresent();
-            boolean texturePresent = textureResource.isPresent();
-
+            BakedGeoModel bakedModel = null;
             try {
-                BakedGeoModel bakedModel = getGeoModel().getBakedModel(MODEL);
-                Object resourceManager = minecraft.getResourceManager();
+                bakedModel = getGeoModel().getBakedModel(MODEL);
                 if (resourceManager == inspectedResourceManager && bakedModel == inspectedBakedModel
-                        && cachedInspection != null) {
-                    return cachedInspection;
-                }
+                        && cachedInspection != null) return cachedInspection;
                 cachedLiveBoneChain = null;
-                ResourceFingerprints fingerprints = fingerprints(minecraft, bakedModel,
-                        modelResource, textureResource);
-                Optional<GeoBone> rodResult = bakedModel.getBone("fishing_rod");
-                boolean bakedModelResolved = !bakedModel.isMissingno();
-                boolean rod2Present = bakedModel.getBone("fishing_rod_2").isPresent();
-                boolean rod3Present = bakedModel.getBone("fishing_rod_3").isPresent();
-                String chainReport = rodResult.map(rod -> describeBoneChain(rod, false))
-                        .orElse("  chain=<unavailable: fishing_rod missing>");
-                boolean exactC27ModelResolves = exactC27 && fingerprints.model().exact()
-                        && bakedModelResolved && rodResult.isPresent();
-                boolean exactC27TextureResolves = exactC27 && fingerprints.texture().exact();
-                String signature = String.format(Locale.ROOT,
-                        "resourceManager@%x bakedModel@%x version=%s exact=%s modelFile=%s modelHash=%s baked=%s texture=%s textureHash=%s rod=%s rod2=%s rod3=%s",
-                        System.identityHashCode(minecraft.getResourceManager()),
-                        System.identityHashCode(bakedModel), ribbitsVersion, exactC27,
-                        modelFilePresent, fingerprints.model().sha256(), bakedModelResolved,
-                        texturePresent, fingerprints.texture().sha256(),
-                        rodResult.isPresent(), rod2Present, rod3Present);
-                String report = "Ribbits C27 resource/model state\n"
-                        + "  installed_version=" + ribbitsVersion + " exact_C27=" + exactC27 + "\n"
-                        + "  model_id=" + MODEL + " model_file=" + MODEL_FILE
-                        + " resource_present=" + modelFilePresent
-                        + " source_pack=" + fingerprints.model().sourcePack()
-                        + " sha256=" + fingerprints.model().sha256()
-                        + " exact_C27_bytes=" + fingerprints.model().exact()
-                        + " baked_model_resolved=" + bakedModelResolved
-                        + " exact_C27_fisherman_model_resolves=" + exactC27ModelResolves + "\n"
-                        + "  texture=" + TEXTURE + " resource_present=" + texturePresent
-                        + " source_pack=" + fingerprints.texture().sourcePack()
-                        + " sha256=" + fingerprints.texture().sha256()
-                        + " exact_C27_bytes=" + fingerprints.texture().exact()
-                        + " exact_C27_texture_resolves=" + exactC27TextureResolves + "\n"
-                        + "  fishing_rod=" + rodResult.isPresent()
-                        + " fishing_rod_2=" + rod2Present + " fishing_rod_3=" + rod3Present + "\n"
-                        + "  static/default snapshot preview (not runtime evidence; live values follow):\n"
-                        + chainReport;
-
-                if (rodResult.isEmpty()) {
+                Optional<Resource> modelResource = minecraft.getResourceManager().getResource(MODEL_FILE);
+                Optional<Resource> textureResource = minecraft.getResourceManager().getResource(TEXTURE);
+                RibbitsRodContract.Result contract = RibbitsRodContract.check(
+                        readResource(modelResource), readResource(textureResource));
+                String report = "installed_version=" + ribbitsVersion + " (informational only)"
+                        + " model=" + MODEL_FILE + " source_pack="
+                        + modelResource.map(Resource::sourcePackId).orElse("<missing>")
+                        + " texture=" + TEXTURE + " source_pack="
+                        + textureResource.map(Resource::sourcePackId).orElse("<missing>")
+                        + " contract=" + contract.detail();
+                String signature = report;
+                if (!contract.compatible()) {
                     return cacheInspection(resourceManager, bakedModel,
-                            Inspection.unavailable(signature, report,
-                                    "Ribbits baked model has no fishing_rod bone"));
+                            Inspection.unavailable(signature, report, contract.detail()));
                 }
-
+                Optional<GeoBone> rodResult = bakedModel.getBone("fishing_rod");
+                if (bakedModel.isMissingno() || rodResult.isEmpty()
+                        || bakedModel.getBone("fishing_rod_2").isEmpty()
+                        || bakedModel.getBone("fishing_rod_3").isEmpty()) {
+                    return cacheInspection(resourceManager, bakedModel, Inspection.unavailable(
+                            signature, report, "GeckoLib did not bake the contracted Fisherman bones"));
+                }
                 StandaloneRodBasis basis = standaloneBasis();
-                // Matrices and physical points deliberately remain empty here: only the live
-                // RenderPassInfo/per-bone callback may claim those runtime checkpoints.
                 return cacheInspection(resourceManager, bakedModel,
-                        new Inspection(signature, report, null, null,
-                                null, null, null,
+                        new Inspection(signature, report + "\n" + describeBoneChain(rodResult.get(), false),
+                                null, null, null, null, null,
                                 basis.rawGripPosition(), false, false, null));
-            } catch (RuntimeException | LinkageError error) {
+            } catch (IOException | RuntimeException | LinkageError error) {
                 String failure = error.getClass().getName() + ": " + String.valueOf(error.getMessage());
-                String signature = String.format(Locale.ROOT,
-                        "resourceManager@%x version=%s exact=%s modelFile=%s texture=%s failure=%s",
-                        System.identityHashCode(minecraft.getResourceManager()), ribbitsVersion, exactC27,
-                        modelFilePresent, texturePresent, failure);
-                String report = "Ribbits C27 resource/model state\n"
-                        + "  installed_version=" + ribbitsVersion + " exact_C27=" + exactC27 + "\n"
-                        + "  model_id=" + MODEL + " model_file=" + MODEL_FILE
-                        + " resource_present=" + modelFilePresent + " baked_model_resolved=false\n"
-                        + "  texture=" + TEXTURE + " resource_present=" + texturePresent + "\n"
-                        + "  fishing_rod=false fishing_rod_2=<unknown> fishing_rod_3=<unknown>\n"
-                        + "  resolution_failure=" + failure;
-                return Inspection.unavailable(signature, report, failure);
+                return cacheInspection(resourceManager, bakedModel, Inspection.unavailable(
+                        failure, "installed_version=" + ribbitsVersion + " model=" + MODEL_FILE
+                                + " texture=" + TEXTURE, failure));
+            }
+        }
+
+        private static byte[] readResource(Optional<Resource> resource) throws IOException {
+            if (resource.isEmpty()) return null;
+            try (InputStream input = resource.get().open()) {
+                return input.readAllBytes();
             }
         }
 
@@ -354,45 +326,6 @@ final class RibbitsFishermanRodRenderer {
             return "  root_to_fishing_rod=" + names + details;
         }
 
-        private ResourceFingerprints fingerprints(Minecraft minecraft, BakedGeoModel bakedModel,
-                                                   Optional<Resource> modelResource,
-                                                   Optional<Resource> textureResource) {
-            Object manager = minecraft.getResourceManager();
-            if (manager == fingerprintedResourceManager && bakedModel == fingerprintedBakedModel
-                    && cachedResourceFingerprints != null) {
-                return cachedResourceFingerprints;
-            }
-            ResourceFingerprints fingerprints = new ResourceFingerprints(
-                    fingerprint(modelResource, C27_MODEL_SHA256),
-                    fingerprint(textureResource, C27_TEXTURE_SHA256));
-            fingerprintedResourceManager = manager;
-            fingerprintedBakedModel = bakedModel;
-            cachedResourceFingerprints = fingerprints;
-            return fingerprints;
-        }
-
-        private static ResourceFingerprint fingerprint(Optional<Resource> resourceResult,
-                                                       String expectedSha256) {
-            if (resourceResult.isEmpty()) {
-                return new ResourceFingerprint("<missing>", "<missing>", false);
-            }
-            Resource resource = resourceResult.orElseThrow();
-            try (InputStream input = resource.open()) {
-                MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                byte[] buffer = new byte[8192];
-                int read;
-                while ((read = input.read(buffer)) >= 0) {
-                    if (read > 0) digest.update(buffer, 0, read);
-                }
-                String sha256 = HexFormat.of().formatHex(digest.digest());
-                return new ResourceFingerprint(resource.sourcePackId(), sha256,
-                        expectedSha256.equals(sha256));
-            } catch (IOException | NoSuchAlgorithmException error) {
-                return new ResourceFingerprint(resource.sourcePackId(),
-                        "<unreadable:" + error.getClass().getSimpleName() + '>', false);
-            }
-        }
-
         /**
          * Detaches the Ribbits body/accessories origin while retaining raw fishing_rod cubes.
          * The physical outer tip is then exactly the C27 shaft's -9.5-pixel vector from the
@@ -400,7 +333,7 @@ final class RibbitsFishermanRodRenderer {
          */
         private StandaloneRodBasis standaloneBasis() {
             GeoBone rod = getGeoModel().getBakedModel(MODEL).getBone("fishing_rod")
-                    .orElseThrow(() -> new IllegalStateException("Ribbits C27 Fisherman rod is missing"));
+                    .orElseThrow(() -> new IllegalStateException("Ribbits Fisherman rod is missing"));
             PoseStack modelPose = new PoseStack();
             applyRibbitsGeometryRoot(modelPose);
             RenderUtil.transformToBone(modelPose, rod);
@@ -477,12 +410,6 @@ final class RibbitsFishermanRodRenderer {
             }
         }
 
-        private record ResourceFingerprints(ResourceFingerprint model,
-                                            ResourceFingerprint texture) {
-        }
-
-        private record ResourceFingerprint(String sourcePack, String sha256, boolean exact) {
-        }
     }
 
     /** The Ribbits body origin is cancelled before the reference's folded-arm grip is applied. */
@@ -506,7 +433,7 @@ final class RibbitsFishermanRodRenderer {
         private static Inspection probeFailure(Throwable error) {
             String failure = error.getClass().getName() + ": " + String.valueOf(error.getMessage());
             return unavailable("diagnostic-probe-failure/" + failure,
-                    "Ribbits C27 resource/model state\n  diagnostic_probe_failure=" + failure,
+                    "Ribbits asset contract state\n  diagnostic_probe_failure=" + failure,
                     failure);
         }
 

@@ -23,10 +23,8 @@ class RibbitsFishermanC27IntegrationContractTest {
         String metadata = read("src/main/resources/fabric.mod.json");
         String layer = read("src/main/java/dev/resivore/villagerwork/client/VwrFishingRodLayer.java");
 
-        assertTrue(build.contains("ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar"));
-        assertTrue(build.contains("implementation files(ribbitsC27Artifact)"));
-        assertTrue(metadata.contains("\"ribbits\": \"=4.1.6+26.2-mynx-canary27\""));
-        assertTrue(metadata.contains("\"relationship\": \"depends\""));
+        assertFalse(build.contains("implementation files(ribbits"));
+        assertTrue(metadata.contains("\"ribbits\": \"*\""));
         assertTrue(layer.contains("RibbitsFishermanRodRenderer.submit"));
         assertFalse(layer.contains("Items.STICK"));
         assertFalse(Files.exists(ROOT.resolve(
@@ -149,8 +147,8 @@ class RibbitsFishermanC27IntegrationContractTest {
         String rendererMixin = read(
                 "src/main/java/dev/resivore/villagerwork/mixin/client/VillagerRendererMixin.java");
 
-        assertTrue(renderer.contains("C27_MODEL_SHA256"));
-        assertTrue(renderer.contains("sourcePackId()"));
+        assertTrue(renderer.contains("RibbitsRodContract.check"));
+        assertTrue(renderer.contains("Resource::sourcePackId"));
         assertTrue(renderer.contains("addPerBoneRender"));
         assertTrue(renderer.contains("capturePhysicalRod"));
         assertTrue(renderer.contains("live_render_snapshot"));
@@ -213,6 +211,27 @@ class RibbitsFishermanC27IntegrationContractTest {
                         "ce47d98c61e56f0c451c04d2b18e60d8f698067c895c552b334cdfc95a946e19",
                         "77fc35f08ef060aa9e98b75015176cd3578e906f2f55dc305c2bfdeb46d766af",
                         "3dda30dad8eaf6e3f3e714f4d252d670d5b907ec33ced44266e5a8c1e6083f1d"));
+    }
+
+    @Test
+    void incompatibleAssetsStopBeforeSubmissionAndReloadClearsTheDecision() throws IOException {
+        String renderer = read("src/main/java/dev/resivore/villagerwork/client/RibbitsFishermanRodRenderer.java");
+        String submit = blockBody(renderer, "static Inspection submitC33ShaftTranslated(");
+        int guard = submit.indexOf("if (inspection.failure() != null) return diagnose(inspection)");
+        assertTrue(guard >= 0 && guard < submit.indexOf("RENDERER.renderAtReferenceGrip("));
+        String inspect = blockBody(renderer, "protected Inspection inspect()");
+        assertTrue(inspect.contains("if (!contract.compatible())"));
+        assertTrue(inspect.contains("Inspection.unavailable(signature, report, contract.detail())"));
+        String reset = blockBody(renderer, "static void invalidateResources()");
+        assertTrue(reset.contains("RENDERER.cachedInspection = null"));
+        assertTrue(reset.contains("lastFailure = null"));
+        String client = read("src/main/java/dev/resivore/villagerwork/client/VillagerWorkRoutinesClient.java");
+        assertTrue(client.contains("PackType.CLIENT_RESOURCES"));
+        assertTrue(client.contains("RibbitsFishermanRodRenderer.invalidateResources()"));
+        assertTrue(renderer.contains("LOGGER.warn("));
+        assertTrue(renderer.contains("!inspection.failure().equals(lastFailure)"));
+        assertTrue(renderer.contains("Restore compatible "));
+        assertTrue(blockBody(renderer, "public void registerControllers(").contains("VWR owns the cast lifecycle"));
     }
 
     private static String read(String relative) throws IOException {

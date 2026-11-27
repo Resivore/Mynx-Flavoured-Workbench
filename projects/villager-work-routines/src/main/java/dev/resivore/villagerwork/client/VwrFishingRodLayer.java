@@ -19,7 +19,7 @@ import net.minecraft.world.item.Items;
 
 /**
  * A single client-only Fisherman prop posed at crossed villager arms while this villager owns a
- * live VWR float. VWR directly consumes the installed private Ribbits C27 model/resources but
+ * live VWR float. VWR directly consumes the installed contract-compatible Ribbits model/resources but
  * owns its Frog Villager reference pose and sole live line/float. It does not synchronize an
  * equipment item, avoiding vanilla's duplicate fishing line and hook.
  */
