@@ -55,14 +55,14 @@
       {
         "type": "PROJECT",
         "identifier": "2a650718-ec62-568f-8dff-71258a4d6f3f",
-        "requirement": "=4.1.6+26.2-mynx-canary27; ribbits-private-reconstruction-4.1.6+26.2-mynx-canary27.jar; 3,377,508 bytes; SHA-256 088c4b7e88c432d6275395e29273597cf42575f59350fe8b4f48c46e6df7f9fd",
-        "reason": "VWR directly consumes the installed private C27 Fisherman model and texture at runtime without copying their protected payload into its own artifact."
+        "requirement": "ribbits *; client Fisherman asset contract v1",
+        "reason": "Stable namespaced asset provider, independent of Canary/version: guard effective geometry structure and texture before rendering; no Ribbits classes, mixins or gameplay APIs are consumed."
       },
       {
         "type": "MOD",
         "identifier": "geckolib",
         "requirement": ">=5.5.1",
-        "reason": "Required to submit the installed Ribbits C27 Geo model directly under VWR's Frog Villager pose."
+        "reason": "Client-only Geo model submission, live baked bone transforms and physical-tip capture under the preserved Frog Villager pose."
       },
       {
         "type": "TOOL",
@@ -73,34 +73,22 @@
     ]
   },
   "state": {
-    "milestone": "The supplied C31 screenshot remains narrowly scoped C31 Fisherman rod-placement runtime evidence only. C34 is a presentation-only follow-up: it retains the C33 solid rod's exact C31-baseline total `(0,0,-4)px` rod-local shaft translation and its same-pose physical-tip line, but removes the C32 comparison ghost path entirely. The translucent renderer, ghost geometry submission, and remaining visual diagnostic tools are absent; the sole visible rod and sole 16-segment line are C34 solid output. C24 semantic EMF arms -> arms_rotation, authored [0,-7,-6], invertAxis=xy conversion, C31 correction, C27 rotation neutralization and decoration suppression, rod cubes/scale/rotation, physical-tip authority, Fisherman/Shepherd behavior, and C27 provider boundary remain unchanged. No broader runtime result is inferred. C34 is ACTIVE / STATIC_PASS / RUNTIME_UNTESTED.",
+    "milestone": "C35 replaces the incidental exact Ribbits C27 boundary with a version-independent, enforced Fisherman asset contract. Verified exact C27 and current canonical C28 assets; 99 automated tests pass, including incompatible-asset fixtures and dedicated-server bytecode/isolated JVM loading boundaries. Authored geometry, animations, equipment transforms, C34 solid pose, physical-tip line and routines are preserved. No Ribbits changes or Minecraft profile access; ACTIVE / STATIC_PASS / RUNTIME_UNTESTED. Historical C31 evidence remains C31-only.",
     "releases": {
       "current": {
-        "canary": 34,
-        "version": "0.1.0-canary34",
+        "canary": 35,
+        "version": "0.1.0-canary35",
         "artifact": {
-          "filename": "villager-work-routines-0.1.0-canary34.jar",
-          "sha256": "5b86898aa514783b0c6ce5eafa93fc924986cf6ce57537056b83a23da2ea0bea"
+          "filename": "VWR C35.jar",
+          "sha256": "41bcd47f1915f06f8e0f64192f3b903afa9911de005a1716d37fd0f3dc440692"
         },
-        "built_at": "2026-09-23T06:57:11.8552073Z",
-        "source_commit": "88d8ac442eea69d02d3141c829d0f9f28b78638d",
+        "built_at": "2026-11-27T07:33:51.101200Z",
+        "source_commit": "06f2159ba554adfaaad344b8fc1238702f836d1e",
         "runtime_dependency_policy": {
           "contract": "CAPABILITY_OR_PROVIDER",
-          "exceptions": [
-            {
-              "consumer_id": "villager_work_routines",
-              "relationship": "depends",
-              "dependency_id": "ribbits",
-              "predicate": "=4.1.6+26.2-mynx-canary27",
-              "reason": "VWR directly renders the installed private Ribbits C27 Fisherman model and texture without packaging their payload.",
-              "regression_evidence": [
-                "Exact C20 runtime testing disproved parity between vanilla `translateToArms` and the active Frog Villager folded-arm hierarchy: the rod was high/displaced and its line detached toward an incorrect world point.",
-                "The private stack always installs Ribbits with VWR, so an intentional exact provider boundary is required."
-              ]
-            }
-          ]
+          "exceptions": []
         },
-        "summary": "Keeps C33's solid two-step shaft pose and physical-tip line while removing the comparison ghost and visual diagnostics."
+        "summary": "Accepts Ribbits updates through a guarded Fisherman asset contract while preserving the authored rod pose and isolating incompatible visuals."
       },
       "accepted": null,
       "rollback": null,
@@ -114,10 +102,10 @@
     "blocker": null
   },
   "synchronization": {
-    "revision": 34,
-    "activity_at": "2026-09-23T06:57:11.8552073Z",
-    "updated_at": "2026-09-23T06:57:11.8552073Z",
-    "last_codex_at": "2026-09-23T06:57:11.8552073Z",
-    "source_commit": "88d8ac442eea69d02d3141c829d0f9f28b78638d"
+    "revision": 35,
+    "activity_at": "2026-11-27T07:33:51.101200Z",
+    "updated_at": "2026-11-27T07:33:51.101200Z",
+    "last_codex_at": "2026-11-27T07:33:51.101200Z",
+    "source_commit": "06f2159ba554adfaaad344b8fc1238702f836d1e"
   }
 }
